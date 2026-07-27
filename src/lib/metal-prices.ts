@@ -1,11 +1,18 @@
-import { prisma } from "@/lib/prisma";
+import {
+  getMetalRateFreshness,
+} from "@/lib/metal-rate-freshness";
+
+import {
+  prisma,
+} from "@/lib/prisma";
 
 export function getStaleAfterMinutes() {
-  const configuredValue = Number(
-    process.env
-      .METAL_PRICE_STALE_AFTER_MINUTES ??
-      "15",
-  );
+  const configuredValue =
+    Number(
+      process.env
+        .METAL_PRICE_STALE_AFTER_MINUTES ??
+        "15",
+    );
 
   if (
     !Number.isFinite(
@@ -23,75 +30,103 @@ export async function getMetalPriceSnapshot() {
   const staleAfterMinutes =
     getStaleAfterMinutes();
 
-  const staleAfterMilliseconds =
-    staleAfterMinutes * 60 * 1000;
-
-  const now = Date.now();
+  const now =
+    new Date();
 
   const prices =
     await prisma.metalPrice.findMany({
       orderBy: {
-        material: "asc",
+        material:
+          "asc",
       },
     });
 
   return {
     staleAfterMinutes,
 
-    prices: prices.map((price) => {
-      const ageMilliseconds =
-        now -
-        price.lastSuccessAt.getTime();
+    prices: prices.map(
+      (price) => {
+        /**
+         * اعتبار نرخ باید بر اساس زمان واقعی بازار
+         * محاسبه شود، نه زمان موفقیت درخواست API.
+         */
+        const freshness =
+          getMetalRateFreshness({
+            sourceTimeUnix:
+              price.sourceTimeUnix,
 
-      return {
-        material:
-          price.material,
+            staleAfterMinutes,
 
-        pricePerGramToman:
-          price.pricePerGram.toString(),
+            now,
+          });
 
-        referencePurity:
-          price.referencePurity,
+        return {
+          material:
+            price.material,
 
-        currency:
-          price.currency,
+          pricePerGramToman:
+            price.pricePerGram.toString(),
 
-        source:
-          price.source,
+          referencePurity:
+            price.referencePurity,
 
-        sourceSymbol:
-          price.sourceSymbol,
+          currency:
+            price.currency,
 
-        sourceDate:
-          price.sourceDate,
+          source:
+            price.source,
 
-        sourceTime:
-          price.sourceTime,
+          sourceSymbol:
+            price.sourceSymbol,
 
-        sourceTimeUnix:
-          price.sourceTimeUnix?.toString() ??
-          null,
+          sourceDate:
+            price.sourceDate,
 
-        fetchedAt:
-          price.fetchedAt.toISOString(),
+          sourceTime:
+            price.sourceTime,
 
-        lastSuccessAt:
-          price.lastSuccessAt.toISOString(),
+          /**
+           * timestamp اصلی دریافت‌شده
+           * از منبع بازار.
+           */
+          sourceTimeUnix:
+            price.sourceTimeUnix?.toString() ??
+            null,
 
-        ageSeconds: Math.max(
-          0,
-          Math.floor(
-            ageMilliseconds / 1000,
-          ),
-        ),
+          /**
+           * زمان واقعی بازار به فرمت ISO.
+           */
+          marketTimestamp:
+            freshness.marketTimestamp?.toISOString() ??
+            null,
 
-        isStale:
-          ageMilliseconds >
-          staleAfterMilliseconds,
+          /**
+           * زمان اجرای درخواست و دریافت پاسخ API.
+           * این فیلد معیار تازگی بازار نیست.
+           */
+          fetchedAt:
+            price.fetchedAt.toISOString(),
 
-        lastError:
-          price.lastError,
-      };
-    }),
+          lastSuccessAt:
+            price.lastSuccessAt.toISOString(),
+
+          /**
+           * سن نرخ براساس sourceTimeUnix.
+           * در صورت نبود timestamp معتبر، null است.
+           */
+          ageSeconds:
+            freshness.ageSeconds,
+
+          isStale:
+            freshness.isStale,
+
+          freshnessReason:
+            freshness.reason,
+
+          lastError:
+            price.lastError,
+        };
+      },
+    ),
   };
 }

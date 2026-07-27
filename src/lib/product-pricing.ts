@@ -180,24 +180,16 @@ function scheduleMetalPriceRefresh() {
   }
 }
 
+/**
+ * نتیجه تازگی از sourceTimeUnix در
+ * product-pricing-core محاسبه شده است.
+ */
 function isResultRateStale(
   result: ProductPriceResult,
 ): boolean {
-  if (
-    !result.liveRate
-  ) {
-    return false;
-  }
-
-  const maximumAgeSeconds =
-    result.policy
-      .staleAfterMinutes *
-    60;
-
   return (
-    result.liveRate
-      .ageSeconds >
-    maximumAgeSeconds
+    result.liveRate?.isStale ??
+    false
   );
 }
 

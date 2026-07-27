@@ -1,5 +1,11 @@
-const TROY_OUNCE_GRAMS = 31.1034768;
-const REQUEST_TIMEOUT_MS = 15_000;
+const TROY_OUNCE_GRAMS =
+  31.1034768;
+
+const REQUEST_TIMEOUT_MS =
+  15_000;
+
+const UNIX_MILLISECONDS_THRESHOLD =
+  100_000_000_000;
 
 export type MetalMaterial =
   | "GOLD"
@@ -24,6 +30,12 @@ export type FetchedMetalRate = {
   >;
 };
 
+export type RequiredSourceTimestamp = {
+  sourceDate: string | null;
+  sourceTime: string | null;
+  sourceTimeUnix: number | null;
+};
+
 function getRequiredApiKey() {
   const apiKey =
     process.env.BRS_API_KEY?.trim();
@@ -39,22 +51,28 @@ function getRequiredApiKey() {
 
 function buildApiUrl(
   baseUrl: string,
+
   parameters: Record<
     string,
     string
   > = {},
 ) {
-  const url = new URL(baseUrl);
+  const url =
+    new URL(baseUrl);
 
   url.searchParams.set(
     "key",
     getRequiredApiKey(),
   );
 
-  for (const [key, value] of Object.entries(
-    parameters,
-  )) {
-    url.searchParams.set(key, value);
+  for (
+    const [key, value] of
+    Object.entries(parameters)
+  ) {
+    url.searchParams.set(
+      key,
+      value,
+    );
   }
 
   return url;
@@ -67,21 +85,28 @@ async function fetchJson(
   const controller =
     new AbortController();
 
-  const timeout = setTimeout(() => {
-    controller.abort();
-  }, REQUEST_TIMEOUT_MS);
+  const timeout =
+    setTimeout(() => {
+      controller.abort();
+    }, REQUEST_TIMEOUT_MS);
 
   try {
-    const response = await fetch(url, {
-      method: "GET",
+    const response =
+      await fetch(url, {
+        method:
+          "GET",
 
-      headers: {
-        Accept: "application/json",
-      },
+        headers: {
+          Accept:
+            "application/json",
+        },
 
-      cache: "no-store",
-      signal: controller.signal,
-    });
+        cache:
+          "no-store",
+
+        signal:
+          controller.signal,
+      });
 
     const responseText =
       await response.text();
@@ -93,7 +118,9 @@ async function fetchJson(
     }
 
     try {
-      return JSON.parse(responseText);
+      return JSON.parse(
+        responseText,
+      );
     } catch {
       throw new Error(
         `${label}: پاسخ API معتبر نیست.`,
@@ -102,7 +129,8 @@ async function fetchJson(
   } catch (error) {
     if (
       error instanceof Error &&
-      error.name === "AbortError"
+      error.name ===
+        "AbortError"
     ) {
       throw new Error(
         `${label}: زمان دریافت پاسخ بیشتر از ۱۵ ثانیه شد.`,
@@ -111,7 +139,9 @@ async function fetchJson(
 
     throw error;
   } finally {
-    clearTimeout(timeout);
+    clearTimeout(
+      timeout,
+    );
   }
 }
 
@@ -119,10 +149,13 @@ function convertIranianPriceToToman(
   price: unknown,
   unit: unknown,
 ) {
-  const numericPrice = Number(price);
+  const numericPrice =
+    Number(price);
 
   if (
-    !Number.isFinite(numericPrice) ||
+    !Number.isFinite(
+      numericPrice,
+    ) ||
     numericPrice <= 0
   ) {
     throw new Error(
@@ -130,22 +163,33 @@ function convertIranianPriceToToman(
     );
   }
 
-  const normalizedUnit = String(
-    unit ?? "",
-  )
-    .trim()
-    .replace(/\s+/g, "");
+  const normalizedUnit =
+    String(
+      unit ?? "",
+    )
+      .trim()
+      .replace(
+        /\s+/g,
+        "",
+      );
 
   if (
-    normalizedUnit.includes("تومان")
+    normalizedUnit.includes(
+      "تومان",
+    )
   ) {
     return numericPrice;
   }
 
   if (
-    normalizedUnit.includes("ریال")
+    normalizedUnit.includes(
+      "ریال",
+    )
   ) {
-    return numericPrice / 10;
+    return (
+      numericPrice /
+      10
+    );
   }
 
   throw new Error(
@@ -155,47 +199,175 @@ function convertIranianPriceToToman(
 
 function normalizeUnixTime(
   value: unknown,
-) {
-  const numericValue = Number(value);
+): number | null {
+  const numericValue =
+    Number(value);
 
-  return Number.isInteger(numericValue) &&
+  return (
+    Number.isInteger(
+      numericValue,
+    ) &&
     numericValue > 0
+  )
     ? numericValue
     : null;
+}
+
+function unixTimeToMilliseconds(
+  value: number,
+): number {
+  if (
+    value >=
+    UNIX_MILLISECONDS_THRESHOLD
+  ) {
+    return value;
+  }
+
+  return (
+    value *
+    1000
+  );
+}
+
+function getOptionalString(
+  value: unknown,
+): string | null {
+  return typeof value ===
+    "string"
+    ? value
+    : null;
+}
+
+/**
+ * نرخ ترکیبی فقط به اندازه قدیمی‌ترین
+ * ورودی موردنیاز خود تازه است.
+ *
+ * نرخ نقره از قیمت جهانی نقره و نرخ دلار
+ * ساخته می‌شود؛ پس timestamp نهایی باید
+ * قدیمی‌ترین timestamp این دو ورودی باشد.
+ */
+export function getOldestRequiredSourceTimestamp(
+  firstSource: Record<
+    string,
+    unknown
+  >,
+
+  secondSource: Record<
+    string,
+    unknown
+  >,
+): RequiredSourceTimestamp {
+  const firstSourceTimeUnix =
+    normalizeUnixTime(
+      firstSource.time_unix,
+    );
+
+  const secondSourceTimeUnix =
+    normalizeUnixTime(
+      secondSource.time_unix,
+    );
+
+  if (
+    firstSourceTimeUnix ===
+      null ||
+    secondSourceTimeUnix ===
+      null
+  ) {
+    return {
+      sourceDate:
+        null,
+
+      sourceTime:
+        null,
+
+      sourceTimeUnix:
+        null,
+    };
+  }
+
+  const firstTimestampMilliseconds =
+    unixTimeToMilliseconds(
+      firstSourceTimeUnix,
+    );
+
+  const secondTimestampMilliseconds =
+    unixTimeToMilliseconds(
+      secondSourceTimeUnix,
+    );
+
+  const useFirstSource =
+    firstTimestampMilliseconds <=
+    secondTimestampMilliseconds;
+
+  const selectedSource =
+    useFirstSource
+      ? firstSource
+      : secondSource;
+
+  return {
+    sourceDate:
+      getOptionalString(
+        selectedSource.date,
+      ),
+
+    sourceTime:
+      getOptionalString(
+        selectedSource.time,
+      ),
+
+    sourceTimeUnix:
+      useFirstSource
+        ? firstSourceTimeUnix
+        : secondSourceTimeUnix,
+  };
 }
 
 export async function fetchBrsMetalRates(): Promise<
   FetchedMetalRate[]
 > {
   const goldApiUrl =
-    process.env.BRS_GOLD_API_URL?.trim() ||
+    process.env
+      .BRS_GOLD_API_URL
+      ?.trim() ||
     "https://Api.BrsApi.ir/Market/Gold_Currency_Pro.php";
 
   const commodityApiUrl =
-    process.env.BRS_COMMODITY_API_URL?.trim() ||
+    process.env
+      .BRS_COMMODITY_API_URL
+      ?.trim() ||
     "https://Api.BrsApi.ir/Market/Commodity.php";
 
   const goldSymbol =
-    process.env.BRS_GOLD_SYMBOL?.trim() ||
+    process.env
+      .BRS_GOLD_SYMBOL
+      ?.trim() ||
     "IR_GOLD_18K";
 
   const usdSymbol =
-    process.env.BRS_USD_SYMBOL?.trim() ||
+    process.env
+      .BRS_USD_SYMBOL
+      ?.trim() ||
     "USD";
 
   const silverSymbol =
-    process.env.BRS_SILVER_SYMBOL?.trim() ||
+    process.env
+      .BRS_SILVER_SYMBOL
+      ?.trim() ||
     "XAGUSD";
 
-  const marketUrl = buildApiUrl(
-    goldApiUrl,
-    {
-      section: "gold,currency",
-    },
-  );
+  const marketUrl =
+    buildApiUrl(
+      goldApiUrl,
+      {
+        section:
+          "gold,currency",
+      },
+    );
 
   const commodityUrl =
-    buildApiUrl(commodityApiUrl);
+    buildApiUrl(
+      commodityApiUrl,
+    );
 
   const [
     marketResponse,
@@ -213,28 +385,43 @@ export async function fetchBrsMetalRates(): Promise<
   ]);
 
   if (
-    marketResponse?.successful ===
+    marketResponse
+      ?.successful ===
     false
   ) {
     throw new Error(
-      marketResponse.message_error ||
+      marketResponse
+        .message_error ||
         "API طلا پاسخ ناموفق برگرداند.",
     );
   }
 
   const goldItems =
-    marketResponse?.gold?.type;
+    marketResponse
+      ?.gold
+      ?.type;
 
-  if (!Array.isArray(goldItems)) {
+  if (
+    !Array.isArray(
+      goldItems,
+    )
+  ) {
     throw new Error(
       "فهرست نرخ‌های طلا در پاسخ API پیدا نشد.",
     );
   }
 
-  const gold18 = goldItems.find(
-    (item: Record<string, unknown>) =>
-      item.symbol === goldSymbol,
-  );
+  const gold18 =
+    goldItems.find(
+      (
+        item: Record<
+          string,
+          unknown
+        >,
+      ) =>
+        item.symbol ===
+        goldSymbol,
+    );
 
   if (!gold18) {
     throw new Error(
@@ -243,20 +430,31 @@ export async function fetchBrsMetalRates(): Promise<
   }
 
   const currencyItems =
-    marketResponse?.currency?.free;
+    marketResponse
+      ?.currency
+      ?.free;
 
   if (
-    !Array.isArray(currencyItems)
+    !Array.isArray(
+      currencyItems,
+    )
   ) {
     throw new Error(
       "فهرست نرخ ارز در پاسخ API پیدا نشد.",
     );
   }
 
-  const usd = currencyItems.find(
-    (item: Record<string, unknown>) =>
-      item.symbol === usdSymbol,
-  );
+  const usd =
+    currencyItems.find(
+      (
+        item: Record<
+          string,
+          unknown
+        >,
+      ) =>
+        item.symbol ===
+        usdSymbol,
+    );
 
   if (!usd) {
     throw new Error(
@@ -265,10 +463,13 @@ export async function fetchBrsMetalRates(): Promise<
   }
 
   const preciousMetals =
-    commodityResponse?.metal_precious;
+    commodityResponse
+      ?.metal_precious;
 
   if (
-    !Array.isArray(preciousMetals)
+    !Array.isArray(
+      preciousMetals,
+    )
   ) {
     throw new Error(
       "فهرست فلزات گران‌بها در پاسخ API پیدا نشد.",
@@ -307,9 +508,10 @@ export async function fetchBrsMetalRates(): Promise<
       usd.unit,
     );
 
-  const silverOunceUsd = Number(
-    silverOunce.price,
-  );
+  const silverOunceUsd =
+    Number(
+      silverOunce.price,
+    );
 
   if (
     !Number.isFinite(
@@ -324,38 +526,51 @@ export async function fetchBrsMetalRates(): Promise<
 
   const silverPricePerGramToman =
     Math.round(
-      (silverOunceUsd *
-        usdPriceToman) /
+      (
+        silverOunceUsd *
+        usdPriceToman
+      ) /
         TROY_OUNCE_GRAMS,
+    );
+
+  const silverRateTimestamp =
+    getOldestRequiredSourceTimestamp(
+      silverOunce,
+      usd,
     );
 
   return [
     {
-      material: "GOLD",
+      material:
+        "GOLD",
 
       pricePerGramToman:
         goldPricePerGramToman,
 
-      // طلای ۱۸ عیار معادل خلوص ۷۵۰
-      referencePurity: 750,
+      referencePurity:
+        750,
 
-      source: "BRS_API",
-      sourceSymbol: goldSymbol,
-      sourceUnit: String(
-        gold18.unit ?? "تومان",
-      ),
+      source:
+        "BRS_API",
+
+      sourceSymbol:
+        goldSymbol,
+
+      sourceUnit:
+        String(
+          gold18.unit ??
+            "تومان",
+        ),
 
       sourceDate:
-        typeof gold18.date ===
-        "string"
-          ? gold18.date
-          : null,
+        getOptionalString(
+          gold18.date,
+        ),
 
       sourceTime:
-        typeof gold18.time ===
-        "string"
-          ? gold18.time
-          : null,
+        getOptionalString(
+          gold18.time,
+        ),
 
       sourceTimeUnix:
         normalizeUnixTime(
@@ -363,44 +578,55 @@ export async function fetchBrsMetalRates(): Promise<
         ),
 
       rawPayload: {
-        gold: gold18,
+        gold:
+          gold18,
       },
     },
 
     {
-      material: "SILVER",
+      material:
+        "SILVER",
 
       pricePerGramToman:
         silverPricePerGramToman,
 
-      // نرخ محاسبه‌شده برای نقره خالص ۹۹۹
-      referencePurity: 999,
+      referencePurity:
+        999,
 
-      source: "BRS_API",
-      sourceSymbol: silverSymbol,
-      sourceUnit: "تومان/گرم",
+      source:
+        "BRS_API",
+
+      sourceSymbol:
+        silverSymbol,
+
+      sourceUnit:
+        "تومان/گرم",
 
       sourceDate:
-        typeof silverOunce.date ===
-        "string"
-          ? silverOunce.date
-          : null,
+        silverRateTimestamp
+          .sourceDate,
 
       sourceTime:
-        typeof silverOunce.time ===
-        "string"
-          ? silverOunce.time
-          : null,
+        silverRateTimestamp
+          .sourceTime,
 
       sourceTimeUnix:
-        normalizeUnixTime(
-          silverOunce.time_unix,
-        ),
+        silverRateTimestamp
+          .sourceTimeUnix,
 
       rawPayload: {
         silverOunce,
+
         usd,
+
         usdPriceToman,
+
+        timestampPolicy:
+          "OLDEST_REQUIRED_SOURCE",
+
+        selectedSourceTimeUnix:
+          silverRateTimestamp
+            .sourceTimeUnix,
       },
     },
   ];
