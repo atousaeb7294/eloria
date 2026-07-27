@@ -1,15 +1,22 @@
 import "dotenv/config";
 
-import { PrismaPg } from "@prisma/adapter-pg";
+import {
+  PrismaPg,
+} from "@prisma/adapter-pg";
 
-import { PrismaClient } from "@/generated/prisma/client";
+import {
+  PrismaClient,
+} from "@/generated/prisma/client";
 
-const globalForPrisma = globalThis as unknown as {
-  prisma: PrismaClient | undefined;
-};
+const globalForPrisma =
+  globalThis as unknown as {
+    prisma:
+      | PrismaClient
+      | undefined;
+  };
 
 /**
- * آدرس اصلی دیتابیس را از متغیر محیطی دریافت می‌کند.
+ * دریافت آدرس دیتابیس از متغیر محیطی.
  */
 function getDatabaseUrl(): string {
   const databaseUrl =
@@ -25,19 +32,20 @@ function getDatabaseUrl(): string {
 }
 
 /**
- * پارامترهای SSL داخل Connection String می‌توانند
- * تنظیم ssl در pg را بازنویسی کنند.
+ * آماده‌سازی آدرس دیتابیس برای اتصال Runtime.
  *
- * بنابراین آن‌ها را از نسخه Runtime آدرس حذف می‌کنیم
- * و SSL را مستقیماً در PrismaPg تنظیم می‌کنیم.
+ * تنظیمات SSL از URL حذف می‌شوند و مستقیماً
+ * در PrismaPg اعمال خواهند شد.
  */
 function getRuntimeDatabaseUrl(): string {
-  const databaseUrl = getDatabaseUrl();
+  const databaseUrl =
+    getDatabaseUrl();
 
   let parsedUrl: URL;
 
   try {
-    parsedUrl = new URL(databaseUrl);
+    parsedUrl =
+      new URL(databaseUrl);
   } catch {
     throw new Error(
       "ساختار DATABASE_URL معتبر نیست.",
@@ -54,7 +62,10 @@ function getRuntimeDatabaseUrl(): string {
     "sslaccept",
   ];
 
-  for (const parameter of sslParameters) {
+  for (
+    const parameter of
+    sslParameters
+  ) {
     parsedUrl.searchParams.delete(
       parameter,
     );
@@ -64,57 +75,56 @@ function getRuntimeDatabaseUrl(): string {
 }
 
 /**
- * یک Prisma Client با Connection Pool محدود و
- * مناسب Supabase Session Pooler می‌سازد.
+ * ساخت Prisma Client با Connection Pool محدود.
  */
 function createPrismaClient(): PrismaClient {
-  const adapter = new PrismaPg({
-    connectionString:
-      getRuntimeDatabaseUrl(),
+  const adapter =
+    new PrismaPg({
+      connectionString:
+        getRuntimeDatabaseUrl(),
 
-    /*
-     * Supabase از TLS استفاده می‌کند.
-     *
-     * در محیط توسعه فعلی اعتبارسنجی زنجیره گواهی
-     * غیرفعال شده تا خطای self-signed certificate
-     * ایجاد نشود.
-     */
-    ssl: {
-      rejectUnauthorized: false,
-    },
+      /**
+       * اتصال رمزگذاری‌شده به Supabase.
+       */
+      ssl: {
+        rejectUnauthorized:
+          false,
+      },
 
-    /*
-     * تعداد اتصال محدود برای جلوگیری از
-     * اشغال ظرفیت Supabase Session Pooler.
-     */
-    max: 2,
+      /**
+       * حداکثر تعداد اتصال هم‌زمان.
+       *
+       * مقدار کم، از پرشدن ظرفیت Supabase Pooler
+       * جلوگیری می‌کند.
+       */
+      max: 2,
 
-    /*
-     * حداکثر زمان انتظار برای ایجاد اتصال.
-     */
-    connectionTimeoutMillis: 60_000,
+      /**
+       * حداکثر زمان انتظار برای ایجاد اتصال جدید.
+       */
+      connectionTimeoutMillis:
+        60_000,
 
-    /*
-     * اتصال بلااستفاده پس از ۳۰ ثانیه آزاد شود.
-     */
-    idleTimeoutMillis: 30_000,
+      /**
+       * اتصال بدون استفاده پس از ۳۰ ثانیه آزاد شود.
+       */
+      idleTimeoutMillis:
+        30_000,
 
-    /*
-     * حفظ اتصال TCP در زمان بیکاری کوتاه.
-     */
-    keepAlive: true,
+      /**
+       * زنده نگه‌داشتن اتصال TCP.
+       */
+      keepAlive: true,
 
-    keepAliveInitialDelayMillis: 10_000,
+      keepAliveInitialDelayMillis:
+        10_000,
 
-    /*
-     * حداکثر زمان اجرای Query و Statement.
-     */
-    query_timeout: 60_000,
-
-    statement_timeout: 60_000,
-
-    application_name: "neweloria",
-  });
+      /**
+       * نام اتصال برای تشخیص در Supabase.
+       */
+      application_name:
+        "neweloria",
+    });
 
   return new PrismaClient({
     adapter,
@@ -122,21 +132,28 @@ function createPrismaClient(): PrismaClient {
     log:
       process.env.NODE_ENV ===
       "development"
-        ? ["warn", "error"]
-        : ["error"],
+        ? [
+            "warn",
+            "error",
+          ]
+        : [
+            "error",
+          ],
   });
 }
 
+/**
+ * در حالت Development فقط یک Prisma Client
+ * و یک Connection Pool ساخته می‌شود.
+ */
 export const prisma =
   globalForPrisma.prisma ??
   createPrismaClient();
 
-/*
- * هنگام Hot Reload در Next.js فقط یک
- * PrismaClient و یک Connection Pool باقی می‌ماند.
- */
 if (
-  process.env.NODE_ENV !== "production"
+  process.env.NODE_ENV !==
+  "production"
 ) {
-  globalForPrisma.prisma = prisma;
+  globalForPrisma.prisma =
+    prisma;
 }

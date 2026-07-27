@@ -34,9 +34,24 @@ export class ProductPricingError extends Error {
   }
 }
 
-type GetProductPriceInput = {
+export type GetProductPriceInput = {
+  /**
+   * شناسه متنی محصول.
+   */
   slug: string;
+
+  /**
+   * شناسه تنوع محصول.
+   */
   variantId?: string | null;
+
+  /**
+   * اجازه استفاده از آخرین نرخ ذخیره‌شده
+   * فقط برای نمایش صفحات محصول.
+   *
+   * در ثبت سفارش و پرداخت باید false باقی بماند.
+   */
+  allowStaleRate?: boolean;
 };
 
 export type ProductPriceResult = {
@@ -139,6 +154,7 @@ function getAgeSeconds(
 export async function getProductLivePrice({
   slug,
   variantId,
+  allowStaleRate = false,
 }: GetProductPriceInput): Promise<ProductPriceResult> {
   const normalizedSlug =
     assertValidSlug(slug);
@@ -423,9 +439,19 @@ export async function getProductLivePrice({
   const maximumAgeSeconds =
     policy.staleAfterMinutes * 60;
 
-  if (
+  const isMetalPriceStale =
     rateAgeSeconds >
-    maximumAgeSeconds
+    maximumAgeSeconds;
+
+  /**
+   * نرخ قدیمی برای نمایش صفحه قابل استفاده است.
+   *
+   * پرداخت، ثبت سفارش و APIهای حساس همچنان
+   * نرخ منقضی‌شده را رد می‌کنند.
+   */
+  if (
+    isMetalPriceStale &&
+    !allowStaleRate
   ) {
     throw new ProductPricingError(
       "METAL_PRICE_STALE",

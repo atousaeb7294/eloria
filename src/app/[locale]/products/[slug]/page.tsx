@@ -52,7 +52,7 @@ import {
 
 import {
   ProductPricingError,
-  getProductLivePrice,
+  getProductDisplayPrice,
 } from "@/lib/product-pricing";
 
 import {
@@ -277,7 +277,7 @@ export default async function ProductPage({
 
   try {
     result =
-      await getProductLivePrice({
+      await getProductDisplayPrice({
         slug,
       });
   } catch (error) {

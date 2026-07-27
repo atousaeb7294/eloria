@@ -5,7 +5,7 @@ import {
 } from "@/lib/catalog";
 
 import {
-  getProductLivePrice,
+  getProductDisplayPrice,
 } from "@/lib/product-pricing";
 
 export type PricedCatalogFilters =
@@ -160,7 +160,7 @@ async function mapWithConcurrency<
  * دریافت محصولات و اعمال بازه قیمت نهایی.
  *
  * نکته مهم:
- * تابع getProductLivePrice جنس محصول را از دیتابیس می‌خواند.
+ * تابع getProductDisplayPrice جنس محصول را از دیتابیس می‌خواند.
  *
  * بنابراین:
  * - محصول GOLD با نرخ و PricingPolicy طلا محاسبه می‌شود.
@@ -250,7 +250,7 @@ export async function getPricedProductsCatalog(
       async (product) => {
         try {
           const result =
-            await getProductLivePrice({
+            await getProductDisplayPrice({
               slug:
                 product.slug,
             });

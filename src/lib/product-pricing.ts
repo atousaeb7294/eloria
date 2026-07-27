@@ -1,10 +1,15 @@
 import {
+  after,
+} from "next/server";
+
+import {
   syncMetalPrices,
 } from "@/lib/metal-price-sync";
 
 import {
   ProductPricingError,
   getProductLivePrice as getProductLivePriceCore,
+  type GetProductPriceInput,
   type ProductPriceResult,
   type ProductPricingErrorCode,
 } from "@/lib/product-pricing-core";
@@ -14,116 +19,263 @@ export {
 };
 
 export type {
+  GetProductPriceInput,
   ProductPriceResult,
   ProductPricingErrorCode,
 };
 
-type GetProductPriceInput = {
-  slug: string;
-  variantId?: string | null;
-};
-
-/**
- * این Promise به‌صورت سراسری نگهداری می‌شود تا در زمان
- * منقضی‌شدن نرخ، چند درخواست هم‌زمان باعث اجرای چندباره
- * API دریافت نرخ فلز نشوند.
- */
 declare global {
-  var __eloriaMetalPriceSyncPromise:
+  var __eloriaMetalPriceRefreshPromise:
     | Promise<void>
     | undefined;
 }
 
-/**
- * بررسی می‌کند که خطای فعلی مربوط به نبودن
- * یا منقضی‌شدن نرخ فلز است.
- */
-function shouldRefreshMetalPrices(
+function sleep(
+  milliseconds: number,
+): Promise<void> {
+  return new Promise(
+    (resolve) => {
+      setTimeout(
+        resolve,
+        milliseconds,
+      );
+    },
+  );
+}
+
+function isTemporaryDatabaseError(
   error: unknown,
-): error is ProductPricingError {
+): boolean {
+  const message =
+    error instanceof Error
+      ? error.message.toLowerCase()
+      : String(error).toLowerCase();
+
   return (
-    error instanceof
-      ProductPricingError &&
-    (
-      error.code ===
-        "METAL_PRICE_STALE" ||
-      error.code ===
-        "METAL_PRICE_NOT_FOUND"
+    message.includes(
+      "connection terminated unexpectedly",
+    ) ||
+    message.includes(
+      "query read timeout",
+    ) ||
+    message.includes(
+      "eauthtimeout",
+    ) ||
+    message.includes(
+      "timeout while waiting",
+    ) ||
+    message.includes(
+      "connection closed",
+    ) ||
+    message.includes(
+      "connection reset",
     )
   );
 }
 
-/**
- * نرخ طلا و نقره را فقط یک بار همگام‌سازی می‌کند.
- *
- * زمانی که چند درخواست هم‌زمان وارد شوند،
- * همه درخواست‌ها منتظر یک Promise مشترک می‌مانند.
- */
-async function refreshMetalPrices(): Promise<void> {
-  const runningSync =
+async function refreshMetalPricesWithRetry(): Promise<void> {
+  const runningRefresh =
     globalThis
-      .__eloriaMetalPriceSyncPromise;
+      .__eloriaMetalPriceRefreshPromise;
 
-  if (runningSync) {
-    await runningSync;
+  if (runningRefresh) {
+    await runningRefresh;
 
     return;
   }
 
-  const newSync =
-    syncMetalPrices()
-      .then(() => undefined)
-      .finally(() => {
-        globalThis
-          .__eloriaMetalPriceSyncPromise =
-          undefined;
-      });
+  const refreshPromise =
+    (
+      async () => {
+        const maximumAttempts =
+          3;
+
+        let lastError:
+          unknown = null;
+
+        for (
+          let attempt = 1;
+          attempt <=
+          maximumAttempts;
+          attempt += 1
+        ) {
+          try {
+            await syncMetalPrices();
+
+            console.info(
+              "[Eloria Pricing] Metal prices refreshed successfully.",
+            );
+
+            return;
+          } catch (error) {
+            lastError =
+              error;
+
+            const retryAllowed =
+              isTemporaryDatabaseError(
+                error,
+              );
+
+            console.error(
+              `[Eloria Pricing] Refresh attempt ${attempt} failed.`,
+              error,
+            );
+
+            if (
+              !retryAllowed ||
+              attempt ===
+                maximumAttempts
+            ) {
+              throw error;
+            }
+
+            await sleep(
+              attempt * 1_500,
+            );
+          }
+        }
+
+        throw lastError;
+      }
+    )().finally(() => {
+      globalThis
+        .__eloriaMetalPriceRefreshPromise =
+        undefined;
+    });
 
   globalThis
-    .__eloriaMetalPriceSyncPromise =
-    newSync;
+    .__eloriaMetalPriceRefreshPromise =
+    refreshPromise;
 
-  await newSync;
+  await refreshPromise;
+}
+
+function scheduleMetalPriceRefresh() {
+  const refreshTask =
+    async () => {
+      try {
+        await refreshMetalPricesWithRetry();
+      } catch (error) {
+        /**
+         * شکست نوسازی نرخ نباید صفحه محصول
+         * یا فهرست محصولات را از دسترس خارج کند.
+         */
+        console.error(
+          "[Eloria Pricing] Background metal price refresh failed.",
+          error,
+        );
+      }
+    };
+
+  try {
+    after(
+      refreshTask,
+    );
+  } catch {
+    /**
+     * این حالت برای اجرای کد خارج از Request
+     * مانند بعضی اسکریپت‌های محلی است.
+     */
+    void refreshTask();
+  }
+}
+
+function isResultRateStale(
+  result: ProductPriceResult,
+): boolean {
+  if (
+    !result.liveRate
+  ) {
+    return false;
+  }
+
+  const maximumAgeSeconds =
+    result.policy
+      .staleAfterMinutes *
+    60;
+
+  return (
+    result.liveRate
+      .ageSeconds >
+    maximumAgeSeconds
+  );
 }
 
 /**
- * دریافت قیمت زنده محصول همراه با نوسازی خودکار نرخ فلز.
+ * تابع سخت‌گیرانه قیمت‌گذاری.
  *
- * روند اجرا:
+ * برای موارد حساس مانند:
+ * - ثبت سفارش
+ * - پرداخت
+ * - صدور پیش‌فاکتور
+ * - API قیمت معتبر
  *
- * 1. قیمت محصول با نرخ فعلی دیتابیس محاسبه می‌شود.
- * 2. در صورت معتبر بودن نرخ، نتیجه فوراً برگردانده می‌شود.
- * 3. در صورت منقضی یا خالی بودن نرخ، نرخ‌های جدید دریافت می‌شوند.
- * 4. نرخ طلا و نقره در دیتابیس ذخیره می‌شوند.
- * 5. محاسبه محصول فقط یک بار دیگر تکرار می‌شود.
- *
- * خطاهای دیگر، مانند نامعتبر بودن محصول، وزن یا عیار،
- * بدون تغییر به بخش فراخواننده ارسال می‌شوند.
+ * نرخ منقضی‌شده را قبول نمی‌کند.
  */
 export async function getProductLivePrice(
   input: GetProductPriceInput,
 ): Promise<ProductPriceResult> {
+  return getProductLivePriceCore({
+    ...input,
+
+    allowStaleRate:
+      false,
+  });
+}
+
+/**
+ * تابع مخصوص نمایش محصول.
+ *
+ * صفحه با آخرین نرخ ذخیره‌شده باز می‌شود.
+ * در صورت منقضی‌بودن نرخ، نوسازی بعد از
+ * ارسال پاسخ و بدون مسدودکردن صفحه انجام می‌شود.
+ */
+export async function getProductDisplayPrice(
+  input: GetProductPriceInput,
+): Promise<ProductPriceResult> {
   try {
-    return await getProductLivePriceCore(
-      input,
-    );
-  } catch (error) {
+    const result =
+      await getProductLivePriceCore({
+        ...input,
+
+        allowStaleRate:
+          true,
+      });
+
     if (
-      !shouldRefreshMetalPrices(
-        error,
+      isResultRateStale(
+        result,
       )
+    ) {
+      scheduleMetalPriceRefresh();
+    }
+
+    return result;
+  } catch (error) {
+    const rateDoesNotExist =
+      error instanceof
+        ProductPricingError &&
+      error.code ===
+        "METAL_PRICE_NOT_FOUND";
+
+    if (
+      !rateDoesNotExist
     ) {
       throw error;
     }
 
-    console.info(
-      "[Eloria Pricing] Metal rate is stale or missing. Refreshing automatically.",
-    );
+    /**
+     * اگر هیچ نرخی در دیتابیس وجود نداشته باشد،
+     * یک نوسازی مستقیم ضروری است؛ چون نرخ قبلی
+     * برای نمایش در اختیار نداریم.
+     */
+    await refreshMetalPricesWithRetry();
 
-    await refreshMetalPrices();
+    return getProductLivePriceCore({
+      ...input,
 
-    return getProductLivePriceCore(
-      input,
-    );
+      allowStaleRate:
+        true,
+    });
   }
 }
