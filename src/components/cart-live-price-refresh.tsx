@@ -30,6 +30,15 @@ const VISIBILITY_REFRESH_INTERVAL_MS =
 const REQUEST_TIMEOUT_MS =
   20_000;
 
+type ApiResponse = {
+  successful?: unknown;
+  refreshedAt?: unknown;
+  checkedAt?: unknown;
+  message?: unknown;
+  hasStaleRates?: unknown;
+  staleMaterials?: unknown;
+};
+
 function dispatchLivePriceStatus(
   detail:
     CartLivePriceEventDetail,
@@ -42,6 +51,106 @@ function dispatchLivePriceStatus(
       },
     ),
   );
+}
+
+function isRecord(
+  value: unknown,
+): value is Record<
+  string,
+  unknown
+> {
+  return (
+    typeof value ===
+      "object" &&
+    value !== null
+  );
+}
+
+function getResponseMessage(
+  data: ApiResponse,
+  fallback: string,
+): string {
+  return typeof data.message ===
+    "string"
+    ? data.message
+    : fallback;
+}
+
+function getResponseTimestamp(
+  data: ApiResponse,
+): string {
+  if (
+    typeof data.checkedAt ===
+    "string"
+  ) {
+    return data.checkedAt;
+  }
+
+  if (
+    typeof data.refreshedAt ===
+    "string"
+  ) {
+    return data.refreshedAt;
+  }
+
+  return new Date()
+    .toISOString();
+}
+
+function translateMaterial(
+  material: string,
+): string {
+  if (
+    material ===
+    "GOLD"
+  ) {
+    return "طلا";
+  }
+
+  if (
+    material ===
+    "SILVER"
+  ) {
+    return "نقره";
+  }
+
+  return material;
+}
+
+function getStaleRateMessage(
+  data: ApiResponse,
+): string {
+  if (
+    !Array.isArray(
+      data.staleMaterials,
+    )
+  ) {
+    return "نرخ بازار منقضی شده است. خرید تا دریافت نرخ جدید موقتاً متوقف است.";
+  }
+
+  const materials =
+    data.staleMaterials
+      .filter(
+        (
+          material,
+        ): material is string =>
+          typeof material ===
+          "string",
+      )
+      .map(
+        translateMaterial,
+      );
+
+  if (
+    materials.length ===
+    0
+  ) {
+    return "نرخ بازار منقضی شده است. خرید تا دریافت نرخ جدید موقتاً متوقف است.";
+  }
+
+  return `نرخ ${materials.join(
+    " و ",
+  )} منقضی شده است. خرید تا دریافت نرخ جدید موقتاً متوقف است.`;
 }
 
 export function CartLivePriceRefresh() {
@@ -68,7 +177,8 @@ export function CartLivePriceRefresh() {
         readCartItems();
 
       if (
-        cartItems.length === 0
+        cartItems.length ===
+        0
       ) {
         return;
       }
@@ -118,7 +228,7 @@ export function CartLivePriceRefresh() {
             },
           );
 
-        const data: unknown =
+        const rawData: unknown =
           await response
             .json()
             .catch(
@@ -126,53 +236,77 @@ export function CartLivePriceRefresh() {
             );
 
         if (
-          !response.ok ||
-          typeof data !==
-            "object" ||
-          data === null ||
-          !(
-            "successful" in
-            data
-          ) ||
-          data.successful !==
-            true
+          !isRecord(
+            rawData,
+          )
         ) {
-          let message =
-            "به‌روزرسانی نرخ زنده انجام نشد.";
-
-          if (
-            typeof data ===
-              "object" &&
-            data !== null &&
-            "message" in
-              data &&
-            typeof data.message ===
-              "string"
-          ) {
-            message =
-              data.message;
-          }
-
           dispatchLivePriceStatus({
             status:
               "failed",
 
-            message,
+            message:
+              "پاسخ بررسی نرخ بازار معتبر نیست.",
+          });
+
+          return;
+        }
+
+        const data:
+          ApiResponse =
+          rawData;
+
+        if (
+          !response.ok ||
+          data.successful !==
+            true
+        ) {
+          dispatchLivePriceStatus({
+            status:
+              "failed",
+
+            message:
+              getResponseMessage(
+                data,
+                "بررسی نرخ زنده انجام نشد.",
+              ),
+          });
+
+          return;
+        }
+
+        /*
+         * درخواست با موفقیت بررسی شده است؛
+         * پس زمان آخرین بررسی محلی ثبت می‌شود،
+         * حتی اگر نرخ بازار منقضی باشد.
+         */
+        lastRefreshAtRef.current =
+          Date.now();
+
+        /*
+         * پاسخ موفق HTTP الزاماً به معنی
+         * معتبر بودن نرخ بازار نیست.
+         */
+        if (
+          data.hasStaleRates ===
+          true
+        ) {
+          dispatchLivePriceStatus({
+            status:
+              "failed",
+
+            message:
+              getStaleRateMessage(
+                data,
+              ),
           });
 
           return;
         }
 
         const refreshedAt =
-          "refreshedAt" in
-              data &&
-          typeof data.refreshedAt ===
-            "string"
-            ? data.refreshedAt
-            : new Date().toISOString();
-
-        lastRefreshAtRef.current =
-          Date.now();
+          getResponseTimestamp(
+            data,
+          );
 
         dispatchLivePriceStatus({
           status:
@@ -181,6 +315,10 @@ export function CartLivePriceRefresh() {
           refreshedAt,
         });
 
+        /*
+         * فقط وقتی نرخ‌ها معتبرند،
+         * محاسبه قیمت سبد دوباره انجام می‌شود.
+         */
         window.dispatchEvent(
           new CustomEvent(
             CART_UPDATED_EVENT,
@@ -204,14 +342,14 @@ export function CartLivePriceRefresh() {
               "failed",
 
             message:
-              "زمان دریافت نرخ زنده بیش از حد طول کشید.",
+              "زمان دریافت وضعیت نرخ بازار بیش از حد طول کشید.",
           });
 
           return;
         }
 
         console.error(
-          "[Eloria Cart] Unable to refresh live prices.",
+          "[Eloria Cart] Unable to check stored live prices.",
           error,
         );
 
@@ -220,7 +358,7 @@ export function CartLivePriceRefresh() {
             "failed",
 
           message:
-            "اتصال به سرویس نرخ زنده برقرار نشد.",
+            "اتصال به سرویس بررسی نرخ بازار برقرار نشد.",
         });
       } finally {
         window.clearTimeout(
