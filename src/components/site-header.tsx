@@ -23,6 +23,10 @@ import {
 } from "react";
 
 import {
+  CartHeaderButton,
+} from "@/components/cart-header-button";
+
+import {
   FloatingLogo,
 } from "@/components/floating-logo";
 
@@ -37,13 +41,13 @@ import {
 } from "@/components/luxury-icons";
 
 import {
+  LocaleSwitcher,
+} from "@/components/locale-switcher";
+
+import {
   GoldRuneIcon,
   SilverRuneIcon,
 } from "@/components/material-rune-icons";
-
-import {
-  LocaleSwitcher,
-} from "@/components/locale-switcher";
 
 type CollectionMenuItem = {
   label: string;
@@ -155,21 +159,14 @@ export function SiteHeader() {
       > | null
     >(null);
 
-  /*
-   * خانه وارد تمام محصولات می‌شود.
-   */
   const productsHref =
     `/${locale}/products`;
 
-  /*
-   * دنیای الوریا وارد صفحه
-   * هر قطعه، روایتی ماندگار می‌شود.
-   */
   const collectionsHref =
     `/${locale}/collections`;
 
-  const collectionItems: CollectionMenuItem[] =
-    [
+  const collectionItems:
+    CollectionMenuItem[] = [
       {
         label:
           t("necklaces"),
@@ -314,7 +311,6 @@ export function SiteHeader() {
               }
               className="relative z-30 mx-1 flex items-center justify-center gap-1.5 sm:mx-2 sm:gap-2"
             >
-              {/* خانه: تمام محصولات */}
               <Link
                 href={
                   productsHref
@@ -342,7 +338,6 @@ export function SiteHeader() {
                 </span>
               </Link>
 
-              {/* دنیای الوریا */}
               <div
                 className="relative"
                 onMouseEnter={
@@ -460,7 +455,8 @@ export function SiteHeader() {
                         scale: 0.95,
                       }}
                       transition={{
-                        duration: 0.28,
+                        duration:
+                          0.28,
                       }}
                       className="absolute left-1/2 top-full w-[min(92vw,430px)] -translate-x-1/2 pt-3"
                     >
@@ -610,7 +606,11 @@ export function SiteHeader() {
               </Link>
             </nav>
 
-            <div className="relative z-10 shrink-0">
+            <div className="relative z-10 flex shrink-0 items-center gap-1.5 sm:gap-2">
+              <CartHeaderButton
+                locale={locale}
+              />
+
               <LocaleSwitcher />
             </div>
           </div>

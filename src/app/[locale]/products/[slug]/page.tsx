@@ -818,20 +818,32 @@ export default async function ProductPage({
 
               <div className="mt-5">
                 <AddToCartButton
-                  locale={locale}
-                  slug={
-                    result.product
-                      .slug
-                  }
-                  variantId={
-                    result.variant
-                      ?.id ?? null
-                  }
-                  disabled={
-                    !result.product
-                      .isPurchasable
-                  }
-                />
+  locale={locale}
+  slug={
+    result.product
+      .slug
+  }
+  variantId={
+    result.variant
+      ?.id ?? null
+  }
+  maxQuantity={
+    result.variant
+      ?.stock ??
+    result.product
+      .stock
+  }
+  disabled={
+    !result.product
+      .isPurchasable ||
+    (
+      result.variant
+        ?.stock ??
+      result.product
+        .stock
+    ) <= 0
+  }
+/>
               </div>
             </article>
 
