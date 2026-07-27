@@ -27,6 +27,7 @@ export type CollectionCardItem = {
     | "necklaces"
     | "bracelets"
     | "earrings";
+
   title: string;
   description: string;
   imageSrc: string;
@@ -71,6 +72,7 @@ function CollectionCard({
 
   const rawRotateX = useMotionValue(0);
   const rawRotateY = useMotionValue(0);
+
   const glowX = useMotionValue(50);
   const glowY = useMotionValue(50);
 
@@ -125,6 +127,7 @@ function CollectionCard({
   const resetCard = () => {
     rawRotateX.set(0);
     rawRotateY.set(0);
+
     glowX.set(50);
     glowY.set(50);
   };
@@ -165,17 +168,22 @@ function CollectionCard({
         rotateX: reducedMotion
           ? 0
           : rotateX,
+
         rotateY: reducedMotion
           ? 0
           : rotateY,
+
         transformPerspective: 1350,
         transformStyle: "preserve-3d",
       }}
       className="group/card relative scroll-mt-36"
     >
+      {/* هاله بیرونی کارت */}
       <div className="absolute -inset-6 -z-10 rounded-[3rem] bg-[radial-gradient(circle_at_center,rgba(218,181,87,0.2),rgba(22,132,97,0.08),transparent_70%)] opacity-40 blur-3xl transition duration-700 group-hover/card:opacity-100" />
 
+      {/* بدنه کارت */}
       <div className="relative overflow-hidden rounded-[2.4rem] border border-[#e3c273]/35 bg-[linear-gradient(145deg,rgba(8,64,46,0.92),rgba(1,26,18,0.98))] p-px shadow-[0_30px_85px_rgba(0,0,0,0.5),inset_0_1px_0_rgba(255,255,255,0.18)] transition duration-700 group-hover/card:border-[#efd487]/70 group-hover/card:shadow-[0_42px_105px_rgba(0,0,0,0.6),0_0_40px_rgba(220,183,87,0.16),inset_0_1px_0_rgba(255,255,255,0.24)]">
+        {/* نور دنبال‌کننده موس */}
         <motion.div
           aria-hidden="true"
           className="pointer-events-none absolute inset-0 z-30"
@@ -185,11 +193,13 @@ function CollectionCard({
         />
 
         <div className="relative overflow-hidden rounded-[calc(2.4rem-1px)] border border-white/[0.07] p-4 sm:p-5">
+          {/* نقش هندسی پشت کارت */}
           <div
             aria-hidden="true"
             className="absolute inset-0 opacity-[0.065] [background-image:linear-gradient(30deg,transparent_24%,rgba(255,224,149,0.5)_25%,rgba(255,224,149,0.5)_26%,transparent_27%,transparent_74%,rgba(255,224,149,0.5)_75%,rgba(255,224,149,0.5)_76%,transparent_77%)] [background-size:42px_42px]"
           />
 
+          {/* آیکون و شماره */}
           <div
             className="relative z-40 mb-4 flex items-center justify-between"
             style={{
@@ -241,6 +251,7 @@ function CollectionCard({
             </span>
           </div>
 
+          {/* تصویر */}
           <div
             className="relative z-20 aspect-[4/5] overflow-hidden rounded-[1.7rem] border border-[#e0bf6a]/30 bg-[#03271c] shadow-[0_20px_45px_rgba(0,0,0,0.4)]"
             style={{
@@ -251,16 +262,20 @@ function CollectionCard({
               src={item.imageSrc}
               alt={item.title}
               fill
+              priority={index === 0}
               sizes="(max-width: 1024px) 92vw, 360px"
               className="object-cover transition duration-[1200ms] ease-out group-hover/card:scale-[1.1] group-hover/card:saturate-[1.15] group-hover/card:brightness-110"
             />
 
+            {/* سایه روی عکس */}
             <div className="absolute inset-0 bg-[linear-gradient(180deg,transparent_26%,rgba(1,19,13,0.08)_48%,rgba(1,16,11,0.9)_100%)]" />
 
+            {/* نور طلایی */}
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_18%,rgba(255,231,164,0.17),transparent_44%)] opacity-60 transition duration-700 group-hover/card:opacity-100" />
 
             <div className="absolute inset-x-5 top-0 h-px bg-gradient-to-r from-transparent via-[#f5df9f]/75 to-transparent" />
 
+            {/* ذرات طلایی */}
             <div className="pointer-events-none absolute inset-0">
               {particles.map(
                 (particle, particleIndex) => (
@@ -282,11 +297,7 @@ function CollectionCard({
                               -18,
                               10,
                             ],
-                            x: [
-                              -3,
-                              6,
-                              -3,
-                            ],
+                            x: [-3, 6, -3],
                             scale: [
                               0.65,
                               1.25,
@@ -306,9 +317,11 @@ function CollectionCard({
               )}
             </div>
 
+            {/* برق عبوری روی عکس */}
             <span className="absolute -left-1/2 top-0 h-full w-1/3 skew-x-[-19deg] bg-gradient-to-r from-transparent via-white/[0.2] to-transparent blur-sm transition-all duration-1000 group-hover/card:left-[135%]" />
           </div>
 
+          {/* متن کارت */}
           <div
             className="relative z-40 px-1 pb-1 pt-6"
             style={{
@@ -325,6 +338,7 @@ function CollectionCard({
               {item.description}
             </p>
 
+            {/* دکمه */}
             <Link
               href={`/collections/${item.slug}`}
               className="group/button relative mt-7 flex w-full items-center justify-between overflow-hidden rounded-[1.45rem] border border-[#e8c875]/50 bg-[linear-gradient(135deg,rgba(13,103,74,0.97),rgba(3,43,30,0.98)_54%,rgba(136,96,26,0.68))] p-2 pe-3 text-[#fff0bd] shadow-[inset_0_1px_0_rgba(255,255,255,0.25),0_16px_40px_rgba(0,0,0,0.42),0_0_26px_rgba(216,182,106,0.12)] transition duration-500 hover:-translate-y-1 hover:border-[#f4d989]/90 hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.34),0_22px_52px_rgba(0,0,0,0.5),0_0_40px_rgba(216,182,106,0.26)]"

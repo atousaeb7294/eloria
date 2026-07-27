@@ -1,0 +1,297 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum ProductStatus {
+  DRAFT
+  ACTIVE
+  OUT_OF_STOCK
+  ARCHIVED
+}
+
+enum Currency {
+  TOMAN
+  USD
+}
+
+enum MaterialType {
+  GOLD
+  SILVER
+}
+
+enum PricingMode {
+  DYNAMIC
+  MANUAL
+}
+
+enum MakingChargeType {
+  NONE
+  FIXED
+  PER_GRAM
+  PERCENT
+  COMBINED
+}
+
+model Collection {
+  id            String  @id @default(uuid()) @db.Uuid
+  slug          String  @unique
+  nameFa        String
+  nameEn        String
+  descriptionFa String?
+  descriptionEn String?
+  imageUrl      String?
+  displayOrder  Int     @default(0)
+  isActive      Boolean @default(true)
+
+  products Product[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([isActive, displayOrder])
+  @@map("collections")
+}
+
+model Product {
+  id           String @id @default(uuid()) @db.Uuid
+  collectionId String @db.Uuid
+
+  slug String  @unique
+  sku  String? @unique
+
+  nameFa String
+  nameEn String
+
+  descriptionFa String?
+  descriptionEn String?
+
+  material MaterialType @default(GOLD)
+
+  metalWeight Decimal? @map("goldWeight") @db.Decimal(10, 3)
+
+  purity String?
+
+  purityFineness Int?
+
+  pricingMode PricingMode @default(DYNAMIC)
+
+  price Decimal? @db.Decimal(18, 0)
+
+  compareAtPrice Decimal? @db.Decimal(18, 0)
+
+  makingChargeType MakingChargeType @default(NONE)
+
+  makingChargeFixed Decimal @default(0) @db.Decimal(18, 0)
+
+  makingChargePerGram Decimal @default(0) @db.Decimal(18, 0)
+
+  makingChargePercent Decimal @default(0) @db.Decimal(7, 3)
+
+  artisticFee Decimal @default(0) @db.Decimal(18, 0)
+
+  profitPercent Decimal? @db.Decimal(7, 3)
+
+  taxPercent Decimal? @db.Decimal(7, 3)
+
+  currency Currency @default(TOMAN)
+
+  legendFa String?
+  legendEn String?
+
+  stock          Int           @default(0)
+  specifications Json?
+  status         ProductStatus @default(DRAFT)
+  isFeatured     Boolean       @default(false)
+  displayOrder   Int           @default(0)
+
+  collection Collection       @relation(fields: [collectionId], references: [id], onDelete: Restrict)
+  images     ProductImage[]
+  variants   ProductVariant[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([collectionId, status, displayOrder])
+  @@index([material, status])
+  @@index([pricingMode, status])
+  @@index([isFeatured, status])
+  @@map("products")
+}
+
+model ProductImage {
+  id        String @id @default(uuid()) @db.Uuid
+  productId String @db.Uuid
+
+  imageUrl String
+  altFa    String?
+  altEn    String?
+
+  width        Int?
+  height       Int?
+  isPrimary    Boolean @default(false)
+  displayOrder Int     @default(0)
+
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([productId, displayOrder])
+  @@index([productId, isPrimary])
+  @@map("product_images")
+}
+
+model ProductVariant {
+  id        String @id @default(uuid()) @db.Uuid
+  productId String @db.Uuid
+
+  titleFa String
+  titleEn String
+
+  sku String? @unique
+
+  price Decimal? @db.Decimal(18, 0)
+
+  stock Int @default(0)
+
+  metalWeight Decimal? @map("goldWeight") @db.Decimal(10, 3)
+
+  purity String?
+
+  purityFineness Int?
+
+  makingChargeFixed Decimal? @db.Decimal(18, 0)
+
+  makingChargePerGram Decimal? @db.Decimal(18, 0)
+
+  makingChargePercent Decimal? @db.Decimal(7, 3)
+
+  artisticFee Decimal? @db.Decimal(18, 0)
+
+  attributes Json?
+
+  isActive     Boolean @default(true)
+  displayOrder Int     @default(0)
+
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([productId, isActive, displayOrder])
+  @@map("product_variants")
+}
+
+model PricingPolicy {
+  id String @id @default(uuid()) @db.Uuid
+
+  material MaterialType @unique
+
+  referencePurity Int
+
+  defaultProfitPercent Decimal @default(7) @db.Decimal(7, 3)
+
+  defaultTaxPercent Decimal @default(10) @db.Decimal(7, 3)
+
+  taxMetalValue Boolean @default(false)
+
+  quoteTtlSeconds Int @default(120)
+
+  staleAfterMinutes Int @default(15)
+
+  roundingStep Int @default(1)
+
+  isActive Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([material, isActive])
+  @@map("pricing_policies")
+}
+
+model MetalPrice {
+  id String @id @default(uuid()) @db.Uuid
+
+  material MaterialType @unique
+
+  pricePerGram Decimal @db.Decimal(18, 0)
+
+  referencePurity Int @default(750)
+
+  currency Currency @default(TOMAN)
+
+  source String?
+
+  sourceSymbol String @default("")
+
+  sourceUnit String?
+
+  sourceDate String?
+
+  sourceTime String?
+
+  sourceTimeUnix BigInt?
+
+  fetchedAt DateTime @default(now())
+
+  lastSuccessAt DateTime @default(now())
+
+  lastError String? @db.Text
+
+  rawPayload Json?
+
+  history MetalPriceHistory[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([material, lastSuccessAt])
+  @@index([updatedAt])
+  @@map("metal_prices")
+}
+
+model MetalPriceHistory {
+  id String @id @default(uuid()) @db.Uuid
+
+  metalPriceId String @db.Uuid
+
+  material MaterialType
+
+  pricePerGram Decimal @db.Decimal(18, 0)
+
+  referencePurity Int
+
+  currency Currency @default(TOMAN)
+
+  source String?
+
+  sourceSymbol String
+
+  sourceUnit String?
+
+  sourceDate String?
+
+  sourceTime String?
+
+  sourceTimeUnix BigInt?
+
+  fetchedAt DateTime
+
+  fingerprint String @unique @db.VarChar(64)
+
+  rawPayload Json?
+
+  metalPrice MetalPrice @relation(fields: [metalPriceId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@index([material, fetchedAt])
+  @@index([metalPriceId, fetchedAt])
+  @@map("metal_price_history")
+}
