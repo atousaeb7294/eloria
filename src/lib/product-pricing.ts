@@ -1,12 +1,4 @@
 import {
-  after,
-} from "next/server";
-
-import {
-  syncMetalPrices,
-} from "@/lib/metal-price-sync";
-
-import {
   ProductPricingError,
   getProductLivePrice as getProductLivePriceCore,
   type GetProductPriceInput,
@@ -24,185 +16,12 @@ export type {
   ProductPricingErrorCode,
 };
 
-declare global {
-  var __eloriaMetalPriceRefreshPromise:
-    | Promise<void>
-    | undefined;
-}
-
-function sleep(
-  milliseconds: number,
-): Promise<void> {
-  return new Promise(
-    (resolve) => {
-      setTimeout(
-        resolve,
-        milliseconds,
-      );
-    },
-  );
-}
-
-function isTemporaryDatabaseError(
-  error: unknown,
-): boolean {
-  const message =
-    error instanceof Error
-      ? error.message.toLowerCase()
-      : String(error).toLowerCase();
-
-  return (
-    message.includes(
-      "connection terminated unexpectedly",
-    ) ||
-    message.includes(
-      "query read timeout",
-    ) ||
-    message.includes(
-      "eauthtimeout",
-    ) ||
-    message.includes(
-      "timeout while waiting",
-    ) ||
-    message.includes(
-      "connection closed",
-    ) ||
-    message.includes(
-      "connection reset",
-    )
-  );
-}
-
-async function refreshMetalPricesWithRetry(): Promise<void> {
-  const runningRefresh =
-    globalThis
-      .__eloriaMetalPriceRefreshPromise;
-
-  if (runningRefresh) {
-    await runningRefresh;
-
-    return;
-  }
-
-  const refreshPromise =
-    (
-      async () => {
-        const maximumAttempts =
-          3;
-
-        let lastError:
-          unknown = null;
-
-        for (
-          let attempt = 1;
-          attempt <=
-          maximumAttempts;
-          attempt += 1
-        ) {
-          try {
-            await syncMetalPrices();
-
-            console.info(
-              "[Eloria Pricing] Metal prices refreshed successfully.",
-            );
-
-            return;
-          } catch (error) {
-            lastError =
-              error;
-
-            const retryAllowed =
-              isTemporaryDatabaseError(
-                error,
-              );
-
-            console.error(
-              `[Eloria Pricing] Refresh attempt ${attempt} failed.`,
-              error,
-            );
-
-            if (
-              !retryAllowed ||
-              attempt ===
-                maximumAttempts
-            ) {
-              throw error;
-            }
-
-            await sleep(
-              attempt * 1_500,
-            );
-          }
-        }
-
-        throw lastError;
-      }
-    )().finally(() => {
-      globalThis
-        .__eloriaMetalPriceRefreshPromise =
-        undefined;
-    });
-
-  globalThis
-    .__eloriaMetalPriceRefreshPromise =
-    refreshPromise;
-
-  await refreshPromise;
-}
-
-function scheduleMetalPriceRefresh() {
-  const refreshTask =
-    async () => {
-      try {
-        await refreshMetalPricesWithRetry();
-      } catch (error) {
-        /**
-         * شکست نوسازی نرخ نباید صفحه محصول
-         * یا فهرست محصولات را از دسترس خارج کند.
-         */
-        console.error(
-          "[Eloria Pricing] Background metal price refresh failed.",
-          error,
-        );
-      }
-    };
-
-  try {
-    after(
-      refreshTask,
-    );
-  } catch {
-    /**
-     * این حالت برای اجرای کد خارج از Request
-     * مانند بعضی اسکریپت‌های محلی است.
-     */
-    void refreshTask();
-  }
-}
-
 /**
- * نتیجه تازگی از sourceTimeUnix در
- * product-pricing-core محاسبه شده است.
- */
-function isResultRateStale(
-  result: ProductPriceResult,
-): boolean {
-  return (
-    result.liveRate?.isStale ??
-    false
-  );
-}
-
-/**
- * تابع سخت‌گیرانه قیمت‌گذاری.
+ * قیمت‌گذاری سخت‌گیرانه برای عملیات حساس.
  *
- * برای موارد حساس مانند:
- * - ثبت سفارش
- * - پرداخت
- * - صدور پیش‌فاکتور
- * - API قیمت معتبر
- *
- * نرخ منقضی‌شده را قبول نمی‌کند.
+ * در این حالت نرخ منقضی پذیرفته نمی‌شود.
+ * این تابع هیچ درخواست خارجی برای دریافت نرخ بازار ارسال نمی‌کند
+ * و فقط از نرخ ذخیره‌شده در دیتابیس استفاده می‌کند.
  */
 export async function getProductLivePrice(
   input: GetProductPriceInput,
@@ -216,58 +35,21 @@ export async function getProductLivePrice(
 }
 
 /**
- * تابع مخصوص نمایش محصول.
+ * قیمت مخصوص نمایش محصول.
  *
- * صفحه با آخرین نرخ ذخیره‌شده باز می‌شود.
- * در صورت منقضی‌بودن نرخ، نوسازی بعد از
- * ارسال پاسخ و بدون مسدودکردن صفحه انجام می‌شود.
+ * برای اینکه صفحه محصول در صورت قدیمی‌شدن نرخ از دسترس خارج نشود،
+ * آخرین نرخ ذخیره‌شده می‌تواند برای نمایش استفاده شود.
+ *
+ * این تابع نیز هیچ درخواست خارجی برای دریافت نرخ بازار ارسال نمی‌کند.
+ * به‌روزرسانی نرخ‌ها فقط توسط مسیر Cron انجام می‌شود.
  */
 export async function getProductDisplayPrice(
   input: GetProductPriceInput,
 ): Promise<ProductPriceResult> {
-  try {
-    const result =
-      await getProductLivePriceCore({
-        ...input,
+  return getProductLivePriceCore({
+    ...input,
 
-        allowStaleRate:
-          true,
-      });
-
-    if (
-      isResultRateStale(
-        result,
-      )
-    ) {
-      scheduleMetalPriceRefresh();
-    }
-
-    return result;
-  } catch (error) {
-    const rateDoesNotExist =
-      error instanceof
-        ProductPricingError &&
-      error.code ===
-        "METAL_PRICE_NOT_FOUND";
-
-    if (
-      !rateDoesNotExist
-    ) {
-      throw error;
-    }
-
-    /**
-     * اگر هیچ نرخی در دیتابیس وجود نداشته باشد،
-     * یک نوسازی مستقیم ضروری است؛ چون نرخ قبلی
-     * برای نمایش در اختیار نداریم.
-     */
-    await refreshMetalPricesWithRetry();
-
-    return getProductLivePriceCore({
-      ...input,
-
-      allowStaleRate:
-        true,
-    });
-  }
+    allowStaleRate:
+      true,
+  });
 }
