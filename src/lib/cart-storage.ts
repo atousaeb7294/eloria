@@ -115,6 +115,73 @@ export function readCartItems(): CartItem[] {
   }
 }
 
+export function subscribeToCart(
+  listener: () => void,
+): () => void {
+  if (
+    typeof window ===
+    "undefined"
+  ) {
+    return () => undefined;
+  }
+
+  const handleCartUpdate =
+    () => {
+      listener();
+    };
+
+  const handleStorage = (
+    event: StorageEvent,
+  ) => {
+    if (
+      event.key ===
+        CART_STORAGE_KEY ||
+      event.key === null
+    ) {
+      listener();
+    }
+  };
+
+  window.addEventListener(
+    CART_UPDATED_EVENT,
+    handleCartUpdate,
+  );
+
+  window.addEventListener(
+    "storage",
+    handleStorage,
+  );
+
+  return () => {
+    window.removeEventListener(
+      CART_UPDATED_EVENT,
+      handleCartUpdate,
+    );
+
+    window.removeEventListener(
+      "storage",
+      handleStorage,
+    );
+  };
+}
+
+export function getCartItemQuantity({
+  slug,
+  variantId = null,
+}: {
+  slug: string;
+  variantId?: string | null;
+}): number {
+  return (
+    readCartItems().find(
+      (item) =>
+        item.slug === slug &&
+        item.variantId ===
+          variantId,
+    )?.quantity ?? 0
+  );
+}
+
 export function writeCartItems(
   items: CartItem[],
 ): void {

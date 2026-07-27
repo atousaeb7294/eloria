@@ -4,7 +4,7 @@ import {
 } from "next/server";
 
 import {
-  getProductDisplayPrice,
+  getProductLivePrice,
   ProductPricingError,
 } from "@/lib/product-pricing";
 
@@ -280,7 +280,7 @@ async function quoteCartItem(
 > {
   try {
     const result =
-      await getProductDisplayPrice({
+      await getProductLivePrice({
         slug:
           item.slug,
 

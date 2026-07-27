@@ -11,15 +11,14 @@ import {
 
 import {
   useCallback,
-  useEffect,
   useState,
+  useSyncExternalStore,
 } from "react";
 
 import {
-  CART_STORAGE_KEY,
-  CART_UPDATED_EVENT,
   addCartItem,
-  readCartItems,
+  getCartItemQuantity,
+  subscribeToCart,
   updateCartItemQuantity,
 } from "@/lib/cart-storage";
 
@@ -30,6 +29,10 @@ type AddToCartButtonProps = {
   maxQuantity: number;
   disabled?: boolean;
 };
+
+function getServerCartQuantitySnapshot(): number {
+  return 0;
+}
 
 export function AddToCartButton({
   locale,
@@ -47,76 +50,30 @@ export function AddToCartButton({
       0,
     );
 
-  const [
-    quantity,
-    setQuantity,
-  ] = useState(0);
+  const getQuantitySnapshot =
+    useCallback(
+      () =>
+        getCartItemQuantity({
+          slug,
+          variantId,
+        }),
+      [
+        slug,
+        variantId,
+      ],
+    );
+
+  const quantity =
+    useSyncExternalStore(
+      subscribeToCart,
+      getQuantitySnapshot,
+      getServerCartQuantitySnapshot,
+    );
 
   const [
     recentlyAdded,
     setRecentlyAdded,
   ] = useState(false);
-
-  const syncQuantity =
-    useCallback(() => {
-      const item =
-        readCartItems().find(
-          (cartItem) =>
-            cartItem.slug === slug &&
-            cartItem.variantId ===
-              variantId,
-        );
-
-      setQuantity(
-        item?.quantity ?? 0,
-      );
-    }, [
-      slug,
-      variantId,
-    ]);
-
-  useEffect(() => {
-    syncQuantity();
-
-    const handleCartUpdate =
-      () => {
-        syncQuantity();
-      };
-
-    const handleStorage = (
-      event: StorageEvent,
-    ) => {
-      if (
-        event.key ===
-          CART_STORAGE_KEY ||
-        event.key === null
-      ) {
-        syncQuantity();
-      }
-    };
-
-    window.addEventListener(
-      CART_UPDATED_EVENT,
-      handleCartUpdate,
-    );
-
-    window.addEventListener(
-      "storage",
-      handleStorage,
-    );
-
-    return () => {
-      window.removeEventListener(
-        CART_UPDATED_EVENT,
-        handleCartUpdate,
-      );
-
-      window.removeEventListener(
-        "storage",
-        handleStorage,
-      );
-    };
-  }, [syncQuantity]);
 
   const isUnavailable =
     disabled ||

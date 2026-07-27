@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 
 import {
@@ -18,8 +19,10 @@ import {
 import {
   useCallback,
   useEffect,
+  useMemo,
   useRef,
   useState,
+  useSyncExternalStore,
 } from "react";
 
 import {
@@ -28,10 +31,9 @@ import {
 } from "@/components/cart-live-price-refresh";
 
 import {
-  CART_STORAGE_KEY,
-  CART_UPDATED_EVENT,
   readCartItems,
   removeCartItem,
+  subscribeToCart,
   updateCartItemQuantity,
   type CartItem,
 } from "@/lib/cart-storage";
@@ -128,6 +130,31 @@ type CartPageClientProps = {
   persianTitleClassName:
     string;
 };
+
+function getCartSnapshot(): string {
+  return JSON.stringify(
+    readCartItems(),
+  );
+}
+
+function getServerCartSnapshot(): string {
+  return "[]";
+}
+
+function parseCartSnapshot(
+  snapshot: string,
+): CartItem[] {
+  try {
+    const parsed: unknown =
+      JSON.parse(snapshot);
+
+    return Array.isArray(parsed)
+      ? (parsed as CartItem[])
+      : [];
+  } catch {
+    return [];
+  }
+}
 
 function isCartQuoteResponse(
   value: unknown,
@@ -256,12 +283,21 @@ export function CartPageClient({
   const isPersian =
     locale === "fa";
 
-  const [
-    storedItems,
-    setStoredItems,
-  ] = useState<CartItem[]>(
-    [],
-  );
+  const cartSnapshot =
+    useSyncExternalStore(
+      subscribeToCart,
+      getCartSnapshot,
+      getServerCartSnapshot,
+    );
+
+  const storedItems =
+    useMemo(
+      () =>
+        parseCartSnapshot(
+          cartSnapshot,
+        ),
+      [cartSnapshot],
+    );
 
   const [
     quote,
@@ -736,13 +772,10 @@ export function CartPageClient({
             null;
         }
 
-        if (immediate) {
-          void loadQuote(
-            items,
-          );
-
-          return;
-        }
+        const delay =
+          immediate
+            ? 0
+            : 100;
 
         quoteTimerRef.current =
           setTimeout(
@@ -754,7 +787,7 @@ export function CartPageClient({
                 items,
               );
             },
-            100,
+            delay,
           );
       },
       [
@@ -762,55 +795,17 @@ export function CartPageClient({
       ],
     );
 
-  const syncFromStorage =
-    useCallback(
-      (
-        immediate =
-          false,
-      ) => {
-        const items =
-          readCartItems();
-
-        setStoredItems(
-          items,
-        );
-
-        scheduleQuote(
-          items,
-          immediate,
-        );
-      },
-      [
-        scheduleQuote,
-      ],
+  useEffect(() => {
+    scheduleQuote(
+      storedItems,
+      true,
     );
+  }, [
+    scheduleQuote,
+    storedItems,
+  ]);
 
   useEffect(() => {
-    syncFromStorage(true);
-
-    const handleCartUpdate =
-      () => {
-        syncFromStorage(
-          false,
-        );
-      };
-
-    const handleStorage = (
-      event:
-        StorageEvent,
-    ) => {
-      if (
-        event.key ===
-          CART_STORAGE_KEY ||
-        event.key ===
-          null
-      ) {
-        syncFromStorage(
-          false,
-        );
-      }
-    };
-
     const handleLivePriceEvent =
       (
         event:
@@ -837,31 +832,11 @@ export function CartPageClient({
       };
 
     window.addEventListener(
-      CART_UPDATED_EVENT,
-      handleCartUpdate,
-    );
-
-    window.addEventListener(
-      "storage",
-      handleStorage,
-    );
-
-    window.addEventListener(
       CART_LIVE_PRICE_EVENT,
       handleLivePriceEvent,
     );
 
     return () => {
-      window.removeEventListener(
-        CART_UPDATED_EVENT,
-        handleCartUpdate,
-      );
-
-      window.removeEventListener(
-        "storage",
-        handleStorage,
-      );
-
       window.removeEventListener(
         CART_LIVE_PRICE_EVENT,
         handleLivePriceEvent,
@@ -877,9 +852,7 @@ export function CartPageClient({
 
       requestControllerRef.current?.abort();
     };
-  }, [
-    syncFromStorage,
-  ]);
+  }, []);
 
   const updateQuoteOptimistically =
     useCallback(
@@ -1277,7 +1250,8 @@ export function CartPageClient({
             <button
               type="button"
               onClick={() =>
-                syncFromStorage(
+                scheduleQuote(
+                  storedItems,
                   true,
                 )
               }
@@ -1349,7 +1323,7 @@ export function CartPageClient({
                     <div className="grid gap-5 sm:grid-cols-[150px_minmax(0,1fr)]">
                       <div className="relative aspect-square overflow-hidden rounded-[1.5rem] border border-white/[0.07] bg-[#041b14]">
                         {item.image ? (
-                          <img
+                          <Image
                             src={
                               item.image
                                 .url
@@ -1362,7 +1336,9 @@ export function CartPageClient({
                                     .altEn) ??
                               productName
                             }
-                            className="h-full w-full object-cover"
+                            fill
+                            sizes="(min-width: 640px) 150px, 100vw"
+                            className="object-cover"
                           />
                         ) : (
                           <div className="flex h-full w-full items-center justify-center">

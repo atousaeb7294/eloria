@@ -3,20 +3,21 @@
 import Link from "next/link";
 
 import {
-  useCallback,
-  useEffect,
-  useState,
+  useSyncExternalStore,
 } from "react";
 
 import {
-  CART_STORAGE_KEY,
-  CART_UPDATED_EVENT,
   getCartQuantity,
+  subscribeToCart,
 } from "@/lib/cart-storage";
 
 type CartHeaderButtonProps = {
   locale: string;
 };
+
+function getServerCartQuantitySnapshot(): number {
+  return 0;
+}
 
 function EloriaBagIcon({
   className,
@@ -66,61 +67,12 @@ export function CartHeaderButton({
 }: CartHeaderButtonProps) {
   const isPersian =
     locale === "fa";
-
-  const [
-    quantity,
-    setQuantity,
-  ] = useState(0);
-
-  const syncQuantity =
-    useCallback(() => {
-      setQuantity(
-        getCartQuantity(),
-      );
-    }, []);
-
-  useEffect(() => {
-    syncQuantity();
-
-    const handleCartUpdate =
-      () => {
-        syncQuantity();
-      };
-
-    const handleStorage = (
-      event: StorageEvent,
-    ) => {
-      if (
-        event.key ===
-          CART_STORAGE_KEY ||
-        event.key === null
-      ) {
-        syncQuantity();
-      }
-    };
-
-    window.addEventListener(
-      CART_UPDATED_EVENT,
-      handleCartUpdate,
+  const quantity =
+    useSyncExternalStore(
+      subscribeToCart,
+      getCartQuantity,
+      getServerCartQuantitySnapshot,
     );
-
-    window.addEventListener(
-      "storage",
-      handleStorage,
-    );
-
-    return () => {
-      window.removeEventListener(
-        CART_UPDATED_EVENT,
-        handleCartUpdate,
-      );
-
-      window.removeEventListener(
-        "storage",
-        handleStorage,
-      );
-    };
-  }, [syncQuantity]);
 
   const displayedQuantity =
     quantity > 99
