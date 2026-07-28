@@ -28,6 +28,7 @@ import {
 import {
   CART_LIVE_PRICE_EVENT,
   type CartLivePriceEventDetail,
+  type CartLivePriceMode,
 } from "@/components/cart-live-price-refresh";
 
 import {
@@ -336,6 +337,14 @@ export function CartPageClient({
       null,
     );
 
+  const [
+    livePriceMode,
+    setLivePriceMode,
+  ] =
+    useState<CartLivePriceMode | null>(
+      null,
+    );
+
   const requestIdRef =
     useRef(0);
 
@@ -415,7 +424,7 @@ export function CartPageClient({
             "در حال بررسی قیمت و موجودی...",
 
           securePricing:
-            "قیمت نهایی هنگام پرداخت دوباره با آخرین نرخ زنده بررسی می‌شود.",
+            "قیمت نهایی هنگام پرداخت دوباره با آخرین نرخ معتبر و سیاست فعال قیمت‌گذاری بررسی می‌شود.",
 
           checkoutBlocked:
             "برای ادامه خرید، مشکلات سبد را برطرف کنید.",
@@ -436,13 +445,16 @@ export function CartPageClient({
             "نقره",
 
           liveConnecting:
-            "در حال اتصال به آخرین نرخ زنده",
+            "در حال اتصال به آخرین نرخ بازار",
 
           liveReady:
             "قیمت‌ها با آخرین نرخ بررسی شدند",
 
+          closedMarketReady:
+            "بازار بسته است؛ قیمت‌ها با آخرین نرخ معتبر و حاشیه امنیت ۲ درصد محاسبه شده‌اند.",
+
           liveFailed:
-            "اتصال به نرخ زنده برقرار نشد؛ قیمت موجود نمایش داده می‌شود.",
+            "اتصال به نرخ بازار برقرار نشد؛ قیمت موجود نمایش داده می‌شود.",
 
           checkedAt:
             "آخرین بررسی",
@@ -509,7 +521,7 @@ export function CartPageClient({
             "Checking prices and availability...",
 
           securePricing:
-            "The final price will be verified again against the latest live rate at checkout.",
+            "The final price is verified again at checkout using the latest valid rate and active pricing policy.",
 
           checkoutBlocked:
             "Resolve the cart issues before continuing.",
@@ -530,13 +542,16 @@ export function CartPageClient({
             "Silver",
 
           liveConnecting:
-            "Connecting to the latest live rate",
+            "Connecting to the latest market rate",
 
           liveReady:
             "Prices verified against the latest rate",
 
+          closedMarketReady:
+            "The market is closed; prices use the latest valid rate with a 2% safety margin.",
+
           liveFailed:
-            "Live-rate connection failed; the available price is being shown.",
+            "Market-rate connection failed; the available price is being shown.",
 
           checkedAt:
             "Last checked",
@@ -827,6 +842,11 @@ export function CartPageClient({
 
         setLivePriceMessage(
           detail.message ??
+            null,
+        );
+
+        setLivePriceMode(
+          detail.pricingMode ??
             null,
         );
       };
@@ -1128,18 +1148,34 @@ export function CartPageClient({
             className:
               "border-amber-300/20 bg-amber-200/[0.05] text-amber-100/60",
           }
-        : {
-            icon:
-              "success" as const,
+        : livePriceMode ===
+            "CLOSED_MARKET"
+          ? {
+              icon:
+                "warning" as const,
 
-            text:
-              quote
-                ? text.liveReady
-                : text.loading,
+              text:
+                livePriceMessage ??
+                text.closedMarketReady,
 
-            className:
-              "border-emerald-300/15 bg-emerald-200/[0.04] text-emerald-100/55",
-          };
+              className:
+                "border-amber-300/20 bg-amber-200/[0.05] text-amber-100/70",
+            }
+          : {
+              icon:
+                "success" as const,
+
+              text:
+                livePriceMessage ??
+                (
+                  quote
+                    ? text.liveReady
+                    : text.loading
+                ),
+
+              className:
+                "border-emerald-300/15 bg-emerald-200/[0.04] text-emerald-100/55",
+            };
 
   if (
     !loading &&

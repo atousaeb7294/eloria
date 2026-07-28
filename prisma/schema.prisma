@@ -204,6 +204,12 @@ model PricingPolicy {
 
   staleAfterMinutes Int @default(15)
 
+  closedMarketPricingEnabled Boolean @default(true)
+
+  closedMarketMaxAgeMinutes Int @default(720)
+
+  closedMarketSafetyMarginPercent Decimal @default(2) @db.Decimal(7, 3)
+
   roundingStep Int @default(1)
 
   isActive Boolean @default(true)

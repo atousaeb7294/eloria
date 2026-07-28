@@ -22,10 +22,22 @@ async function main() {
         // اعتبار قیمت قطعی هنگام پرداخت: ۲ دقیقه
         quoteTtlSeconds: 120,
 
-        // نرخ قدیمی‌تر از ۱۵ دقیقه برای پرداخت معتبر نیست.
+        // نرخ تازه در حالت عادی حداکثر ۱۵ دقیقه اعتبار دارد.
         staleAfterMinutes: 15,
 
-        // گرد کردن قیمت نهایی به هزار تومان
+        // استفاده از آخرین نرخ معتبر هنگام بسته‌بودن بازار
+        closedMarketPricingEnabled:
+          true,
+
+        // حداکثر عمر نرخ قابل‌استفاده در این حالت: ۱۲ ساعت
+        closedMarketMaxAgeMinutes:
+          720,
+
+        // حاشیه امنیت نرخ فلز: ۲ درصد
+        closedMarketSafetyMarginPercent:
+          "2",
+
+        // گردکردن قیمت نهایی به نزدیک‌ترین هزار تومان
         roundingStep: 1000,
 
         isActive: true,
@@ -45,6 +57,15 @@ async function main() {
         quoteTtlSeconds: 120,
 
         staleAfterMinutes: 15,
+
+        closedMarketPricingEnabled:
+          true,
+
+        closedMarketMaxAgeMinutes:
+          720,
+
+        closedMarketSafetyMarginPercent:
+          "2",
 
         roundingStep: 1000,
 
@@ -66,15 +87,23 @@ async function main() {
         defaultTaxPercent: "10",
 
         /*
-         * سیاست مالیاتی نقره باید مستقل از طلا تعیین شود.
-         * تا زمان تأیید نهایی، اصل فلز در محاسبه مالیات
-         * وارد نمی‌شود.
+         * سیاست مالیاتی نقره مستقل از طلا است.
+         * تا زمان تأیید نهایی، اصل فلز وارد پایه مالیات نمی‌شود.
          */
         taxMetalValue: false,
 
         quoteTtlSeconds: 120,
 
         staleAfterMinutes: 15,
+
+        closedMarketPricingEnabled:
+          true,
+
+        closedMarketMaxAgeMinutes:
+          720,
+
+        closedMarketSafetyMarginPercent:
+          "2",
 
         roundingStep: 1000,
 
@@ -95,6 +124,15 @@ async function main() {
         quoteTtlSeconds: 120,
 
         staleAfterMinutes: 15,
+
+        closedMarketPricingEnabled:
+          true,
+
+        closedMarketMaxAgeMinutes:
+          720,
+
+        closedMarketSafetyMarginPercent:
+          "2",
 
         roundingStep: 1000,
 
@@ -130,6 +168,15 @@ async function main() {
             staleAfterMinutes:
               goldPolicy.staleAfterMinutes,
 
+            closedMarketPricingEnabled:
+              goldPolicy.closedMarketPricingEnabled,
+
+            closedMarketMaxAgeMinutes:
+              goldPolicy.closedMarketMaxAgeMinutes,
+
+            closedMarketSafetyMarginPercent:
+              goldPolicy.closedMarketSafetyMarginPercent.toString(),
+
             roundingStep:
               goldPolicy.roundingStep,
 
@@ -159,6 +206,15 @@ async function main() {
             staleAfterMinutes:
               silverPolicy.staleAfterMinutes,
 
+            closedMarketPricingEnabled:
+              silverPolicy.closedMarketPricingEnabled,
+
+            closedMarketMaxAgeMinutes:
+              silverPolicy.closedMarketMaxAgeMinutes,
+
+            closedMarketSafetyMarginPercent:
+              silverPolicy.closedMarketSafetyMarginPercent.toString(),
+
             roundingStep:
               silverPolicy.roundingStep,
 
@@ -175,7 +231,7 @@ async function main() {
 }
 
 main()
-  .catch((error) => {
+  .catch((error: unknown) => {
     console.error(
       "ثبت سیاست قیمت‌گذاری ناموفق بود:",
       error,

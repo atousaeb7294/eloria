@@ -37,9 +37,9 @@ function isSameOrigin(
       "origin",
     );
 
-  /**
-   * بعضی درخواست‌های داخلی یا ابزارهای سرور
-   * ممکن است Origin نداشته باشند.
+  /*
+   * بعضی درخواست‌های داخلی یا ابزارهای سمت سرور
+   * ممکن است هدر Origin نداشته باشند.
    */
   if (!origin) {
     return true;
@@ -82,13 +82,12 @@ function getLatestSuccessTimestamp(
 }
 
 /**
- * این Route دیگر مستقیماً سرویس خارجی
- * طلا و نقره را فراخوانی نمی‌کند.
+ * این Route سرویس خارجی نرخ طلا و نقره را فراخوانی نمی‌کند.
  *
- * وظیفه آن فقط بررسی آخرین نرخ‌های ذخیره‌شده
- * در دیتابیس است.
+ * فقط آخرین نرخ‌های ذخیره‌شده در دیتابیس و سیاست قیمت‌گذاری
+ * هر فلز را بررسی می‌کند.
  *
- * همگام‌سازی واقعی از Route امن کرون انجام می‌شود:
+ * همگام‌سازی واقعی نرخ‌ها فقط از Route امن Cron انجام می‌شود:
  *
  * GET /api/cron/metal-prices
  */
@@ -138,7 +137,7 @@ export async function POST(
             "METAL_PRICES_NOT_AVAILABLE",
 
           message:
-            "هنوز نرخ معتبری برای طلا و نقره ثبت نشده است.",
+            "هنوز نرخ معتبری برای طلا یا نقره ثبت نشده است.",
         },
         {
           status:
@@ -158,7 +157,11 @@ export async function POST(
         ),
       );
 
-    const staleMaterials =
+    /*
+     * نرخ‌هایی که از نظر زمانی منقضی هستند،
+     * حتی اگر طبق سیاست بازار بسته هنوز قابل فروش باشند.
+     */
+    const technicallyStaleMaterials =
       snapshot.prices
         .filter(
           (price) =>
@@ -168,6 +171,80 @@ export async function POST(
           (price) =>
             price.material,
         );
+
+    /*
+     * نرخ‌هایی که در حالت بازار بسته و با حاشیه امنیت
+     * قابل استفاده هستند.
+     */
+    const closedMarketMaterials =
+      snapshot.prices
+        .filter(
+          (price) =>
+            price.saleMode ===
+            "CLOSED_MARKET",
+        )
+        .map(
+          (price) =>
+            price.material,
+        );
+
+    /*
+     * فقط این نرخ‌ها باید خرید را متوقف کنند.
+     */
+    const unavailableMaterials =
+      snapshot.prices
+        .filter(
+          (price) =>
+            !price.isUsableForSale,
+        )
+        .map(
+          (price) =>
+            price.material,
+        );
+
+    const rateStates =
+      snapshot.prices.map(
+        (price) => ({
+          material:
+            price.material,
+
+          saleMode:
+            price.saleMode,
+
+          saleReason:
+            price.saleReason,
+
+          isUsableForSale:
+            price.isUsableForSale,
+
+          isStale:
+            price.isStale,
+
+          freshnessReason:
+            price.freshnessReason,
+
+          ageSeconds:
+            price.ageSeconds,
+
+          originalPricePerGramToman:
+            price.pricePerGramToman,
+
+          effectivePricePerGramToman:
+            price.effectivePricePerGramToman,
+
+          appliedSafetyMarginPercent:
+            price.appliedSafetyMarginPercent,
+
+          safetyMarginAmountToman:
+            price.safetyMarginAmountToman,
+
+          staleAfterMinutes:
+            price.staleAfterMinutes,
+
+          closedMarketMaxAgeMinutes:
+            price.closedMarketMaxAgeMinutes,
+        }),
+      );
 
     return NextResponse.json(
       {
@@ -189,11 +266,35 @@ export async function POST(
         staleAfterMinutes:
           snapshot.staleAfterMinutes,
 
-        hasStaleRates:
-          staleMaterials.length >
+        /*
+         * وضعیت جدید و دقیق
+         */
+        hasUnavailableRates:
+          unavailableMaterials.length >
           0,
 
-        staleMaterials,
+        unavailableMaterials,
+
+        hasClosedMarketRates:
+          closedMarketMaterials.length >
+          0,
+
+        closedMarketMaterials,
+
+        technicallyStaleMaterials,
+
+        rateStates,
+
+        /*
+         * سازگاری موقت با نسخه فعلی کامپوننت سبد خرید:
+         * نرخ بازار بسته نباید به‌عنوان خطا گزارش شود.
+         */
+        hasStaleRates:
+          unavailableMaterials.length >
+          0,
+
+        staleMaterials:
+          unavailableMaterials,
       },
       {
         status:

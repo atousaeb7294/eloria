@@ -10,7 +10,15 @@ import {
   type MetalRateFreshnessReason,
 } from "@/lib/metal-rate-freshness";
 
-import { prisma } from "@/lib/prisma";
+import {
+  getMetalRateSaleDecision,
+  type MetalRateSaleMode,
+  type MetalRateSaleReason,
+} from "@/lib/metal-rate-sale-policy";
+
+import {
+  prisma,
+} from "@/lib/prisma";
 
 export type ProductPricingErrorCode =
   | "PRODUCT_NOT_FOUND"
@@ -24,8 +32,11 @@ export type ProductPricingErrorCode =
   | "UNSUPPORTED_CURRENCY";
 
 export class ProductPricingError extends Error {
-  readonly code: ProductPricingErrorCode;
-  readonly status: number;
+  readonly code:
+    ProductPricingErrorCode;
+
+  readonly status:
+    number;
 
   constructor(
     code: ProductPricingErrorCode,
@@ -34,43 +45,70 @@ export class ProductPricingError extends Error {
   ) {
     super(message);
 
-    this.name = "ProductPricingError";
-    this.code = code;
-    this.status = status;
+    this.name =
+      "ProductPricingError";
+
+    this.code =
+      code;
+
+    this.status =
+      status;
   }
 }
 
 export type GetProductPriceInput = {
   /**
-   * شناسه متنی محصول.
+   * شناسه متنی محصول
    */
-  slug: string;
+  slug:
+    string;
 
   /**
-   * شناسه تنوع محصول.
+   * شناسه تنوع محصول
    */
-  variantId?: string | null;
+  variantId?:
+    string | null;
 
   /**
-   * اجازه استفاده از آخرین نرخ ذخیره‌شده
-   * فقط برای نمایش صفحات محصول.
+   * اجازه استفاده نمایشی از نرخ غیرقابل‌فروش.
+   *
+   * نرخ بازار بسته که مطابق سیاست معتبر باشد،
+   * حتی با false نیز قابل استفاده است.
    *
    * در ثبت سفارش و پرداخت باید false باقی بماند.
    */
-  allowStaleRate?: boolean;
+  allowStaleRate?:
+    boolean;
 };
 
 export type ProductPriceResult = {
   product: {
-    id: string;
-    slug: string;
-    sku: string | null;
-    nameFa: string;
-    nameEn: string;
-    material: MaterialType;
-    purity: string | null;
-    purityFineness: number | null;
-    weightGrams: string | null;
+    id:
+      string;
+
+    slug:
+      string;
+
+    sku:
+      string | null;
+
+    nameFa:
+      string;
+
+    nameEn:
+      string;
+
+    material:
+      MaterialType;
+
+    purity:
+      string | null;
+
+    purityFineness:
+      number | null;
+
+    weightGrams:
+      string | null;
 
     status:
       | "DRAFT"
@@ -78,25 +116,49 @@ export type ProductPriceResult = {
       | "OUT_OF_STOCK"
       | "ARCHIVED";
 
-    stock: number;
-    isPurchasable: boolean;
+    stock:
+      number;
+
+    isPurchasable:
+      boolean;
   };
 
   variant: {
-    id: string;
-    sku: string | null;
-    titleFa: string;
-    titleEn: string;
-    purity: string | null;
-    purityFineness: number | null;
-    weightGrams: string | null;
-    stock: number;
+    id:
+      string;
+
+    sku:
+      string | null;
+
+    titleFa:
+      string;
+
+    titleEn:
+      string;
+
+    purity:
+      string | null;
+
+    purityFineness:
+      number | null;
+
+    weightGrams:
+      string | null;
+
+    stock:
+      number;
   } | null;
 
   pricing: {
-    mode: "DYNAMIC" | "MANUAL";
-    currency: "TOMAN";
-    finalPriceToman: string;
+    mode:
+      | "DYNAMIC"
+      | "MANUAL";
+
+    currency:
+      "TOMAN";
+
+    finalPriceToman:
+      string;
 
     formulaVersion:
       | JewelryPriceResult["formulaVersion"]
@@ -107,59 +169,134 @@ export type ProductPriceResult = {
   };
 
   liveRate: {
-    material: MaterialType;
-    pricePerGramToman: string;
-    referencePurity: number;
-    source: string | null;
-    sourceSymbol: string;
-    sourceDate: string | null;
-    sourceTime: string | null;
+    material:
+      MaterialType;
+
+    /**
+     * نرخی که واقعاً وارد موتور محاسبه شده است.
+     *
+     * در حالت بازار بسته، شامل حاشیه امنیت است.
+     */
+    pricePerGramToman:
+      string;
+
+    /**
+     * نرخ خام دریافت‌شده از منبع بازار.
+     */
+    originalPricePerGramToman:
+      string;
+
+    /**
+     * نرخ قابل‌فروش پس از اعمال سیاست.
+     *
+     * در صورت غیرقابل‌فروش بودن نرخ، null است.
+     */
+    effectivePricePerGramToman:
+      string | null;
+
+    referencePurity:
+      number;
+
+    source:
+      string | null;
+
+    sourceSymbol:
+      string;
+
+    sourceDate:
+      string | null;
+
+    sourceTime:
+      string | null;
 
     /**
      * زمان واقعی نرخ دریافت‌شده از منبع بازار.
      */
-    sourceTimeUnix: string | null;
+    sourceTimeUnix:
+      string | null;
 
     /**
      * sourceTimeUnix تبدیل‌شده به ISO.
      */
-    marketTimestamp: string | null;
+    marketTimestamp:
+      string | null;
 
     /**
      * زمان موفقیت درخواست API.
      * این فیلد معیار تازگی نرخ بازار نیست.
      */
-    lastSuccessAt: string;
+    lastSuccessAt:
+      string;
 
     /**
      * سن نرخ بر اساس sourceTimeUnix.
      */
-    ageSeconds: number | null;
+    ageSeconds:
+      number | null;
 
-    isStale: boolean;
+    isStale:
+      boolean;
 
     freshnessReason:
       MetalRateFreshnessReason;
+
+    saleMode:
+      MetalRateSaleMode;
+
+    saleReason:
+      MetalRateSaleReason;
+
+    isUsableForSale:
+      boolean;
+
+    appliedSafetyMarginPercent:
+      string;
+
+    safetyMarginAmountToman:
+      string;
   } | null;
 
   policy: {
-    defaultProfitPercent: string;
-    defaultTaxPercent: string;
-    taxMetalValue: boolean;
-    quoteTtlSeconds: number;
-    staleAfterMinutes: number;
-    roundingStep: number;
+    defaultProfitPercent:
+      string;
+
+    defaultTaxPercent:
+      string;
+
+    taxMetalValue:
+      boolean;
+
+    quoteTtlSeconds:
+      number;
+
+    staleAfterMinutes:
+      number;
+
+    closedMarketPricingEnabled:
+      boolean;
+
+    closedMarketMaxAgeMinutes:
+      number;
+
+    closedMarketSafetyMarginPercent:
+      string;
+
+    roundingStep:
+      number;
   };
 
   quote: {
-    generatedAt: string;
-    expiresAt: string;
+    generatedAt:
+      string;
+
+    expiresAt:
+      string;
   };
 };
 
 function assertValidSlug(
   slug: string,
-) {
+): string {
   const normalized =
     slug.trim();
 
@@ -174,26 +311,44 @@ function assertValidSlug(
   return normalized;
 }
 
-function getStaleRateMessage(
-  reason: MetalRateFreshnessReason,
+function getUnavailableRateMessage(
+  saleReason:
+    MetalRateSaleReason,
+
+  freshnessReason:
+    MetalRateFreshnessReason,
 ): string {
   if (
-    reason ===
+    freshnessReason ===
     "SOURCE_TIME_MISSING"
   ) {
     return "زمان واقعی نرخ بازار موجود نیست. پرداخت تا دریافت نرخ معتبر متوقف شده است.";
   }
 
   if (
-    reason ===
+    freshnessReason ===
       "SOURCE_TIME_INVALID" ||
-    reason ===
+    freshnessReason ===
       "SOURCE_TIME_IN_FUTURE"
   ) {
     return "زمان نرخ بازار معتبر نیست. پرداخت تا دریافت نرخ معتبر متوقف شده است.";
   }
 
-  return "نرخ فلز منقضی شده است. پرداخت تا دریافت نرخ جدید متوقف شده است.";
+  if (
+    saleReason ===
+    "CLOSED_MARKET_DISABLED"
+  ) {
+    return "نرخ فلز منقضی شده و قیمت‌گذاری بازار بسته برای این فلز غیرفعال است.";
+  }
+
+  if (
+    saleReason ===
+    "RATE_TOO_OLD"
+  ) {
+    return "آخرین نرخ معتبر از سقف زمانی مجاز بازار بسته عبور کرده است. پرداخت تا دریافت نرخ جدید متوقف شده است.";
+  }
+
+  return "نرخ فلز برای فروش معتبر نیست. پرداخت تا دریافت نرخ جدید متوقف شده است.";
 }
 
 export async function getProductLivePrice({
@@ -202,7 +357,9 @@ export async function getProductLivePrice({
   allowStaleRate = false,
 }: GetProductPriceInput): Promise<ProductPriceResult> {
   const normalizedSlug =
-    assertValidSlug(slug);
+    assertValidSlug(
+      slug,
+    );
 
   const product =
     await prisma.product.findFirst({
@@ -231,19 +388,44 @@ export async function getProductLivePrice({
           },
 
           select: {
-            id: true,
-            sku: true,
-            titleFa: true,
-            titleEn: true,
-            price: true,
-            stock: true,
-            metalWeight: true,
-            purity: true,
-            purityFineness: true,
-            makingChargeFixed: true,
-            makingChargePerGram: true,
-            makingChargePercent: true,
-            artisticFee: true,
+            id:
+              true,
+
+            sku:
+              true,
+
+            titleFa:
+              true,
+
+            titleEn:
+              true,
+
+            price:
+              true,
+
+            stock:
+              true,
+
+            metalWeight:
+              true,
+
+            purity:
+              true,
+
+            purityFineness:
+              true,
+
+            makingChargeFixed:
+              true,
+
+            makingChargePerGram:
+              true,
+
+            makingChargePercent:
+              true,
+
+            artisticFee:
+              true,
           },
         },
       },
@@ -399,9 +581,38 @@ export async function getProductLivePrice({
         }
       : null;
 
+  const policyOutput = {
+    defaultProfitPercent:
+      policy.defaultProfitPercent.toString(),
+
+    defaultTaxPercent:
+      policy.defaultTaxPercent.toString(),
+
+    taxMetalValue:
+      policy.taxMetalValue,
+
+    quoteTtlSeconds:
+      policy.quoteTtlSeconds,
+
+    staleAfterMinutes:
+      policy.staleAfterMinutes,
+
+    closedMarketPricingEnabled:
+      policy.closedMarketPricingEnabled,
+
+    closedMarketMaxAgeMinutes:
+      policy.closedMarketMaxAgeMinutes,
+
+    closedMarketSafetyMarginPercent:
+      policy.closedMarketSafetyMarginPercent.toString(),
+
+    roundingStep:
+      policy.roundingStep,
+  };
+
   /*
    * قیمت‌گذاری دستی فقط برای موارد استثنایی است.
-   * محصولات عادی الوریا باید روی DYNAMIC باشند.
+   * محصولات معمولی الوریا باید روی DYNAMIC باشند.
    */
   if (
     product.pricingMode ===
@@ -446,25 +657,8 @@ export async function getProductLivePrice({
       liveRate:
         null,
 
-      policy: {
-        defaultProfitPercent:
-          policy.defaultProfitPercent.toString(),
-
-        defaultTaxPercent:
-          policy.defaultTaxPercent.toString(),
-
-        taxMetalValue:
-          policy.taxMetalValue,
-
-        quoteTtlSeconds:
-          policy.quoteTtlSeconds,
-
-        staleAfterMinutes:
-          policy.staleAfterMinutes,
-
-        roundingStep:
-          policy.roundingStep,
-      },
+      policy:
+        policyOutput,
 
       quote: {
         generatedAt:
@@ -497,8 +691,10 @@ export async function getProductLivePrice({
 
   if (
     !productPurityFineness ||
-    productPurityFineness <= 0 ||
-    productPurityFineness > 1000
+    productPurityFineness <=
+      0 ||
+    productPurityFineness >
+      1000
   ) {
     throw new ProductPricingError(
       "INVALID_PRODUCT_PURITY",
@@ -518,12 +714,12 @@ export async function getProductLivePrice({
   if (!metalPrice) {
     throw new ProductPricingError(
       "METAL_PRICE_NOT_FOUND",
-      "نرخ زنده فلز این محصول موجود نیست.",
+      "نرخ فلز این محصول موجود نیست.",
       503,
     );
   }
 
-  /**
+  /*
    * معیار اصلی تازگی نرخ، زمان واقعی بازار است.
    * lastSuccessAt فقط زمان موفقیت درخواست API است.
    */
@@ -538,29 +734,56 @@ export async function getProductLivePrice({
       now,
     });
 
-  const isMetalPriceStale =
-    rateFreshness.isStale;
+  const saleDecision =
+    getMetalRateSaleDecision({
+      referencePricePerGramToman:
+        metalPrice.pricePerGram.toString(),
 
-  /**
-   * نرخ قدیمی فقط برای نمایش صفحه قابل استفاده است.
+      freshness:
+        rateFreshness,
+
+      closedMarketPricingEnabled:
+        policy.closedMarketPricingEnabled,
+
+      closedMarketMaxAgeMinutes:
+        policy.closedMarketMaxAgeMinutes,
+
+      closedMarketSafetyMarginPercent:
+        policy.closedMarketSafetyMarginPercent.toString(),
+    });
+
+  /*
+   * نرخ تازه و نرخ معتبر بازار بسته قابل فروش هستند.
    *
-   * پرداخت، ثبت سفارش و APIهای حساس
-   * نرخ منقضی یا فاقد زمان معتبر را رد می‌کنند.
+   * نرخ غیرقابل‌فروش فقط برای نمایش صفحه محصول و در صورت
+   * allowStaleRate=true اجازه عبور دارد.
    */
   if (
-    isMetalPriceStale &&
+    !saleDecision.isUsableForSale &&
     !allowStaleRate
   ) {
     throw new ProductPricingError(
       "METAL_PRICE_STALE",
 
-      getStaleRateMessage(
+      getUnavailableRateMessage(
+        saleDecision.reason,
         rateFreshness.reason,
       ),
 
       503,
     );
   }
+
+  /*
+   * نرخ قابل‌فروش بازار بسته شامل حاشیه امنیت است.
+   *
+   * اگر نرخ کاملاً غیرقابل‌فروش باشد ولی صرفاً برای نمایش
+   * اجازه عبور داشته باشد، نرخ خام نمایش داده می‌شود.
+   */
+  const calculationPricePerGramToman =
+    saleDecision
+      .effectivePricePerGramToman ??
+    metalPrice.pricePerGram.toString();
 
   const makingChargeFixed =
     variant?.makingChargeFixed ??
@@ -598,7 +821,7 @@ export async function getProductLivePrice({
         productPurityFineness,
 
       referencePricePerGramToman:
-        metalPrice.pricePerGram.toString(),
+        calculationPricePerGramToman,
 
       referencePurity:
         metalPrice.referencePurity,
@@ -660,7 +883,14 @@ export async function getProductLivePrice({
         product.material as MaterialType,
 
       pricePerGramToman:
+        calculationPricePerGramToman,
+
+      originalPricePerGramToman:
         metalPrice.pricePerGram.toString(),
+
+      effectivePricePerGramToman:
+        saleDecision
+          .effectivePricePerGramToman,
 
       referencePurity:
         metalPrice.referencePurity,
@@ -678,15 +908,19 @@ export async function getProductLivePrice({
         metalPrice.sourceTime,
 
       sourceTimeUnix:
-        metalPrice.sourceTimeUnix?.toString() ??
+        metalPrice.sourceTimeUnix
+          ?.toString() ??
         null,
 
       marketTimestamp:
-        rateFreshness.marketTimestamp?.toISOString() ??
+        rateFreshness
+          .marketTimestamp
+          ?.toISOString() ??
         null,
 
       lastSuccessAt:
-        metalPrice.lastSuccessAt.toISOString(),
+        metalPrice.lastSuccessAt
+          .toISOString(),
 
       ageSeconds:
         rateFreshness.ageSeconds,
@@ -696,27 +930,28 @@ export async function getProductLivePrice({
 
       freshnessReason:
         rateFreshness.reason,
+
+      saleMode:
+        saleDecision.mode,
+
+      saleReason:
+        saleDecision.reason,
+
+      isUsableForSale:
+        saleDecision
+          .isUsableForSale,
+
+      appliedSafetyMarginPercent:
+        saleDecision
+          .appliedSafetyMarginPercent,
+
+      safetyMarginAmountToman:
+        saleDecision
+          .safetyMarginAmountToman,
     },
 
-    policy: {
-      defaultProfitPercent:
-        policy.defaultProfitPercent.toString(),
-
-      defaultTaxPercent:
-        policy.defaultTaxPercent.toString(),
-
-      taxMetalValue:
-        policy.taxMetalValue,
-
-      quoteTtlSeconds:
-        policy.quoteTtlSeconds,
-
-      staleAfterMinutes:
-        policy.staleAfterMinutes,
-
-      roundingStep:
-        policy.roundingStep,
-    },
+    policy:
+      policyOutput,
 
     quote: {
       generatedAt:

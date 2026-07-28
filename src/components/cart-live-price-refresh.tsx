@@ -14,6 +14,10 @@ import {
 export const CART_LIVE_PRICE_EVENT =
   "eloria-live-price-refresh";
 
+export type CartLivePriceMode =
+  | "LIVE"
+  | "CLOSED_MARKET";
+
 export type CartLivePriceEventDetail = {
   status:
     | "refreshing"
@@ -21,7 +25,12 @@ export type CartLivePriceEventDetail = {
     | "failed";
 
   refreshedAt?: string;
+
   message?: string;
+
+  pricingMode?: CartLivePriceMode;
+
+  closedMarketMaterials?: string[];
 };
 
 const VISIBILITY_REFRESH_INTERVAL_MS =
@@ -32,16 +41,31 @@ const REQUEST_TIMEOUT_MS =
 
 type ApiResponse = {
   successful?: unknown;
+
   refreshedAt?: unknown;
+
   checkedAt?: unknown;
+
   message?: unknown;
+
+  hasUnavailableRates?: unknown;
+
+  unavailableMaterials?: unknown;
+
+  hasClosedMarketRates?: unknown;
+
+  closedMarketMaterials?: unknown;
+
+  /*
+   * فیلدهای موقت برای سازگاری با نسخه قبلی API
+   */
   hasStaleRates?: unknown;
+
   staleMaterials?: unknown;
 };
 
 function dispatchLivePriceStatus(
-  detail:
-    CartLivePriceEventDetail,
+  detail: CartLivePriceEventDetail,
 ) {
   window.dispatchEvent(
     new CustomEvent(
@@ -97,6 +121,26 @@ function getResponseTimestamp(
     .toISOString();
 }
 
+function getStringArray(
+  value: unknown,
+): string[] {
+  if (
+    !Array.isArray(
+      value,
+    )
+  ) {
+    return [];
+  }
+
+  return value.filter(
+    (
+      item,
+    ): item is string =>
+      typeof item ===
+      "string",
+  );
+}
+
 function translateMaterial(
   material: string,
 ): string {
@@ -117,40 +161,39 @@ function translateMaterial(
   return material;
 }
 
-function getStaleRateMessage(
+function getUnavailableRateMessage(
   data: ApiResponse,
 ): string {
-  if (
-    !Array.isArray(
+  const unavailableMaterials =
+    getStringArray(
+      data.unavailableMaterials,
+    );
+
+  const legacyStaleMaterials =
+    getStringArray(
       data.staleMaterials,
-    )
-  ) {
-    return "نرخ بازار منقضی شده است. خرید تا دریافت نرخ جدید موقتاً متوقف است.";
-  }
+    );
 
   const materials =
-    data.staleMaterials
-      .filter(
-        (
-          material,
-        ): material is string =>
-          typeof material ===
-          "string",
-      )
-      .map(
-        translateMaterial,
-      );
+    (
+      unavailableMaterials.length >
+      0
+        ? unavailableMaterials
+        : legacyStaleMaterials
+    ).map(
+      translateMaterial,
+    );
 
   if (
     materials.length ===
     0
   ) {
-    return "نرخ بازار منقضی شده است. خرید تا دریافت نرخ جدید موقتاً متوقف است.";
+    return "نرخ بازار قابل استفاده نیست. خرید تا دریافت نرخ معتبر موقتاً متوقف است.";
   }
 
   return `نرخ ${materials.join(
     " و ",
-  )} منقضی شده است. خرید تا دریافت نرخ جدید موقتاً متوقف است.`;
+  )} قابل استفاده نیست. خرید تا دریافت نرخ معتبر موقتاً متوقف است.`;
 }
 
 export function CartLivePriceRefresh() {
@@ -251,8 +294,7 @@ export function CartLivePriceRefresh() {
           return;
         }
 
-        const data:
-          ApiResponse =
+        const data: ApiResponse =
           rawData;
 
         if (
@@ -267,7 +309,7 @@ export function CartLivePriceRefresh() {
             message:
               getResponseMessage(
                 data,
-                "بررسی نرخ زنده انجام نشد.",
+                "بررسی نرخ بازار انجام نشد.",
               ),
           });
 
@@ -275,27 +317,30 @@ export function CartLivePriceRefresh() {
         }
 
         /*
-         * درخواست با موفقیت بررسی شده است؛
-         * پس زمان آخرین بررسی محلی ثبت می‌شود،
-         * حتی اگر نرخ بازار منقضی باشد.
+         * زمان بررسی محلی فقط پس از دریافت پاسخ معتبر ثبت می‌شود.
          */
         lastRefreshAtRef.current =
           Date.now();
 
         /*
-         * پاسخ موفق HTTP الزاماً به معنی
-         * معتبر بودن نرخ بازار نیست.
+         * نرخ بازار بسته قابل فروش است و نباید در این بخش
+         * به‌عنوان خطا گزارش شود.
          */
-        if (
+        const hasUnavailableRates =
+          data.hasUnavailableRates ===
+            true ||
           data.hasStaleRates ===
-          true
+            true;
+
+        if (
+          hasUnavailableRates
         ) {
           dispatchLivePriceStatus({
             status:
               "failed",
 
             message:
-              getStaleRateMessage(
+              getUnavailableRateMessage(
                 data,
               ),
           });
@@ -308,16 +353,34 @@ export function CartLivePriceRefresh() {
             data,
           );
 
+        const closedMarketMaterials =
+          getStringArray(
+            data.closedMarketMaterials,
+          );
+
+        const pricingMode:
+          CartLivePriceMode =
+          data.hasClosedMarketRates ===
+            true ||
+          closedMarketMaterials.length >
+            0
+            ? "CLOSED_MARKET"
+            : "LIVE";
+
         dispatchLivePriceStatus({
           status:
             "success",
 
           refreshedAt,
+
+          pricingMode,
+
+          closedMarketMaterials,
         });
 
         /*
-         * فقط وقتی نرخ‌ها معتبرند،
-         * محاسبه قیمت سبد دوباره انجام می‌شود.
+         * پس از تأیید قابل‌فروش‌بودن نرخ‌ها،
+         * قیمت سبد دوباره از سرور دریافت می‌شود.
          */
         window.dispatchEvent(
           new CustomEvent(
