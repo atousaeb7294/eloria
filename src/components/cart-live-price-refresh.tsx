@@ -33,8 +33,12 @@ export type CartLivePriceEventDetail = {
   closedMarketMaterials?: string[];
 };
 
-const VISIBILITY_REFRESH_INTERVAL_MS =
-  60_000;
+/*
+ * قیمت و موجودی سبد در زمان نمایش صفحه
+ * هر ۳۰ ثانیه از سرور بررسی می‌شوند.
+ */
+const VISIBLE_REFRESH_INTERVAL_MS =
+  30_000;
 
 const REQUEST_TIMEOUT_MS =
   20_000;
@@ -57,7 +61,7 @@ type ApiResponse = {
   closedMarketMaterials?: unknown;
 
   /*
-   * فیلدهای موقت برای سازگاری با نسخه قبلی API
+   * فیلدهای قدیمی برای سازگاری با نسخه قبلی API
    */
   hasStaleRates?: unknown;
 
@@ -117,18 +121,13 @@ function getResponseTimestamp(
     return data.refreshedAt;
   }
 
-  return new Date()
-    .toISOString();
+  return new Date().toISOString();
 }
 
 function getStringArray(
   value: unknown,
 ): string[] {
-  if (
-    !Array.isArray(
-      value,
-    )
-  ) {
+  if (!Array.isArray(value)) {
     return [];
   }
 
@@ -144,17 +143,11 @@ function getStringArray(
 function translateMaterial(
   material: string,
 ): string {
-  if (
-    material ===
-    "GOLD"
-  ) {
+  if (material === "GOLD") {
     return "طلا";
   }
 
-  if (
-    material ===
-    "SILVER"
-  ) {
+  if (material === "SILVER") {
     return "نقره";
   }
 
@@ -180,20 +173,15 @@ function getUnavailableRateMessage(
       0
         ? unavailableMaterials
         : legacyStaleMaterials
-    ).map(
-      translateMaterial,
-    );
+    ).map(translateMaterial);
 
-  if (
-    materials.length ===
-    0
-  ) {
-    return "نرخ بازار قابل استفاده نیست. خرید تا دریافت نرخ معتبر موقتاً متوقف است.";
+  if (materials.length === 0) {
+    return "نرخ معتبر بازار در دسترس نیست. خرید تا دریافت نرخ معتبر موقتاً متوقف شده است.";
   }
 
   return `نرخ ${materials.join(
     " و ",
-  )} قابل استفاده نیست. خرید تا دریافت نرخ معتبر موقتاً متوقف است.`;
+  )} قابل استفاده نیست. خرید تا دریافت نرخ معتبر موقتاً متوقف شده است.`;
 }
 
 export function CartLivePriceRefresh() {
@@ -208,21 +196,19 @@ export function CartLivePriceRefresh() {
   const lastRefreshAtRef =
     useRef(0);
 
+  const mountedRef =
+    useRef(true);
+
   const refreshLatestPrices =
     useCallback(async () => {
-      if (
-        refreshingRef.current
-      ) {
+      if (refreshingRef.current) {
         return;
       }
 
       const cartItems =
         readCartItems();
 
-      if (
-        cartItems.length ===
-        0
-      ) {
+      if (cartItems.length === 0) {
         return;
       }
 
@@ -246,8 +232,7 @@ export function CartLivePriceRefresh() {
         );
 
       dispatchLivePriceStatus({
-        status:
-          "refreshing",
+        status: "refreshing",
       });
 
       try {
@@ -255,11 +240,9 @@ export function CartLivePriceRefresh() {
           await fetch(
             "/api/cart/refresh-prices",
             {
-              method:
-                "POST",
+              method: "POST",
 
-              cache:
-                "no-store",
+              cache: "no-store",
 
               headers: {
                 Accept:
@@ -274,21 +257,14 @@ export function CartLivePriceRefresh() {
         const rawData: unknown =
           await response
             .json()
-            .catch(
-              () => null,
-            );
+            .catch(() => null);
 
-        if (
-          !isRecord(
-            rawData,
-          )
-        ) {
+        if (!isRecord(rawData)) {
           dispatchLivePriceStatus({
-            status:
-              "failed",
+            status: "failed",
 
             message:
-              "پاسخ بررسی نرخ بازار معتبر نیست.",
+              "پاسخ سرور برای بررسی نرخ بازار معتبر نیست.",
           });
 
           return;
@@ -299,12 +275,10 @@ export function CartLivePriceRefresh() {
 
         if (
           !response.ok ||
-          data.successful !==
-            true
+          data.successful !== true
         ) {
           dispatchLivePriceStatus({
-            status:
-              "failed",
+            status: "failed",
 
             message:
               getResponseMessage(
@@ -317,27 +291,19 @@ export function CartLivePriceRefresh() {
         }
 
         /*
-         * زمان بررسی محلی فقط پس از دریافت پاسخ معتبر ثبت می‌شود.
+         * زمان آخرین بررسی فقط بعد از پاسخ معتبر سرور ثبت می‌شود.
          */
         lastRefreshAtRef.current =
           Date.now();
 
-        /*
-         * نرخ بازار بسته قابل فروش است و نباید در این بخش
-         * به‌عنوان خطا گزارش شود.
-         */
         const hasUnavailableRates =
           data.hasUnavailableRates ===
             true ||
-          data.hasStaleRates ===
-            true;
+          data.hasStaleRates === true;
 
-        if (
-          hasUnavailableRates
-        ) {
+        if (hasUnavailableRates) {
           dispatchLivePriceStatus({
-            status:
-              "failed",
+            status: "failed",
 
             message:
               getUnavailableRateMessage(
@@ -349,9 +315,7 @@ export function CartLivePriceRefresh() {
         }
 
         const refreshedAt =
-          getResponseTimestamp(
-            data,
-          );
+          getResponseTimestamp(data);
 
         const closedMarketMaterials =
           getStringArray(
@@ -367,9 +331,12 @@ export function CartLivePriceRefresh() {
             ? "CLOSED_MARKET"
             : "LIVE";
 
+        /*
+         * وضعیت بازار بسته فقط برای منطق داخلی نگهداری می‌شود
+         * و هیچ پیام دائمی برای مشتری نمایش داده نمی‌شود.
+         */
         dispatchLivePriceStatus({
-          status:
-            "success",
+          status: "success",
 
           refreshedAt,
 
@@ -379,8 +346,8 @@ export function CartLivePriceRefresh() {
         });
 
         /*
-         * پس از تأیید قابل‌فروش‌بودن نرخ‌ها،
-         * قیمت سبد دوباره از سرور دریافت می‌شود.
+         * پس از تأیید نرخ معتبر، قیمت و موجودی سبد
+         * دوباره مستقیماً از سرور دریافت می‌شود.
          */
         window.dispatchEvent(
           new CustomEvent(
@@ -389,6 +356,8 @@ export function CartLivePriceRefresh() {
               detail: {
                 reason:
                   "live-price-refresh",
+
+                refreshedAt,
               },
             },
           ),
@@ -400,28 +369,30 @@ export function CartLivePriceRefresh() {
           error.name ===
             "AbortError"
         ) {
+          if (!mountedRef.current) {
+            return;
+          }
+
           dispatchLivePriceStatus({
-            status:
-              "failed",
+            status: "failed",
 
             message:
-              "زمان دریافت وضعیت نرخ بازار بیش از حد طول کشید.",
+              "زمان دریافت نرخ بازار بیش از حد طول کشید.",
           });
 
           return;
         }
 
         console.error(
-          "[Eloria Cart] Unable to check stored live prices.",
+          "[Eloria Cart] Unable to check current market rates.",
           error,
         );
 
         dispatchLivePriceStatus({
-          status:
-            "failed",
+          status: "failed",
 
           message:
-            "اتصال به سرویس بررسی نرخ بازار برقرار نشد.",
+            "ارتباط با سرویس بررسی نرخ بازار برقرار نشد.",
         });
       } finally {
         window.clearTimeout(
@@ -442,6 +413,9 @@ export function CartLivePriceRefresh() {
     }, []);
 
   useEffect(() => {
+    mountedRef.current =
+      true;
+
     const initialTimer =
       window.setTimeout(
         () => {
@@ -449,6 +423,18 @@ export function CartLivePriceRefresh() {
         },
         0,
       );
+
+    const shouldRefreshNow =
+      () => {
+        const elapsed =
+          Date.now() -
+          lastRefreshAtRef.current;
+
+        return (
+          elapsed >=
+          VISIBLE_REFRESH_INTERVAL_MS
+        );
+      };
 
     const handleVisibilityChange =
       () => {
@@ -459,30 +445,21 @@ export function CartLivePriceRefresh() {
           return;
         }
 
-        const elapsed =
-          Date.now() -
-          lastRefreshAtRef.current;
-
-        if (
-          elapsed >=
-          VISIBILITY_REFRESH_INTERVAL_MS
-        ) {
+        if (shouldRefreshNow()) {
           void refreshLatestPrices();
         }
       };
 
     const handleWindowFocus =
       () => {
-        const elapsed =
-          Date.now() -
-          lastRefreshAtRef.current;
-
-        if (
-          elapsed >=
-          VISIBILITY_REFRESH_INTERVAL_MS
-        ) {
+        if (shouldRefreshNow()) {
           void refreshLatestPrices();
         }
+      };
+
+    const handleOnline =
+      () => {
+        void refreshLatestPrices();
       };
 
     const intervalId =
@@ -495,7 +472,7 @@ export function CartLivePriceRefresh() {
             void refreshLatestPrices();
           }
         },
-        VISIBILITY_REFRESH_INTERVAL_MS,
+        VISIBLE_REFRESH_INTERVAL_MS,
       );
 
     document.addEventListener(
@@ -508,7 +485,15 @@ export function CartLivePriceRefresh() {
       handleWindowFocus,
     );
 
+    window.addEventListener(
+      "online",
+      handleOnline,
+    );
+
     return () => {
+      mountedRef.current =
+        false;
+
       window.clearTimeout(
         initialTimer,
       );
@@ -525,6 +510,11 @@ export function CartLivePriceRefresh() {
       window.removeEventListener(
         "focus",
         handleWindowFocus,
+      );
+
+      window.removeEventListener(
+        "online",
+        handleOnline,
       );
 
       controllerRef.current?.abort();

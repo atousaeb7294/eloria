@@ -5,15 +5,17 @@ import Link from "next/link";
 
 import {
   AlertTriangle,
+  ArrowDownRight,
   ArrowLeft,
   ArrowRight,
-  CircleCheck,
+  ArrowUpRight,
   LoaderCircle,
   Minus,
   Plus,
   RefreshCw,
   ShoppingBag,
   Trash2,
+  X,
 } from "lucide-react";
 
 import {
@@ -28,7 +30,6 @@ import {
 import {
   CART_LIVE_PRICE_EVENT,
   type CartLivePriceEventDetail,
-  type CartLivePriceMode,
 } from "@/components/cart-live-price-refresh";
 
 import {
@@ -48,9 +49,7 @@ type QuotedCartItem = {
     id: string;
     nameFa: string;
     nameEn: string;
-    material:
-      | "GOLD"
-      | "SILVER";
+    material: "GOLD" | "SILVER";
     sku: string | null;
     stock: number;
     isPurchasable: boolean;
@@ -71,18 +70,13 @@ type QuotedCartItem = {
   } | null;
 
   pricing: {
-    currency:
-      "TOMAN";
-    unitPriceToman:
-      string;
-    lineTotalToman:
-      string;
+    currency: "TOMAN";
+    unitPriceToman: string;
+    lineTotalToman: string;
   };
 
   canPurchase: boolean;
-
-  unavailableReason:
-    string | null;
+  unavailableReason: string | null;
 };
 
 type FailedCartItem = {
@@ -102,21 +96,11 @@ type CartQuoteSummary = {
 
 type CartQuoteResponse = {
   successful: true;
-
-  currency:
-    "TOMAN";
-
-  items:
-    QuotedCartItem[];
-
-  failedItems:
-    FailedCartItem[];
-
-  summary:
-    CartQuoteSummary;
-
-  generatedAt:
-    string;
+  currency: "TOMAN";
+  items: QuotedCartItem[];
+  failedItems: FailedCartItem[];
+  summary: CartQuoteSummary;
+  generatedAt: string;
 };
 
 type LivePriceState =
@@ -125,17 +109,32 @@ type LivePriceState =
   | "success"
   | "failed";
 
+type PriceChangeDirection =
+  | "INCREASED"
+  | "DECREASED"
+  | "CHANGED";
+
+type PriceChangeNotice = {
+  id: number;
+  direction: PriceChangeDirection;
+  changedItemsCount: number;
+  previousSubtotalToman: string;
+  currentSubtotalToman: string;
+  differenceToman: string;
+};
+
+type QuoteLoadOptions = {
+  background?: boolean;
+  notifyOnPriceChange?: boolean;
+};
+
 type CartPageClientProps = {
   locale: string;
-
-  persianTitleClassName:
-    string;
+  persianTitleClassName: string;
 };
 
 function getCartSnapshot(): string {
-  return JSON.stringify(
-    readCartItems(),
-  );
+  return JSON.stringify(readCartItems());
 }
 
 function getServerCartSnapshot(): string {
@@ -161,8 +160,7 @@ function isCartQuoteResponse(
   value: unknown,
 ): value is CartQuoteResponse {
   if (
-    typeof value !==
-      "object" ||
+    typeof value !== "object" ||
     value === null
   ) {
     return false;
@@ -171,63 +169,156 @@ function isCartQuoteResponse(
   const candidate =
     value as Partial<CartQuoteResponse>;
 
-  if (
-    candidate.successful !==
-      true ||
-    !Array.isArray(
-      candidate.items,
-    ) ||
-    !Array.isArray(
+  return (
+    candidate.successful === true &&
+    Array.isArray(candidate.items) &&
+    Array.isArray(
       candidate.failedItems,
-    ) ||
-    typeof candidate.summary !==
-      "object" ||
-    candidate.summary ===
-      null ||
-    typeof candidate.generatedAt !==
+    ) &&
+    typeof candidate.summary ===
+      "object" &&
+    candidate.summary !== null &&
+    typeof candidate.generatedAt ===
       "string"
-  ) {
-    return false;
-  }
-
-  return true;
+  );
 }
 
 function isSameItem(
   first: {
     slug: string;
-    variantId:
-      string | null;
+    variantId: string | null;
   },
   second: {
     slug: string;
-    variantId:
-      string | null;
+    variantId: string | null;
   },
 ) {
   return (
-    first.slug ===
-      second.slug &&
-    first.variantId ===
-      second.variantId
+    first.slug === second.slug &&
+    first.variantId === second.variantId
   );
 }
 
+function getItemKey(item: {
+  slug: string;
+  variantId: string | null;
+}) {
+  return `${item.slug}:${item.variantId ?? "default"}`;
+}
+
+function parseToman(
+  value: string,
+): bigint | null {
+  try {
+    return BigInt(value);
+  } catch {
+    return null;
+  }
+}
+
+function detectPriceChange(
+  previousQuote: CartQuoteResponse,
+  currentQuote: CartQuoteResponse,
+): PriceChangeNotice | null {
+  const previousPrices =
+    new Map<string, string>();
+
+  for (const item of previousQuote.items) {
+    previousPrices.set(
+      getItemKey(item),
+      item.pricing.unitPriceToman,
+    );
+  }
+
+  let changedItemsCount = 0;
+
+  for (const item of currentQuote.items) {
+    const previousPrice =
+      previousPrices.get(
+        getItemKey(item),
+      );
+
+    if (
+      previousPrice !== undefined &&
+      previousPrice !==
+        item.pricing.unitPriceToman
+    ) {
+      changedItemsCount += 1;
+    }
+  }
+
+  if (changedItemsCount === 0) {
+    return null;
+  }
+
+  const previousSubtotal =
+    parseToman(
+      previousQuote.summary
+        .subtotalToman,
+    );
+
+  const currentSubtotal =
+    parseToman(
+      currentQuote.summary
+        .subtotalToman,
+    );
+
+  if (
+    previousSubtotal === null ||
+    currentSubtotal === null
+  ) {
+    return {
+      id: Date.now(),
+      direction: "CHANGED",
+      changedItemsCount,
+      previousSubtotalToman:
+        previousQuote.summary
+          .subtotalToman,
+      currentSubtotalToman:
+        currentQuote.summary
+          .subtotalToman,
+      differenceToman: "0",
+    };
+  }
+
+  const difference =
+    currentSubtotal -
+    previousSubtotal;
+
+  const absoluteDifference =
+    difference < BigInt(0)
+      ? difference * BigInt(-1)
+      : difference;
+
+  const direction:
+    PriceChangeDirection =
+    difference > BigInt(0)
+      ? "INCREASED"
+      : difference < BigInt(0)
+        ? "DECREASED"
+        : "CHANGED";
+
+  return {
+    id: Date.now(),
+    direction,
+    changedItemsCount,
+    previousSubtotalToman:
+      previousSubtotal.toString(),
+    currentSubtotalToman:
+      currentSubtotal.toString(),
+    differenceToman:
+      absoluteDifference.toString(),
+  };
+}
+
 function calculateSummary(
-  items:
-    QuotedCartItem[],
-  failedItems:
-    FailedCartItem[],
+  items: QuotedCartItem[],
+  failedItems: FailedCartItem[],
 ): CartQuoteSummary {
   const subtotalToman =
     items.reduce(
-      (
-        total,
-        item,
-      ) => {
-        if (
-          !item.canPurchase
-        ) {
+      (total, item) => {
+        if (!item.canPurchase) {
           return total;
         }
 
@@ -248,28 +339,19 @@ function calculateSummary(
 
   const totalQuantity =
     items.reduce(
-      (
-        total,
-        item,
-      ) =>
-        total +
-        item.quantity,
+      (total, item) =>
+        total + item.quantity,
       0,
     );
 
   return {
-    uniqueItems:
-      items.length,
-
+    uniqueItems: items.length,
     totalQuantity,
-
     subtotalToman:
       subtotalToman.toString(),
-
     canCheckout:
       items.length > 0 &&
-      failedItems.length ===
-        0 &&
+      failedItems.length === 0 &&
       items.every(
         (item) =>
           item.canPurchase,
@@ -338,10 +420,15 @@ export function CartPageClient({
     );
 
   const [
-    livePriceMode,
-    setLivePriceMode,
+    priceChangeNotice,
+    setPriceChangeNotice,
   ] =
-    useState<CartLivePriceMode | null>(
+    useState<PriceChangeNotice | null>(
+      null,
+    );
+
+  const quoteRef =
+    useRef<CartQuoteResponse | null>(
       null,
     );
 
@@ -355,22 +442,20 @@ export function CartPageClient({
 
   const quoteTimerRef =
     useRef<
-      ReturnType<
-        typeof setTimeout
-      > | null
+      ReturnType<typeof setTimeout> | null
+    >(null);
+
+  const noticeTimerRef =
+    useRef<
+      ReturnType<typeof setTimeout> | null
     >(null);
 
   const text =
     isPersian
       ? {
-          title:
-            "سبد خرید",
-
+          title: "سبد خرید",
           eyebrow:
             "Eloria Shopping Bag",
-
-          description:
-            "قیمت و موجودی محصولات مستقیماً از سرور الوریا بررسی می‌شود.",
 
           emptyTitle:
             "سبد خرید شما خالی است",
@@ -381,29 +466,19 @@ export function CartPageClient({
           products:
             "مشاهده محصولات",
 
-          quantity:
-            "تعداد",
-
+          quantity: "تعداد",
           unitPrice:
             "قیمت هر واحد",
-
           lineTotal:
             "مجموع محصول",
-
-          remove:
-            "حذف",
-
+          remove: "حذف",
           summary:
             "خلاصه سفارش",
-
           itemCount:
             "تعداد محصولات",
-
           subtotal:
             "جمع کل",
-
-          toman:
-            "تومان",
+          toman: "تومان",
 
           checkout:
             "ادامه فرایند خرید",
@@ -424,7 +499,7 @@ export function CartPageClient({
             "در حال بررسی قیمت و موجودی...",
 
           securePricing:
-            "قیمت نهایی هنگام پرداخت دوباره با آخرین نرخ معتبر و سیاست فعال قیمت‌گذاری بررسی می‌شود.",
+            "قیمت نهایی هنگام پرداخت دوباره از سرور بررسی و محاسبه می‌شود.",
 
           checkoutBlocked:
             "برای ادامه خرید، مشکلات سبد را برطرف کنید.",
@@ -432,32 +507,40 @@ export function CartPageClient({
           genericError:
             "دریافت اطلاعات سبد خرید امکان‌پذیر نیست.",
 
-          variant:
-            "مدل",
-
-          material:
-            "جنس",
-
-          gold:
-            "طلا",
-
-          silver:
-            "نقره",
-
-          liveConnecting:
-            "در حال اتصال به آخرین نرخ بازار",
-
-          liveReady:
-            "قیمت‌ها با آخرین نرخ بررسی شدند",
-
-          closedMarketReady:
-            "بازار بسته است؛ قیمت‌ها با آخرین نرخ معتبر و حاشیه امنیت ۲ درصد محاسبه شده‌اند.",
+          variant: "مدل",
+          material: "جنس",
+          gold: "طلا",
+          silver: "نقره",
 
           liveFailed:
-            "اتصال به نرخ بازار برقرار نشد؛ قیمت موجود نمایش داده می‌شود.",
+            "بررسی نرخ بازار انجام نشد. لطفاً دوباره تلاش کنید.",
 
           checkedAt:
             "آخرین بررسی",
+
+          priceUpdated:
+            "قیمت سبد خرید به‌روزرسانی شد",
+
+          priceIncreased:
+            "جمع سبد خرید افزایش یافت.",
+
+          priceDecreased:
+            "جمع سبد خرید کاهش یافت.",
+
+          priceChanged:
+            "قیمت محصولات سبد خرید تغییر کرد.",
+
+          changedItems:
+            "محصول دارای قیمت جدید",
+
+          previousTotal:
+            "مبلغ قبلی",
+
+          currentTotal:
+            "مبلغ جدید",
+
+          dismiss:
+            "بستن اعلان",
         }
       : {
           title:
@@ -465,9 +548,6 @@ export function CartPageClient({
 
           eyebrow:
             "Eloria Shopping Bag",
-
-          description:
-            "Prices and availability are verified directly by Eloria servers.",
 
           emptyTitle:
             "Your shopping bag is empty",
@@ -521,7 +601,7 @@ export function CartPageClient({
             "Checking prices and availability...",
 
           securePricing:
-            "The final price is verified again at checkout using the latest valid rate and active pricing policy.",
+            "The final price is recalculated and verified by the server before payment.",
 
           checkoutBlocked:
             "Resolve the cart issues before continuing.",
@@ -541,20 +621,35 @@ export function CartPageClient({
           silver:
             "Silver",
 
-          liveConnecting:
-            "Connecting to the latest market rate",
-
-          liveReady:
-            "Prices verified against the latest rate",
-
-          closedMarketReady:
-            "The market is closed; prices use the latest valid rate with a 2% safety margin.",
-
           liveFailed:
-            "Market-rate connection failed; the available price is being shown.",
+            "The market rate could not be verified. Please try again.",
 
           checkedAt:
             "Last checked",
+
+          priceUpdated:
+            "Shopping bag price updated",
+
+          priceIncreased:
+            "The shopping bag total increased.",
+
+          priceDecreased:
+            "The shopping bag total decreased.",
+
+          priceChanged:
+            "Product prices in your shopping bag changed.",
+
+          changedItems:
+            "products have new prices",
+
+          previousTotal:
+            "Previous total",
+
+          currentTotal:
+            "New total",
+
+          dismiss:
+            "Dismiss notification",
         };
 
   const formatNumber = (
@@ -574,9 +669,7 @@ export function CartPageClient({
         isPersian
           ? "fa-IR"
           : "en-US",
-      ).format(
-        BigInt(value),
-      );
+      ).format(BigInt(value));
     } catch {
       return value;
     }
@@ -601,23 +694,66 @@ export function CartPageClient({
         ? "fa-IR"
         : "en-US",
       {
-        hour:
-          "2-digit",
-
-        minute:
-          "2-digit",
-
-        second:
-          "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
       },
     ).format(date);
   };
 
+  const dismissPriceChangeNotice =
+    useCallback(() => {
+      if (
+        noticeTimerRef.current
+      ) {
+        clearTimeout(
+          noticeTimerRef.current,
+        );
+
+        noticeTimerRef.current =
+          null;
+      }
+
+      setPriceChangeNotice(null);
+    }, []);
+
+  const showPriceChangeNotice =
+    useCallback(
+      (
+        notice:
+          PriceChangeNotice,
+      ) => {
+        if (
+          noticeTimerRef.current
+        ) {
+          clearTimeout(
+            noticeTimerRef.current,
+          );
+        }
+
+        setPriceChangeNotice(
+          notice,
+        );
+
+        noticeTimerRef.current =
+          setTimeout(() => {
+            noticeTimerRef.current =
+              null;
+
+            setPriceChangeNotice(
+              null,
+            );
+          }, 8_000);
+      },
+      [],
+    );
+
   const loadQuote =
     useCallback(
       async (
-        items:
-          CartItem[],
+        items: CartItem[],
+        options: QuoteLoadOptions =
+          {},
       ) => {
         const requestId =
           requestIdRef.current +
@@ -628,13 +764,14 @@ export function CartPageClient({
 
         requestControllerRef.current?.abort();
 
-        if (
-          items.length ===
-          0
-        ) {
+        if (items.length === 0) {
+          quoteRef.current =
+            null;
+
           setQuote(null);
           setError(null);
           setLoading(false);
+          dismissPriceChangeNotice();
 
           return;
         }
@@ -645,7 +782,10 @@ export function CartPageClient({
         requestControllerRef.current =
           controller;
 
-        setLoading(true);
+        if (!options.background) {
+          setLoading(true);
+        }
+
         setError(null);
 
         try {
@@ -653,8 +793,7 @@ export function CartPageClient({
             await fetch(
               "/api/cart/quote",
               {
-                method:
-                  "POST",
+                method: "POST",
 
                 headers: {
                   "Content-Type":
@@ -697,8 +836,7 @@ export function CartPageClient({
               typeof data ===
                 "object" &&
               data !== null &&
-              "message" in
-                data &&
+              "message" in data &&
               typeof data.message ===
                 "string"
             ) {
@@ -717,6 +855,29 @@ export function CartPageClient({
           ) {
             return;
           }
+
+          const previousQuote =
+            quoteRef.current;
+
+          if (
+            options.notifyOnPriceChange &&
+            previousQuote
+          ) {
+            const priceChange =
+              detectPriceChange(
+                previousQuote,
+                data,
+              );
+
+            if (priceChange) {
+              showPriceChangeNotice(
+                priceChange,
+              );
+            }
+          }
+
+          quoteRef.current =
+            data;
 
           setQuote(data);
           setError(null);
@@ -763,6 +924,8 @@ export function CartPageClient({
         }
       },
       [
+        dismissPriceChangeNotice,
+        showPriceChangeNotice,
         text.genericError,
       ],
     );
@@ -770,11 +933,10 @@ export function CartPageClient({
   const scheduleQuote =
     useCallback(
       (
-        items:
-          CartItem[],
-
-        immediate =
-          false,
+        items: CartItem[],
+        immediate = false,
+        options: QuoteLoadOptions =
+          {},
       ) => {
         if (
           quoteTimerRef.current
@@ -788,26 +950,20 @@ export function CartPageClient({
         }
 
         const delay =
-          immediate
-            ? 0
-            : 100;
+          immediate ? 0 : 100;
 
         quoteTimerRef.current =
-          setTimeout(
-            () => {
-              quoteTimerRef.current =
-                null;
+          setTimeout(() => {
+            quoteTimerRef.current =
+              null;
 
-              void loadQuote(
-                items,
-              );
-            },
-            delay,
-          );
+            void loadQuote(
+              items,
+              options,
+            );
+          }, delay);
       },
-      [
-        loadQuote,
-      ],
+      [loadQuote],
     );
 
   useEffect(() => {
@@ -822,10 +978,7 @@ export function CartPageClient({
 
   useEffect(() => {
     const handleLivePriceEvent =
-      (
-        event:
-          Event,
-      ) => {
+      (event: Event) => {
         const customEvent =
           event as CustomEvent<CartLivePriceEventDetail>;
 
@@ -841,14 +994,23 @@ export function CartPageClient({
         );
 
         setLivePriceMessage(
-          detail.message ??
-            null,
+          detail.message ?? null,
         );
 
-        setLivePriceMode(
-          detail.pricingMode ??
-            null,
-        );
+        if (
+          detail.status ===
+          "success"
+        ) {
+          scheduleQuote(
+            storedItems,
+            true,
+            {
+              background: true,
+              notifyOnPriceChange:
+                true,
+            },
+          );
+        }
       };
 
     window.addEventListener(
@@ -861,12 +1023,27 @@ export function CartPageClient({
         CART_LIVE_PRICE_EVENT,
         handleLivePriceEvent,
       );
+    };
+  }, [
+    scheduleQuote,
+    storedItems,
+  ]);
 
+  useEffect(() => {
+    return () => {
       if (
         quoteTimerRef.current
       ) {
         clearTimeout(
           quoteTimerRef.current,
+        );
+      }
+
+      if (
+        noticeTimerRef.current
+      ) {
+        clearTimeout(
+          noticeTimerRef.current,
         );
       }
 
@@ -881,19 +1058,13 @@ export function CartPageClient({
         variantId,
         quantity,
       }: {
-        slug:
-          string;
-
+        slug: string;
         variantId:
           string | null;
-
-        quantity:
-          number;
+        quantity: number;
       }) => {
         setQuote(
-          (
-            current,
-          ) => {
+          (current) => {
             if (!current) {
               return current;
             }
@@ -906,18 +1077,14 @@ export function CartPageClient({
             const nextItems =
               quantity <= 0
                 ? current.items.filter(
-                    (
-                      item,
-                    ) =>
+                    (item) =>
                       !isSameItem(
                         item,
                         target,
                       ),
                   )
                 : current.items.map(
-                    (
-                      item,
-                    ) => {
+                    (item) => {
                       if (
                         !isSameItem(
                           item,
@@ -943,7 +1110,7 @@ export function CartPageClient({
                             )
                           ).toString();
                       } catch {
-                        // قیمت اصلی تا دریافت پاسخ سرور حفظ می‌شود.
+                        // قیمت سرور تا دریافت پاسخ جدید حفظ می‌شود.
                       }
 
                       const availableStock =
@@ -963,9 +1130,7 @@ export function CartPageClient({
 
                       return {
                         ...item,
-
                         quantity,
-
                         canPurchase,
 
                         unavailableReason:
@@ -978,7 +1143,6 @@ export function CartPageClient({
 
                         pricing: {
                           ...item.pricing,
-
                           lineTotalToman,
                         },
                       };
@@ -988,18 +1152,14 @@ export function CartPageClient({
             const nextFailedItems =
               quantity <= 0
                 ? current.failedItems.filter(
-                    (
-                      item,
-                    ) =>
+                    (item) =>
                       !isSameItem(
                         item,
                         target,
                       ),
                   )
                 : current.failedItems.map(
-                    (
-                      item,
-                    ) =>
+                    (item) =>
                       isSameItem(
                         item,
                         target,
@@ -1011,12 +1171,9 @@ export function CartPageClient({
                         : item,
                   );
 
-            return {
+            const nextQuote = {
               ...current,
-
-              items:
-                nextItems,
-
+              items: nextItems,
               failedItems:
                 nextFailedItems,
 
@@ -1026,6 +1183,11 @@ export function CartPageClient({
                   nextFailedItems,
                 ),
             };
+
+            quoteRef.current =
+              nextQuote;
+
+            return nextQuote;
           },
         );
       },
@@ -1033,17 +1195,12 @@ export function CartPageClient({
     );
 
   const changeQuantity = (
-    item:
-      QuotedCartItem,
-
-    requestedQuantity:
-      number,
+    item: QuotedCartItem,
+    requestedQuantity: number,
   ) => {
     const availableStock =
-      item.variant
-        ?.stock ??
-      item.product
-        .stock;
+      item.variant?.stock ??
+      item.product.stock;
 
     const safeQuantity =
       Math.min(
@@ -1061,23 +1218,17 @@ export function CartPageClient({
       );
 
     updateQuoteOptimistically({
-      slug:
-        item.slug,
-
+      slug: item.slug,
       variantId:
         item.variantId,
-
       quantity:
         safeQuantity,
     });
 
     updateCartItemQuantity({
-      slug:
-        item.slug,
-
+      slug: item.slug,
       variantId:
         item.variantId,
-
       quantity:
         safeQuantity,
     });
@@ -1088,9 +1239,7 @@ export function CartPageClient({
     variantId,
   }: {
     slug: string;
-
-    variantId:
-      string | null;
+    variantId: string | null;
   }) => {
     updateQuoteOptimistically({
       slug,
@@ -1105,8 +1254,7 @@ export function CartPageClient({
   };
 
   const getUnavailableText = (
-    reason:
-      string | null,
+    reason: string | null,
   ) => {
     if (
       reason ===
@@ -1119,63 +1267,31 @@ export function CartPageClient({
   };
 
   const isEmpty =
-    storedItems.length ===
-    0;
+    storedItems.length === 0;
 
-  const liveStatusContent =
+  /*
+   * بررسی‌های دوره‌ای در پس‌زمینه بدون پیام انجام می‌شوند.
+   * فقط خطا یا تغییر واقعی قیمت به مشتری نمایش داده می‌شود.
+   */
+  const shouldShowLiveStatus =
     livePriceState ===
-      "refreshing"
-      ? {
-          icon:
-            "loading" as const,
+    "failed";
 
-          text:
-            text.liveConnecting,
+  const checkoutBlocked =
+    !quote?.summary
+      .canCheckout ||
+    loading ||
+    Boolean(error) ||
+    livePriceState === "failed";
 
-          className:
-            "border-[#d9b85f]/20 bg-[#d9b85f]/[0.06] text-[#dbc783]/70",
-        }
-      : livePriceState ===
-          "failed"
-        ? {
-            icon:
-              "warning" as const,
-
-            text:
-              livePriceMessage ??
-              text.liveFailed,
-
-            className:
-              "border-amber-300/20 bg-amber-200/[0.05] text-amber-100/60",
-          }
-        : livePriceMode ===
-            "CLOSED_MARKET"
-          ? {
-              icon:
-                "warning" as const,
-
-              text:
-                livePriceMessage ??
-                text.closedMarketReady,
-
-              className:
-                "border-amber-300/20 bg-amber-200/[0.05] text-amber-100/70",
-            }
-          : {
-              icon:
-                "success" as const,
-
-              text:
-                livePriceMessage ??
-                (
-                  quote
-                    ? text.liveReady
-                    : text.loading
-                ),
-
-              className:
-                "border-emerald-300/15 bg-emerald-200/[0.04] text-emerald-100/55",
-            };
+  const priceNoticeDescription =
+    priceChangeNotice?.direction ===
+    "INCREASED"
+      ? text.priceIncreased
+      : priceChangeNotice?.direction ===
+          "DECREASED"
+        ? text.priceDecreased
+        : text.priceChanged;
 
   if (
     !loading &&
@@ -1204,7 +1320,9 @@ export function CartPageClient({
           </h1>
 
           <p className="mx-auto mt-3 max-w-lg text-sm leading-8 text-[#cbbd9d]/65">
-            {text.emptyDescription}
+            {
+              text.emptyDescription
+            }
           </p>
 
           <Link
@@ -1226,6 +1344,119 @@ export function CartPageClient({
 
   return (
     <section className="relative z-10 mx-auto w-full max-w-[1450px] px-4 pb-28 pt-36 sm:px-6 lg:px-10 lg:pt-40">
+      {priceChangeNotice && (
+        <div
+          role="status"
+          aria-live="polite"
+          className={[
+            "fixed top-24 z-[100] w-[calc(100%-2rem)] max-w-md overflow-hidden rounded-2xl border border-[#d9b85f]/35 bg-[linear-gradient(145deg,rgba(8,42,31,0.98),rgba(2,23,16,0.99))] p-4 shadow-[0_25px_90px_rgba(0,0,0,0.5)] backdrop-blur-xl sm:w-full",
+            isPersian
+              ? "right-4 sm:right-6"
+              : "right-4 sm:right-6",
+          ].join(" ")}
+        >
+          <div className="flex items-start gap-3">
+            <div
+              className={[
+                "mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-full border",
+                priceChangeNotice.direction ===
+                "INCREASED"
+                  ? "border-amber-300/25 bg-amber-200/[0.08] text-amber-200"
+                  : priceChangeNotice.direction ===
+                      "DECREASED"
+                    ? "border-emerald-300/25 bg-emerald-200/[0.08] text-emerald-200"
+                    : "border-[#d9b85f]/30 bg-[#d9b85f]/[0.08] text-[#ead27e]",
+              ].join(" ")}
+            >
+              {priceChangeNotice.direction ===
+              "INCREASED" ? (
+                <ArrowUpRight className="h-5 w-5" />
+              ) : priceChangeNotice.direction ===
+                "DECREASED" ? (
+                <ArrowDownRight className="h-5 w-5" />
+              ) : (
+                <RefreshCw className="h-4 w-4" />
+              )}
+            </div>
+
+            <div className="min-w-0 flex-1">
+              <p className="text-sm font-medium text-[#f4e5bd]">
+                {
+                  text.priceUpdated
+                }
+              </p>
+
+              <p className="mt-1 text-xs leading-6 text-[#d2c4a4]/65">
+                {
+                  priceNoticeDescription
+                }
+              </p>
+
+              <p className="mt-1 text-[10px] text-[#d6c9aa]/45">
+                {formatNumber(
+                  priceChangeNotice
+                    .changedItemsCount,
+                )}{" "}
+                {
+                  text.changedItems
+                }
+              </p>
+
+              <div className="mt-3 grid grid-cols-2 gap-3">
+                <div className="rounded-xl border border-white/[0.06] bg-black/10 px-3 py-2">
+                  <p className="text-[9px] text-[#c9bb9a]/45">
+                    {
+                      text.previousTotal
+                    }
+                  </p>
+
+                  <p className="mt-1 text-xs text-[#d8caa8]/70">
+                    {formatPrice(
+                      priceChangeNotice
+                        .previousSubtotalToman,
+                    )}{" "}
+                    {
+                      text.toman
+                    }
+                  </p>
+                </div>
+
+                <div className="rounded-xl border border-[#d9b85f]/15 bg-[#d9b85f]/[0.04] px-3 py-2">
+                  <p className="text-[9px] text-[#c9bb9a]/45">
+                    {
+                      text.currentTotal
+                    }
+                  </p>
+
+                  <p className="mt-1 text-xs font-medium text-[#efd985]">
+                    {formatPrice(
+                      priceChangeNotice
+                        .currentSubtotalToman,
+                    )}{" "}
+                    {
+                      text.toman
+                    }
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              aria-label={
+                text.dismiss
+              }
+              onClick={
+                dismissPriceChangeNotice
+              }
+              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[#d5c8a8]/45 transition hover:bg-white/[0.06] hover:text-[#f1e4c3]"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          </div>
+        </div>
+      )}
+
       <header className="mx-auto max-w-3xl text-center">
         <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full border border-[#d9b85f]/30 bg-[#d9b85f]/[0.07]">
           <ShoppingBag className="h-7 w-7 text-[#e3c46b]" />
@@ -1246,34 +1477,18 @@ export function CartPageClient({
           {text.title}
         </h1>
 
-        <p className="mx-auto mt-1 max-w-2xl text-sm leading-8 text-[#cbbd9d]/65">
-          {text.description}
-        </p>
-
-        <div className="mt-5 flex justify-center">
-          <div
-            className={[
-              "inline-flex max-w-full items-center gap-2 rounded-full border px-4 py-2 text-[10px] leading-5 transition",
-              liveStatusContent.className,
-            ].join(" ")}
-          >
-            {liveStatusContent.icon ===
-            "loading" ? (
-              <LoaderCircle className="h-3.5 w-3.5 shrink-0 animate-spin" />
-            ) : liveStatusContent.icon ===
-              "warning" ? (
+        {shouldShowLiveStatus && (
+          <div className="mt-5 flex justify-center">
+            <div className="inline-flex max-w-full items-center gap-2 rounded-full border border-amber-300/20 bg-amber-200/[0.05] px-4 py-2 text-[10px] leading-5 text-amber-100/60">
               <AlertTriangle className="h-3.5 w-3.5 shrink-0" />
-            ) : (
-              <CircleCheck className="h-3.5 w-3.5 shrink-0" />
-            )}
 
-            <span>
-              {
-                liveStatusContent.text
-              }
-            </span>
+              <span>
+                {livePriceMessage ??
+                  text.liveFailed}
+              </span>
+            </div>
           </div>
-        </div>
+        )}
       </header>
 
       {error && (
@@ -1314,9 +1529,7 @@ export function CartPageClient({
         <div className="mt-12 grid items-start gap-8 lg:grid-cols-[minmax(0,1fr)_370px]">
           <div className="space-y-5">
             {quote.items.map(
-              (
-                item,
-              ) => {
+              (item) => {
                 const productName =
                   isPersian
                     ? item.product
@@ -1549,9 +1762,7 @@ export function CartPageClient({
             )}
 
             {quote.failedItems.map(
-              (
-                item,
-              ) => (
+              (item) => (
                 <article
                   key={`${item.slug}:${item.variantId ?? "default"}:failed`}
                   className="rounded-[1.5rem] border border-red-300/20 bg-red-300/[0.045] px-5 py-4"
@@ -1675,9 +1886,7 @@ export function CartPageClient({
               <button
                 type="button"
                 disabled={
-                  !quote.summary
-                    .canCheckout ||
-                  loading
+                  checkoutBlocked
                 }
                 onClick={() => {
                   window.location.assign(
@@ -1697,8 +1906,7 @@ export function CartPageClient({
                 }
               </button>
 
-              {!quote.summary
-                .canCheckout && (
+              {checkoutBlocked && (
                 <p className="mt-3 text-center text-[10px] leading-5 text-amber-100/45">
                   {
                     text.checkoutBlocked

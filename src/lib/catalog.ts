@@ -2,7 +2,9 @@ import type {
   Prisma,
 } from "@/generated/prisma/client";
 
-import { prisma } from "@/lib/prisma";
+import {
+  prisma,
+} from "@/lib/prisma";
 
 export type CatalogMaterial =
   | "GOLD"
@@ -15,38 +17,50 @@ export type CatalogAvailability =
 
 export type ProductCatalogFilters = {
   search?: string;
+
   collectionSlug?: string;
+
   material?: CatalogMaterial;
+
   availability?: CatalogAvailability;
 };
 
 export type CatalogProduct = {
   id: string;
+
   slug: string;
+
   sku: string | null;
 
   nameFa: string;
+
   nameEn: string;
 
   material: CatalogMaterial;
+
   collectionSlug: string;
 
   stock: number;
+
   isAvailable: boolean;
 
   image: {
     imageUrl: string;
+
     altFa: string | null;
+
     altEn: string | null;
   } | null;
 };
 
 export type ProductsCatalogResult = {
   products: CatalogProduct[];
+
   total: number;
 
   selectedCollection: {
     id: string;
+
     slug: string;
   } | null;
 };
@@ -54,6 +68,7 @@ export type ProductsCatalogResult = {
 export type CollectionCatalog = {
   collection: {
     id: string;
+
     slug: string;
   };
 
@@ -71,14 +86,21 @@ export class CatalogError extends Error {
     code:
       | "INVALID_COLLECTION_SLUG"
       | "COLLECTION_NOT_FOUND",
+
     message: string,
+
     status = 400,
   ) {
     super(message);
 
-    this.name = "CatalogError";
-    this.code = code;
-    this.status = status;
+    this.name =
+      "CatalogError";
+
+    this.code =
+      code;
+
+    this.status =
+      status;
   }
 }
 
@@ -86,12 +108,18 @@ function normalizeCollectionSlug(
   slug: string,
 ): string {
   const normalizedSlug =
-    slug.trim().toLowerCase();
+    slug
+      .trim()
+      .toLowerCase();
 
-  if (!normalizedSlug) {
+  if (
+    !normalizedSlug
+  ) {
     throw new CatalogError(
       "INVALID_COLLECTION_SLUG",
+
       "شناسه گنجینه معتبر نیست.",
+
       400,
     );
   }
@@ -105,10 +133,17 @@ function normalizeSearch(
   const normalized =
     search
       ?.trim()
-      .replace(/\s+/g, " ")
-      .slice(0, 80);
+      .replace(
+        /\s+/g,
+        " ",
+      )
+      .slice(
+        0,
+        80,
+      );
 
-  return normalized || undefined;
+  return normalized ||
+    undefined;
 }
 
 async function findCollection(
@@ -122,19 +157,27 @@ async function findCollection(
   const collection =
     await prisma.collection.findUnique({
       where: {
-        slug: normalizedSlug,
+        slug:
+          normalizedSlug,
       },
 
       select: {
-        id: true,
-        slug: true,
+        id:
+          true,
+
+        slug:
+          true,
       },
     });
 
-  if (!collection) {
+  if (
+    !collection
+  ) {
     throw new CatalogError(
       "COLLECTION_NOT_FOUND",
+
       "گنجینه موردنظر پیدا نشد.",
+
       404,
     );
   }
@@ -161,34 +204,52 @@ export async function getProductsCatalog(
         )
       : null;
 
-  const andFilters: Prisma.ProductWhereInput[] =
-    [];
+  const andFilters:
+    Prisma.ProductWhereInput[] =
+      [];
 
-  if (search) {
+  if (
+    search
+  ) {
     andFilters.push({
       OR: [
         {
           nameFa: {
-            contains: search,
-            mode: "insensitive",
+            contains:
+              search,
+
+            mode:
+              "insensitive",
           },
         },
+
         {
           nameEn: {
-            contains: search,
-            mode: "insensitive",
+            contains:
+              search,
+
+            mode:
+              "insensitive",
           },
         },
+
         {
           slug: {
-            contains: search,
-            mode: "insensitive",
+            contains:
+              search,
+
+            mode:
+              "insensitive",
           },
         },
+
         {
           sku: {
-            contains: search,
-            mode: "insensitive",
+            contains:
+              search,
+
+            mode:
+              "insensitive",
           },
         },
       ],
@@ -200,10 +261,12 @@ export async function getProductsCatalog(
     "AVAILABLE"
   ) {
     andFilters.push({
-      status: "ACTIVE",
+      status:
+        "ACTIVE",
 
       stock: {
-        gt: 0,
+        gt:
+          0,
       },
     });
   }
@@ -218,222 +281,191 @@ export async function getProductsCatalog(
           status:
             "OUT_OF_STOCK",
         },
+
         {
           stock: {
-            lte: 0,
+            lte:
+              0,
           },
         },
       ],
     });
   }
 
-  const where: Prisma.ProductWhereInput =
-    {
-      status: {
-        in: [
-          "ACTIVE",
-          "OUT_OF_STOCK",
-        ],
-      },
+  const where:
+    Prisma.ProductWhereInput =
+      {
+        status: {
+          in: [
+            "ACTIVE",
+            "OUT_OF_STOCK",
+          ],
+        },
 
-      ...(selectedCollection
-        ? {
-            collectionId:
-              selectedCollection.id,
-          }
-        : {}),
+        ...(selectedCollection
+          ? {
+              collectionId:
+                selectedCollection.id,
+            }
+          : {}),
 
-      ...(filters.material
-        ? {
-            material:
-              filters.material,
-          }
-        : {}),
+        ...(filters.material
+          ? {
+              material:
+                filters.material,
+            }
+          : {}),
 
-      ...(andFilters.length > 0
-        ? {
-            AND: andFilters,
-          }
-        : {}),
-    };
+        ...(andFilters.length >
+        0
+          ? {
+              AND:
+                andFilters,
+            }
+          : {}),
+      };
 
-  const products =
-    await prisma.product.findMany({
-      where,
+  /*
+   * محصول، گنجینه و تصویر اصلی در یک Query
+   * از دیتابیس دریافت می‌شوند.
+   */const products =
+  await prisma.product.findMany({
+    relationLoadStrategy:
+      "join",
 
+    where,
       orderBy: [
         {
-          displayOrder: "asc",
+          displayOrder:
+            "asc",
         },
+
         {
-          createdAt: "desc",
+          createdAt:
+            "desc",
         },
       ],
 
       select: {
-        id: true,
-        slug: true,
-        sku: true,
+        id:
+          true,
 
-        nameFa: true,
-        nameEn: true,
+        slug:
+          true,
 
-        material: true,
-        collectionId: true,
+        sku:
+          true,
 
-        stock: true,
-        status: true,
+        nameFa:
+          true,
+
+        nameEn:
+          true,
+
+        material:
+          true,
+
+        stock:
+          true,
+
+        status:
+          true,
+
+        collection: {
+          select: {
+            id:
+              true,
+
+            slug:
+              true,
+          },
+        },
+
+        images: {
+          orderBy: [
+            {
+              isPrimary:
+                "desc",
+            },
+
+            {
+              displayOrder:
+                "asc",
+            },
+          ],
+
+          take:
+            1,
+
+          select: {
+            imageUrl:
+              true,
+
+            altFa:
+              true,
+
+            altEn:
+              true,
+          },
+        },
       },
     });
-
-  if (
-    products.length === 0
-  ) {
-    return {
-      products: [],
-      total: 0,
-      selectedCollection,
-    };
-  }
-
-  const productIds =
-    products.map(
-      (product) =>
-        product.id,
-    );
-
-  const collectionIds =
-    Array.from(
-      new Set(
-        products.map(
-          (product) =>
-            product.collectionId,
-        ),
-      ),
-    );
-
-  const [
-    images,
-    collections,
-  ] = await Promise.all([
-    prisma.productImage.findMany({
-      where: {
-        productId: {
-          in: productIds,
-        },
-      },
-
-      orderBy: [
-        {
-          isPrimary: "desc",
-        },
-        {
-          displayOrder: "asc",
-        },
-      ],
-
-      select: {
-        productId: true,
-        imageUrl: true,
-        altFa: true,
-        altEn: true,
-      },
-    }),
-
-    prisma.collection.findMany({
-      where: {
-        id: {
-          in: collectionIds,
-        },
-      },
-
-      select: {
-        id: true,
-        slug: true,
-      },
-    }),
-  ]);
-
-  const imageByProduct =
-    new Map<
-      string,
-      {
-        imageUrl: string;
-        altFa: string | null;
-        altEn: string | null;
-      }
-    >();
-
-  for (
-    const image of images
-  ) {
-    if (
-      !imageByProduct.has(
-        image.productId,
-      )
-    ) {
-      imageByProduct.set(
-        image.productId,
-        {
-          imageUrl:
-            image.imageUrl,
-
-          altFa:
-            image.altFa,
-
-          altEn:
-            image.altEn,
-        },
-      );
-    }
-  }
-
-  const collectionSlugById =
-    new Map(
-      collections.map(
-        (collection) => [
-          collection.id,
-          collection.slug,
-        ],
-      ),
-    );
 
   const catalogProducts =
     products.map(
       (
         product,
-      ): CatalogProduct => ({
-        id: product.id,
-        slug: product.slug,
-        sku: product.sku,
+      ): CatalogProduct => {
+        const primaryImage =
+          product.images[0] ??
+          null;
 
-        nameFa:
-          product.nameFa,
-
-        nameEn:
-          product.nameEn,
-
-        material:
-          product.material,
-
-        collectionSlug:
-          collectionSlugById.get(
-            product.collectionId,
-          ) ?? "unknown",
-
-        stock:
-          product.stock,
-
-        isAvailable:
-          product.status ===
-            "ACTIVE" &&
-          product.stock > 0,
-
-        image:
-          imageByProduct.get(
+        return {
+          id:
             product.id,
-          ) ?? null,
-      }),
+
+          slug:
+            product.slug,
+
+          sku:
+            product.sku,
+
+          nameFa:
+            product.nameFa,
+
+          nameEn:
+            product.nameEn,
+
+          material:
+            product.material,
+
+          collectionSlug:
+            product.collection.slug,
+
+          stock:
+            product.stock,
+
+          isAvailable:
+            product.status ===
+              "ACTIVE" &&
+            product.stock >
+              0,
+
+          image:
+            primaryImage
+              ? {
+                  imageUrl:
+                    primaryImage.imageUrl,
+
+                  altFa:
+                    primaryImage.altFa,
+
+                  altEn:
+                    primaryImage.altEn,
+                }
+              : null,
+        };
+      },
     );
 
   return {
@@ -449,13 +481,17 @@ export async function getProductsCatalog(
 
 export async function getCollectionCatalog(
   collectionSlug: string,
+
   material?: CatalogMaterial,
 ): Promise<CollectionCatalog> {
   const result =
     await getProductsCatalog({
       collectionSlug,
+
       material,
-      availability: "ALL",
+
+      availability:
+        "ALL",
     });
 
   if (
@@ -463,7 +499,9 @@ export async function getCollectionCatalog(
   ) {
     throw new CatalogError(
       "COLLECTION_NOT_FOUND",
+
       "گنجینه موردنظر پیدا نشد.",
+
       404,
     );
   }

@@ -10,7 +10,105 @@ import {
   prisma,
 } from "@/lib/prisma";
 
-export function getStaleAfterMinutes() {
+type MetalPriceRecord =
+  Awaited<
+    ReturnType<
+      typeof prisma.metalPrice.findMany
+    >
+  >[number];
+
+type PricingPolicyRecord =
+  Awaited<
+    ReturnType<
+      typeof prisma.pricingPolicy.findMany
+    >
+  >[number];
+
+type MetalPriceRecords = {
+  prices:
+    MetalPriceRecord[];
+
+  policies:
+    PricingPolicyRecord[];
+};
+
+type MetalPriceCache = {
+  records:
+    MetalPriceRecords | null;
+
+  freshUntil:
+    number;
+
+  staleUntil:
+    number;
+
+  inFlight:
+    Promise<MetalPriceRecords> | null;
+};
+
+type MetalPriceGlobal =
+  typeof globalThis & {
+    __eloriaMetalPriceCache?:
+      MetalPriceCache;
+  };
+
+const metalPriceGlobal =
+  globalThis as MetalPriceGlobal;
+
+const metalPriceCache:
+  MetalPriceCache =
+    metalPriceGlobal
+      .__eloriaMetalPriceCache ??
+    {
+      records:
+        null,
+
+      freshUntil:
+        0,
+
+      staleUntil:
+        0,
+
+      inFlight:
+        null,
+    };
+
+metalPriceGlobal.__eloriaMetalPriceCache =
+  metalPriceCache;
+
+function getIntegerSetting({
+  name,
+  fallback,
+  minimum,
+  maximum,
+}: {
+  name: string;
+  fallback: number;
+  minimum: number;
+  maximum: number;
+}): number {
+  const value =
+    Number.parseInt(
+      process.env[name] ?? "",
+      10,
+    );
+
+  if (
+    !Number.isFinite(value)
+  ) {
+    return fallback;
+  }
+
+  return Math.min(
+    Math.max(
+      value,
+      minimum,
+    ),
+    maximum,
+  );
+}
+
+export function getStaleAfterMinutes(): number {
   const configuredValue =
     Number(
       process.env
@@ -30,31 +128,153 @@ export function getStaleAfterMinutes() {
   return configuredValue;
 }
 
-export async function getMetalPriceSnapshot() {
-  const defaultStaleAfterMinutes =
-    getStaleAfterMinutes();
+function getReadCacheMilliseconds(): number {
+  return getIntegerSetting({
+    name:
+      "METAL_PRICE_READ_CACHE_MS",
 
-  const now =
-    new Date();
+    fallback:
+      5_000,
 
-  const [
-    prices,
-    policies,
-  ] = await Promise.all([
-    prisma.metalPrice.findMany({
+    minimum:
+      1_000,
+
+    maximum:
+      60_000,
+  });
+}
+
+function getFallbackCacheMilliseconds(): number {
+  return getIntegerSetting({
+    name:
+      "METAL_PRICE_READ_STALE_FALLBACK_MS",
+
+    fallback:
+      60_000,
+
+    minimum:
+      5_000,
+
+    maximum:
+      300_000,
+  });
+}
+
+async function loadMetalPriceRecords():
+  Promise<MetalPriceRecords> {
+  const prices =
+    await prisma.metalPrice.findMany({
       orderBy: {
         material:
           "asc",
       },
-    }),
+    });
 
-    prisma.pricingPolicy.findMany({
+  const policies =
+    await prisma.pricingPolicy.findMany({
       where: {
         isActive:
           true,
       },
-    }),
-  ]);
+    });
+
+  return {
+    prices,
+    policies,
+  };
+}
+
+async function getMetalPriceRecords():
+  Promise<MetalPriceRecords> {
+  const now =
+    Date.now();
+
+  if (
+    metalPriceCache.records &&
+    metalPriceCache.freshUntil >
+      now
+  ) {
+    return metalPriceCache.records;
+  }
+
+  if (
+    metalPriceCache.inFlight
+  ) {
+    return metalPriceCache.inFlight;
+  }
+
+  const request =
+    (async () => {
+      try {
+        const records =
+          await loadMetalPriceRecords();
+
+        const storedAt =
+          Date.now();
+
+        metalPriceCache.records =
+          records;
+
+        metalPriceCache.freshUntil =
+          storedAt +
+          getReadCacheMilliseconds();
+
+        metalPriceCache.staleUntil =
+          storedAt +
+          getFallbackCacheMilliseconds();
+
+        return records;
+      } catch (error) {
+        if (
+          metalPriceCache.records &&
+          metalPriceCache.staleUntil >
+            Date.now()
+        ) {
+          console.warn(
+            "[Eloria Metal Prices] Database unavailable; using temporary cached records.",
+            error,
+          );
+
+          return metalPriceCache.records;
+        }
+
+        throw error;
+      } finally {
+        metalPriceCache.inFlight =
+          null;
+      }
+    })();
+
+  metalPriceCache.inFlight =
+    request;
+
+  return request;
+}
+
+export function invalidateMetalPriceReadCache():
+  void {
+  metalPriceCache.records =
+    null;
+
+  metalPriceCache.freshUntil =
+    0;
+
+  metalPriceCache.staleUntil =
+    0;
+}
+
+export async function getMetalPriceSnapshot() {
+  const defaultStaleAfterMinutes =
+    getStaleAfterMinutes();
+
+  const {
+    prices,
+    policies,
+  } =
+    await getMetalPriceRecords();
+
+  const now =
+    new Date();
 
   const policyByMaterial =
     new Map(
@@ -70,41 +290,113 @@ export async function getMetalPriceSnapshot() {
     staleAfterMinutes:
       defaultStaleAfterMinutes,
 
-    prices: prices.map(
-      (price) => {
-        const policy =
-          policyByMaterial.get(
-            price.material,
-          );
+    prices:
+      prices.map(
+        (price) => {
+          const policy =
+            policyByMaterial.get(
+              price.material,
+            );
 
-        const staleAfterMinutes =
-          policy?.staleAfterMinutes ??
-          defaultStaleAfterMinutes;
+          const staleAfterMinutes =
+            policy
+              ?.staleAfterMinutes ??
+            defaultStaleAfterMinutes;
 
-        /*
-         * اعتبار نرخ بر اساس زمان واقعی بازار محاسبه می‌شود،
-         * نه زمان دریافت موفق پاسخ API.
-         */
-        const freshness =
-          getMetalRateFreshness({
+          const freshness =
+            getMetalRateFreshness({
+              sourceTimeUnix:
+                price.sourceTimeUnix,
+
+              staleAfterMinutes,
+
+              now,
+            });
+
+          const saleDecision =
+            getMetalRateSaleDecision({
+              referencePricePerGramToman:
+                price.pricePerGram.toString(),
+
+              freshness,
+
+              closedMarketPricingEnabled:
+                policy
+                  ?.closedMarketPricingEnabled ??
+                false,
+
+              closedMarketMaxAgeMinutes:
+                policy
+                  ?.closedMarketMaxAgeMinutes ??
+                0,
+
+              closedMarketSafetyMarginPercent:
+                policy
+                  ?.closedMarketSafetyMarginPercent
+                  .toString() ??
+                "0",
+            });
+
+          return {
+            material:
+              price.material,
+
+            pricePerGramToman:
+              price.pricePerGram.toString(),
+
+            effectivePricePerGramToman:
+              saleDecision
+                .effectivePricePerGramToman,
+
+            referencePurity:
+              price.referencePurity,
+
+            currency:
+              price.currency,
+
+            source:
+              price.source,
+
+            sourceSymbol:
+              price.sourceSymbol,
+
+            sourceDate:
+              price.sourceDate,
+
+            sourceTime:
+              price.sourceTime,
+
             sourceTimeUnix:
-              price.sourceTimeUnix,
+              price.sourceTimeUnix
+                ?.toString() ??
+              null,
+
+            marketTimestamp:
+              freshness.marketTimestamp
+                ?.toISOString() ??
+              null,
+
+            fetchedAt:
+              price.fetchedAt.toISOString(),
+
+            lastSuccessAt:
+              price.lastSuccessAt.toISOString(),
+
+            ageSeconds:
+              freshness.ageSeconds,
+
+            isStale:
+              freshness.isStale,
+
+            freshnessReason:
+              freshness.reason,
 
             staleAfterMinutes,
 
-            now,
-          });
-
-        /*
-         * نرخ منقضی فقط در صورت فعال‌بودن سیاست بازار بسته
-         * و قرارداشتن در سقف زمانی مجاز قابل فروش است.
-         */
-        const saleDecision =
-          getMetalRateSaleDecision({
-            referencePricePerGramToman:
-              price.pricePerGram.toString(),
-
-            freshness,
+            hasPricingPolicy:
+              Boolean(
+                policy,
+              ),
 
             closedMarketPricingEnabled:
               policy
@@ -121,107 +413,29 @@ export async function getMetalPriceSnapshot() {
                 ?.closedMarketSafetyMarginPercent
                 .toString() ??
               "0",
-          });
 
-        return {
-          material:
-            price.material,
+            saleMode:
+              saleDecision.mode,
 
-          pricePerGramToman:
-            price.pricePerGram.toString(),
+            saleReason:
+              saleDecision.reason,
 
-          effectivePricePerGramToman:
-            saleDecision
-              .effectivePricePerGramToman,
+            isUsableForSale:
+              saleDecision
+                .isUsableForSale,
 
-          referencePurity:
-            price.referencePurity,
+            appliedSafetyMarginPercent:
+              saleDecision
+                .appliedSafetyMarginPercent,
 
-          currency:
-            price.currency,
+            safetyMarginAmountToman:
+              saleDecision
+                .safetyMarginAmountToman,
 
-          source:
-            price.source,
-
-          sourceSymbol:
-            price.sourceSymbol,
-
-          sourceDate:
-            price.sourceDate,
-
-          sourceTime:
-            price.sourceTime,
-
-          sourceTimeUnix:
-            price.sourceTimeUnix
-              ?.toString() ??
-            null,
-
-          marketTimestamp:
-            freshness.marketTimestamp
-              ?.toISOString() ??
-            null,
-
-          fetchedAt:
-            price.fetchedAt.toISOString(),
-
-          lastSuccessAt:
-            price.lastSuccessAt.toISOString(),
-
-          ageSeconds:
-            freshness.ageSeconds,
-
-          isStale:
-            freshness.isStale,
-
-          freshnessReason:
-            freshness.reason,
-
-          staleAfterMinutes,
-
-          hasPricingPolicy:
-            Boolean(
-              policy,
-            ),
-
-          closedMarketPricingEnabled:
-            policy
-              ?.closedMarketPricingEnabled ??
-            false,
-
-          closedMarketMaxAgeMinutes:
-            policy
-              ?.closedMarketMaxAgeMinutes ??
-            0,
-
-          closedMarketSafetyMarginPercent:
-            policy
-              ?.closedMarketSafetyMarginPercent
-              .toString() ??
-            "0",
-
-          saleMode:
-            saleDecision.mode,
-
-          saleReason:
-            saleDecision.reason,
-
-          isUsableForSale:
-            saleDecision
-              .isUsableForSale,
-
-          appliedSafetyMarginPercent:
-            saleDecision
-              .appliedSafetyMarginPercent,
-
-          safetyMarginAmountToman:
-            saleDecision
-              .safetyMarginAmountToman,
-
-          lastError:
-            price.lastError,
-        };
-      },
-    ),
+            lastError:
+              price.lastError,
+          };
+        },
+      ),
   };
 }
