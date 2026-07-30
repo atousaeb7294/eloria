@@ -35,6 +35,11 @@ export type GetMetalRateSaleDecisionInput = {
   closedMarketPricingEnabled:
     boolean;
 
+  /**
+   * این فیلد برای سازگاری با ساختار فعلی دیتابیس
+   * و سایر بخش‌های پروژه نگه داشته شده است،
+   * اما دیگر باعث توقف فروش نمی‌شود.
+   */
   closedMarketMaxAgeMinutes:
     number;
 
@@ -112,7 +117,9 @@ function normalizeDecimalInput(
   const normalized =
     value.trim();
 
-  if (!normalized) {
+  if (
+    !normalized
+  ) {
     throw new Error(
       `${label} نمی‌تواند خالی باشد.`,
     );
@@ -348,13 +355,38 @@ function createUnavailableDecision({
   };
 }
 
-export function getMetalRateSaleDecision({
-  referencePricePerGramToman,
-  freshness,
-  closedMarketPricingEnabled,
-  closedMarketMaxAgeMinutes,
-  closedMarketSafetyMarginPercent,
-}: GetMetalRateSaleDecisionInput): MetalRateSaleDecision {
+/**
+ * تصمیم نهایی برای قابل‌استفاده‌بودن نرخ فلز در فروش.
+ *
+ * قوانین:
+ *
+ * ۱. نرخ تازه:
+ *    بدون حاشیه امنیت و در حالت LIVE استفاده می‌شود.
+ *
+ * ۲. نرخ قدیمی با زمان معتبر:
+ *    بدون محدودیت زمانی و با حاشیه امنیت تعیین‌شده
+ *    در حالت CLOSED_MARKET استفاده می‌شود.
+ *
+ * ۳. نرخ دارای زمان مفقود، نامعتبر یا آینده:
+ *    قابل استفاده برای فروش نیست.
+ *
+ * ۴. اگر قیمت‌گذاری بازار بسته غیرفعال باشد:
+ *    نرخ قدیمی قابل استفاده نیست.
+ *
+ * closedMarketMaxAgeMinutes عمداً در تصمیم‌گیری استفاده
+ * نمی‌شود و فقط برای سازگاری با ساختار فعلی نگه داشته شده است.
+ */
+export function getMetalRateSaleDecision(
+  input: GetMetalRateSaleDecisionInput,
+): MetalRateSaleDecision {
+  const {
+    referencePricePerGramToman,
+    freshness,
+    closedMarketPricingEnabled,
+    closedMarketSafetyMarginPercent,
+  } =
+    input;
+
   const referencePrice =
     parsePositiveInteger(
       referencePricePerGramToman,
@@ -399,56 +431,52 @@ export function getMetalRateSaleDecision({
 
   /*
    * timestamp مفقود، نامعتبر یا مربوط به آینده
-   * هرگز وارد حالت بازار بسته نمی‌شود.
+   * نباید وارد حالت بازار بسته شود.
    */
   if (
     freshness.reason !==
-    "STALE"
+      "STALE" ||
+    freshness.ageSeconds ===
+      null ||
+    !Number.isFinite(
+      freshness.ageSeconds,
+    ) ||
+    freshness.ageSeconds <
+      0
   ) {
     return createUnavailableDecision({
       referencePrice,
+
       freshness,
+
       reason:
         "SOURCE_TIME_INVALID",
     });
   }
 
+  /*
+   * استفاده از نرخ قدیمی فقط زمانی مجاز است
+   * که سیاست قیمت‌گذاری بازار بسته فعال باشد.
+   */
   if (
     !closedMarketPricingEnabled
   ) {
     return createUnavailableDecision({
       referencePrice,
+
       freshness,
+
       reason:
         "CLOSED_MARKET_DISABLED",
     });
   }
 
-  const maximumAgeMinutes =
-    Number(
-      closedMarketMaxAgeMinutes,
-    );
-
-  if (
-    !Number.isFinite(
-      maximumAgeMinutes,
-    ) ||
-    maximumAgeMinutes <=
-      0 ||
-    freshness.ageSeconds ===
-      null ||
-    freshness.ageSeconds >
-      maximumAgeMinutes *
-        60
-  ) {
-    return createUnavailableDecision({
-      referencePrice,
-      freshness,
-      reason:
-        "RATE_TOO_OLD",
-    });
-  }
-
+  /*
+   * محدودیت ۱۲ ساعته حذف شده است.
+   *
+   * در تمام مدت قدیمی‌بودن نرخ، آخرین نرخ معتبر
+   * همراه با حاشیه امنیت استفاده می‌شود.
+   */
   const safetyMarginPercent =
     parseSafetyMarginPercent(
       closedMarketSafetyMarginPercent,
