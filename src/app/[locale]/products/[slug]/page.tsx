@@ -33,8 +33,8 @@ import {
 } from "@/components/add-to-cart-button";
 
 import {
-  AmbientEffects,
-} from "@/components/ambient-effects";
+  InternalPageShell,
+} from "@/components/internal-page-shell";
 
 import {
   MagicArrowIcon,
@@ -45,10 +45,6 @@ import {
   GoldRuneIcon,
   SilverRuneIcon,
 } from "@/components/material-rune-icons";
-
-import {
-  SiteHeader,
-} from "@/components/site-header";
 
 import {
   ProductPricingError,
@@ -66,7 +62,9 @@ export const revalidate = 0;
 
 const persianTitleFont =
   Noto_Nastaliq_Urdu({
-    subsets: ["arabic"],
+    subsets: [
+      "arabic",
+    ],
 
     weight: [
       "400",
@@ -75,7 +73,8 @@ const persianTitleFont =
       "700",
     ],
 
-    display: "swap",
+    display:
+      "swap",
   });
 
 type ProductPageProps = {
@@ -161,7 +160,9 @@ function formatDecimal(
       numericValue,
     )
   ) {
-    return String(value);
+    return String(
+      value,
+    );
   }
 
   return numericValue.toLocaleString(
@@ -169,7 +170,8 @@ function formatDecimal(
       ? "fa-IR"
       : "en-US",
     {
-      maximumFractionDigits: 3,
+      maximumFractionDigits:
+        3,
     },
   );
 }
@@ -217,6 +219,7 @@ function PriceInformationItem({
     <div
       className={[
         "relative overflow-hidden rounded-2xl border px-4 py-4",
+
         isGold
           ? "border-[#d9b85f]/20 bg-[#d9b85f]/[0.035]"
           : "border-[#dce6e9]/16 bg-[#dce6e9]/[0.025]",
@@ -226,6 +229,7 @@ function PriceInformationItem({
         <span
           className={[
             "flex h-8 w-8 items-center justify-center rounded-lg border",
+
             isGold
               ? "border-[#d9b85f]/25 bg-[#d9b85f]/[0.055] text-[#e4c46d]"
               : "border-[#dce6e9]/20 bg-[#dce6e9]/[0.04] text-[#dfe8eb]",
@@ -242,6 +246,7 @@ function PriceInformationItem({
       <strong
         className={[
           "mt-3 block text-sm font-medium",
+
           isGold
             ? "text-[#f0d78f]"
             : "text-[#e3ecee]",
@@ -268,7 +273,9 @@ export default async function ProductPage({
     notFound();
   }
 
-  setRequestLocale(locale);
+  setRequestLocale(
+    locale,
+  );
 
   const isPersian =
     locale === "fa";
@@ -301,9 +308,14 @@ export default async function ProductPage({
       },
 
       select: {
-        collectionId: true,
-        legendFa: true,
-        legendEn: true,
+        collectionId:
+          true,
+
+        legendFa:
+          true,
+
+        legendEn:
+          true,
       },
     });
 
@@ -316,17 +328,25 @@ export default async function ProductPage({
 
       orderBy: [
         {
-          isPrimary: "desc",
+          isPrimary:
+            "desc",
         },
+
         {
-          displayOrder: "asc",
+          displayOrder:
+            "asc",
         },
       ],
 
       select: {
-        imageUrl: true,
-        altFa: true,
-        altEn: true,
+        imageUrl:
+          true,
+
+        altFa:
+          true,
+
+        altEn:
+          true,
       },
     });
 
@@ -339,7 +359,8 @@ export default async function ProductPage({
           },
 
           select: {
-            slug: true,
+            slug:
+              true,
           },
         })
       : null;
@@ -450,7 +471,8 @@ export default async function ProductPage({
     result.product.stock;
 
   const sku =
-    result.variant?.sku ??
+    result.variant
+      ?.sku ??
     result.product.sku;
 
   const taxPercent =
@@ -505,27 +527,23 @@ export default async function ProductPage({
 
   const hiddenLegend =
     isPersian
-      ? productRecord?.legendFa
-      : productRecord?.legendEn;
+      ? productRecord
+          ?.legendFa
+      : productRecord
+          ?.legendEn;
 
   const legendText =
     hiddenLegend?.trim() ||
-    (isPersian
-      ? "افسانه این قطعه هنوز در دفتر رازهای الوریا ثبت نشده است."
-      : "The legend of this piece has not yet been written in Eloria’s book of secrets.");
+    (
+      isPersian
+        ? "افسانه این قطعه هنوز در دفتر رازهای الــوریا ثبت نشده است."
+        : "The legend of this piece has not yet been written in Eloria’s book of secrets."
+    );
 
   return (
-    <main
-      dir={
-        isPersian
-          ? "rtl"
-          : "ltr"
-      }
-      className="relative min-h-screen overflow-hidden bg-[#02140e] text-[#f8f0df]"
+    <InternalPageShell
+      locale={locale}
     >
-      <AmbientEffects />
-      <SiteHeader />
-
       <section className="relative z-10 mx-auto w-full max-w-[1450px] px-4 pb-28 pt-[130px] sm:px-6 sm:pt-[142px] lg:px-10">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <Link
@@ -536,6 +554,7 @@ export default async function ProductPage({
               <MagicArrowIcon
                 className={[
                   "h-4 w-4",
+
                   isPersian
                     ? ""
                     : "rotate-180",
@@ -558,17 +577,17 @@ export default async function ProductPage({
 
             <span>
               {isPersian
-                ? "دنیای الوریا"
+                ? "دنیای الــوریا"
                 : "Eloria World"}
             </span>
           </Link>
         </div>
 
         <div className="mt-7 grid items-start gap-8 lg:grid-cols-[minmax(0,1.05fr)_minmax(380px,0.95fr)]">
-          {/* تصویر محصول */}
           <div
             className={[
               "relative overflow-hidden rounded-[2.5rem] border bg-[linear-gradient(145deg,rgba(8,36,27,0.96),rgba(2,20,14,0.99))] p-3 shadow-[0_35px_100px_rgba(0,0,0,0.48)]",
+
               isGold
                 ? "border-[#d8b860]/25"
                 : "border-[#d8e3e6]/20",
@@ -578,6 +597,7 @@ export default async function ProductPage({
               aria-hidden="true"
               className={[
                 "absolute inset-x-16 top-0 h-px bg-gradient-to-r from-transparent to-transparent",
+
                 isGold
                   ? "via-[#efd480]/70"
                   : "via-[#e1ebee]/50",
@@ -600,6 +620,7 @@ export default async function ProductPage({
                 <span
                   className={[
                     "flex items-center gap-2 rounded-full border px-4 py-2 text-[10px] backdrop-blur-xl",
+
                     isGold
                       ? "border-[#e3c775]/40 bg-[#4c3a12]/50 text-[#f1d98f]"
                       : "border-[#d8e1e4]/35 bg-[#526268]/35 text-[#e2eaed]",
@@ -637,6 +658,7 @@ export default async function ProductPage({
                   <div
                     className={[
                       "relative flex h-16 w-16 items-center justify-center rounded-full border backdrop-blur-xl",
+
                       isGold
                         ? "border-[#efd17a]/42 bg-[#4b3810]/45 text-[#efd17a]"
                         : "border-[#dae5e8]/35 bg-[#59686e]/30 text-[#e3ecee]",
@@ -651,11 +673,11 @@ export default async function ProductPage({
             </div>
           </div>
 
-          {/* اطلاعات محصول */}
           <div className="grid gap-5">
             <article
               className={[
                 "relative overflow-hidden rounded-[2.2rem] border bg-[linear-gradient(145deg,rgba(7,34,25,0.96),rgba(2,20,14,0.99))] p-5 shadow-[0_28px_80px_rgba(0,0,0,0.38)] sm:p-7",
+
                 isGold
                   ? "border-[#d8b860]/23"
                   : "border-[#d6e1e4]/18",
@@ -665,6 +687,7 @@ export default async function ProductPage({
                 aria-hidden="true"
                 className={[
                   "absolute inset-x-12 top-0 h-px bg-gradient-to-r from-transparent to-transparent",
+
                   isGold
                     ? "via-[#efd17a]/65"
                     : "via-[#dce6e9]/45",
@@ -675,6 +698,7 @@ export default async function ProductPage({
                 <span
                   className={[
                     "flex h-11 w-11 items-center justify-center rounded-xl border",
+
                     isGold
                       ? "border-[#d9b85f]/30 bg-[#d9b85f]/[0.06] text-[#e6c873]"
                       : "border-[#dce6e9]/25 bg-[#dce6e9]/[0.045] text-[#dce6e9]",
@@ -690,7 +714,7 @@ export default async function ProductPage({
 
                   <span className="mt-1 block text-[10px] text-white/38">
                     {isPersian
-                      ? "قطعه‌ای از گنجینه الوریا"
+                      ? "قطعه‌ای از گنجینه الــوریا"
                       : "A piece from Eloria’s collection"}
                   </span>
                 </div>
@@ -699,6 +723,7 @@ export default async function ProductPage({
               <h1
                 className={[
                   "mt-5 text-[#f5e8cc]",
+
                   isPersian
                     ? `${persianTitleFont.className} pb-2 text-3xl font-semibold leading-[1.9] sm:text-4xl`
                     : "text-3xl font-semibold leading-tight sm:text-4xl",
@@ -711,6 +736,7 @@ export default async function ProductPage({
                 dir="ltr"
                 className={[
                   "text-xs tracking-[0.18em] text-[#c9b98f]/50",
+
                   isPersian
                     ? "text-right"
                     : "text-left",
@@ -729,10 +755,10 @@ export default async function ProductPage({
                 </p>
               )}
 
-              {/* قیمت نهایی */}
               <div
                 className={[
                   "mt-6 rounded-[1.8rem] border p-5",
+
                   isGold
                     ? "border-[#d9b85f]/30 bg-[radial-gradient(circle_at_top,rgba(213,178,79,0.12),rgba(3,27,19,0.75)_65%)]"
                     : "border-[#dce6e9]/22 bg-[radial-gradient(circle_at_top,rgba(220,230,233,0.08),rgba(3,27,19,0.75)_65%)]",
@@ -748,6 +774,7 @@ export default async function ProductPage({
                   <Sparkles
                     className={[
                       "h-5 w-5",
+
                       isGold
                         ? "text-[#e8ca74]"
                         : "text-[#dfe9ec]",
@@ -758,6 +785,7 @@ export default async function ProductPage({
                 <strong
                   className={[
                     "mt-3 block text-2xl font-semibold sm:text-3xl",
+
                     isGold
                       ? "text-[#f4dc95]"
                       : "text-[#e5edef]",
@@ -818,37 +846,37 @@ export default async function ProductPage({
 
               <div className="mt-5">
                 <AddToCartButton
-  locale={locale}
-  slug={
-    result.product
-      .slug
-  }
-  variantId={
-    result.variant
-      ?.id ?? null
-  }
-  maxQuantity={
-    result.variant
-      ?.stock ??
-    result.product
-      .stock
-  }
-  disabled={
-    !result.product
-      .isPurchasable ||
-    (
-      result.variant
-        ?.stock ??
-      result.product
-        .stock
-    ) <= 0
-  }
-/>
+                  locale={locale}
+                  slug={
+                    result.product
+                      .slug
+                  }
+                  variantId={
+                    result.variant
+                      ?.id ??
+                    null
+                  }
+                  maxQuantity={
+                    result.variant
+                      ?.stock ??
+                    result.product
+                      .stock
+                  }
+                  disabled={
+                    !result.product
+                      .isPurchasable ||
+                    (
+                      result.variant
+                        ?.stock ??
+                      result.product
+                        .stock
+                    ) <= 0
+                  }
+                />
               </div>
             </article>
 
-            {/* مشخصات محصول */}
-            <article className="rounded-[2rem] border border-[#d9b85f]/18 bg-[#061c15]/78 p-4 shadow-[0_24px_70px_rgba(0,0,0,0.3)] sm:p-5">
+            <article className="rounded-[2rem] border border-[#d9b85f]/18 bg-[#061c15]/78 p-4 shadow-[0_24px_70px_rgba(0,0,0,0.3)] backdrop-blur-xl sm:p-5">
               <div className="mb-4 flex items-center gap-3">
                 <ShieldCheck className="h-5 w-5 text-[#d9bd70]" />
 
@@ -885,12 +913,14 @@ export default async function ProductPage({
                   }
                   value={
                     purity ??
-                    (purityFineness
-                      ? formatDecimal(
-                          purityFineness,
-                          locale,
-                        )
-                      : "—")
+                    (
+                      purityFineness
+                        ? formatDecimal(
+                            purityFineness,
+                            locale,
+                          )
+                        : "—"
+                    )
                   }
                 />
 
@@ -930,7 +960,8 @@ export default async function ProductPage({
                       : "SKU"
                   }
                   value={
-                    sku ?? "—"
+                    sku ??
+                    "—"
                   }
                 />
               </div>
@@ -938,8 +969,7 @@ export default async function ProductPage({
           </div>
         </div>
 
-        {/* افسانه پنهان */}
-        <article className="relative mt-8 overflow-hidden rounded-[2.2rem] border border-[#d9b85f]/22 bg-[linear-gradient(135deg,rgba(8,39,29,0.94),rgba(2,20,14,0.98))] px-5 py-7 shadow-[0_28px_80px_rgba(0,0,0,0.34)] sm:px-8 sm:py-8">
+        <article className="relative mt-8 overflow-hidden rounded-[2.2rem] border border-[#d9b85f]/22 bg-[linear-gradient(135deg,rgba(8,39,29,0.94),rgba(2,20,14,0.98))] px-5 py-7 shadow-[0_28px_80px_rgba(0,0,0,0.34)] backdrop-blur-xl sm:px-8 sm:py-8">
           <div
             aria-hidden="true"
             className="absolute inset-x-20 top-0 h-px bg-gradient-to-r from-transparent via-[#efd17a]/65 to-transparent"
@@ -972,6 +1002,7 @@ export default async function ProductPage({
               <h2
                 className={[
                   "mt-2 text-[#f0dfb7]",
+
                   isPersian
                     ? `${persianTitleFont.className} text-2xl font-semibold leading-[1.8]`
                     : "text-xl font-semibold",
@@ -989,6 +1020,6 @@ export default async function ProductPage({
           </div>
         </article>
       </section>
-    </main>
+    </InternalPageShell>
   );
 }

@@ -11,10 +11,6 @@ import {
 } from "next-intl/server";
 
 import {
-  AmbientEffects,
-} from "@/components/ambient-effects";
-
-import {
   CartLivePriceRefresh,
 } from "@/components/cart-live-price-refresh";
 
@@ -23,8 +19,8 @@ import {
 } from "@/components/cart-page-client";
 
 import {
-  SiteHeader,
-} from "@/components/site-header";
+  InternalPageShell,
+} from "@/components/internal-page-shell";
 
 export const dynamic =
   "force-dynamic";
@@ -57,8 +53,9 @@ type CartPageProps = {
 export default async function CartPage({
   params,
 }: CartPageProps) {
-  const { locale } =
-    await params;
+  const {
+    locale,
+  } = await params;
 
   if (
     locale !== "fa" &&
@@ -67,24 +64,14 @@ export default async function CartPage({
     notFound();
   }
 
-  setRequestLocale(locale);
-
-  const isPersian =
-    locale === "fa";
+  setRequestLocale(
+    locale,
+  );
 
   return (
-    <main
-      dir={
-        isPersian
-          ? "rtl"
-          : "ltr"
-      }
-      className="relative min-h-screen overflow-hidden bg-[#02140e] text-[#f8f0df]"
+    <InternalPageShell
+      locale={locale}
     >
-      <AmbientEffects />
-
-      <SiteHeader />
-
       <CartPageClient
         locale={locale}
         persianTitleClassName={
@@ -93,6 +80,6 @@ export default async function CartPage({
       />
 
       <CartLivePriceRefresh />
-    </main>
+    </InternalPageShell>
   );
 }

@@ -14,8 +14,8 @@ import {
 } from "next-intl/server";
 
 import {
-  AmbientEffects,
-} from "@/components/ambient-effects";
+  InternalPageShell,
+} from "@/components/internal-page-shell";
 
 import {
   BraceletRuneIcon,
@@ -30,13 +30,11 @@ import {
   SilverRuneIcon,
 } from "@/components/material-rune-icons";
 
-import {
-  SiteHeader,
-} from "@/components/site-header";
-
 const persianTitleFont =
   Noto_Nastaliq_Urdu({
-    subsets: ["arabic"],
+    subsets: [
+      "arabic",
+    ],
 
     weight: [
       "400",
@@ -45,7 +43,8 @@ const persianTitleFont =
       "700",
     ],
 
-    display: "swap",
+    display:
+      "swap",
   });
 
 type CollectionsPageProps = {
@@ -56,20 +55,23 @@ type CollectionsPageProps = {
 
 const collections = [
   {
-    slug: "necklaces",
+    slug:
+      "necklaces",
 
     image:
       "/images/collections/necklaces.jfif",
 
     fa: {
-      title: "گردنبند",
+      title:
+        "گردنبند",
 
       description:
         "روایت‌هایی آویخته از طلا، نقره، اصالت و افسانه",
     },
 
     en: {
-      title: "Necklaces",
+      title:
+        "Necklaces",
 
       description:
         "Stories suspended in gold, silver, heritage and legend",
@@ -80,20 +82,23 @@ const collections = [
   },
 
   {
-    slug: "bracelets",
+    slug:
+      "bracelets",
 
     image:
       "/images/collections/bracelet.jpg",
 
     fa: {
-      title: "دستبند",
+      title:
+        "دستبند",
 
       description:
-        "نقش‌هایی از شکوه، ظرافت و میراث ماندگار الوریا",
+        "نقش‌هایی از شکوه، ظرافت و میراث ماندگار الــوریا",
     },
 
     en: {
-      title: "Bracelets",
+      title:
+        "Bracelets",
 
       description:
         "Symbols of elegance, grace and enduring Eloria heritage",
@@ -104,20 +109,23 @@ const collections = [
   },
 
   {
-    slug: "earrings",
+    slug:
+      "earrings",
 
     image:
       "/images/collections/earring.jpg",
 
     fa: {
-      title: "گوشواره",
+      title:
+        "گوشواره",
 
       description:
-        "درخشش‌هایی الهام‌گرفته از جهان اسرارآمیز الوریا",
+        "درخشش‌هایی الهام‌گرفته از جهان اسرارآمیز الــوریا",
     },
 
     en: {
-      title: "Earrings",
+      title:
+        "Earrings",
 
       description:
         "Radiance inspired by the mysterious world of Eloria",
@@ -131,10 +139,9 @@ const collections = [
 export default async function CollectionsPage({
   params,
 }: CollectionsPageProps) {
-  const { locale } =
-    await params;
-
-  setRequestLocale(locale);
+  const {
+    locale,
+  } = await params;
 
   if (
     locale !== "fa" &&
@@ -143,21 +150,17 @@ export default async function CollectionsPage({
     notFound();
   }
 
+  setRequestLocale(
+    locale,
+  );
+
   const isPersian =
     locale === "fa";
 
   return (
-    <main
-      dir={
-        isPersian
-          ? "rtl"
-          : "ltr"
-      }
-      className="relative min-h-screen overflow-hidden bg-[#02140e] text-[#f8f0df]"
+    <InternalPageShell
+      locale={locale}
     >
-      <AmbientEffects />
-      <SiteHeader />
-
       <section className="relative z-10 mx-auto w-full max-w-[1500px] px-4 pb-28 pt-36 sm:px-6 lg:px-10 lg:pt-40">
         <header className="mx-auto max-w-4xl text-center">
           <p className="text-[10px] uppercase tracking-[0.45em] text-[#cfb66f]/65 sm:text-xs">
@@ -322,6 +325,6 @@ export default async function CollectionsPage({
           )}
         </div>
       </section>
-    </main>
+    </InternalPageShell>
   );
 }

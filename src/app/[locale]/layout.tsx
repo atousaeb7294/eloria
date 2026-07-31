@@ -1,27 +1,52 @@
-import type { Metadata } from "next";
+import type {
+  Metadata,
+} from "next";
+
+import type {
+  ReactNode,
+} from "react";
 
 import "../globals.css";
 
-import { hasLocale, NextIntlClientProvider } from "next-intl";
+import {
+  hasLocale,
+  NextIntlClientProvider,
+} from "next-intl";
+
 import {
   getTranslations,
   setRequestLocale,
 } from "next-intl/server";
-import { notFound } from "next/navigation";
 
-import { routing } from "@/i18n/routing";
+import {
+  notFound,
+} from "next/navigation";
 
-type LocaleParams = Promise<{
-  locale: string;
-}>;
+import {
+  PageBackgroundProvider,
+} from "@/components/page-background-provider";
 
-type LocaleLayoutProps = Readonly<{
-  children: React.ReactNode;
-  params: LocaleParams;
-}>;
+import {
+  routing,
+} from "@/i18n/routing";
+
+type LocaleParams =
+  Promise<{
+    locale: string;
+  }>;
+
+type LocaleLayoutProps =
+  Readonly<{
+    children: ReactNode;
+    params: LocaleParams;
+  }>;
 
 export function generateStaticParams() {
-  return routing.locales.map((locale) => ({ locale }));
+  return routing.locales.map(
+    (locale) => ({
+      locale,
+    }),
+  );
 }
 
 export async function generateMetadata({
@@ -29,20 +54,32 @@ export async function generateMetadata({
 }: {
   params: LocaleParams;
 }): Promise<Metadata> {
-  const { locale } = await params;
+  const {
+    locale,
+  } = await params;
 
-  if (!hasLocale(routing.locales, locale)) {
+  if (
+    !hasLocale(
+      routing.locales,
+      locale,
+    )
+  ) {
     return {};
   }
 
-  const t = await getTranslations({
-    locale,
-    namespace: "Metadata",
-  });
+  const t =
+    await getTranslations({
+      locale,
+      namespace:
+        "Metadata",
+    });
 
   return {
-    title: t("title"),
-    description: t("description"),
+    title:
+      t("title"),
+
+    description:
+      t("description"),
   };
 }
 
@@ -50,23 +87,38 @@ export default async function LocaleLayout({
   children,
   params,
 }: LocaleLayoutProps) {
-  const { locale } = await params;
+  const {
+    locale,
+  } = await params;
 
-  if (!hasLocale(routing.locales, locale)) {
+  if (
+    !hasLocale(
+      routing.locales,
+      locale,
+    )
+  ) {
     notFound();
   }
 
-  setRequestLocale(locale);
+  setRequestLocale(
+    locale,
+  );
 
   return (
     <html
       lang={locale}
-      dir={locale === "fa" ? "rtl" : "ltr"}
+      dir={
+        locale === "fa"
+          ? "rtl"
+          : "ltr"
+      }
       suppressHydrationWarning
     >
       <body className="min-h-screen">
         <NextIntlClientProvider>
-          {children}
+          <PageBackgroundProvider>
+            {children}
+          </PageBackgroundProvider>
         </NextIntlClientProvider>
       </body>
     </html>

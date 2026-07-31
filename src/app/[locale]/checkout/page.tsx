@@ -11,10 +11,6 @@ import {
 } from "next-intl/server";
 
 import {
-  AmbientEffects,
-} from "@/components/ambient-effects";
-
-import {
   CartLivePriceRefresh,
 } from "@/components/cart-live-price-refresh";
 
@@ -23,14 +19,13 @@ import {
 } from "@/components/checkout-page-client";
 
 import {
-  SiteHeader,
-} from "@/components/site-header";
+  InternalPageShell,
+} from "@/components/internal-page-shell";
 
 export const dynamic =
   "force-dynamic";
 
-export const revalidate =
-  0;
+export const revalidate = 0;
 
 const persianTitleFont =
   Noto_Nastaliq_Urdu({
@@ -73,22 +68,10 @@ export default async function CheckoutPage({
     locale,
   );
 
-  const isPersian =
-    locale === "fa";
-
   return (
-    <main
-      dir={
-        isPersian
-          ? "rtl"
-          : "ltr"
-      }
-      className="relative min-h-screen overflow-hidden bg-[#02140e] text-[#f8f0df]"
+    <InternalPageShell
+      locale={locale}
     >
-      <AmbientEffects />
-
-      <SiteHeader />
-
       <CheckoutPageClient
         locale={locale}
         persianTitleClassName={
@@ -97,6 +80,6 @@ export default async function CheckoutPage({
       />
 
       <CartLivePriceRefresh />
-    </main>
+    </InternalPageShell>
   );
 }

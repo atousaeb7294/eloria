@@ -13,12 +13,12 @@ import {
 } from "next-intl/server";
 
 import {
-  AmbientEffects,
-} from "@/components/ambient-effects";
-
-import {
   CatalogProductCard,
 } from "@/components/catalog-product-card";
+
+import {
+  InternalPageShell,
+} from "@/components/internal-page-shell";
 
 import {
   BraceletRuneIcon,
@@ -33,10 +33,6 @@ import {
 } from "@/components/material-rune-icons";
 
 import {
-  SiteHeader,
-} from "@/components/site-header";
-
-import {
   CatalogError,
   type CatalogMaterial,
   getCollectionCatalog,
@@ -49,7 +45,9 @@ export const revalidate = 0;
 
 const persianTitleFont =
   Noto_Nastaliq_Urdu({
-    subsets: ["arabic"],
+    subsets: [
+      "arabic",
+    ],
 
     weight: [
       "400",
@@ -58,7 +56,8 @@ const persianTitleFont =
       "700",
     ],
 
-    display: "swap",
+    display:
+      "swap",
   });
 
 type MaterialCollectionPageProps = {
@@ -159,8 +158,6 @@ export default async function MaterialCollectionPage({
     material,
   } = await params;
 
-  setRequestLocale(locale);
-
   if (
     locale !== "fa" &&
     locale !== "en"
@@ -178,6 +175,10 @@ export default async function MaterialCollectionPage({
   ) {
     notFound();
   }
+
+  setRequestLocale(
+    locale,
+  );
 
   const isPersian =
     locale === "fa";
@@ -240,22 +241,14 @@ export default async function MaterialCollectionPage({
       : SilverRuneIcon;
 
   return (
-    <main
-      dir={
-        isPersian
-          ? "rtl"
-          : "ltr"
-      }
-      className="relative min-h-screen overflow-hidden bg-[#02140e] text-[#f8f0df]"
+    <InternalPageShell
+      locale={locale}
     >
-      <AmbientEffects />
-      <SiteHeader />
-
       <section className="relative z-10 mx-auto w-full max-w-[1500px] px-4 pb-28 pt-[126px] sm:px-6 sm:pt-[136px] lg:px-10">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <Link
             href={`/${locale}/collections`}
-            className="group flex items-center gap-3 rounded-full border border-[#d9b85f]/32 bg-[#061f17]/80 py-1.5 pe-4 ps-1.5 text-[11px] text-[#e5d19a] transition hover:border-[#efd17d]/65"
+            className="group flex items-center gap-3 rounded-full border border-[#d9b85f]/32 bg-[#061f17]/80 py-1.5 pe-4 ps-1.5 text-[11px] text-[#e5d19a] transition hover:-translate-y-0.5 hover:border-[#efd17d]/65"
           >
             <span className="flex h-9 w-9 items-center justify-center rounded-full border border-[#d9b85f]/25">
               <WorldRuneIcon className="h-5 w-5" />
@@ -330,11 +323,11 @@ export default async function MaterialCollectionPage({
           <p className="mx-auto mt-2 max-w-xl text-[10px] leading-6 text-[#cbbd9d]/62 sm:text-xs">
             {isGold
               ? isPersian
-                ? "قیمت محصولات این بخش در صفحه مشخصات با نرخ لحظه‌ای طلا و سیاست مستقل قیمت‌گذاری طلا محاسبه می‌شود."
-                : "Products use the live gold rate and the dedicated gold pricing policy."
+                ? "قیمت آثار این بخش در صفحه محصول با نرخ معتبر طلا و سیاست اختصاصی قیمت‌گذاری الــوریا محاسبه می‌شود."
+                : "Products use the current gold rate and Eloria’s dedicated gold pricing policy."
               : isPersian
-                ? "قیمت محصولات این بخش در صفحه مشخصات با نرخ لحظه‌ای نقره و سیاست مستقل قیمت‌گذاری نقره محاسبه می‌شود."
-                : "Products use the live silver rate and the independent silver pricing policy."}
+                ? "قیمت آثار این بخش در صفحه محصول با نرخ معتبر نقره و سیاست اختصاصی قیمت‌گذاری الــوریا محاسبه می‌شود."
+                : "Products use the current silver rate and Eloria’s dedicated silver pricing policy."}
           </p>
         </header>
 
@@ -378,7 +371,7 @@ export default async function MaterialCollectionPage({
 
         {catalog.products.length ===
         0 ? (
-          <div className="mx-auto mt-10 max-w-2xl rounded-[2rem] border border-[#d8b860]/18 bg-[#061b14]/75 px-6 py-16 text-center">
+          <div className="mx-auto mt-10 max-w-2xl rounded-[2rem] border border-[#d8b860]/18 bg-[#061b14]/75 px-6 py-16 text-center backdrop-blur-xl">
             <MaterialIcon
               className={[
                 "mx-auto mb-5 h-10 w-10",
@@ -431,6 +424,6 @@ export default async function MaterialCollectionPage({
           </div>
         )}
       </section>
-    </main>
+    </InternalPageShell>
   );
 }

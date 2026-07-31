@@ -11,12 +11,12 @@ import {
 } from "next-intl/server";
 
 import {
-  AmbientEffects,
-} from "@/components/ambient-effects";
-
-import {
   CatalogProductCard,
 } from "@/components/catalog-product-card";
+
+import {
+  InternalPageShell,
+} from "@/components/internal-page-shell";
 
 import {
   AllProductsRuneIcon,
@@ -25,10 +25,6 @@ import {
 import {
   ProductCatalogFilters,
 } from "@/components/product-catalog-filters";
-
-import {
-  SiteHeader,
-} from "@/components/site-header";
 
 import type {
   CatalogMaterial,
@@ -45,7 +41,9 @@ export const revalidate = 0;
 
 const persianTitleFont =
   Noto_Nastaliq_Urdu({
-    subsets: ["arabic"],
+    subsets: [
+      "arabic",
+    ],
 
     weight: [
       "400",
@@ -54,7 +52,8 @@ const persianTitleFont =
       "700",
     ],
 
-    display: "swap",
+    display:
+      "swap",
   });
 
 type ProductsPageProps = {
@@ -102,10 +101,9 @@ export default async function ProductsPage({
   params,
   searchParams,
 }: ProductsPageProps) {
-  const { locale } =
-    await params;
-
-  setRequestLocale(locale);
+  const {
+    locale,
+  } = await params;
 
   if (
     locale !== "fa" &&
@@ -114,6 +112,10 @@ export default async function ProductsPage({
     notFound();
   }
 
+  setRequestLocale(
+    locale,
+  );
+
   const isPersian =
     locale === "fa";
 
@@ -121,8 +123,9 @@ export default async function ProductsPage({
     await searchParams;
 
   const search =
-    getSingleValue(raw.q)
-      ?.trim() ?? "";
+    getSingleValue(
+      raw.q,
+    )?.trim() ?? "";
 
   const rawMaterial =
     getSingleValue(
@@ -155,8 +158,7 @@ export default async function ProductsPage({
   }
 
   if (
-    rawMaterial ===
-    "silver"
+    rawMaterial === "silver"
   ) {
     material = "SILVER";
   }
@@ -189,17 +191,9 @@ export default async function ProductsPage({
     });
 
   return (
-    <main
-      dir={
-        isPersian
-          ? "rtl"
-          : "ltr"
-      }
-      className="relative min-h-screen overflow-hidden bg-[#02140e] text-[#f8f0df]"
+    <InternalPageShell
+      locale={locale}
     >
-      <AmbientEffects />
-      <SiteHeader />
-
       <section className="relative z-10 mx-auto w-full max-w-[1500px] px-4 pb-28 pt-36 sm:px-6 lg:px-10 lg:pt-40">
         <header className="mx-auto max-w-4xl text-center">
           <div className="mb-4 flex items-center justify-center gap-4">
@@ -221,13 +215,14 @@ export default async function ProductsPage({
           <h1
             className={[
               "mt-2 text-[#f6e8c6]",
+
               isPersian
                 ? `${persianTitleFont.className} pb-3 text-3xl font-semibold leading-[1.9] sm:text-4xl`
                 : "text-3xl font-semibold sm:text-4xl",
             ].join(" ")}
           >
             {isPersian
-              ? "تمام محصولات الوریا"
+              ? "تمام محصولات الــوریا"
               : "All Eloria Products"}
           </h1>
 
@@ -269,7 +264,7 @@ export default async function ProductsPage({
         </div>
 
         {catalog.priceFilterActive && (
-          <div className="mt-5 rounded-2xl border border-[#d9b85f]/18 bg-[#061f17]/55 px-4 py-3 text-[10px] leading-6 text-[#cdbd91]/65">
+          <div className="mt-5 rounded-2xl border border-[#d9b85f]/18 bg-[#061f17]/55 px-4 py-3 text-[10px] leading-6 text-[#cdbd91]/65 backdrop-blur-xl">
             {isPersian
               ? "فیلتر قیمت با قیمت نهایی زنده انجام شده است؛ طلا با سیاست طلا و نقره با سیاست مستقل نقره محاسبه شده است."
               : "The price range uses live final prices; gold and silver each use their dedicated pricing policy."}
@@ -305,7 +300,7 @@ export default async function ProductsPage({
 
         {catalog.products.length ===
         0 ? (
-          <div className="mx-auto mt-10 max-w-2xl rounded-[2rem] border border-[#d8b860]/20 bg-[#061b14]/75 px-6 py-16 text-center">
+          <div className="mx-auto mt-10 max-w-2xl rounded-[2rem] border border-[#d8b860]/20 bg-[#061b14]/75 px-6 py-16 text-center backdrop-blur-xl">
             <AllProductsRuneIcon className="mx-auto mb-5 h-10 w-10 text-[#d9b85f]" />
 
             <p className="text-base leading-8 text-[#eadfca]">
@@ -341,6 +336,6 @@ export default async function ProductsPage({
           </div>
         )}
       </section>
-    </main>
+    </InternalPageShell>
   );
 }
