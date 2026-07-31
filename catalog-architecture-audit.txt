@@ -1,0 +1,2070 @@
+﻿===== .\src\app\[locale]\collections\[collection]\page.tsx =====
+import {
+  notFound,
+  redirect,
+} from "next/navigation";
+
+import {
+  setRequestLocale,
+} from "next-intl/server";
+
+type CollectionRedirectPageProps = {
+  params: Promise<{
+    locale: string;
+    collection: string;
+  }>;
+};
+
+const allowedCollections = [
+  "necklaces",
+  "bracelets",
+  "earrings",
+];
+
+export default async function CollectionRedirectPage({
+  params,
+}: CollectionRedirectPageProps) {
+  const {
+    locale,
+    collection,
+  } = await params;
+
+  setRequestLocale(locale);
+
+  if (
+    locale !== "fa" &&
+    locale !== "en"
+  ) {
+    notFound();
+  }
+
+  if (
+    !allowedCollections.includes(
+      collection,
+    )
+  ) {
+    notFound();
+  }
+
+  redirect(
+    `/${locale}/collections#${collection}`,
+  );
+}
+
+===== .\src\app\[locale]\collections\[collection]\[material]\page.tsx =====
+import Link from "next/link";
+
+import {
+  Noto_Nastaliq_Urdu,
+} from "next/font/google";
+
+import {
+  notFound,
+} from "next/navigation";
+
+import {
+  setRequestLocale,
+} from "next-intl/server";
+
+import {
+  AmbientEffects,
+} from "@/components/ambient-effects";
+
+import {
+  CatalogProductCard,
+} from "@/components/catalog-product-card";
+
+import {
+  BraceletRuneIcon,
+  EarringRuneIcon,
+  NecklaceRuneIcon,
+  WorldRuneIcon,
+} from "@/components/luxury-icons";
+
+import {
+  GoldRuneIcon,
+  SilverRuneIcon,
+} from "@/components/material-rune-icons";
+
+import {
+  SiteHeader,
+} from "@/components/site-header";
+
+import {
+  CatalogError,
+  type CatalogMaterial,
+  getCollectionCatalog,
+} from "@/lib/catalog";
+
+export const dynamic =
+  "force-dynamic";
+
+export const revalidate = 0;
+
+const persianTitleFont =
+  Noto_Nastaliq_Urdu({
+    subsets: ["arabic"],
+
+    weight: [
+      "400",
+      "500",
+      "600",
+      "700",
+    ],
+
+    display: "swap",
+  });
+
+type MaterialCollectionPageProps = {
+  params: Promise<{
+    locale: string;
+    collection: string;
+    material: string;
+  }>;
+};
+
+type CollectionSlug =
+  | "necklaces"
+  | "bracelets"
+  | "earrings";
+
+type MaterialSlug =
+  | "gold"
+  | "silver";
+
+const collectionNames = {
+  necklaces: {
+    fa: "Ú¯Ø±Ø¯Ù†Ø¨Ù†Ø¯Ù‡Ø§ÛŒ",
+    en: "Necklace",
+  },
+
+  bracelets: {
+    fa: "Ø¯Ø³ØªØ¨Ù†Ø¯Ù‡Ø§ÛŒ",
+    en: "Bracelet",
+  },
+
+  earrings: {
+    fa: "Ú¯ÙˆØ´ÙˆØ§Ø±Ù‡â€ŒÙ‡Ø§ÛŒ",
+    en: "Earring",
+  },
+} as const;
+
+function isCollectionSlug(
+  value: string,
+): value is CollectionSlug {
+  return (
+    value === "necklaces" ||
+    value === "bracelets" ||
+    value === "earrings"
+  );
+}
+
+function isMaterialSlug(
+  value: string,
+): value is MaterialSlug {
+  return (
+    value === "gold" ||
+    value === "silver"
+  );
+}
+
+function CollectionRune({
+  collection,
+  className,
+}: {
+  collection: CollectionSlug;
+  className?: string;
+}) {
+  if (
+    collection ===
+    "bracelets"
+  ) {
+    return (
+      <BraceletRuneIcon
+        className={className}
+      />
+    );
+  }
+
+  if (
+    collection ===
+    "earrings"
+  ) {
+    return (
+      <EarringRuneIcon
+        className={className}
+      />
+    );
+  }
+
+  return (
+    <NecklaceRuneIcon
+      className={className}
+    />
+  );
+}
+
+export default async function MaterialCollectionPage({
+  params,
+}: MaterialCollectionPageProps) {
+  const {
+    locale,
+    collection,
+    material,
+  } = await params;
+
+  setRequestLocale(locale);
+
+  if (
+    locale !== "fa" &&
+    locale !== "en"
+  ) {
+    notFound();
+  }
+
+  if (
+    !isCollectionSlug(
+      collection,
+    ) ||
+    !isMaterialSlug(
+      material,
+    )
+  ) {
+    notFound();
+  }
+
+  const isPersian =
+    locale === "fa";
+
+  const isGold =
+    material === "gold";
+
+  const materialType:
+    CatalogMaterial =
+    isGold
+      ? "GOLD"
+      : "SILVER";
+
+  let catalog;
+
+  try {
+    catalog =
+      await getCollectionCatalog(
+        collection,
+        materialType,
+      );
+  } catch (error) {
+    if (
+      error instanceof
+        CatalogError &&
+      error.code ===
+        "COLLECTION_NOT_FOUND"
+    ) {
+      notFound();
+    }
+
+    throw error;
+  }
+
+  const collectionName =
+    collectionNames[
+      collection
+    ][
+      isPersian
+        ? "fa"
+        : "en"
+    ];
+
+  const pageTitle =
+    isPersian
+      ? `Ú¯Ù†Ø¬ÛŒÙ†Ù‡ ${collectionName} ${
+          isGold
+            ? "Ø·Ù„Ø§"
+            : "Ù†Ù‚Ø±Ù‡"
+        }`
+      : `${
+          isGold
+            ? "Gold"
+            : "Silver"
+        } ${collectionName} Collection`;
+
+  const MaterialIcon =
+    isGold
+      ? GoldRuneIcon
+      : SilverRuneIcon;
+
+  return (
+    <main
+      dir={
+        isPersian
+          ? "rtl"
+          : "ltr"
+      }
+      className="relative min-h-screen overflow-hidden bg-[#02140e] text-[#f8f0df]"
+    >
+      <AmbientEffects />
+      <SiteHeader />
+
+      <section className="relative z-10 mx-auto w-full max-w-[1500px] px-4 pb-28 pt-[126px] sm:px-6 sm:pt-[136px] lg:px-10">
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <Link
+            href={`/${locale}/collections`}
+            className="group flex items-center gap-3 rounded-full border border-[#d9b85f]/32 bg-[#061f17]/80 py-1.5 pe-4 ps-1.5 text-[11px] text-[#e5d19a] transition hover:border-[#efd17d]/65"
+          >
+            <span className="flex h-9 w-9 items-center justify-center rounded-full border border-[#d9b85f]/25">
+              <WorldRuneIcon className="h-5 w-5" />
+            </span>
+
+            <span>
+              {isPersian
+                ? "Ø¨Ø§Ø²Ú¯Ø´Øª Ø¨Ù‡ Ú¯Ù†Ø¬ÛŒÙ†Ù‡â€ŒÙ‡Ø§"
+                : "Back to collections"}
+            </span>
+          </Link>
+
+          <Link
+            href={`/${locale}/products?material=${material}&collection=${collection}`}
+            className="rounded-full border border-white/[0.08] bg-white/[0.025] px-4 py-2 text-[10px] text-[#cab985]/60 transition hover:border-[#d9b85f]/25 hover:text-[#ead699]"
+          >
+            {isPersian
+              ? "Ø¬Ø³Øªâ€ŒÙˆØ¬Ùˆ Ø¯Ø± ØªÙ…Ø§Ù… Ù…Ø­ØµÙˆÙ„Ø§Øª Ø§ÛŒÙ† Ø¨Ø®Ø´"
+              : "Search all products in this section"}
+          </Link>
+        </div>
+
+        <header className="mx-auto mt-3 max-w-3xl text-center">
+          <div className="mb-2 flex items-center justify-center gap-3">
+            <CollectionRune
+              collection={
+                collection
+              }
+              className="h-6 w-6 text-[#d8bd70]"
+            />
+
+            <span className="h-px w-12 bg-gradient-to-r from-[#d3b35b]/55 to-transparent" />
+
+            <MaterialIcon
+              className={[
+                "h-8 w-8",
+                isGold
+                  ? "text-[#e6c66f]"
+                  : "text-[#dbe6e9]",
+              ].join(" ")}
+            />
+
+            <span className="h-px w-12 bg-gradient-to-l from-[#d3b35b]/55 to-transparent" />
+
+            <CollectionRune
+              collection={
+                collection
+              }
+              className="h-6 w-6 text-[#d8bd70]"
+            />
+          </div>
+
+          <p className="mb-4 text-[7px] uppercase leading-none tracking-[0.42em] text-[#cfb66f]/55">
+            {isGold
+              ? "Eloria Gold Collection"
+              : "Eloria Silver Collection"}
+          </p>
+
+          <h1
+            className={[
+              isPersian
+                ? `${persianTitleFont.className} block pt-1 text-[1.45rem] font-semibold leading-[2.1] sm:text-[1.7rem]`
+                : "block text-2xl font-semibold sm:text-3xl",
+              isGold
+                ? "text-[#f4dfa0]"
+                : "text-[#e4edef]",
+            ].join(" ")}
+          >
+            {pageTitle}
+          </h1>
+
+          <p className="mx-auto mt-2 max-w-xl text-[10px] leading-6 text-[#cbbd9d]/62 sm:text-xs">
+            {isGold
+              ? isPersian
+                ? "Ù‚ÛŒÙ…Øª Ù…Ø­ØµÙˆÙ„Ø§Øª Ø§ÛŒÙ† Ø¨Ø®Ø´ Ø¯Ø± ØµÙØ­Ù‡ Ù…Ø´Ø®ØµØ§Øª Ø¨Ø§ Ù†Ø±Ø® Ù„Ø­Ø¸Ù‡â€ŒØ§ÛŒ Ø·Ù„Ø§ Ùˆ Ø³ÛŒØ§Ø³Øª Ù…Ø³ØªÙ‚Ù„ Ù‚ÛŒÙ…Øªâ€ŒÚ¯Ø°Ø§Ø±ÛŒ Ø·Ù„Ø§ Ù…Ø­Ø§Ø³Ø¨Ù‡ Ù…ÛŒâ€ŒØ´ÙˆØ¯."
+                : "Products use the live gold rate and the dedicated gold pricing policy."
+              : isPersian
+                ? "Ù‚ÛŒÙ…Øª Ù…Ø­ØµÙˆÙ„Ø§Øª Ø§ÛŒÙ† Ø¨Ø®Ø´ Ø¯Ø± ØµÙØ­Ù‡ Ù…Ø´Ø®ØµØ§Øª Ø¨Ø§ Ù†Ø±Ø® Ù„Ø­Ø¸Ù‡â€ŒØ§ÛŒ Ù†Ù‚Ø±Ù‡ Ùˆ Ø³ÛŒØ§Ø³Øª Ù…Ø³ØªÙ‚Ù„ Ù‚ÛŒÙ…Øªâ€ŒÚ¯Ø°Ø§Ø±ÛŒ Ù†Ù‚Ø±Ù‡ Ù…Ø­Ø§Ø³Ø¨Ù‡ Ù…ÛŒâ€ŒØ´ÙˆØ¯."
+                : "Products use the live silver rate and the independent silver pricing policy."}
+          </p>
+        </header>
+
+        <nav className="mx-auto mt-7 grid max-w-xl grid-cols-2 gap-3">
+          <Link
+            href={`/${locale}/collections/${collection}/gold`}
+            className={[
+              "flex min-h-12 items-center justify-center gap-2 rounded-full border px-4 text-xs transition",
+              isGold
+                ? "border-[#efd17a]/68 bg-[#d4b258]/13 text-[#f4df9e] shadow-[0_0_24px_rgba(218,184,95,0.11)]"
+                : "border-[#d9b85f]/20 bg-white/[0.025] text-white/45 hover:border-[#d9b85f]/38 hover:text-[#e9d294]",
+            ].join(" ")}
+          >
+            <GoldRuneIcon className="h-5 w-5" />
+
+            <span>
+              {isPersian
+                ? "Ú¯Ù†Ø¬ÛŒÙ†Ù‡ Ø·Ù„Ø§"
+                : "Gold"}
+            </span>
+          </Link>
+
+          <Link
+            href={`/${locale}/collections/${collection}/silver`}
+            className={[
+              "flex min-h-12 items-center justify-center gap-2 rounded-full border px-4 text-xs transition",
+              !isGold
+                ? "border-[#dde7ea]/50 bg-[#dce6e9]/[0.08] text-[#e7eef0] shadow-[0_0_24px_rgba(220,231,234,0.08)]"
+                : "border-[#d7e1e4]/16 bg-white/[0.025] text-white/45 hover:border-[#d7e1e4]/32 hover:text-[#dfe8ea]",
+            ].join(" ")}
+          >
+            <SilverRuneIcon className="h-5 w-5" />
+
+            <span>
+              {isPersian
+                ? "Ú¯Ù†Ø¬ÛŒÙ†Ù‡ Ù†Ù‚Ø±Ù‡"
+                : "Silver"}
+            </span>
+          </Link>
+        </nav>
+
+        {catalog.products.length ===
+        0 ? (
+          <div className="mx-auto mt-10 max-w-2xl rounded-[2rem] border border-[#d8b860]/18 bg-[#061b14]/75 px-6 py-16 text-center">
+            <MaterialIcon
+              className={[
+                "mx-auto mb-5 h-10 w-10",
+                isGold
+                  ? "text-[#d9b85f]"
+                  : "text-[#dbe6e9]",
+              ].join(" ")}
+            />
+
+            <p className="text-base leading-8 text-[#eadfca]">
+              {isPersian
+                ? `Ù‡Ù†ÙˆØ² Ù…Ø­ØµÙˆÙ„ ${
+                    isGold
+                      ? "Ø·Ù„Ø§ÛŒÛŒ"
+                      : "Ù†Ù‚Ø±Ù‡â€ŒØ§ÛŒ"
+                  } Ø¯Ø± Ø§ÛŒÙ† Ú¯Ù†Ø¬ÛŒÙ†Ù‡ Ø«Ø¨Øª Ù†Ø´Ø¯Ù‡ Ø§Ø³Øª.`
+                : `No ${
+                    isGold
+                      ? "gold"
+                      : "silver"
+                  } products have been added yet.`}
+            </p>
+          </div>
+        ) : (
+          <div className="mt-10 grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
+            {catalog.products.map(
+              (
+                product,
+                index,
+              ) => (
+                <CatalogProductCard
+                  key={
+                    product.id
+                  }
+                  product={
+                    product
+                  }
+                  locale={
+                    locale
+                  }
+                  eager={
+                    index === 0
+                  }
+                  showCollection={
+                    false
+                  }
+                />
+              ),
+            )}
+          </div>
+        )}
+      </section>
+    </main>
+  );
+}
+
+===== .\src\app\[locale]\products\[slug]\page.tsx =====
+import Image from "next/image";
+import Link from "next/link";
+
+import {
+  Noto_Nastaliq_Urdu,
+} from "next/font/google";
+
+import {
+  notFound,
+} from "next/navigation";
+
+import {
+  setRequestLocale,
+} from "next-intl/server";
+
+import type {
+  ReactNode,
+} from "react";
+
+import {
+  Gem,
+  Hash,
+  PackageCheck,
+  Percent,
+  Scale,
+  ScrollText,
+  ShieldCheck,
+  Sparkles,
+} from "lucide-react";
+
+import {
+  AddToCartButton,
+} from "@/components/add-to-cart-button";
+
+import {
+  AmbientEffects,
+} from "@/components/ambient-effects";
+
+import {
+  MagicArrowIcon,
+  WorldRuneIcon,
+} from "@/components/luxury-icons";
+
+import {
+  GoldRuneIcon,
+  SilverRuneIcon,
+} from "@/components/material-rune-icons";
+
+import {
+  SiteHeader,
+} from "@/components/site-header";
+
+import {
+  ProductPricingError,
+  getProductDisplayPrice,
+} from "@/lib/product-pricing";
+
+import {
+  prisma,
+} from "@/lib/prisma";
+
+export const dynamic =
+  "force-dynamic";
+
+export const revalidate = 0;
+
+const persianTitleFont =
+  Noto_Nastaliq_Urdu({
+    subsets: ["arabic"],
+
+    weight: [
+      "400",
+      "500",
+      "600",
+      "700",
+    ],
+
+    display: "swap",
+  });
+
+type ProductPageProps = {
+  params: Promise<{
+    locale: string;
+    slug: string;
+  }>;
+};
+
+const collectionNames: Record<
+  string,
+  {
+    fa: string;
+    en: string;
+  }
+> = {
+  necklaces: {
+    fa: "Ú¯Ø±Ø¯Ù†Ø¨Ù†Ø¯Ù‡Ø§",
+    en: "Necklaces",
+  },
+
+  bracelets: {
+    fa: "Ø¯Ø³ØªØ¨Ù†Ø¯Ù‡Ø§",
+    en: "Bracelets",
+  },
+
+  earrings: {
+    fa: "Ú¯ÙˆØ´ÙˆØ§Ø±Ù‡â€ŒÙ‡Ø§",
+    en: "Earrings",
+  },
+};
+
+const fallbackImages: Record<
+  string,
+  string
+> = {
+  necklaces:
+    "/images/collections/necklaces.jfif",
+
+  bracelets:
+    "/images/collections/bracelet.jpg",
+
+  earrings:
+    "/images/collections/earring.jpg",
+};
+
+function formatToman(
+  value: string,
+  locale: string,
+): string {
+  try {
+    return BigInt(
+      value,
+    ).toLocaleString(
+      locale === "fa"
+        ? "fa-IR"
+        : "en-US",
+    );
+  } catch {
+    return value;
+  }
+}
+
+function formatDecimal(
+  value:
+    | string
+    | number
+    | null,
+  locale: string,
+): string {
+  if (
+    value === null ||
+    value === ""
+  ) {
+    return "â€”";
+  }
+
+  const numericValue =
+    Number(value);
+
+  if (
+    !Number.isFinite(
+      numericValue,
+    )
+  ) {
+    return String(value);
+  }
+
+  return numericValue.toLocaleString(
+    locale === "fa"
+      ? "fa-IR"
+      : "en-US",
+    {
+      maximumFractionDigits: 3,
+    },
+  );
+}
+
+function SpecificationItem({
+  icon,
+  label,
+  value,
+}: {
+  icon: ReactNode;
+  label: string;
+  value: string;
+}) {
+  return (
+    <div className="flex min-h-20 items-center gap-3 rounded-2xl border border-white/[0.065] bg-white/[0.025] px-4 py-3">
+      <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-[#d9b85f]/22 bg-[#d9b85f]/[0.045] text-[#d9be72]">
+        {icon}
+      </span>
+
+      <span className="min-w-0">
+        <span className="block text-[9px] text-white/38">
+          {label}
+        </span>
+
+        <strong className="mt-1 block truncate text-xs font-medium text-[#e8ddc8]">
+          {value}
+        </strong>
+      </span>
+    </div>
+  );
+}
+
+function PriceInformationItem({
+  icon,
+  label,
+  value,
+  isGold,
+}: {
+  icon: ReactNode;
+  label: string;
+  value: string;
+  isGold: boolean;
+}) {
+  return (
+    <div
+      className={[
+        "relative overflow-hidden rounded-2xl border px-4 py-4",
+        isGold
+          ? "border-[#d9b85f]/20 bg-[#d9b85f]/[0.035]"
+          : "border-[#dce6e9]/16 bg-[#dce6e9]/[0.025]",
+      ].join(" ")}
+    >
+      <div className="flex items-center gap-2">
+        <span
+          className={[
+            "flex h-8 w-8 items-center justify-center rounded-lg border",
+            isGold
+              ? "border-[#d9b85f]/25 bg-[#d9b85f]/[0.055] text-[#e4c46d]"
+              : "border-[#dce6e9]/20 bg-[#dce6e9]/[0.04] text-[#dfe8eb]",
+          ].join(" ")}
+        >
+          {icon}
+        </span>
+
+        <span className="text-[9px] text-white/40">
+          {label}
+        </span>
+      </div>
+
+      <strong
+        className={[
+          "mt-3 block text-sm font-medium",
+          isGold
+            ? "text-[#f0d78f]"
+            : "text-[#e3ecee]",
+        ].join(" ")}
+      >
+        {value}
+      </strong>
+    </div>
+  );
+}
+
+export default async function ProductPage({
+  params,
+}: ProductPageProps) {
+  const {
+    locale,
+    slug,
+  } = await params;
+
+  if (
+    locale !== "fa" &&
+    locale !== "en"
+  ) {
+    notFound();
+  }
+
+  setRequestLocale(locale);
+
+  const isPersian =
+    locale === "fa";
+
+  let result;
+
+  try {
+    result =
+      await getProductDisplayPrice({
+        slug,
+      });
+  } catch (error) {
+    if (
+      error instanceof
+        ProductPricingError &&
+      error.code ===
+        "PRODUCT_NOT_FOUND"
+    ) {
+      notFound();
+    }
+
+    throw error;
+  }
+
+  const productRecord =
+    await prisma.product.findFirst({
+      where: {
+        id:
+          result.product.id,
+      },
+
+      select: {
+        collectionId: true,
+        legendFa: true,
+        legendEn: true,
+      },
+    });
+
+  const image =
+    await prisma.productImage.findFirst({
+      where: {
+        productId:
+          result.product.id,
+      },
+
+      orderBy: [
+        {
+          isPrimary: "desc",
+        },
+        {
+          displayOrder: "asc",
+        },
+      ],
+
+      select: {
+        imageUrl: true,
+        altFa: true,
+        altEn: true,
+      },
+    });
+
+  const collection =
+    productRecord
+      ? await prisma.collection.findUnique({
+          where: {
+            id:
+              productRecord.collectionId,
+          },
+
+          select: {
+            slug: true,
+          },
+        })
+      : null;
+
+  const isGold =
+    result.product.material ===
+    "GOLD";
+
+  const MaterialIcon =
+    isGold
+      ? GoldRuneIcon
+      : SilverRuneIcon;
+
+  const materialSlug =
+    isGold
+      ? "gold"
+      : "silver";
+
+  const materialLabel =
+    isGold
+      ? isPersian
+        ? "Ø·Ù„Ø§"
+        : "Gold"
+      : isPersian
+        ? "Ù†Ù‚Ø±Ù‡"
+        : "Silver";
+
+  const weightLabel =
+    isGold
+      ? isPersian
+        ? "ÙˆØ²Ù† Ø·Ù„Ø§"
+        : "Gold weight"
+      : isPersian
+        ? "ÙˆØ²Ù† Ù†Ù‚Ø±Ù‡"
+        : "Silver weight";
+
+  const liveRateLabel =
+    isGold
+      ? isPersian
+        ? "Ù†Ø±Ø® Ù„Ø­Ø¸Ù‡â€ŒØ§ÛŒ Ø·Ù„Ø§"
+        : "Live gold rate"
+      : isPersian
+        ? "Ù†Ø±Ø® Ù„Ø­Ø¸Ù‡â€ŒØ§ÛŒ Ù†Ù‚Ø±Ù‡"
+        : "Live silver rate";
+
+  const productName =
+    isPersian
+      ? result.product.nameFa
+      : result.product.nameEn;
+
+  const secondaryName =
+    isPersian
+      ? result.product.nameEn
+      : result.product.nameFa;
+
+  const collectionSlug =
+    collection?.slug ??
+    "necklaces";
+
+  const collectionLabel =
+    collectionNames[
+      collectionSlug
+    ]?.[
+      isPersian
+        ? "fa"
+        : "en"
+    ] ??
+    collectionSlug;
+
+  const backHref =
+    collection?.slug
+      ? `/${locale}/collections/${collection.slug}/${materialSlug}`
+      : `/${locale}/products`;
+
+  const imageUrl =
+    image?.imageUrl ??
+    fallbackImages[
+      collectionSlug
+    ] ??
+    "/images/collections/necklaces.jfif";
+
+  const imageAlt =
+    isPersian
+      ? image?.altFa ??
+        result.product.nameFa
+      : image?.altEn ??
+        result.product.nameEn;
+
+  const weight =
+    result.variant
+      ?.weightGrams ??
+    result.product.weightGrams;
+
+  const purity =
+    result.variant
+      ?.purity ??
+    result.product.purity;
+
+  const purityFineness =
+    result.variant
+      ?.purityFineness ??
+    result.product
+      .purityFineness;
+
+  const stock =
+    result.variant
+      ?.stock ??
+    result.product.stock;
+
+  const sku =
+    result.variant?.sku ??
+    result.product.sku;
+
+  const taxPercent =
+    result.pricing.breakdown
+      ?.taxPercent ??
+    result.policy
+      .defaultTaxPercent;
+
+  const finalPrice =
+    `${formatToman(
+      result.pricing
+        .finalPriceToman,
+      locale,
+    )} ${
+      isPersian
+        ? "ØªÙˆÙ…Ø§Ù†"
+        : "Toman"
+    }`;
+
+  const formattedWeight =
+    weight
+      ? `${formatDecimal(
+          weight,
+          locale,
+        )} ${
+          isPersian
+            ? "Ú¯Ø±Ù…"
+            : "g"
+        }`
+      : "â€”";
+
+  const formattedLiveRate =
+    result.liveRate
+      ? `${formatToman(
+          result.liveRate
+            .pricePerGramToman,
+          locale,
+        )} ${
+          isPersian
+            ? "ØªÙˆÙ…Ø§Ù†"
+            : "Toman"
+        }`
+      : isPersian
+        ? "Ù‚ÛŒÙ…Øª Ø«Ø§Ø¨Øª"
+        : "Manual price";
+
+  const formattedTax =
+    `${formatDecimal(
+      taxPercent,
+      locale,
+    )}Ùª`;
+
+  const hiddenLegend =
+    isPersian
+      ? productRecord?.legendFa
+      : productRecord?.legendEn;
+
+  const legendText =
+    hiddenLegend?.trim() ||
+    (isPersian
+      ? "Ø§ÙØ³Ø§Ù†Ù‡ Ø§ÛŒÙ† Ù‚Ø·Ø¹Ù‡ Ù‡Ù†ÙˆØ² Ø¯Ø± Ø¯ÙØªØ± Ø±Ø§Ø²Ù‡Ø§ÛŒ Ø§Ù„ÙˆØ±ÛŒØ§ Ø«Ø¨Øª Ù†Ø´Ø¯Ù‡ Ø§Ø³Øª."
+      : "The legend of this piece has not yet been written in Eloriaâ€™s book of secrets.");
+
+  return (
+    <main
+      dir={
+        isPersian
+          ? "rtl"
+          : "ltr"
+      }
+      className="relative min-h-screen overflow-hidden bg-[#02140e] text-[#f8f0df]"
+    >
+      <AmbientEffects />
+      <SiteHeader />
+
+      <section className="relative z-10 mx-auto w-full max-w-[1450px] px-4 pb-28 pt-[130px] sm:px-6 sm:pt-[142px] lg:px-10">
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <Link
+            href={backHref}
+            className="group flex w-fit items-center gap-3 rounded-full border border-[#d9b85f]/32 bg-[#061f17]/80 py-1.5 pe-4 ps-1.5 text-[11px] text-[#e5d19a] transition hover:-translate-y-0.5 hover:border-[#efd17d]/65"
+          >
+            <span className="flex h-9 w-9 items-center justify-center rounded-full border border-[#d9b85f]/25">
+              <MagicArrowIcon
+                className={[
+                  "h-4 w-4",
+                  isPersian
+                    ? ""
+                    : "rotate-180",
+                ].join(" ")}
+              />
+            </span>
+
+            <span>
+              {isPersian
+                ? `Ø¨Ø§Ø²Ú¯Ø´Øª Ø¨Ù‡ Ú¯Ù†Ø¬ÛŒÙ†Ù‡ ${collectionLabel}`
+                : `Back to ${collectionLabel}`}
+            </span>
+          </Link>
+
+          <Link
+            href={`/${locale}/collections`}
+            className="flex items-center gap-2 rounded-full border border-white/[0.08] bg-white/[0.025] px-4 py-2 text-[10px] text-white/45 transition hover:border-[#d9b85f]/25 hover:text-[#ead699]"
+          >
+            <WorldRuneIcon className="h-4 w-4" />
+
+            <span>
+              {isPersian
+                ? "Ø¯Ù†ÛŒØ§ÛŒ Ø§Ù„ÙˆØ±ÛŒØ§"
+                : "Eloria World"}
+            </span>
+          </Link>
+        </div>
+
+        <div className="mt-7 grid items-start gap-8 lg:grid-cols-[minmax(0,1.05fr)_minmax(380px,0.95fr)]">
+          {/* ØªØµÙˆÛŒØ± Ù…Ø­ØµÙˆÙ„ */}
+          <div
+            className={[
+              "relative overflow-hidden rounded-[2.5rem] border bg-[linear-gradient(145deg,rgba(8,36,27,0.96),rgba(2,20,14,0.99))] p-3 shadow-[0_35px_100px_rgba(0,0,0,0.48)]",
+              isGold
+                ? "border-[#d8b860]/25"
+                : "border-[#d8e3e6]/20",
+            ].join(" ")}
+          >
+            <div
+              aria-hidden="true"
+              className={[
+                "absolute inset-x-16 top-0 h-px bg-gradient-to-r from-transparent to-transparent",
+                isGold
+                  ? "via-[#efd480]/70"
+                  : "via-[#e1ebee]/50",
+              ].join(" ")}
+            />
+
+            <div className="relative aspect-[4/5] overflow-hidden rounded-[2rem] border border-white/[0.06] bg-[#031811]">
+              <Image
+                src={imageUrl}
+                alt={imageAlt}
+                fill
+                priority
+                sizes="(max-width: 1024px) 100vw, 55vw"
+                className="object-cover"
+              />
+
+              <div className="absolute inset-0 bg-gradient-to-t from-[#01130d]/82 via-transparent to-black/10" />
+
+              <div className="absolute start-5 top-5">
+                <span
+                  className={[
+                    "flex items-center gap-2 rounded-full border px-4 py-2 text-[10px] backdrop-blur-xl",
+                    isGold
+                      ? "border-[#e3c775]/40 bg-[#4c3a12]/50 text-[#f1d98f]"
+                      : "border-[#d8e1e4]/35 bg-[#526268]/35 text-[#e2eaed]",
+                  ].join(" ")}
+                >
+                  <MaterialIcon className="h-5 w-5" />
+
+                  <span>
+                    {materialLabel}
+                  </span>
+                </span>
+              </div>
+
+              {!result.product
+                .isPurchasable && (
+                <div className="absolute end-5 top-5 rounded-full border border-rose-200/20 bg-[#47131b]/75 px-4 py-2 text-[10px] text-rose-100 backdrop-blur-xl">
+                  {isPersian
+                    ? "Ù†Ø§Ù…ÙˆØ¬ÙˆØ¯"
+                    : "Unavailable"}
+                </div>
+              )}
+
+              <div className="absolute inset-x-0 bottom-0 p-6">
+                <div className="flex items-end justify-between gap-4">
+                  <div>
+                    <p className="text-[9px] uppercase tracking-[0.32em] text-[#d2bd83]/65">
+                      Eloria Jewelry
+                    </p>
+
+                    <p className="mt-2 text-sm text-[#efe3c9]/75">
+                      {collectionLabel}
+                    </p>
+                  </div>
+
+                  <div
+                    className={[
+                      "relative flex h-16 w-16 items-center justify-center rounded-full border backdrop-blur-xl",
+                      isGold
+                        ? "border-[#efd17a]/42 bg-[#4b3810]/45 text-[#efd17a]"
+                        : "border-[#dae5e8]/35 bg-[#59686e]/30 text-[#e3ecee]",
+                    ].join(" ")}
+                  >
+                    <span className="absolute inset-[6px] rounded-full border border-dashed border-current opacity-25" />
+
+                    <MaterialIcon className="relative h-9 w-9" />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Ø§Ø·Ù„Ø§Ø¹Ø§Øª Ù…Ø­ØµÙˆÙ„ */}
+          <div className="grid gap-5">
+            <article
+              className={[
+                "relative overflow-hidden rounded-[2.2rem] border bg-[linear-gradient(145deg,rgba(7,34,25,0.96),rgba(2,20,14,0.99))] p-5 shadow-[0_28px_80px_rgba(0,0,0,0.38)] sm:p-7",
+                isGold
+                  ? "border-[#d8b860]/23"
+                  : "border-[#d6e1e4]/18",
+              ].join(" ")}
+            >
+              <div
+                aria-hidden="true"
+                className={[
+                  "absolute inset-x-12 top-0 h-px bg-gradient-to-r from-transparent to-transparent",
+                  isGold
+                    ? "via-[#efd17a]/65"
+                    : "via-[#dce6e9]/45",
+                ].join(" ")}
+              />
+
+              <div className="flex items-center gap-3">
+                <span
+                  className={[
+                    "flex h-11 w-11 items-center justify-center rounded-xl border",
+                    isGold
+                      ? "border-[#d9b85f]/30 bg-[#d9b85f]/[0.06] text-[#e6c873]"
+                      : "border-[#dce6e9]/25 bg-[#dce6e9]/[0.045] text-[#dce6e9]",
+                  ].join(" ")}
+                >
+                  <MaterialIcon className="h-6 w-6" />
+                </span>
+
+                <div>
+                  <span className="block text-[9px] uppercase tracking-[0.3em] text-[#ccb77a]/55">
+                    {materialLabel}
+                  </span>
+
+                  <span className="mt-1 block text-[10px] text-white/38">
+                    {isPersian
+                      ? "Ù‚Ø·Ø¹Ù‡â€ŒØ§ÛŒ Ø§Ø² Ú¯Ù†Ø¬ÛŒÙ†Ù‡ Ø§Ù„ÙˆØ±ÛŒØ§"
+                      : "A piece from Eloriaâ€™s collection"}
+                  </span>
+                </div>
+              </div>
+
+              <h1
+                className={[
+                  "mt-5 text-[#f5e8cc]",
+                  isPersian
+                    ? `${persianTitleFont.className} pb-2 text-3xl font-semibold leading-[1.9] sm:text-4xl`
+                    : "text-3xl font-semibold leading-tight sm:text-4xl",
+                ].join(" ")}
+              >
+                {productName}
+              </h1>
+
+              <p
+                dir="ltr"
+                className={[
+                  "text-xs tracking-[0.18em] text-[#c9b98f]/50",
+                  isPersian
+                    ? "text-right"
+                    : "text-left",
+                ].join(" ")}
+              >
+                {secondaryName}
+              </p>
+
+              {result.variant && (
+                <p className="mt-4 rounded-xl border border-white/[0.06] bg-white/[0.025] px-4 py-3 text-xs text-[#daceb7]/70">
+                  {isPersian
+                    ? result.variant
+                        .titleFa
+                    : result.variant
+                        .titleEn}
+                </p>
+              )}
+
+              {/* Ù‚ÛŒÙ…Øª Ù†Ù‡Ø§ÛŒÛŒ */}
+              <div
+                className={[
+                  "mt-6 rounded-[1.8rem] border p-5",
+                  isGold
+                    ? "border-[#d9b85f]/30 bg-[radial-gradient(circle_at_top,rgba(213,178,79,0.12),rgba(3,27,19,0.75)_65%)]"
+                    : "border-[#dce6e9]/22 bg-[radial-gradient(circle_at_top,rgba(220,230,233,0.08),rgba(3,27,19,0.75)_65%)]",
+                ].join(" ")}
+              >
+                <div className="flex items-center justify-between gap-4">
+                  <span className="text-[10px] text-white/45">
+                    {isPersian
+                      ? "Ù‚ÛŒÙ…Øª Ù†Ù‡Ø§ÛŒÛŒ"
+                      : "Final price"}
+                  </span>
+
+                  <Sparkles
+                    className={[
+                      "h-5 w-5",
+                      isGold
+                        ? "text-[#e8ca74]"
+                        : "text-[#dfe9ec]",
+                    ].join(" ")}
+                  />
+                </div>
+
+                <strong
+                  className={[
+                    "mt-3 block text-2xl font-semibold sm:text-3xl",
+                    isGold
+                      ? "text-[#f4dc95]"
+                      : "text-[#e5edef]",
+                  ].join(" ")}
+                >
+                  {finalPrice}
+                </strong>
+
+                <div className="mt-5 grid gap-2 sm:grid-cols-3">
+                  <PriceInformationItem
+                    icon={
+                      <Scale className="h-4 w-4" />
+                    }
+                    label={
+                      weightLabel
+                    }
+                    value={
+                      formattedWeight
+                    }
+                    isGold={
+                      isGold
+                    }
+                  />
+
+                  <PriceInformationItem
+                    icon={
+                      <MaterialIcon className="h-4 w-4" />
+                    }
+                    label={
+                      liveRateLabel
+                    }
+                    value={
+                      formattedLiveRate
+                    }
+                    isGold={
+                      isGold
+                    }
+                  />
+
+                  <PriceInformationItem
+                    icon={
+                      <Percent className="h-4 w-4" />
+                    }
+                    label={
+                      isPersian
+                        ? "Ø¯Ø±ØµØ¯ Ù…Ø§Ù„ÛŒØ§Øª"
+                        : "Tax percentage"
+                    }
+                    value={
+                      formattedTax
+                    }
+                    isGold={
+                      isGold
+                    }
+                  />
+                </div>
+              </div>
+
+              <div className="mt-5">
+                <AddToCartButton
+  locale={locale}
+  slug={
+    result.product
+      .slug
+  }
+  variantId={
+    result.variant
+      ?.id ?? null
+  }
+  maxQuantity={
+    result.variant
+      ?.stock ??
+    result.product
+      .stock
+  }
+  disabled={
+    !result.product
+      .isPurchasable ||
+    (
+      result.variant
+        ?.stock ??
+      result.product
+        .stock
+    ) <= 0
+  }
+/>
+              </div>
+            </article>
+
+            {/* Ù…Ø´Ø®ØµØ§Øª Ù…Ø­ØµÙˆÙ„ */}
+            <article className="rounded-[2rem] border border-[#d9b85f]/18 bg-[#061c15]/78 p-4 shadow-[0_24px_70px_rgba(0,0,0,0.3)] sm:p-5">
+              <div className="mb-4 flex items-center gap-3">
+                <ShieldCheck className="h-5 w-5 text-[#d9bd70]" />
+
+                <h2 className="text-sm font-medium text-[#ebdfc8]">
+                  {isPersian
+                    ? "Ù…Ø´Ø®ØµØ§Øª Ù…Ø­ØµÙˆÙ„"
+                    : "Product specifications"}
+                </h2>
+              </div>
+
+              <div className="grid gap-2 sm:grid-cols-2">
+                <SpecificationItem
+                  icon={
+                    <MaterialIcon className="h-5 w-5" />
+                  }
+                  label={
+                    isPersian
+                      ? "Ø¬Ù†Ø³"
+                      : "Material"
+                  }
+                  value={
+                    materialLabel
+                  }
+                />
+
+                <SpecificationItem
+                  icon={
+                    <Gem className="h-5 w-5" />
+                  }
+                  label={
+                    isPersian
+                      ? "Ø¹ÛŒØ§Ø±"
+                      : "Purity"
+                  }
+                  value={
+                    purity ??
+                    (purityFineness
+                      ? formatDecimal(
+                          purityFineness,
+                          locale,
+                        )
+                      : "â€”")
+                  }
+                />
+
+                <SpecificationItem
+                  icon={
+                    <PackageCheck className="h-5 w-5" />
+                  }
+                  label={
+                    isPersian
+                      ? "Ù…ÙˆØ¬ÙˆØ¯ÛŒ"
+                      : "Stock"
+                  }
+                  value={
+                    stock > 0
+                      ? `${stock.toLocaleString(
+                          isPersian
+                            ? "fa-IR"
+                            : "en-US",
+                        )} ${
+                          isPersian
+                            ? "Ø¹Ø¯Ø¯"
+                            : "items"
+                        }`
+                      : isPersian
+                        ? "Ù†Ø§Ù…ÙˆØ¬ÙˆØ¯"
+                        : "Out of stock"
+                  }
+                />
+
+                <SpecificationItem
+                  icon={
+                    <Hash className="h-5 w-5" />
+                  }
+                  label={
+                    isPersian
+                      ? "Ú©Ø¯ Ù…Ø­ØµÙˆÙ„"
+                      : "SKU"
+                  }
+                  value={
+                    sku ?? "â€”"
+                  }
+                />
+              </div>
+            </article>
+          </div>
+        </div>
+
+        {/* Ø§ÙØ³Ø§Ù†Ù‡ Ù¾Ù†Ù‡Ø§Ù† */}
+        <article className="relative mt-8 overflow-hidden rounded-[2.2rem] border border-[#d9b85f]/22 bg-[linear-gradient(135deg,rgba(8,39,29,0.94),rgba(2,20,14,0.98))] px-5 py-7 shadow-[0_28px_80px_rgba(0,0,0,0.34)] sm:px-8 sm:py-8">
+          <div
+            aria-hidden="true"
+            className="absolute inset-x-20 top-0 h-px bg-gradient-to-r from-transparent via-[#efd17a]/65 to-transparent"
+          />
+
+          <div
+            aria-hidden="true"
+            className="absolute -end-20 -top-24 h-52 w-52 rounded-full bg-[#d9b85f]/[0.045] blur-3xl"
+          />
+
+          <div
+            aria-hidden="true"
+            className="absolute -bottom-24 -start-20 h-52 w-52 rounded-full bg-emerald-300/[0.035] blur-3xl"
+          />
+
+          <div className="relative flex flex-col items-center gap-5 text-center sm:flex-row sm:text-start">
+            <div className="relative flex h-20 w-20 shrink-0 items-center justify-center rounded-full border border-[#dfc36f]/35 bg-[#d9b85f]/[0.06] text-[#ead07d] shadow-[0_0_35px_rgba(218,184,95,0.08)]">
+              <span className="absolute inset-[7px] rounded-full border border-dashed border-[#e2c771]/25" />
+
+              <ScrollText className="relative h-8 w-8" />
+
+              <Sparkles className="absolute -end-1 top-1 h-4 w-4 text-[#f0d986]" />
+            </div>
+
+            <div className="min-w-0 flex-1">
+              <span className="text-[9px] uppercase tracking-[0.32em] text-[#d4bd7a]/50">
+                Eloria Secret Legend
+              </span>
+
+              <h2
+                className={[
+                  "mt-2 text-[#f0dfb7]",
+                  isPersian
+                    ? `${persianTitleFont.className} text-2xl font-semibold leading-[1.8]`
+                    : "text-xl font-semibold",
+                ].join(" ")}
+              >
+                {isPersian
+                  ? "Ø§ÙØ³Ø§Ù†Ù‡ Ù¾Ù†Ù‡Ø§Ù†"
+                  : "The Hidden Legend"}
+              </h2>
+
+              <p className="mt-2 text-xs leading-7 text-[#d7c9aa]/65 sm:text-sm">
+                {legendText}
+              </p>
+            </div>
+          </div>
+        </article>
+      </section>
+    </main>
+  );
+}
+
+===== .\src\components\product-catalog-filters.tsx =====
+"use client";
+
+import {
+  usePathname,
+  useRouter,
+} from "next/navigation";
+
+import {
+  type FormEvent,
+  useState,
+  useTransition,
+} from "react";
+
+import {
+  BraceletRuneIcon,
+  EarringRuneIcon,
+  NecklaceRuneIcon,
+} from "@/components/luxury-icons";
+
+import {
+  AllProductsRuneIcon,
+  FilterRuneIcon,
+  GoldRuneIcon,
+  SearchRuneIcon,
+  SilverRuneIcon,
+} from "@/components/material-rune-icons";
+
+type MaterialFilter =
+  | "all"
+  | "gold"
+  | "silver";
+
+type CollectionFilter =
+  | "all"
+  | "necklaces"
+  | "bracelets"
+  | "earrings";
+
+type ProductCatalogFiltersProps = {
+  locale: string;
+
+  initialFilters: {
+    search: string;
+    material: MaterialFilter;
+    collection: CollectionFilter;
+    minPrice: string;
+    maxPrice: string;
+  };
+};
+
+function normalizeNumericInput(
+  value: string,
+): string {
+  const persianDigits =
+    "Û°Û±Û²Û³Û´ÛµÛ¶Û·Û¸Û¹";
+
+  const arabicDigits =
+    "Ù Ù¡Ù¢Ù£Ù¤Ù¥Ù¦Ù§Ù¨Ù©";
+
+  return value
+    .replace(
+      /[Û°-Û¹]/g,
+      (digit) =>
+        String(
+          persianDigits.indexOf(
+            digit,
+          ),
+        ),
+    )
+    .replace(
+      /[Ù -Ù©]/g,
+      (digit) =>
+        String(
+          arabicDigits.indexOf(
+            digit,
+          ),
+        ),
+    )
+    .replace(/[^\d]/g, "")
+    .slice(0, 15);
+}
+
+export function ProductCatalogFilters({
+  locale,
+  initialFilters,
+}: ProductCatalogFiltersProps) {
+  const router =
+    useRouter();
+
+  const pathname =
+    usePathname();
+
+  const isPersian =
+    locale === "fa";
+
+  const [
+    isPending,
+    startTransition,
+  ] = useTransition();
+
+  const [
+    search,
+    setSearch,
+  ] = useState(
+    initialFilters.search,
+  );
+
+  const [
+    material,
+    setMaterial,
+  ] =
+    useState<MaterialFilter>(
+      initialFilters.material,
+    );
+
+  const [
+    collection,
+    setCollection,
+  ] =
+    useState<CollectionFilter>(
+      initialFilters.collection,
+    );
+
+  const [
+    minPrice,
+    setMinPrice,
+  ] = useState(
+    initialFilters.minPrice,
+  );
+
+  const [
+    maxPrice,
+    setMaxPrice,
+  ] = useState(
+    initialFilters.maxPrice,
+  );
+
+  const submitFilters = (
+    event?: FormEvent,
+  ) => {
+    event?.preventDefault();
+
+    const params =
+      new URLSearchParams();
+
+    const normalizedSearch =
+      search.trim();
+
+    if (normalizedSearch) {
+      params.set(
+        "q",
+        normalizedSearch,
+      );
+    }
+
+    if (
+      material !== "all"
+    ) {
+      params.set(
+        "material",
+        material,
+      );
+    }
+
+    if (
+      collection !== "all"
+    ) {
+      params.set(
+        "collection",
+        collection,
+      );
+    }
+
+    if (minPrice) {
+      params.set(
+        "minPrice",
+        minPrice,
+      );
+    }
+
+    if (maxPrice) {
+      params.set(
+        "maxPrice",
+        maxPrice,
+      );
+    }
+
+    const query =
+      params.toString();
+
+    startTransition(() => {
+      router.push(
+        query
+          ? `${pathname}?${query}`
+          : pathname,
+        {
+          scroll: false,
+        },
+      );
+    });
+  };
+
+  const resetFilters = () => {
+    setSearch("");
+    setMaterial("all");
+    setCollection("all");
+    setMinPrice("");
+    setMaxPrice("");
+
+    startTransition(() => {
+      router.push(
+        pathname,
+        {
+          scroll: false,
+        },
+      );
+    });
+  };
+
+  const materialChoices = [
+    {
+      value: "all",
+      label:
+        isPersian
+          ? "Ù‡Ù…Ù‡"
+          : "All",
+
+      Icon:
+        AllProductsRuneIcon,
+    },
+
+    {
+      value: "gold",
+      label:
+        isPersian
+          ? "Ø·Ù„Ø§"
+          : "Gold",
+
+      Icon:
+        GoldRuneIcon,
+    },
+
+    {
+      value: "silver",
+      label:
+        isPersian
+          ? "Ù†Ù‚Ø±Ù‡"
+          : "Silver",
+
+      Icon:
+        SilverRuneIcon,
+    },
+  ] as const;
+
+  const collectionChoices = [
+    {
+      value: "all",
+      label:
+        isPersian
+          ? "Ù‡Ù…Ù‡"
+          : "All",
+
+      Icon:
+        AllProductsRuneIcon,
+    },
+
+    {
+      value: "necklaces",
+      label:
+        isPersian
+          ? "Ú¯Ø±Ø¯Ù†Ø¨Ù†Ø¯"
+          : "Necklaces",
+
+      Icon:
+        NecklaceRuneIcon,
+    },
+
+    {
+      value: "bracelets",
+      label:
+        isPersian
+          ? "Ø¯Ø³ØªØ¨Ù†Ø¯"
+          : "Bracelets",
+
+      Icon:
+        BraceletRuneIcon,
+    },
+
+    {
+      value: "earrings",
+      label:
+        isPersian
+          ? "Ú¯ÙˆØ´ÙˆØ§Ø±Ù‡"
+          : "Earrings",
+
+      Icon:
+        EarringRuneIcon,
+    },
+  ] as const;
+
+  return (
+    <form
+      onSubmit={
+        submitFilters
+      }
+      className="relative mx-auto max-w-6xl overflow-hidden rounded-[1.55rem] border border-[#d9b85f]/20 bg-[linear-gradient(145deg,rgba(7,38,28,0.9),rgba(2,21,15,0.94))] p-3 shadow-[0_20px_55px_rgba(0,0,0,0.3)] backdrop-blur-2xl sm:p-4"
+    >
+      <div
+        aria-hidden="true"
+        className="absolute inset-x-12 top-0 h-px bg-gradient-to-r from-transparent via-[#edd27e]/60 to-transparent"
+      />
+
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute -start-24 -top-24 h-44 w-44 rounded-full bg-[#d9b85f]/[0.035] blur-3xl"
+      />
+
+      <div className="relative grid gap-4">
+        {/* Ø¬Ø³Øªâ€ŒÙˆØ¬Ùˆ */}
+        <div className="grid gap-3 lg:grid-cols-[1.35fr_0.65fr]">
+          <div>
+            <label
+              htmlFor="product-search"
+              className="mb-1.5 block text-[10px] text-[#cfbc8a]/70"
+            >
+              {isPersian
+                ? "Ø¬Ø³Øªâ€ŒÙˆØ¬ÙˆÛŒ Ù…Ø­ØµÙˆÙ„"
+                : "Search products"}
+            </label>
+
+            <div className="relative">
+              <span className="absolute start-3 top-1/2 flex h-7 w-7 -translate-y-1/2 items-center justify-center text-[#d9be72]">
+                <SearchRuneIcon className="h-[18px] w-[18px]" />
+              </span>
+
+              <input
+                id="product-search"
+                type="search"
+                value={search}
+                onChange={(
+                  event,
+                ) =>
+                  setSearch(
+                    event.target
+                      .value,
+                  )
+                }
+                placeholder={
+                  isPersian
+                    ? "Ù†Ø§Ù… Ù…Ø­ØµÙˆÙ„ ÛŒØ§ Ú©Ø¯ Ù…Ø­ØµÙˆÙ„..."
+                    : "Product name or SKU..."
+                }
+                className="h-11 w-full rounded-xl border border-[#d9b85f]/22 bg-[#031d15]/90 pe-4 ps-11 text-xs text-[#f2e8d5] outline-none placeholder:text-[#a99f89]/40 transition focus:border-[#e4c873]/55 focus:shadow-[0_0_18px_rgba(218,184,95,0.08)]"
+              />
+            </div>
+          </div>
+
+          {/* Ø¬Ù†Ø³ Ù…Ø­ØµÙˆÙ„ */}
+          <div>
+            <span className="mb-1.5 block text-[10px] text-[#cfbc8a]/70">
+              {isPersian
+                ? "Ø¬Ù†Ø³ Ù…Ø­ØµÙˆÙ„"
+                : "Material"}
+            </span>
+
+            <div className="grid grid-cols-3 gap-1.5">
+              {materialChoices.map(
+                ({
+                  value,
+                  label,
+                  Icon,
+                }) => {
+                  const active =
+                    material ===
+                    value;
+
+                  return (
+                    <button
+                      key={value}
+                      type="button"
+                      onClick={() =>
+                        setMaterial(
+                          value,
+                        )
+                      }
+                      className={[
+                        "group flex min-h-11 items-center justify-center gap-1.5 rounded-xl border px-2 text-[10px] transition duration-300",
+                        active
+                          ? value ===
+                            "silver"
+                            ? "border-[#d9e2e5]/45 bg-[#d9e2e5]/10 text-[#eef4f5] shadow-[0_0_14px_rgba(220,231,234,0.07)]"
+                            : "border-[#e4c873]/48 bg-[#d7b65c]/10 text-[#f4df9e] shadow-[0_0_14px_rgba(218,184,95,0.08)]"
+                          : "border-white/[0.07] bg-white/[0.025] text-white/50 hover:border-[#d9b85f]/28 hover:text-[#e5d5ad]",
+                      ].join(
+                        " ",
+                      )}
+                    >
+                      <Icon className="h-[17px] w-[17px]" />
+
+                      <span>
+                        {label}
+                      </span>
+                    </button>
+                  );
+                },
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Ø¯Ø³ØªÙ‡â€ŒØ¨Ù†Ø¯ÛŒ Ù…Ø­ØµÙˆÙ„ */}
+        <div>
+          <span className="mb-1.5 block text-[10px] text-[#cfbc8a]/70">
+            {isPersian
+              ? "Ø¯Ø³ØªÙ‡â€ŒØ¨Ù†Ø¯ÛŒ Ù‚Ø·Ø¹Ù‡"
+              : "Piece category"}
+          </span>
+
+          <div className="grid grid-cols-2 gap-1.5 sm:grid-cols-4">
+            {collectionChoices.map(
+              ({
+                value,
+                label,
+                Icon,
+              }) => {
+                const active =
+                  collection ===
+                  value;
+
+                return (
+                  <button
+                    key={value}
+                    type="button"
+                    onClick={() =>
+                      setCollection(
+                        value,
+                      )
+                    }
+                    className={[
+                      "group flex min-h-10 items-center justify-center gap-1.5 rounded-xl border px-2 text-[10px] transition duration-300",
+                      active
+                        ? "border-[#e4c873]/45 bg-[#d7b65c]/[0.09] text-[#f1d993] shadow-[0_0_14px_rgba(218,184,95,0.07)]"
+                        : "border-white/[0.07] bg-white/[0.025] text-white/50 hover:border-[#d9b85f]/28 hover:text-[#e5d5ad]",
+                    ].join(
+                      " ",
+                    )}
+                  >
+                    <Icon className="h-[17px] w-[17px]" />
+
+                    <span>
+                      {label}
+                    </span>
+                  </button>
+                );
+              },
+            )}
+          </div>
+        </div>
+
+        {/* Ø¨Ø§Ø²Ù‡ Ù‚ÛŒÙ…Øª */}
+        <div className="grid items-end gap-3 lg:grid-cols-[1fr_1fr_auto]">
+          <label className="relative">
+            <span className="mb-1.5 block text-[10px] text-[#cfbc8a]/70">
+              {isPersian
+                ? "Ø­Ø¯Ø§Ù‚Ù„ Ù‚ÛŒÙ…Øª"
+                : "Minimum price"}
+            </span>
+
+            <input
+              type="text"
+              inputMode="numeric"
+              value={minPrice}
+              onChange={(
+                event,
+              ) =>
+                setMinPrice(
+                  normalizeNumericInput(
+                    event.target
+                      .value,
+                  ),
+                )
+              }
+              placeholder={
+                isPersian
+                  ? "Ù…Ø«Ù„Ø§Ù‹ 10000000"
+                  : "e.g. 10000000"
+              }
+              className="h-10 w-full rounded-xl border border-[#d9b85f]/20 bg-[#031d15]/90 pe-14 ps-3 text-[11px] text-[#e8ddc7] outline-none placeholder:text-white/25 transition focus:border-[#e4c873]/50"
+            />
+
+            <span className="pointer-events-none absolute bottom-[11px] end-3 text-[9px] text-[#d4bd7a]/50">
+              {isPersian
+                ? "ØªÙˆÙ…Ø§Ù†"
+                : "Toman"}
+            </span>
+          </label>
+
+          <label className="relative">
+            <span className="mb-1.5 block text-[10px] text-[#cfbc8a]/70">
+              {isPersian
+                ? "Ø­Ø¯Ø§Ú©Ø«Ø± Ù‚ÛŒÙ…Øª"
+                : "Maximum price"}
+            </span>
+
+            <input
+              type="text"
+              inputMode="numeric"
+              value={maxPrice}
+              onChange={(
+                event,
+              ) =>
+                setMaxPrice(
+                  normalizeNumericInput(
+                    event.target
+                      .value,
+                  ),
+                )
+              }
+              placeholder={
+                isPersian
+                  ? "Ù…Ø«Ù„Ø§Ù‹ 100000000"
+                  : "e.g. 100000000"
+              }
+              className="h-10 w-full rounded-xl border border-[#d9b85f]/20 bg-[#031d15]/90 pe-14 ps-3 text-[11px] text-[#e8ddc7] outline-none placeholder:text-white/25 transition focus:border-[#e4c873]/50"
+            />
+
+            <span className="pointer-events-none absolute bottom-[11px] end-3 text-[9px] text-[#d4bd7a]/50">
+              {isPersian
+                ? "ØªÙˆÙ…Ø§Ù†"
+                : "Toman"}
+            </span>
+          </label>
+
+          {/* Ø¯Ú©Ù…Ù‡â€ŒÙ‡Ø§ */}
+          <div className="grid grid-cols-2 gap-2 lg:flex">
+            <button
+              type="button"
+              onClick={
+                resetFilters
+              }
+              disabled={
+                isPending
+              }
+              className="min-h-10 whitespace-nowrap rounded-full border border-white/10 bg-white/[0.03] px-4 text-[10px] text-white/50 transition hover:border-white/20 hover:text-white/75 disabled:opacity-50"
+            >
+              {isPersian
+                ? "Ù¾Ø§Ú©â€ŒÚ©Ø±Ø¯Ù†"
+                : "Clear"}
+            </button>
+
+            <button
+              type="submit"
+              disabled={
+                isPending
+              }
+              className="group relative flex min-h-10 items-center justify-center gap-2 whitespace-nowrap overflow-hidden rounded-full border border-[#e0c16d]/48 bg-[linear-gradient(100deg,rgba(112,80,20,0.2),rgba(218,183,90,0.25),rgba(112,80,20,0.2))] px-5 text-[10px] font-medium text-[#f4e2ae] transition hover:-translate-y-0.5 hover:border-[#f0d681]/80 hover:shadow-[0_0_20px_rgba(218,183,91,0.1)] disabled:opacity-50"
+            >
+              <FilterRuneIcon className="h-[17px] w-[17px]" />
+
+              <span>
+                {isPending
+                  ? isPersian
+                    ? "Ø¯Ø± Ø­Ø§Ù„ Ø¬Ø³Øªâ€ŒÙˆØ¬Ùˆ..."
+                    : "Searching..."
+                  : isPersian
+                    ? "Ø§Ø¹Ù…Ø§Ù„ ÙÛŒÙ„ØªØ±"
+                    : "Apply filters"}
+              </span>
+            </button>
+          </div>
+        </div>
+
+        <p className="-mt-1 text-center text-[9px] leading-5 text-white/30">
+          {isPersian
+            ? "Ø¨Ø§Ø²Ù‡ Ù‚ÛŒÙ…Øª Ø¨Ø±Ø§Ø³Ø§Ø³ Ù‚ÛŒÙ…Øª Ù†Ù‡Ø§ÛŒÛŒ Ø²Ù†Ø¯Ù‡ Ùˆ ÙØ±Ù…ÙˆÙ„ Ù…Ø®ØµÙˆØµ Ø·Ù„Ø§ ÛŒØ§ Ù†Ù‚Ø±Ù‡ Ù…Ø­Ø§Ø³Ø¨Ù‡ Ù…ÛŒâ€ŒØ´ÙˆØ¯."
+            : "The price range uses the live final price and the formula assigned to gold or silver."}
+        </p>
+      </div>
+    </form>
+  );
+}
+
