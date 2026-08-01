@@ -133,67 +133,66 @@ export function SiteFooter({ locale }: SiteFooterProps) {
   return (
     <footer
       id="contact"
-      className="relative z-10 scroll-mt-32 overflow-hidden border-t border-[#d9bd70]/18 bg-[#010c08] px-4 pb-8 pt-14 sm:px-6 lg:px-10"
+      className="relative z-10 scroll-mt-32 overflow-hidden border-t border-[#d8bb69]/16 bg-[#010b07] px-4 pb-7 pt-12 sm:px-6 lg:px-10"
     >
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute inset-0 opacity-70 [background-image:radial-gradient(circle_at_18%_0%,rgba(193,151,61,0.13),transparent_31%),radial-gradient(circle_at_82%_18%,rgba(25,106,73,0.16),transparent_34%),linear-gradient(180deg,rgba(5,34,23,0.72),rgba(1,10,7,0.97))]"
+        className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(198,157,61,0.12),transparent_28%),linear-gradient(180deg,rgba(4,29,20,0.88),rgba(1,10,7,0.98))]"
       />
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute inset-x-0 top-0 h-px bg-[linear-gradient(90deg,transparent,rgba(232,202,117,0.62),transparent)]"
+        className="pointer-events-none absolute inset-x-0 top-0 h-px bg-[linear-gradient(90deg,transparent,rgba(236,204,113,0.7),transparent)]"
+      />
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-x-0 top-0 mx-auto h-20 max-w-3xl opacity-25 [background-image:linear-gradient(135deg,transparent_46%,rgba(224,191,98,0.2)_47%,rgba(224,191,98,0.2)_53%,transparent_54%),linear-gradient(45deg,transparent_46%,rgba(224,191,98,0.16)_47%,rgba(224,191,98,0.16)_53%,transparent_54%)] [background-size:44px_44px] [mask-image:linear-gradient(to_bottom,black,transparent)]"
       />
 
       <div className="relative mx-auto max-w-7xl">
-        <div className="mb-10 flex flex-col items-center gap-4 text-center">
-          <div className="grid size-12 place-items-center rounded-full border border-[#e4c56f]/30 bg-[#d7b55d]/8 shadow-[0_0_40px_rgba(205,166,76,0.12)]">
-            <Gem aria-hidden="true" className="size-5 text-[#ead18b]" />
+        <div className="flex flex-col items-center text-center">
+          <div className="flex w-full max-w-xl items-center gap-4" aria-hidden="true">
+            <span className="h-px flex-1 bg-[linear-gradient(90deg,transparent,rgba(222,190,100,0.38))]" />
+            <span className="relative grid size-11 place-items-center">
+              <span className="absolute inset-1 rotate-45 border border-[#e2c36d]/28" />
+              <Gem className="relative size-[17px] text-[#ead08a]" />
+            </span>
+            <span className="h-px flex-1 bg-[linear-gradient(90deg,rgba(222,190,100,0.38),transparent)]" />
           </div>
 
-          <div>
-            <p className="font-eloria-brand text-lg tracking-[0.3em] text-[#eed99f] sm:text-xl">
-              ELORIA
-            </p>
-            <p className="mt-2 text-xs leading-6 text-[#d3c5a7]/62">
-              {copy.signature}
-            </p>
-          </div>
-
-          <div
-            aria-hidden="true"
-            className="flex w-full max-w-sm items-center gap-3"
-          >
-            <span className="h-px flex-1 bg-[linear-gradient(90deg,transparent,rgba(220,188,103,0.3))]" />
-            <span className="size-1.5 rotate-45 border border-[#dfc36f]/55" />
-            <span className="h-px flex-1 bg-[linear-gradient(90deg,rgba(220,188,103,0.3),transparent)]" />
-          </div>
+          <p className="mt-4 font-eloria-brand text-xl tracking-[0.34em] text-[#f0dc9e] sm:text-2xl">
+            ELORIA
+          </p>
+          <p className="mt-2 text-xs leading-6 text-[#d2c4a5]/58">
+            {copy.signature}
+          </p>
         </div>
 
-        <div className="grid gap-4 border-b border-[#dfc572]/14 pb-10 md:grid-cols-3 md:gap-5">
-          {columns.map((column) => {
+        <div className="mt-10 grid border-y border-[#ddc16d]/12 py-8 md:grid-cols-3 md:py-9">
+          {columns.map((column, index) => {
             const ColumnIcon = column.icon;
 
             return (
               <nav
                 key={column.title}
                 aria-label={column.title}
-                className="relative overflow-hidden rounded-[22px] border border-[#d9bc6d]/14 bg-[linear-gradient(145deg,rgba(13,53,38,0.52),rgba(2,19,13,0.7))] p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.035),0_18px_55px_rgba(0,0,0,0.17)] sm:p-6"
+                className={`px-2 py-7 first:pt-0 last:pb-0 md:px-9 md:py-0 ${
+                  index > 0
+                    ? "border-t border-[#ddc16d]/10 md:border-s md:border-t-0"
+                    : ""
+                }`}
               >
-                <span
-                  aria-hidden="true"
-                  className="absolute end-0 top-0 size-20 rounded-bl-[70px] border-b border-s border-[#dabb67]/10 bg-[#cfaa4e]/[0.025]"
-                />
-
-                <div className="relative flex items-center gap-3 border-b border-[#dfc572]/10 pb-4">
-                  <span className="grid size-9 shrink-0 place-items-center rounded-xl border border-[#e0c16c]/20 bg-[#d8b65d]/8 text-[#e7ca7b]">
-                    <ColumnIcon aria-hidden="true" className="size-[17px]" />
-                  </span>
-                  <h2 className="text-sm font-semibold text-[#f0ddad]">
+                <div className="mb-5 flex items-center gap-3">
+                  <ColumnIcon
+                    aria-hidden="true"
+                    className="size-4 text-[#dfc16f]"
+                  />
+                  <h2 className="text-[13px] font-semibold tracking-wide text-[#f0ddb0]">
                     {column.title}
                   </h2>
+                  <span className="h-px flex-1 bg-[linear-gradient(90deg,rgba(218,184,91,0.2),transparent)]" />
                 </div>
 
-                <div className="relative mt-3 space-y-1.5">
+                <div className="space-y-1">
                   {column.links.map((link) => {
                     const LinkIcon = link.icon;
 
@@ -201,15 +200,21 @@ export function SiteFooter({ locale }: SiteFooterProps) {
                       <Link
                         key={`${column.title}-${link.label}`}
                         href={link.href}
-                        className="group flex min-h-11 items-center gap-3 rounded-xl border border-transparent px-3 text-sm text-[#ddd1b8]/70 transition-[border-color,background-color,color] duration-300 hover:border-[#dfc16f]/16 hover:bg-[#d9b65a]/[0.055] hover:text-[#f5dda0] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#dfc16f]/45"
+                        className="group flex min-h-10 items-center gap-3 rounded-lg px-1 text-sm text-[#d8cbb1]/66 transition-colors duration-300 hover:text-[#f0d58e] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#dfc16f]/38"
                       >
-                        <span className="grid size-7 shrink-0 place-items-center rounded-lg border border-[#ddbf6b]/12 bg-[#d8b55d]/[0.035] text-[#cdb671]/72 transition-colors duration-300 group-hover:border-[#e1c46f]/24 group-hover:text-[#efd68e]">
+                        <span className="grid size-6 shrink-0 place-items-center text-[#bfa964]/72 transition-colors duration-300 group-hover:text-[#efd386]">
                           <LinkIcon
                             aria-hidden="true"
                             className="size-[14px]"
                           />
                         </span>
-                        <span>{link.label}</span>
+                        <span className="relative">
+                          {link.label}
+                          <span
+                            aria-hidden="true"
+                            className="absolute inset-x-0 -bottom-1 h-px origin-right scale-x-0 bg-[linear-gradient(90deg,rgba(228,195,103,0.76),transparent)] transition-transform duration-300 group-hover:scale-x-100"
+                          />
+                        </span>
                       </Link>
                     );
                   })}
@@ -219,18 +224,22 @@ export function SiteFooter({ locale }: SiteFooterProps) {
           })}
         </div>
 
-        <div className="flex flex-col items-center justify-between gap-5 pt-6 text-center text-xs text-[#c8b992]/58 sm:flex-row sm:text-start">
+        <div className="flex flex-col items-center justify-between gap-4 pt-6 text-center text-xs text-[#c8b993]/52 sm:flex-row sm:text-start">
           <p>{copy.rights}</p>
 
-          <div className="flex flex-wrap items-center justify-center gap-4 sm:justify-end">
+          <div className="flex flex-wrap items-center justify-center gap-5 sm:justify-end">
             <Link
               href={`/${locale}#hero`}
-              className="inline-flex min-h-10 items-center gap-2 rounded-full border border-[#dfc16f]/16 bg-[#d9b65a]/[0.035] px-4 text-[#dfc77f]/76 transition-[border-color,background-color,color] duration-300 hover:border-[#dfc16f]/30 hover:bg-[#d9b65a]/[0.07] hover:text-[#f1d999] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#dfc16f]/45"
+              className="inline-flex min-h-9 items-center gap-2 text-[#d8c17c]/68 transition-colors duration-300 hover:text-[#f0d793] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#dfc16f]/38"
             >
               <ArrowUp aria-hidden="true" className="size-3.5" />
               {copy.top}
             </Link>
-            <p className="font-eloria-brand tracking-[0.2em] text-[#d8c17d]/65">
+            <span
+              aria-hidden="true"
+              className="hidden h-4 w-px bg-[#d8ba62]/18 sm:block"
+            />
+            <p className="font-eloria-brand tracking-[0.2em] text-[#d6bf79]/58">
               ELORIA · 2026
             </p>
           </div>
