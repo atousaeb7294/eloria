@@ -45,3 +45,8 @@ next-env.d.ts
 /src/generated/prisma
 
 .env
+
+# playwright artifacts
+/test-results/
+/playwright-report/
+/blob-report/

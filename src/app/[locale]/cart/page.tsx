@@ -1,8 +1,4 @@
 import {
-  Noto_Nastaliq_Urdu,
-} from "next/font/google";
-
-import {
   notFound,
 } from "next/navigation";
 
@@ -26,23 +22,6 @@ export const dynamic =
   "force-dynamic";
 
 export const revalidate = 0;
-
-const persianTitleFont =
-  Noto_Nastaliq_Urdu({
-    subsets: [
-      "arabic",
-    ],
-
-    weight: [
-      "400",
-      "500",
-      "600",
-      "700",
-    ],
-
-    display:
-      "swap",
-  });
 
 type CartPageProps = {
   params: Promise<{
@@ -75,7 +54,7 @@ export default async function CartPage({
       <CartPageClient
         locale={locale}
         persianTitleClassName={
-          persianTitleFont.className
+          "font-persian-title"
         }
       />
 

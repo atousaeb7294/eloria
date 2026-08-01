@@ -109,7 +109,7 @@ export function CartHeaderButton({
         aria-label={label}
         title={label}
         className={[
-          "group relative grid size-11 shrink-0 place-items-center rounded-[13px]",
+          "group relative grid size-10 shrink-0 place-items-center rounded-xl sm:size-11 sm:rounded-[13px]",
           "border border-[#dabe6e]/28",
           "bg-[linear-gradient(145deg,rgba(8,65,46,0.5),rgba(2,29,20,0.72))]",
           "text-[#e9d493]",
@@ -122,7 +122,6 @@ export function CartHeaderButton({
           "focus-visible:outline-none",
           "focus-visible:ring-2",
           "focus-visible:ring-[#e3c675]/55",
-          "sm:size-12",
           className,
         ].join(" ")}
       >

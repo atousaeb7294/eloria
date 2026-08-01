@@ -2,10 +2,6 @@ import Image from "next/image";
 import Link from "next/link";
 
 import {
-  Noto_Nastaliq_Urdu,
-} from "next/font/google";
-
-import {
   notFound,
 } from "next/navigation";
 
@@ -29,23 +25,6 @@ import {
   GoldRuneIcon,
   SilverRuneIcon,
 } from "@/components/material-rune-icons";
-
-const persianTitleFont =
-  Noto_Nastaliq_Urdu({
-    subsets: [
-      "arabic",
-    ],
-
-    weight: [
-      "400",
-      "500",
-      "600",
-      "700",
-    ],
-
-    display:
-      "swap",
-  });
 
 type CollectionPageProps = {
   params: Promise<{
@@ -75,10 +54,10 @@ const collectionContent = {
         "روایت‌هایی نزدیک به قلب",
 
       description:
-        "گردنبندهای الــوریا با الهام از شکوه ایران کهن، نمادها و افسانه‌هایی طراحی شده‌اند که نزدیک‌ترین جایگاه را به قلب دارند.",
+        "گردنبندهای الوریا با الهام از شکوه ایران کهن، نمادها و افسانه‌هایی طراحی شده‌اند که نزدیک‌ترین جایگاه را به قلب دارند.",
 
       story:
-        "هر گردنبند، نشانی از یک خاطره، یک پیمان یا یک افسانه ماندگار است؛ قطعه‌ای که تنها یک زیور نیست، بلکه بخشی از داستان صاحب خود خواهد شد.",
+        "هر گردنبند، نشانی از یک خاطره، یک پیمان یا یک افسانه ماندگار است؛ قطعه‌ای که تنها یک جواهر نیست، بلکه بخشی از داستان صاحب خود خواهد شد.",
     },
 
     en: {
@@ -111,7 +90,7 @@ const collectionContent = {
         "حلقه‌ای از قدرت و ظرافت",
 
       description:
-        "دستبندهای الــوریا پیوندی میان استحکام، ظرافت و نشانه‌های ماندگار جهان باستان هستند؛ آثاری که حضورشان آرام اما فراموش‌نشدنی است.",
+        "دستبندهای الوریا پیوندی میان استحکام، ظرافت و نشانه‌های ماندگار جهان باستان هستند؛ آثاری که حضورشان آرام اما فراموش‌نشدنی است.",
 
       story:
         "دایره دستبند نمادی از تداوم و پیوند است؛ روایتی که آغاز و پایان ندارد و همراه صاحب خود در گذر زمان باقی می‌ماند.",
@@ -147,7 +126,7 @@ const collectionContent = {
         "درخششی از جهان اسرارآمیز",
 
       description:
-        "گوشواره‌های الــوریا با فرم‌هایی ظریف و نمادین، از نور، معماری و افسانه‌های ایران کهن الهام گرفته‌اند.",
+        "گوشواره‌های الوریا با فرم‌هایی ظریف و نمادین، از نور، معماری و افسانه‌های ایران کهن الهام گرفته‌اند.",
 
       story:
         "این آثار برای آنانی ساخته شده‌اند که می‌خواهند درخشش خود را نه با هیاهو، بلکه با جزئیاتی اصیل و معنادار آشکار کنند.",
@@ -319,7 +298,7 @@ export default async function CollectionPage({
                       "mt-3 text-[#f4e7c9]",
 
                       isPersian
-                        ? `${persianTitleFont.className} text-2xl font-semibold leading-[1.9] sm:text-3xl`
+                        ? `font-persian-title text-2xl font-semibold leading-[1.9] sm:text-3xl`
                         : "text-2xl font-semibold sm:text-3xl",
                     ].join(" ")}
                   >
@@ -368,7 +347,7 @@ export default async function CollectionPage({
                 "mt-3 text-center text-[#f6e8c6]",
 
                 isPersian
-                  ? `${persianTitleFont.className} pb-3 text-4xl font-semibold leading-[1.9] sm:text-5xl`
+                  ? `font-persian-title pb-3 text-4xl font-semibold leading-[1.9] sm:text-5xl`
                   : "text-4xl font-semibold leading-tight sm:text-5xl",
               ].join(" ")}
             >

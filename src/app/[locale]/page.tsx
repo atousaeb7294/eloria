@@ -1,6 +1,3 @@
-﻿import {
-  Noto_Nastaliq_Urdu,
-} from "next/font/google";
 import {
   setRequestLocale,
 } from "next-intl/server";
@@ -17,20 +14,12 @@ import {
 import {
   HomeHeaderController,
 } from "@/components/home-header-controller";
-
-const persianTitleFont =
-  Noto_Nastaliq_Urdu({
-    subsets: [
-      "arabic",
-    ],
-    weight: [
-      "400",
-      "500",
-      "600",
-      "700",
-    ],
-    display: "swap",
-  });
+import {
+  HomeShowcaseSections,
+} from "@/components/home-showcase-sections";
+import {
+  SiteFooter,
+} from "@/components/site-footer";
 
 type HomePageProps = {
   params: Promise<{
@@ -50,7 +39,7 @@ export default async function HomePage({
   );
 
   return (
-    <main className="relative min-h-screen overflow-hidden bg-[#02140e] text-[#f8f0df]">
+    <main id="main-content" className="relative min-h-screen overflow-hidden bg-[#02140e] text-[#f8f0df]">
       <AmbientEffects />
 
       <HomeHeaderController
@@ -64,9 +53,16 @@ export default async function HomePage({
           locale
         }
         persianTitleClassName={
-          persianTitleFont.className
+          "font-persian-title"
         }
       />
+
+      <HomeShowcaseSections
+        locale={locale}
+        persianTitleClassName="font-persian-title"
+      />
+
+      <SiteFooter locale={locale} />
 
       <EloriaIntroExperience
         locale={

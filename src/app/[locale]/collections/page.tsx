@@ -2,10 +2,6 @@ import Image from "next/image";
 import Link from "next/link";
 
 import {
-  Noto_Nastaliq_Urdu,
-} from "next/font/google";
-
-import {
   notFound,
 } from "next/navigation";
 
@@ -16,6 +12,10 @@ import {
 import {
   InternalPageShell,
 } from "@/components/internal-page-shell";
+
+import {
+  InteractiveTiltCard,
+} from "@/components/interactive-tilt-card";
 
 import {
   BraceletRuneIcon,
@@ -29,23 +29,6 @@ import {
   GoldRuneIcon,
   SilverRuneIcon,
 } from "@/components/material-rune-icons";
-
-const persianTitleFont =
-  Noto_Nastaliq_Urdu({
-    subsets: [
-      "arabic",
-    ],
-
-    weight: [
-      "400",
-      "500",
-      "600",
-      "700",
-    ],
-
-    display:
-      "swap",
-  });
 
 type CollectionsPageProps = {
   params: Promise<{
@@ -93,7 +76,7 @@ const collections = [
         "دستبند",
 
       description:
-        "نقش‌هایی از شکوه، ظرافت و میراث ماندگار الــوریا",
+        "نقش‌هایی از شکوه، ظرافت و میراث ماندگار الوریا",
     },
 
     en: {
@@ -120,7 +103,7 @@ const collections = [
         "گوشواره",
 
       description:
-        "درخشش‌هایی الهام‌گرفته از جهان اسرارآمیز الــوریا",
+        "درخشش‌هایی الهام‌گرفته از جهان اسرارآمیز الوریا",
     },
 
     en: {
@@ -171,13 +154,13 @@ export default async function CollectionsPage({
             className={[
               "mt-4 text-[#f6e8c6]",
               isPersian
-                ? `${persianTitleFont.className} pb-5 text-4xl font-semibold leading-[1.9] sm:text-5xl lg:text-6xl`
+                ? `font-persian-title pb-5 text-4xl font-semibold leading-[1.9] sm:text-5xl lg:text-6xl`
                 : "text-4xl font-semibold sm:text-5xl lg:text-6xl",
             ].join(" ")}
           >
             {isPersian
-              ? "هر قطعه، روایتی ماندگار"
-              : "Every Piece, an Enduring Story"}
+              ? "دسته‌بندی جواهرات الوریا"
+              : "Eloria Jewellery Categories"}
           </h1>
 
           <Link
@@ -186,8 +169,8 @@ export default async function CollectionsPage({
           >
             <span>
               {isPersian
-                ? "مشاهده تمام محصولات"
-                : "View all products"}
+                ? "مشاهده تمام آثار"
+                : "View all creations"}
             </span>
 
             <span className="flex h-9 w-9 items-center justify-center rounded-full border border-[#d9b85f]/28 bg-[#d9b85f]/[0.06]">
@@ -213,16 +196,20 @@ export default async function CollectionsPage({
                 collection.Icon;
 
               return (
-                <article
-                  id={
-                    collection.slug
-                  }
-                  key={
-                    collection.slug
-                  }
-                  className="group relative scroll-mt-36 overflow-hidden rounded-[2.2rem] border border-[#d8b860]/20 bg-[linear-gradient(145deg,rgba(7,34,25,0.97),rgba(2,20,14,0.99))] p-3 shadow-[0_30px_85px_rgba(0,0,0,0.43)] transition duration-700 hover:-translate-y-2 hover:border-[#e8cc78]/55 hover:shadow-[0_38px_110px_rgba(0,0,0,0.56),0_0_38px_rgba(216,184,96,0.1)]"
+                <InteractiveTiltCard
+                  key={collection.slug}
+                  maxTilt={6.5}
+                  className="group scroll-mt-36 rounded-[2.2rem]"
                 >
-                  <div className="relative aspect-[4/5] overflow-hidden rounded-[1.75rem] border border-white/[0.06] bg-[#031811]">
+                  <article
+                    id={collection.slug}
+                    className="relative scroll-mt-36 overflow-hidden rounded-[2.2rem] border border-[#d8b860]/20 bg-[linear-gradient(145deg,rgba(7,34,25,0.97),rgba(2,20,14,0.99))] p-3 shadow-[0_30px_85px_rgba(0,0,0,0.43)] transition-[border-color,box-shadow] duration-700 group-hover:border-[#e8cc78]/55 group-hover:shadow-[0_38px_110px_rgba(0,0,0,0.56),0_0_42px_rgba(216,184,96,0.12)]"
+                    style={{ transformStyle: "preserve-3d" }}
+                  >
+                  <div
+                    className="relative aspect-[4/5] overflow-hidden rounded-[1.75rem] border border-white/[0.06] bg-[#031811]"
+                    style={{ transform: "translateZ(28px)" }}
+                  >
                     <Image
                       src={
                         collection.image
@@ -256,8 +243,18 @@ export default async function CollectionsPage({
                     </div>
                   </div>
 
-                  <div className="px-3 pb-3 pt-6 text-center">
-                    <h2 className="text-2xl font-medium text-[#f4e8cc]">
+                  <div
+                    className="px-3 pb-3 pt-6 text-center"
+                    style={{ transform: "translateZ(40px)" }}
+                  >
+                    <h2
+                      className={[
+                        "text-2xl text-[#f4e8cc]",
+                        isPersian
+                          ? "font-persian-title pb-2 text-[2rem] leading-[1.8]"
+                          : "font-medium",
+                      ].join(" ")}
+                    >
                       {content.title}
                     </h2>
 
@@ -319,7 +316,8 @@ export default async function CollectionsPage({
                       </Link>
                     </div>
                   </div>
-                </article>
+                  </article>
+                </InteractiveTiltCard>
               );
             },
           )}

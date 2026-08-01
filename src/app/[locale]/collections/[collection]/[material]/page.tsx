@@ -1,10 +1,6 @@
 import Link from "next/link";
 
 import {
-  Noto_Nastaliq_Urdu,
-} from "next/font/google";
-
-import {
   notFound,
 } from "next/navigation";
 
@@ -42,23 +38,6 @@ export const dynamic =
   "force-dynamic";
 
 export const revalidate = 0;
-
-const persianTitleFont =
-  Noto_Nastaliq_Urdu({
-    subsets: [
-      "arabic",
-    ],
-
-    weight: [
-      "400",
-      "500",
-      "600",
-      "700",
-    ],
-
-    display:
-      "swap",
-  });
 
 type MaterialCollectionPageProps = {
   params: Promise<{
@@ -310,7 +289,7 @@ export default async function MaterialCollectionPage({
           <h1
             className={[
               isPersian
-                ? `${persianTitleFont.className} block pt-1 text-[1.45rem] font-semibold leading-[2.1] sm:text-[1.7rem]`
+                ? `font-persian-title block pt-1 text-[1.45rem] font-semibold leading-[2.1] sm:text-[1.7rem]`
                 : "block text-2xl font-semibold sm:text-3xl",
               isGold
                 ? "text-[#f4dfa0]"
@@ -323,10 +302,10 @@ export default async function MaterialCollectionPage({
           <p className="mx-auto mt-2 max-w-xl text-[10px] leading-6 text-[#cbbd9d]/62 sm:text-xs">
             {isGold
               ? isPersian
-                ? "قیمت آثار این بخش در صفحه محصول با نرخ معتبر طلا و سیاست اختصاصی قیمت‌گذاری الــوریا محاسبه می‌شود."
+                ? "قیمت آثار این بخش در صفحه محصول با نرخ معتبر طلا و سیاست اختصاصی قیمت‌گذاری الوریا محاسبه می‌شود."
                 : "Products use the current gold rate and Eloria’s dedicated gold pricing policy."
               : isPersian
-                ? "قیمت آثار این بخش در صفحه محصول با نرخ معتبر نقره و سیاست اختصاصی قیمت‌گذاری الــوریا محاسبه می‌شود."
+                ? "قیمت آثار این بخش در صفحه محصول با نرخ معتبر نقره و سیاست اختصاصی قیمت‌گذاری الوریا محاسبه می‌شود."
                 : "Products use the current silver rate and Eloria’s dedicated silver pricing policy."}
           </p>
         </header>

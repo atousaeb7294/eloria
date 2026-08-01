@@ -114,6 +114,23 @@ export default async function LocaleLayout({
       }
       suppressHydrationWarning
     >
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (() => {
+                const syncEloriaIntroState = () => {
+                  document.documentElement.dataset.eloriaSkipIntro =
+                    window.location.hash === "#hero" ? "true" : "false";
+                };
+
+                syncEloriaIntroState();
+                window.addEventListener("hashchange", syncEloriaIntroState);
+              })();
+            `,
+          }}
+        />
+      </head>
       <body className="min-h-screen">
         <NextIntlClientProvider>
           <PageBackgroundProvider>

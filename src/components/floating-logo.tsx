@@ -12,7 +12,7 @@ export function FloatingLogo() {
 
   return (
     <motion.div
-      className="relative flex h-14 w-14 shrink-0 items-center justify-center sm:h-16 sm:w-16"
+      className="relative flex h-11 w-11 shrink-0 items-center justify-center sm:h-16 sm:w-16"
       animate={
         reducedMotion
           ? undefined
@@ -49,7 +49,7 @@ export function FloatingLogo() {
       />
 
       <motion.div
-        className="relative z-10 h-11 w-11 sm:h-12 sm:w-12"
+        className="relative z-10 h-9 w-9 sm:h-12 sm:w-12"
         whileHover={
           reducedMotion
             ? undefined

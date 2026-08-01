@@ -24,6 +24,10 @@ import {
   SiteHeader,
 } from "@/components/site-header";
 
+import {
+  SiteFooter,
+} from "@/components/site-footer";
+
 type BackgroundTone =
   | "soft"
   | "dark"
@@ -247,8 +251,10 @@ export function InternalPageShell({
 
       <SiteHeader />
 
-      <div className="relative z-10">
+      <div id="main-content" className="relative z-10" tabIndex={-1}>
         {children}
+
+        <SiteFooter locale={locale} />
       </div>
     </main>
   );

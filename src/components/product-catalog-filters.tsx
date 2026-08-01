@@ -12,10 +12,11 @@ import {
 } from "react";
 
 import {
-  BraceletRuneIcon,
-  EarringRuneIcon,
-  NecklaceRuneIcon,
-} from "@/components/luxury-icons";
+  CheckCircle2,
+  ChevronDown,
+  CircleOff,
+  SlidersHorizontal,
+} from "lucide-react";
 
 import {
   AllProductsRuneIcon,
@@ -36,6 +37,11 @@ type CollectionFilter =
   | "bracelets"
   | "earrings";
 
+type AvailabilityFilter =
+  | "all"
+  | "available"
+  | "out-of-stock";
+
 type ProductCatalogFiltersProps = {
   locale: string;
 
@@ -45,6 +51,7 @@ type ProductCatalogFiltersProps = {
     collection: CollectionFilter;
     minPrice: string;
     maxPrice: string;
+    availability: AvailabilityFilter;
   };
 };
 
@@ -94,6 +101,11 @@ export function ProductCatalogFilters({
     locale === "fa";
 
   const [
+    filtersOpen,
+    setFiltersOpen,
+  ] = useState(false);
+
+  const [
     isPending,
     startTransition,
   ] = useTransition();
@@ -125,20 +137,32 @@ export function ProductCatalogFilters({
     minPrice,
     setMinPrice,
   ] = useState(
-    initialFilters.minPrice,
+    normalizeNumericInput(initialFilters.minPrice),
   );
 
   const [
     maxPrice,
     setMaxPrice,
   ] = useState(
-    initialFilters.maxPrice,
+    normalizeNumericInput(initialFilters.maxPrice),
+  );
+
+  const [
+    availability,
+    setAvailability,
+  ] = useState<AvailabilityFilter>(
+    initialFilters.availability,
   );
 
   const submitFilters = (
     event?: FormEvent,
   ) => {
     event?.preventDefault();
+
+    if (invalidPriceRange) {
+      setFiltersOpen(true);
+      return;
+    }
 
     const params =
       new URLSearchParams();
@@ -185,8 +209,17 @@ export function ProductCatalogFilters({
       );
     }
 
+    if (availability !== "all") {
+      params.set(
+        "availability",
+        availability,
+      );
+    }
+
     const query =
       params.toString();
+
+    setFiltersOpen(false);
 
     startTransition(() => {
       router.push(
@@ -206,6 +239,8 @@ export function ProductCatalogFilters({
     setCollection("all");
     setMinPrice("");
     setMaxPrice("");
+    setAvailability("all");
+    setFiltersOpen(false);
 
     startTransition(() => {
       router.push(
@@ -216,6 +251,28 @@ export function ProductCatalogFilters({
       );
     });
   };
+
+  const activeFilterCount =
+    Number(
+      material !== "all",
+    ) +
+    Number(
+      collection !== "all",
+    ) +
+    Number(Boolean(minPrice)) +
+    Number(Boolean(maxPrice)) +
+    Number(
+      availability !== "all",
+    );
+
+  const invalidPriceRange =
+    Boolean(
+      minPrice &&
+      maxPrice &&
+      /^\d+$/.test(minPrice) &&
+      /^\d+$/.test(maxPrice) &&
+      BigInt(minPrice) > BigInt(maxPrice),
+    );
 
   const materialChoices = [
     {
@@ -252,49 +309,21 @@ export function ProductCatalogFilters({
     },
   ] as const;
 
-  const collectionChoices = [
+  const availabilityChoices = [
     {
       value: "all",
-      label:
-        isPersian
-          ? "همه"
-          : "All",
-
-      Icon:
-        AllProductsRuneIcon,
+      label: isPersian ? "همه" : "All",
+      Icon: AllProductsRuneIcon,
     },
-
     {
-      value: "necklaces",
-      label:
-        isPersian
-          ? "گردنبند"
-          : "Necklaces",
-
-      Icon:
-        NecklaceRuneIcon,
+      value: "available",
+      label: isPersian ? "موجود" : "Available",
+      Icon: CheckCircle2,
     },
-
     {
-      value: "bracelets",
-      label:
-        isPersian
-          ? "دستبند"
-          : "Bracelets",
-
-      Icon:
-        BraceletRuneIcon,
-    },
-
-    {
-      value: "earrings",
-      label:
-        isPersian
-          ? "گوشواره"
-          : "Earrings",
-
-      Icon:
-        EarringRuneIcon,
+      value: "out-of-stock",
+      label: isPersian ? "ناموجود" : "Out of stock",
+      Icon: CircleOff,
     },
   ] as const;
 
@@ -303,7 +332,7 @@ export function ProductCatalogFilters({
       onSubmit={
         submitFilters
       }
-      className="relative mx-auto max-w-6xl overflow-hidden rounded-[1.55rem] border border-[#d9b85f]/20 bg-[linear-gradient(145deg,rgba(7,38,28,0.9),rgba(2,21,15,0.94))] p-3 shadow-[0_20px_55px_rgba(0,0,0,0.3)] backdrop-blur-2xl sm:p-4"
+      className="relative mx-auto max-w-6xl overflow-hidden rounded-[1.8rem] border border-[#d9b85f]/20 bg-[linear-gradient(145deg,rgba(7,38,28,0.92),rgba(2,21,15,0.96))] p-4 shadow-[0_20px_55px_rgba(0,0,0,0.3)] backdrop-blur-2xl sm:p-5"
     >
       <div
         aria-hidden="true"
@@ -316,16 +345,78 @@ export function ProductCatalogFilters({
       />
 
       <div className="relative grid gap-4">
+        <div className="flex items-center justify-between gap-3 border-b border-white/[0.07] pb-4">
+          <div className="flex min-w-0 items-center gap-3">
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-[#d9b85f]/25 bg-[#d9b85f]/[0.055] text-[#dec16d]">
+              <FilterRuneIcon className="h-[18px] w-[18px]" />
+            </span>
+
+            <div className="min-w-0">
+              <h2 className="text-sm font-medium text-[#eee1ca]">
+                {isPersian
+                  ? "جست‌وجو و فیلتر"
+                  : "Search and filters"}
+              </h2>
+
+              <p className="mt-1 hidden text-[11px] text-white/45 sm:block">
+                {isPersian
+                  ? "آثار را براساس جنس، دسته‌بندی، موجودی و قیمت محدود کنید."
+                  : "Refine creations by material, category, availability and price."}
+              </p>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            onClick={() =>
+              setFiltersOpen(
+                (current) =>
+                  !current,
+              )
+            }
+            aria-expanded={filtersOpen}
+            aria-controls="catalog-material-filters catalog-availability-filters catalog-price-filters"
+            className="flex min-h-10 shrink-0 items-center gap-2 rounded-full border border-[#d9b85f]/25 bg-[#d9b85f]/[0.055] px-3 text-[11px] text-[#e7d397] transition hover:border-[#e5ca77]/50 lg:hidden"
+          >
+            <SlidersHorizontal className="h-4 w-4" />
+
+            <span>
+              {isPersian
+                ? "فیلترها"
+                : "Filters"}
+            </span>
+
+            {activeFilterCount > 0 && (
+              <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-[#d9b85f]/20 px-1 text-[10px] text-[#f3df9f]">
+                {activeFilterCount.toLocaleString(
+                  isPersian
+                    ? "fa-IR"
+                    : "en-US",
+                )}
+              </span>
+            )}
+
+            <ChevronDown
+              className={[
+                "h-3.5 w-3.5 transition-transform",
+                filtersOpen
+                  ? "rotate-180"
+                  : "",
+              ].join(" ")}
+            />
+          </button>
+        </div>
+
         {/* جست‌وجو */}
-        <div className="grid gap-3 lg:grid-cols-[1.35fr_0.65fr]">
+        <div className="grid gap-3 lg:grid-cols-[1.2fr_0.7fr_0.7fr]">
           <div>
             <label
               htmlFor="product-search"
-              className="mb-1.5 block text-[10px] text-[#cfbc8a]/70"
+              className="mb-1.5 block text-xs text-[#d8c79a]/80"
             >
               {isPersian
-                ? "جست‌وجوی محصول"
-                : "Search products"}
+                ? "جست‌وجوی آثار"
+                : "Search creations"}
             </label>
 
             <div className="relative">
@@ -347,19 +438,43 @@ export function ProductCatalogFilters({
                 }
                 placeholder={
                   isPersian
-                    ? "نام محصول یا کد محصول..."
-                    : "Product name or SKU..."
+                    ? "نام اثر یا کد محصول..."
+                    : "Creation name or SKU..."
                 }
-                className="h-11 w-full rounded-xl border border-[#d9b85f]/22 bg-[#031d15]/90 pe-4 ps-11 text-xs text-[#f2e8d5] outline-none placeholder:text-[#a99f89]/40 transition focus:border-[#e4c873]/55 focus:shadow-[0_0_18px_rgba(218,184,95,0.08)]"
+                className="h-12 w-full rounded-xl border border-[#d9b85f]/22 bg-[#031d15]/90 pe-12 ps-11 text-sm text-[#f2e8d5] outline-none placeholder:text-[#a99f89]/40 transition focus:border-[#e4c873]/55 focus:shadow-[0_0_18px_rgba(218,184,95,0.08)]"
               />
+
+              <button
+                type="submit"
+                disabled={
+                  isPending ||
+                  invalidPriceRange
+                }
+                aria-label={
+                  isPersian
+                    ? "جست‌وجوی آثار"
+                    : "Search creations"
+                }
+                className="absolute end-2 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full border border-[#d9b85f]/20 bg-[#d9b85f]/[0.06] text-[#e2c874] transition hover:border-[#e8cf7c]/50 disabled:opacity-40"
+              >
+                <SearchRuneIcon className="h-4 w-4" />
+              </button>
             </div>
           </div>
 
-          {/* جنس محصول */}
-          <div>
-            <span className="mb-1.5 block text-[10px] text-[#cfbc8a]/70">
+          {/* جنس اثر */}
+          <div
+            id="catalog-material-filters"
+            className={[
+              filtersOpen
+                ? "block"
+                : "hidden",
+              "lg:block",
+            ].join(" ")}
+          >
+            <span className="mb-1.5 block text-xs text-[#d8c79a]/80">
               {isPersian
-                ? "جنس محصول"
+                ? "جنس اثر"
                 : "Material"}
             </span>
 
@@ -384,7 +499,7 @@ export function ProductCatalogFilters({
                         )
                       }
                       className={[
-                        "group flex min-h-11 items-center justify-center gap-1.5 rounded-xl border px-2 text-[10px] transition duration-300",
+                        "group flex min-h-11 items-center justify-center gap-1.5 rounded-xl border px-2 text-xs transition duration-300",
                         active
                           ? value ===
                             "silver"
@@ -406,61 +521,57 @@ export function ProductCatalogFilters({
               )}
             </div>
           </div>
-        </div>
 
-        {/* دسته‌بندی محصول */}
-        <div>
-          <span className="mb-1.5 block text-[10px] text-[#cfbc8a]/70">
-            {isPersian
-              ? "دسته‌بندی قطعه"
-              : "Piece category"}
-          </span>
+          {/* وضعیت موجودی */}
+          <div
+            id="catalog-availability-filters"
+            className={[
+              filtersOpen ? "block" : "hidden",
+              "lg:block",
+            ].join(" ")}
+          >
+            <span className="mb-1.5 block text-xs text-[#d8c79a]/80">
+              {isPersian ? "وضعیت موجودی" : "Availability"}
+            </span>
 
-          <div className="grid grid-cols-2 gap-1.5 sm:grid-cols-4">
-            {collectionChoices.map(
-              ({
-                value,
-                label,
-                Icon,
-              }) => {
-                const active =
-                  collection ===
-                  value;
+            <div className="grid grid-cols-3 gap-1.5">
+              {availabilityChoices.map(({ value, label, Icon }) => {
+                const active = availability === value;
 
                 return (
                   <button
                     key={value}
                     type="button"
-                    onClick={() =>
-                      setCollection(
-                        value,
-                      )
-                    }
+                    onClick={() => setAvailability(value)}
                     className={[
-                      "group flex min-h-10 items-center justify-center gap-1.5 rounded-xl border px-2 text-[10px] transition duration-300",
+                      "flex min-h-11 items-center justify-center gap-1.5 rounded-xl border px-2 text-[11px] transition duration-300",
                       active
-                        ? "border-[#e4c873]/45 bg-[#d7b65c]/[0.09] text-[#f1d993] shadow-[0_0_14px_rgba(218,184,95,0.07)]"
+                        ? "border-[#e4c873]/48 bg-[#d7b65c]/10 text-[#f4df9e] shadow-[0_0_14px_rgba(218,184,95,0.08)]"
                         : "border-white/[0.07] bg-white/[0.025] text-white/50 hover:border-[#d9b85f]/28 hover:text-[#e5d5ad]",
-                    ].join(
-                      " ",
-                    )}
+                    ].join(" ")}
                   >
-                    <Icon className="h-[17px] w-[17px]" />
-
-                    <span>
-                      {label}
-                    </span>
+                    <Icon className="h-4 w-4" />
+                    <span>{label}</span>
                   </button>
                 );
-              },
-            )}
+              })}
+            </div>
           </div>
         </div>
 
         {/* بازه قیمت */}
-        <div className="grid items-end gap-3 lg:grid-cols-[1fr_1fr_auto]">
+        <div
+          id="catalog-price-filters"
+          className={[
+            "items-end gap-3 lg:grid-cols-[1fr_1fr_auto]",
+            filtersOpen
+              ? "grid"
+              : "hidden",
+            "lg:grid",
+          ].join(" ")}
+        >
           <label className="relative">
-            <span className="mb-1.5 block text-[10px] text-[#cfbc8a]/70">
+            <span className="mb-1.5 block text-xs text-[#d8c79a]/80">
               {isPersian
                 ? "حداقل قیمت"
                 : "Minimum price"}
@@ -485,10 +596,10 @@ export function ProductCatalogFilters({
                   ? "مثلاً 10000000"
                   : "e.g. 10000000"
               }
-              className="h-10 w-full rounded-xl border border-[#d9b85f]/20 bg-[#031d15]/90 pe-14 ps-3 text-[11px] text-[#e8ddc7] outline-none placeholder:text-white/25 transition focus:border-[#e4c873]/50"
+              className="h-10 w-full rounded-xl border border-[#d9b85f]/20 bg-[#031d15]/90 pe-14 ps-3 text-xs text-[#e8ddc7] outline-none placeholder:text-white/25 transition focus:border-[#e4c873]/50"
             />
 
-            <span className="pointer-events-none absolute bottom-[11px] end-3 text-[9px] text-[#d4bd7a]/50">
+            <span className="pointer-events-none absolute bottom-[11px] end-3 text-[10px] text-[#d4bd7a]/58">
               {isPersian
                 ? "تومان"
                 : "Toman"}
@@ -496,7 +607,7 @@ export function ProductCatalogFilters({
           </label>
 
           <label className="relative">
-            <span className="mb-1.5 block text-[10px] text-[#cfbc8a]/70">
+            <span className="mb-1.5 block text-xs text-[#d8c79a]/80">
               {isPersian
                 ? "حداکثر قیمت"
                 : "Maximum price"}
@@ -521,10 +632,10 @@ export function ProductCatalogFilters({
                   ? "مثلاً 100000000"
                   : "e.g. 100000000"
               }
-              className="h-10 w-full rounded-xl border border-[#d9b85f]/20 bg-[#031d15]/90 pe-14 ps-3 text-[11px] text-[#e8ddc7] outline-none placeholder:text-white/25 transition focus:border-[#e4c873]/50"
+              className="h-10 w-full rounded-xl border border-[#d9b85f]/20 bg-[#031d15]/90 pe-14 ps-3 text-xs text-[#e8ddc7] outline-none placeholder:text-white/25 transition focus:border-[#e4c873]/50"
             />
 
-            <span className="pointer-events-none absolute bottom-[11px] end-3 text-[9px] text-[#d4bd7a]/50">
+            <span className="pointer-events-none absolute bottom-[11px] end-3 text-[10px] text-[#d4bd7a]/58">
               {isPersian
                 ? "تومان"
                 : "Toman"}
@@ -541,7 +652,7 @@ export function ProductCatalogFilters({
               disabled={
                 isPending
               }
-              className="min-h-10 whitespace-nowrap rounded-full border border-white/10 bg-white/[0.03] px-4 text-[10px] text-white/50 transition hover:border-white/20 hover:text-white/75 disabled:opacity-50"
+              className="min-h-11 whitespace-nowrap rounded-full border border-white/10 bg-white/[0.03] px-4 text-[11px] text-white/58 transition hover:border-white/20 hover:text-white/75 disabled:opacity-50"
             >
               {isPersian
                 ? "پاک‌کردن"
@@ -551,9 +662,10 @@ export function ProductCatalogFilters({
             <button
               type="submit"
               disabled={
-                isPending
+                isPending ||
+                invalidPriceRange
               }
-              className="group relative flex min-h-10 items-center justify-center gap-2 whitespace-nowrap overflow-hidden rounded-full border border-[#e0c16d]/48 bg-[linear-gradient(100deg,rgba(112,80,20,0.2),rgba(218,183,90,0.25),rgba(112,80,20,0.2))] px-5 text-[10px] font-medium text-[#f4e2ae] transition hover:-translate-y-0.5 hover:border-[#f0d681]/80 hover:shadow-[0_0_20px_rgba(218,183,91,0.1)] disabled:opacity-50"
+              className="group relative flex min-h-11 items-center justify-center gap-2 whitespace-nowrap overflow-hidden rounded-full border border-[#e0c16d]/48 bg-[linear-gradient(100deg,rgba(112,80,20,0.2),rgba(218,183,90,0.25),rgba(112,80,20,0.2))] px-5 text-[11px] font-medium text-[#f4e2ae] transition hover:-translate-y-0.5 hover:border-[#f0d681]/80 hover:shadow-[0_0_20px_rgba(218,183,91,0.1)] disabled:opacity-50"
             >
               <FilterRuneIcon className="h-[17px] w-[17px]" />
 
@@ -570,10 +682,25 @@ export function ProductCatalogFilters({
           </div>
         </div>
 
-        <p className="-mt-1 text-center text-[9px] leading-5 text-white/30">
-          {isPersian
-            ? "بازه قیمت براساس قیمت نهایی زنده و فرمول مخصوص طلا یا نقره محاسبه می‌شود."
-            : "The price range uses the live final price and the formula assigned to gold or silver."}
+        <p
+          className={[
+            "-mt-1 text-center text-[10px] leading-5",
+            invalidPriceRange
+              ? "text-rose-200/75"
+              : "text-white/42",
+            filtersOpen
+              ? "block"
+              : "hidden",
+            "lg:block",
+          ].join(" ")}
+        >
+          {invalidPriceRange
+            ? isPersian
+              ? "حداقل قیمت نمی‌تواند بیشتر از حداکثر قیمت باشد."
+              : "Minimum price cannot be greater than maximum price."
+            : isPersian
+              ? "بازه قیمت براساس قیمت نهایی زنده و فرمول مخصوص طلا یا نقره محاسبه می‌شود."
+              : "The price range uses the live final price and the formula assigned to gold or silver."}
         </p>
       </div>
     </form>

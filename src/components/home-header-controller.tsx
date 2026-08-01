@@ -32,7 +32,7 @@ type NavigationItem = {
   label: string;
   description: string;
   href: string;
-  icon: "story" | "contact";
+  icon: "collections" | "products" | "story" | "contact";
 };
 
 function NavigationIcon({
@@ -42,6 +42,25 @@ function NavigationIcon({
   type: NavigationItem["icon"];
   className?: string;
 }) {
+  if (type === "collections") {
+    return (
+      <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" className={className}>
+        <path d="M5 7.5L12 4L19 7.5V16.5L12 20L5 16.5V7.5Z" stroke="currentColor" strokeWidth="1.3" strokeLinejoin="round" />
+        <path d="M5.5 7.7L12 11L18.5 7.7M12 11V19.5" stroke="currentColor" strokeWidth="1.1" strokeLinejoin="round" opacity="0.72" />
+        <path d="M9 6L15 9" stroke="currentColor" strokeWidth="1" strokeLinecap="round" opacity="0.5" />
+      </svg>
+    );
+  }
+
+  if (type === "products") {
+    return (
+      <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" className={className}>
+        <path d="M12 3L14.2 9.8L21 12L14.2 14.2L12 21L9.8 14.2L3 12L9.8 9.8L12 3Z" stroke="currentColor" strokeWidth="1.3" strokeLinejoin="round" />
+        <circle cx="12" cy="12" r="2.4" stroke="currentColor" strokeWidth="1" opacity="0.7" />
+      </svg>
+    );
+  }
+
   if (type === "story") {
     return (
       <svg
@@ -56,70 +75,23 @@ function NavigationIcon({
           strokeWidth="1.3"
           strokeLinejoin="round"
         />
-
         <path
           d="M19 5.6C16.45 4.55 14.25 4.95 12 6.55V19C14.25 17.4 16.45 17 19 18.05V5.6Z"
           stroke="currentColor"
           strokeWidth="1.3"
           strokeLinejoin="round"
         />
-
-        <path
-          d="M7.8 8.4C9.05 8.1 10.05 8.3 11 8.9"
-          stroke="currentColor"
-          strokeWidth="1"
-          strokeLinecap="round"
-          opacity="0.6"
-        />
-
-        <path
-          d="M16.2 8.4C14.95 8.1 13.95 8.3 13 8.9"
-          stroke="currentColor"
-          strokeWidth="1"
-          strokeLinecap="round"
-          opacity="0.6"
-        />
+        <path d="M7.8 8.4C9.05 8.1 10.05 8.3 11 8.9" stroke="currentColor" strokeWidth="1" strokeLinecap="round" opacity="0.6" />
+        <path d="M16.2 8.4C14.95 8.1 13.95 8.3 13 8.9" stroke="currentColor" strokeWidth="1" strokeLinecap="round" opacity="0.6" />
       </svg>
     );
   }
 
   return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      aria-hidden="true"
-      className={className}
-    >
-      <path
-        d="M5 6.5H19V17.5H5V6.5Z"
-        stroke="currentColor"
-        strokeWidth="1.3"
-        strokeLinejoin="round"
-      />
-
-      <path
-        d="M5.5 7L12 12.5L18.5 7"
-        stroke="currentColor"
-        strokeWidth="1.3"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-
-      <path
-        d="M8 15.1L10.15 13.3"
-        stroke="currentColor"
-        strokeWidth="1"
-        strokeLinecap="round"
-        opacity="0.55"
-      />
-
-      <path
-        d="M16 15.1L13.85 13.3"
-        stroke="currentColor"
-        strokeWidth="1"
-        strokeLinecap="round"
-        opacity="0.55"
-      />
+    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" className={className}>
+      <path d="M5 6.5H19V17.5H5V6.5Z" stroke="currentColor" strokeWidth="1.3" strokeLinejoin="round" />
+      <path d="M5.5 7L12 12.5L18.5 7" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M8 15.1L10.15 13.3M16 15.1L13.85 13.3" stroke="currentColor" strokeWidth="1" strokeLinecap="round" opacity="0.55" />
     </svg>
   );
 }
@@ -147,46 +119,30 @@ export function HomeHeaderController({
     isPersian
       ? [
           {
-            label:
-              "داستان الــوریا",
-            description:
-              "آشنایی با هویت، ریشه‌ها و روایت برند",
-            href:
-              `/${locale}/about`,
-            icon:
-              "story",
+            label: "داستان الوریا",
+            description: "آشنایی با هویت، ریشه‌ها و روایت برند",
+            href: `/${locale}/about`,
+            icon: "story",
           },
           {
-            label:
-              "تماس با ما",
-            description:
-              "ارتباط مستقیم با همراهان الــوریا",
-            href:
-              `/${locale}/#contact`,
-            icon:
-              "contact",
+            label: "تماس با ما",
+            description: "ارتباط مستقیم با همراهان الوریا",
+            href: "#contact",
+            icon: "contact",
           },
         ]
       : [
           {
-            label:
-              "The Eloria Story",
-            description:
-              "Discover the identity and origins of Eloria",
-            href:
-              `/${locale}/about`,
-            icon:
-              "story",
+            label: "The Eloria Story",
+            description: "Discover the identity and origins of Eloria",
+            href: `/${locale}/about`,
+            icon: "story",
           },
           {
-            label:
-              "Contact Us",
-            description:
-              "Connect directly with Eloria",
-            href:
-              `/${locale}/#contact`,
-            icon:
-              "contact",
+            label: "Contact Us",
+            description: "Connect directly with Eloria",
+            href: "#contact",
+            icon: "contact",
           },
         ];
 
@@ -436,7 +392,7 @@ export function HomeHeaderController({
                 href={`/${locale}`}
                 aria-label={
                   isPersian
-                    ? "صفحه اصلی الــوریا"
+                    ? "صفحه اصلی الوریا"
                     : "Eloria home"
                 }
                 onClick={
@@ -498,11 +454,11 @@ export function HomeHeaderController({
 
                 {/* نام برند */}
                 <span className="hidden min-w-0 text-left sm:block">
-                  <span className="block whitespace-nowrap text-[13px] font-medium tracking-[0.32em] text-[#f8f1e2] transition duration-300 group-hover:text-[#fff5dc]">
+                  <span className="font-eloria-brand block whitespace-nowrap text-[13px] text-[#f8f1e2] transition duration-300 group-hover:text-[#fff5dc]">
                     ELORIA
                   </span>
 
-                  <span className="mt-1.5 block whitespace-nowrap text-[6.5px] tracking-[0.16em] text-[#d5b972]/56 transition duration-300 group-hover:text-[#e3c778]/72">
+                  <span className="mt-1.5 block whitespace-nowrap text-[8px] tracking-[0.14em] text-[#dcc37d]/70 transition duration-300 group-hover:text-[#e3c778]/72">
                     JEWELS OF LEGEND
                   </span>
                 </span>
@@ -603,14 +559,14 @@ export function HomeHeaderController({
                     <div>
                       <p className="text-[11px] font-medium text-[#f3dfaa]">
                         {isPersian
-                          ? "جهان الــوریا"
+                          ? "جهان الوریا"
                           : "The World of Eloria"}
                       </p>
 
-                      <p className="mt-1.5 text-[8px] leading-5 tracking-[0.03em] text-white/34">
+                      <p className="mt-1.5 text-[10px] leading-5 tracking-[0.02em] text-white/52">
                         {isPersian
                           ? "داستان برند و راه‌های ارتباطی"
-                          : "Our story and contact information"}
+                          : "Brand story and contact information"}
                       </p>
                     </div>
 
@@ -695,11 +651,11 @@ export function HomeHeaderController({
 
                             {/* متن */}
                             <span className="min-w-0 flex-1">
-                              <span className="block text-[11px] font-medium text-white/74 transition duration-300 group-hover:text-[#f5dda0]">
+                              <span className="block text-[13px] font-medium text-white/82 transition duration-300 group-hover:text-[#f5dda0]">
                                 {item.label}
                               </span>
 
-                              <span className="mt-1.5 block truncate text-[8px] text-white/32 transition duration-300 group-hover:text-white/48">
+                              <span className="mt-1.5 block truncate text-[10px] text-white/48 transition duration-300 group-hover:text-white/48">
                                 {
                                   item.description
                                 }

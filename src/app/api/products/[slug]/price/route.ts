@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
 import {
+  getProductDisplayPrice,
   getProductLivePrice,
   ProductPricingError,
 } from "@/lib/product-pricing";
@@ -29,11 +30,20 @@ export async function GET(
         "variantId",
       );
 
-    const result =
-      await getProductLivePrice({
-        slug,
-        variantId,
-      });
+    const displayMode =
+      request.nextUrl.searchParams.get(
+        "display",
+      ) === "1";
+
+    const result = displayMode
+      ? await getProductDisplayPrice({
+          slug,
+          variantId,
+        })
+      : await getProductLivePrice({
+          slug,
+          variantId,
+        });
 
     return NextResponse.json(
       {

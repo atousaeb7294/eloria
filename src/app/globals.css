@@ -1,3 +1,4 @@
+@import "@fontsource-variable/vazirmatn";
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
@@ -7,7 +8,7 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-sans);
+  --font-sans: "Vazirmatn Variable", "Segoe UI", sans-serif;
   --font-mono: var(--font-geist-mono);
   --font-heading: var(--font-sans);
   --color-sidebar-ring: var(--sidebar-ring);
@@ -123,11 +124,101 @@
   }
   body {
     @apply bg-background text-foreground;
+    min-width: 320px;
+    background: #02140e;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
   button:not(:disabled), [role="button"]:not(:disabled) {
     cursor: pointer;
   }
   html {
     @apply font-sans;
+    scroll-behavior: smooth;
+    background: #02140e;
   }
+
+  ::selection {
+    background: rgba(224, 194, 109, 0.28);
+    color: #fff4d6;
+  }
+
+  a,
+  button,
+  input,
+  select,
+  textarea {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  :focus-visible {
+    outline: 2px solid rgba(240, 213, 135, 0.82);
+    outline-offset: 3px;
+  }
+}
+@font-face {
+  font-family: "Eloria Persian Nastaliq";
+  src: local("IranNastaliq"), local("Iran Nastaliq"), local("Urdu Typesetting"), local("Noto Nastaliq Urdu"), local("Nafees Nastaleeq");
+  font-display: swap;
+  font-style: normal;
+  font-weight: 400;
+}
+
+@layer utilities {
+  .font-persian-title {
+    font-family: "Eloria Persian Nastaliq", "IranNastaliq", "Iran Nastaliq", "Urdu Typesetting", "Vazirmatn Variable", Tahoma, serif;
+    font-feature-settings: "kern" 1, "liga" 1, "calt" 1;
+    font-kerning: normal;
+    font-synthesis: none;
+    font-style: normal;
+    font-weight: 400 !important;
+    letter-spacing: 0 !important;
+    word-spacing: 0.04em;
+    line-height: 1.85;
+    text-rendering: optimizeLegibility;
+  }
+
+  .font-eloria-brand {
+    font-family: Georgia, "Times New Roman", serif;
+    font-weight: 600;
+    font-style: normal;
+    font-variant-ligatures: common-ligatures;
+    letter-spacing: 0.28em;
+    text-rendering: geometricPrecision;
+  }
+}
+
+
+@keyframes eloria-shimmer {
+  0% {
+    transform: translateX(-30%);
+    opacity: 0;
+  }
+
+  20% {
+    opacity: 1;
+  }
+
+  100% {
+    transform: translateX(330%);
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+  }
+}
+
+/*
+ * لینک‌های خانه که مستقیماً به #hero می‌روند، باید Intro را پیش از Hydration
+ * نیز کنار بزنند تا هیچ لایه‌ای کلیک‌های Hero یا هدر را مسدود نکند.
+ */
+html[data-eloria-skip-intro="true"] .eloria-intro-root {
+  display: none !important;
+  pointer-events: none !important;
 }

@@ -33,6 +33,10 @@ import {
 } from "@/components/cart-live-price-refresh";
 
 import {
+  PurchaseProgress,
+} from "@/components/purchase-progress";
+
+import {
   CheckoutCustomerError,
   normalizeCheckoutCustomer,
   type CheckoutCustomerInput,
@@ -1486,7 +1490,7 @@ export function CheckoutPageClient({
   }
 
   return (
-    <section className="relative z-10 mx-auto w-full max-w-[1450px] px-4 pb-28 pt-36 sm:px-6 lg:px-10 lg:pt-40">
+    <section className="relative z-10 mx-auto w-full max-w-[1450px] px-4 pb-44 pt-36 sm:px-6 lg:px-10 lg:pb-28 lg:pt-40">
       {priceChangeNotice && (
         <div
           role="status"
@@ -1586,9 +1590,16 @@ export function CheckoutPageClient({
           {text.title}
         </h1>
 
-        <p className="mx-auto mt-3 max-w-2xl text-sm leading-8 text-[#cbbd9d]/60">
+        <p className="mx-auto mt-3 max-w-2xl text-sm leading-8 text-[#cbbd9d]/65">
           {text.description}
         </p>
+
+        <PurchaseProgress
+          locale={locale}
+          currentStep={
+            createdOrder ? 3 : 2
+          }
+        />
       </header>
 
       {(quoteError ||
@@ -1635,7 +1646,8 @@ export function CheckoutPageClient({
               className="mt-12 grid items-start gap-8 lg:grid-cols-[minmax(0,1fr)_400px]"
             >
               <div className="space-y-6">
-                <section className="rounded-[2rem] border border-[#d9b85f]/20 bg-[linear-gradient(145deg,rgba(7,35,27,0.92),rgba(3,21,15,0.96))] p-5 shadow-[0_24px_80px_rgba(0,0,0,0.22)] sm:p-7">
+                <div className="rounded-[2rem]">
+                  <section className="relative rounded-[2rem] border border-[#d9b85f]/20 bg-[linear-gradient(145deg,rgba(7,35,27,0.94),rgba(3,21,15,0.97))] p-5 shadow-[0_24px_80px_rgba(0,0,0,0.24)] sm:p-7">
                   <div className="flex items-start gap-4">
                     <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-[#d9b85f]/25 bg-[#d9b85f]/[0.06]">
                       <UserRound className="h-5 w-5 text-[#e2c872]" />
@@ -1683,7 +1695,7 @@ export function CheckoutPageClient({
                         placeholder={
                           text.fullNamePlaceholder
                         }
-                        className="min-h-12 w-full rounded-xl border border-white/[0.09] bg-black/10 px-4 text-sm text-[#f3e6c9] outline-none transition placeholder:text-[#c8b996]/25 focus:border-[#d9b85f]/45 focus:bg-[#d9b85f]/[0.025]"
+                        className="min-h-12 w-full rounded-xl border border-white/[0.09] bg-black/10 px-4 text-sm text-[#f3e6c9] outline-none transition placeholder:text-[#c8b996]/25 focus:border-[#e5c873]/60 focus:bg-[#d9b85f]/[0.035] focus:shadow-[0_0_0_3px_rgba(217,184,95,0.06)]"
                       />
                     </label>
 
@@ -1715,7 +1727,7 @@ export function CheckoutPageClient({
                         placeholder={
                           text.mobilePlaceholder
                         }
-                        className="min-h-12 w-full rounded-xl border border-white/[0.09] bg-black/10 px-4 text-left text-sm text-[#f3e6c9] outline-none transition placeholder:text-[#c8b996]/25 focus:border-[#d9b85f]/45 focus:bg-[#d9b85f]/[0.025]"
+                        className="min-h-12 w-full rounded-xl border border-white/[0.09] bg-black/10 px-4 text-left text-sm text-[#f3e6c9] outline-none transition placeholder:text-[#c8b996]/25 focus:border-[#e5c873]/60 focus:bg-[#d9b85f]/[0.035] focus:shadow-[0_0_0_3px_rgba(217,184,95,0.06)]"
                       />
                     </label>
 
@@ -1747,7 +1759,7 @@ export function CheckoutPageClient({
                         placeholder={
                           text.emailPlaceholder
                         }
-                        className="min-h-12 w-full rounded-xl border border-white/[0.09] bg-black/10 px-4 text-left text-sm text-[#f3e6c9] outline-none transition placeholder:text-[#c8b996]/25 focus:border-[#d9b85f]/45 focus:bg-[#d9b85f]/[0.025]"
+                        className="min-h-12 w-full rounded-xl border border-white/[0.09] bg-black/10 px-4 text-left text-sm text-[#f3e6c9] outline-none transition placeholder:text-[#c8b996]/25 focus:border-[#e5c873]/60 focus:bg-[#d9b85f]/[0.035] focus:shadow-[0_0_0_3px_rgba(217,184,95,0.06)]"
                       />
                     </label>
 
@@ -1777,7 +1789,7 @@ export function CheckoutPageClient({
                         placeholder={
                           text.provincePlaceholder
                         }
-                        className="min-h-12 w-full rounded-xl border border-white/[0.09] bg-black/10 px-4 text-sm text-[#f3e6c9] outline-none transition placeholder:text-[#c8b996]/25 focus:border-[#d9b85f]/45 focus:bg-[#d9b85f]/[0.025]"
+                        className="min-h-12 w-full rounded-xl border border-white/[0.09] bg-black/10 px-4 text-sm text-[#f3e6c9] outline-none transition placeholder:text-[#c8b996]/25 focus:border-[#e5c873]/60 focus:bg-[#d9b85f]/[0.035] focus:shadow-[0_0_0_3px_rgba(217,184,95,0.06)]"
                       />
                     </label>
 
@@ -1807,7 +1819,7 @@ export function CheckoutPageClient({
                         placeholder={
                           text.cityPlaceholder
                         }
-                        className="min-h-12 w-full rounded-xl border border-white/[0.09] bg-black/10 px-4 text-sm text-[#f3e6c9] outline-none transition placeholder:text-[#c8b996]/25 focus:border-[#d9b85f]/45 focus:bg-[#d9b85f]/[0.025]"
+                        className="min-h-12 w-full rounded-xl border border-white/[0.09] bg-black/10 px-4 text-sm text-[#f3e6c9] outline-none transition placeholder:text-[#c8b996]/25 focus:border-[#e5c873]/60 focus:bg-[#d9b85f]/[0.035] focus:shadow-[0_0_0_3px_rgba(217,184,95,0.06)]"
                       />
                     </label>
 
@@ -1840,7 +1852,7 @@ export function CheckoutPageClient({
                         placeholder={
                           text.postalCodePlaceholder
                         }
-                        className="min-h-12 w-full rounded-xl border border-white/[0.09] bg-black/10 px-4 text-left text-sm text-[#f3e6c9] outline-none transition placeholder:text-[#c8b996]/25 focus:border-[#d9b85f]/45 focus:bg-[#d9b85f]/[0.025]"
+                        className="min-h-12 w-full rounded-xl border border-white/[0.09] bg-black/10 px-4 text-left text-sm text-[#f3e6c9] outline-none transition placeholder:text-[#c8b996]/25 focus:border-[#e5c873]/60 focus:bg-[#d9b85f]/[0.035] focus:shadow-[0_0_0_3px_rgba(217,184,95,0.06)]"
                       />
                     </label>
 
@@ -1871,13 +1883,15 @@ export function CheckoutPageClient({
                         placeholder={
                           text.addressPlaceholder
                         }
-                        className="w-full resize-y rounded-xl border border-white/[0.09] bg-black/10 px-4 py-3 text-sm leading-7 text-[#f3e6c9] outline-none transition placeholder:text-[#c8b996]/25 focus:border-[#d9b85f]/45 focus:bg-[#d9b85f]/[0.025]"
+                        className="w-full resize-y rounded-xl border border-white/[0.09] bg-black/10 px-4 py-3 text-sm leading-7 text-[#f3e6c9] outline-none transition placeholder:text-[#c8b996]/25 focus:border-[#e5c873]/60 focus:bg-[#d9b85f]/[0.035] focus:shadow-[0_0_0_3px_rgba(217,184,95,0.06)]"
                       />
                     </label>
                   </div>
-                </section>
+                  </section>
+                </div>
 
-                <section className="rounded-[2rem] border border-[#d9b85f]/20 bg-[linear-gradient(145deg,rgba(7,35,27,0.92),rgba(3,21,15,0.96))] p-5 shadow-[0_24px_80px_rgba(0,0,0,0.22)] sm:p-7">
+                <div className="rounded-[2rem]">
+                  <section className="relative rounded-[2rem] border border-[#d9b85f]/20 bg-[linear-gradient(145deg,rgba(7,35,27,0.94),rgba(3,21,15,0.97))] p-5 shadow-[0_24px_80px_rgba(0,0,0,0.24)] sm:p-7">
                   <div className="flex items-center gap-3">
                     <ShoppingBag className="h-5 w-5 text-[#dfc46d]" />
 
@@ -1914,12 +1928,12 @@ export function CheckoutPageClient({
                                 item,
                               )
                             }
-                            className="flex items-start justify-between gap-5 py-4 first:pt-0 last:pb-0"
+                            className="group flex items-start justify-between gap-5 rounded-xl px-2 py-4 transition duration-300 first:pt-0 last:pb-0 hover:bg-[#d9b85f]/[0.035]"
                           >
                             <div className="min-w-0">
                               <Link
                                 href={`/${locale}/products/${item.slug}`}
-                                className="text-sm text-[#eee0bd] transition hover:text-[#f2d678]"
+                                className="text-sm text-[#eee0bd] transition group-hover:text-[#f2d678] hover:text-[#f2d678]"
                               >
                                 {
                                   productName
@@ -1964,11 +1978,13 @@ export function CheckoutPageClient({
                       },
                     )}
                   </div>
-                </section>
+                  </section>
+                </div>
               </div>
 
               <aside className="lg:sticky lg:top-28">
-                <div className="rounded-[2rem] border border-[#d9b85f]/25 bg-[linear-gradient(150deg,rgba(9,39,29,0.97),rgba(3,21,15,0.99))] p-6 shadow-[0_30px_100px_rgba(0,0,0,0.3)]">
+                <div className="rounded-[2rem]">
+                  <div className="relative rounded-[2rem] border border-[#d9b85f]/25 bg-[linear-gradient(150deg,rgba(9,39,29,0.98),rgba(3,21,15,0.995))] p-6 shadow-[0_30px_100px_rgba(0,0,0,0.34)]">
                   {createdOrder ? (
                     <>
                       <div className="flex h-12 w-12 items-center justify-center rounded-full border border-emerald-300/25 bg-emerald-200/[0.07] text-emerald-200">
@@ -2160,7 +2176,7 @@ export function CheckoutPageClient({
                         disabled={
                           checkoutBlocked
                         }
-                        className="mt-6 flex min-h-13 w-full items-center justify-center gap-3 rounded-full border border-[#e0c16d]/55 bg-[linear-gradient(100deg,rgba(112,80,20,0.22),rgba(218,183,90,0.3),rgba(112,80,20,0.22))] px-6 text-sm font-medium text-[#f6e4af] transition hover:-translate-y-0.5 hover:border-[#f0d681]/85 hover:shadow-[0_0_30px_rgba(218,183,91,0.14)] disabled:cursor-not-allowed disabled:opacity-35 disabled:hover:translate-y-0"
+                        className="mt-6 hidden min-h-13 w-full items-center justify-center gap-3 rounded-full border border-[#e0c16d]/55 bg-[linear-gradient(100deg,rgba(112,80,20,0.22),rgba(218,183,90,0.3),rgba(112,80,20,0.22))] px-6 text-sm font-medium text-[#f6e4af] transition hover:-translate-y-0.5 hover:border-[#f0d681]/85 hover:shadow-[0_0_30px_rgba(218,183,91,0.14)] disabled:cursor-not-allowed disabled:opacity-35 disabled:hover:translate-y-0 lg:flex"
                       >
                         {submitting ? (
                           <LoaderCircle className="h-4 w-4 animate-spin" />
@@ -2175,7 +2191,7 @@ export function CheckoutPageClient({
 
                       <Link
                         href={`/${locale}/cart`}
-                        className="mt-4 flex min-h-11 w-full items-center justify-center gap-2 rounded-full border border-white/[0.08] text-xs text-[#cfc19e]/60 transition hover:border-[#d9b85f]/25 hover:text-[#efd98e]"
+                        className="mt-4 hidden min-h-11 w-full items-center justify-center gap-2 rounded-full border border-white/[0.08] text-xs text-[#cfc19e]/60 transition hover:border-[#d9b85f]/25 hover:text-[#efd98e] lg:flex"
                       >
                         {isPersian ? (
                           <ArrowRight className="h-3.5 w-3.5" />
@@ -2189,8 +2205,67 @@ export function CheckoutPageClient({
                       </Link>
                     </>
                   )}
+                  </div>
                 </div>
               </aside>
+
+              {!createdOrder && (
+                <div className="fixed inset-x-0 bottom-0 z-[80] border-t border-[#d9b85f]/22 bg-[linear-gradient(180deg,rgba(3,25,18,0.96),rgba(2,18,13,0.99))] px-4 pb-[calc(0.75rem+env(safe-area-inset-bottom))] pt-3 shadow-[0_-20px_60px_rgba(0,0,0,0.42)] backdrop-blur-2xl lg:hidden">
+                  <div className="mx-auto flex max-w-xl items-center gap-3">
+                    <Link
+                      href={`/${locale}/cart`}
+                      aria-label={text.cart}
+                      className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-white/[0.1] text-[#d5c69f]/70 transition hover:border-[#d9b85f]/30 hover:text-[#efd98e]"
+                    >
+                      {isPersian ? (
+                        <ArrowRight className="h-4 w-4" />
+                      ) : (
+                        <ArrowLeft className="h-4 w-4" />
+                      )}
+                    </Link>
+
+                    <div className="min-w-0 flex-1">
+                      <p className="text-[10px] text-[#c9bb9a]/55">
+                        {text.payable}
+                      </p>
+
+                      <p className="mt-0.5 truncate text-base font-semibold text-[#f0d477]">
+                        {formatPrice(
+                          quote.summary
+                            .subtotalToman,
+                        )}{" "}
+                        <span className="text-[10px] font-normal text-[#c9bb9a]/55">
+                          {text.toman}
+                        </span>
+                      </p>
+                    </div>
+
+                    <button
+                      type="submit"
+                      disabled={
+                        checkoutBlocked
+                      }
+                      className="flex min-h-12 shrink-0 items-center justify-center gap-2 rounded-full border border-[#e0c16d]/55 bg-[linear-gradient(100deg,rgba(112,80,20,0.22),rgba(218,183,90,0.3),rgba(112,80,20,0.22))] px-5 text-xs font-medium text-[#f6e4af] transition disabled:cursor-not-allowed disabled:opacity-35"
+                    >
+                      {submitting ? (
+                        <LoaderCircle className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <WalletCards className="h-4 w-4" />
+                      )}
+
+                      <span>
+                        {submitting
+                          ? isPersian
+                            ? "در حال ثبت..."
+                            : "Creating..."
+                          : isPersian
+                            ? "ثبت سفارش"
+                            : "Create order"}
+                      </span>
+                    </button>
+                  </div>
+                </div>
+              )}
             </form>
           )
         )}

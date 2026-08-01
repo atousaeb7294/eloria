@@ -51,13 +51,13 @@ export function HeroShowcase({
             "آثاری برای آنان که می‌خواهند بخشی از یک افسانه را با خود همراه کنند.",
 
           primaryAction:
-            "ورود به گنجینه‌ها",
+            "کشف جهان الوریا",
 
           secondaryAction:
             "تماشای آثار",
 
           welcome:
-            "به جهان الــوریا خوش آمدید",
+            "به جهان الوریا خوش آمدید",
         }
       : {
           eyebrow:
@@ -73,7 +73,7 @@ export function HeroShowcase({
             "Creations for those who wish to carry a fragment of legend with them.",
 
           primaryAction:
-            "Enter the Collections",
+            "Discover Eloria",
 
           secondaryAction:
             "Explore the Creations",
@@ -90,15 +90,16 @@ export function HeroShowcase({
 
   return (
     <section
+      id="hero"
       aria-labelledby="eloria-hero-title"
       dir={
         isPersian
           ? "rtl"
           : "ltr"
       }
-      className="relative min-h-screen overflow-hidden bg-[#02140e] p-3 text-[#f8f0df] sm:p-5"
+      className="relative min-h-[100svh] scroll-mt-0 overflow-hidden bg-[#02140e] p-2.5 text-[#f8f0df] sm:p-5"
     >
-      <div className="relative isolate flex min-h-[calc(100svh-24px)] w-full items-center justify-center overflow-hidden rounded-[1.8rem] border border-[#dec06d]/24 bg-[#02140e] shadow-[0_34px_110px_rgba(0,0,0,0.7),0_0_55px_rgba(216,180,88,0.08)] sm:min-h-[calc(100svh-40px)] sm:rounded-[2.4rem]">
+      <div className="relative isolate flex min-h-[calc(100svh-20px)] w-full items-center justify-center overflow-hidden rounded-[1.65rem] border border-[#dec06d]/24 bg-[#02140e] shadow-[0_34px_110px_rgba(0,0,0,0.7),0_0_55px_rgba(216,180,88,0.08)] sm:min-h-[calc(100svh-40px)] sm:rounded-[2.4rem]">
         <SectionBackground
           sectionKey="home-hero"
           priority
@@ -190,7 +191,7 @@ export function HeroShowcase({
         </div>
 
         {/* محتوای اصلی؛ کمی بالاتر از مرکز */}
-        <div className="relative z-20 mx-auto flex w-full max-w-6xl -translate-y-[4vh] flex-col items-center justify-center px-5 text-center sm:-translate-y-[6vh] sm:px-10">
+        <div className="relative z-20 mx-auto flex w-full max-w-6xl -translate-y-[1.5vh] flex-col items-center justify-center px-5 pb-24 pt-28 text-center sm:-translate-y-[5vh] sm:px-10 sm:pb-20 sm:pt-24">
           {/* عنوان کوچک */}
           <motion.div
             initial={
@@ -209,11 +210,11 @@ export function HeroShowcase({
               delay: 0.1,
               duration: 0.75,
             }}
-            className="mb-2 flex items-center justify-center gap-4"
+            className="mb-3 flex max-w-full items-center justify-center gap-3 sm:gap-4"
           >
             <span className="h-px w-8 bg-gradient-to-l from-[#e8c875]/70 to-transparent sm:w-12" />
 
-            <p className="text-[10px] font-medium tracking-[0.08em] text-[#efd487]/88 sm:text-xs">
+            <p className="max-w-[15rem] text-[10px] font-medium leading-5 tracking-[0.06em] text-[#efd487]/88 sm:max-w-none sm:text-xs sm:tracking-[0.08em]">
               {copy.eyebrow}
             </p>
 
@@ -251,14 +252,14 @@ export function HeroShowcase({
             }}
             className={[
               titleFontClass,
-              "max-w-5xl pb-3 text-center text-[clamp(2.7rem,6vw,6rem)] font-normal leading-[1.65] text-[#fff7e6] drop-shadow-[0_16px_40px_rgba(0,0,0,0.68)]",
+              "max-w-5xl pb-2 text-center text-[clamp(2.25rem,11vw,6rem)] font-normal leading-[1.48] text-[#fff7e6] drop-shadow-[0_16px_40px_rgba(0,0,0,0.68)] sm:pb-3 sm:text-[clamp(3rem,6vw,6rem)] sm:leading-[1.65]",
             ].join(" ")}
           >
-            <span>
+            <span className="block sm:inline">
               {copy.titleFirst}
             </span>
 
-            <span className="mx-3 bg-[linear-gradient(100deg,#fff2c8_0%,#f0ce75_32%,#c68c24_66%,#ffe7a2_100%)] bg-clip-text text-transparent drop-shadow-[0_0_30px_rgba(225,181,80,0.2)]">
+            <span className="mt-1 block bg-[linear-gradient(100deg,#fff2c8_0%,#f0ce75_32%,#c68c24_66%,#ffe7a2_100%)] bg-clip-text text-transparent drop-shadow-[0_0_30px_rgba(225,181,80,0.2)] sm:mx-3 sm:mt-0 sm:inline">
               {copy.titleHighlight}
             </span>
           </motion.h1>
@@ -281,7 +282,7 @@ export function HeroShowcase({
               delay: 0.38,
               duration: 0.8,
             }}
-            className="max-w-2xl text-center text-sm font-normal leading-8 text-[#f8efdf]/76 [text-wrap:balance] sm:text-base sm:leading-9"
+            className="max-w-xl text-center text-[13px] font-normal leading-7 text-[#f8efdf]/80 [text-wrap:balance] sm:max-w-2xl sm:text-base sm:leading-9"
           >
             {copy.description}
           </motion.p>
@@ -304,7 +305,7 @@ export function HeroShowcase({
               delay: 0.5,
               duration: 0.85,
             }}
-            className="mt-7 flex w-full max-w-[420px] flex-col items-stretch justify-center gap-3 min-[470px]:flex-row"
+            className="mt-6 flex w-full max-w-[420px] flex-col items-stretch justify-center gap-3 min-[470px]:flex-row sm:mt-7"
           >
             {/* دکمه اصلی */}
             <Link
@@ -414,13 +415,30 @@ export function HeroShowcase({
             delay: 0.7,
             duration: 0.9,
           }}
-          className="absolute inset-x-5 bottom-5 z-20 flex items-center justify-center gap-4 sm:bottom-7"
+          className="absolute inset-x-4 bottom-[max(1.1rem,env(safe-area-inset-bottom))] z-20 flex items-center justify-center gap-3 sm:inset-x-5 sm:bottom-7 sm:gap-4"
         >
           <span className="h-px w-8 bg-gradient-to-l from-[#dabb68]/55 to-transparent sm:w-16" />
 
-          <span className="whitespace-nowrap text-[9px] font-medium tracking-[0.08em] text-[#ecd184]/66 sm:text-[10px]">
-            {copy.welcome}
-          </span>
+          <a
+            href="#trust"
+            className="group flex items-center gap-2 whitespace-nowrap text-[9px] font-medium tracking-[0.08em] text-[#ecd184]/66 transition hover:text-[#ffe3a0] sm:text-[10px]"
+          >
+            <span>{copy.welcome}</span>
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              aria-hidden="true"
+              className="size-3.5 animate-bounce text-[#e6c873]/70"
+            >
+              <path
+                d="M6 9L12 15L18 9"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          </a>
 
           <span className="h-px w-8 bg-gradient-to-r from-[#dabb68]/55 to-transparent sm:w-16" />
         </motion.div>

@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 import {
   AnimatePresence,
@@ -45,6 +46,10 @@ import {
 } from "@/components/locale-switcher";
 
 import {
+  MobileSiteMenu,
+} from "@/components/mobile-site-menu";
+
+import {
   GoldRuneIcon,
   SilverRuneIcon,
 } from "@/components/material-rune-icons";
@@ -72,7 +77,7 @@ function MagicIconFrame({
   return (
     <span
       className={[
-        "relative grid size-9 shrink-0 place-items-center rounded-xl border transition duration-500",
+        "relative grid size-8 shrink-0 place-items-center rounded-[10px] border transition duration-500 sm:size-9 sm:rounded-xl",
         active
           ? "border-[#f1d487]/55 bg-[radial-gradient(circle,rgba(255,234,171,0.25),rgba(17,108,78,0.34)_58%,rgba(2,38,27,0.86))] text-[#f4da8d] shadow-[0_0_18px_rgba(229,195,110,0.18)]"
           : "border-[#e1c16f]/20 bg-[radial-gradient(circle,rgba(224,193,111,0.1),rgba(9,70,50,0.34)_60%,rgba(2,33,23,0.84))] text-white/65 group-hover:border-[#e7ca78]/45 group-hover:text-[#f1d486] group-hover:shadow-[0_0_20px_rgba(230,195,109,0.16)]",
@@ -136,6 +141,9 @@ export function SiteHeader() {
   const locale =
     useLocale();
 
+  const pathname =
+    usePathname() ?? `/${locale}`;
+
   const t =
     useTranslations(
       "Navigation",
@@ -159,11 +167,19 @@ export function SiteHeader() {
       > | null
     >(null);
 
-  const productsHref =
-    `/${locale}/products`;
+  const homeHref =
+    `/${locale}#hero`;
 
   const collectionsHref =
     `/${locale}/collections`;
+
+  const isHomeActive =
+    pathname === `/${locale}` ||
+    pathname === `/${locale}/`;
+
+  const isWorldActive =
+    pathname.startsWith(`/${locale}/collections`) ||
+    pathname.startsWith(`/${locale}/products`);
 
   const collectionItems:
     CollectionMenuItem[] = [
@@ -264,10 +280,18 @@ export function SiteHeader() {
   };
 
   const normalButtonClass =
-    "group relative inline-flex size-11 items-center justify-center gap-2 overflow-hidden rounded-2xl border border-white/10 bg-white/[0.045] text-white/70 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] transition duration-500 hover:-translate-y-0.5 hover:border-[#dfbd68]/55 hover:bg-[#168461]/15 hover:text-[#f7dda0] lg:h-11 lg:w-auto lg:min-w-28 lg:px-3";
+    "group relative inline-flex size-10 items-center justify-center gap-2 overflow-hidden rounded-xl sm:size-11 sm:rounded-2xl border border-white/10 bg-white/[0.045] text-white/70 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] transition duration-500 hover:-translate-y-0.5 hover:border-[#dfbd68]/55 hover:bg-[#168461]/15 hover:text-[#f7dda0] lg:h-11 lg:w-auto lg:min-w-28 lg:px-3";
 
   return (
-    <header className="fixed inset-x-0 top-4 z-50 px-3 sm:top-6 sm:px-6">
+    <header className="fixed inset-x-0 top-3 z-50 px-3 sm:top-6 sm:px-6">
+      <a
+        href="#main-content"
+        className="fixed start-4 top-2 z-[120] -translate-y-20 rounded-full border border-[#efd27c]/50 bg-[#062c20] px-4 py-2 text-xs text-[#f3d990] shadow-xl transition focus:translate-y-0"
+      >
+        {isPersian
+          ? "رفتن به محتوای اصلی"
+          : "Skip to main content"}
+      </a>
       <div className="relative mx-auto max-w-7xl">
         <div
           aria-hidden="true"
@@ -275,7 +299,7 @@ export function SiteHeader() {
         />
 
         <div className="rounded-[2rem] border border-[#e7ca7b]/45 bg-[linear-gradient(135deg,rgba(255,255,255,0.24),rgba(211,174,83,0.13),rgba(13,92,65,0.16),rgba(255,255,255,0.05))] p-px shadow-[0_28px_80px_rgba(0,0,0,0.52),0_0_38px_rgba(214,182,106,0.12)]">
-          <div className="relative flex min-h-20 items-center justify-between overflow-visible rounded-[31px] border border-white/10 bg-[linear-gradient(145deg,rgba(3,48,34,0.9),rgba(1,25,18,0.84))] px-3 py-2 backdrop-blur-2xl sm:px-5">
+          <div className="relative flex min-h-16 items-center justify-between overflow-visible rounded-[25px] border border-white/10 bg-[linear-gradient(145deg,rgba(3,48,34,0.92),rgba(1,25,18,0.88))] px-2 py-1.5 backdrop-blur-2xl sm:min-h-20 sm:rounded-[31px] sm:px-5 sm:py-2">
             <div
               aria-hidden="true"
               className="absolute inset-x-10 top-0 h-px bg-gradient-to-r from-transparent via-white/70 to-transparent"
@@ -283,23 +307,23 @@ export function SiteHeader() {
 
             <Link
               href={
-                collectionsHref
+                homeHref
               }
               aria-label={
                 isPersian
-                  ? "دنیای گنجینه‌های الوریا"
-                  : "Eloria collections"
+                  ? "صفحه اصلی الوریا"
+                  : "Eloria home"
               }
               className="relative z-10 flex shrink-0 items-center gap-1 sm:gap-3"
             >
               <FloatingLogo />
 
               <span className="hidden sm:block">
-                <span className="block text-[15px] font-medium tracking-[0.34em] text-[#f7f0e4]">
+                <span className="font-eloria-brand block text-[15px] text-[#f7f0e4]">
                   ELORIA
                 </span>
 
-                <span className="mt-1 block text-[8px] tracking-[0.2em] text-[#d9bd78]/80">
+                <span className="mt-1 block text-[10px] tracking-[0.18em] text-[#e2c77f]/90">
                   {t("tagline")}
                 </span>
               </span>
@@ -309,26 +333,32 @@ export function SiteHeader() {
               aria-label={
                 t("menuLabel")
               }
-              className="relative z-30 mx-1 flex items-center justify-center gap-1.5 sm:mx-2 sm:gap-2"
+              className="relative z-30 mx-2 hidden items-center justify-center gap-2 md:flex"
             >
               <Link
                 href={
-                  productsHref
+                  homeHref
                 }
                 title={
                   t("home")
                 }
                 aria-label={
                   isPersian
-                    ? "مشاهده تمام محصولات"
-                    : "View all products"
+                    ? "رفتن به صفحه اصلی"
+                    : "Go to home page"
                 }
-                className="group relative inline-flex size-11 items-center justify-center gap-2 overflow-hidden rounded-2xl border border-[#f0d080]/60 bg-[linear-gradient(135deg,rgba(219,181,88,0.23),rgba(21,111,80,0.25))] text-[#ffe9af] shadow-[inset_0_1px_0_rgba(255,255,255,0.3),0_8px_24px_rgba(0,0,0,0.32),0_0_18px_rgba(218,179,86,0.12)] transition duration-500 hover:-translate-y-0.5 hover:border-[#f4d787]/80 lg:h-11 lg:w-auto lg:min-w-28 lg:px-3"
+                aria-current={isHomeActive ? "page" : undefined}
+                className={[
+                  "group relative inline-flex size-10 items-center justify-center gap-2 overflow-hidden rounded-xl border transition duration-500 hover:-translate-y-0.5 sm:size-11 sm:rounded-2xl lg:h-11 lg:w-auto lg:min-w-28 lg:px-3",
+                  isHomeActive
+                    ? "border-[#f0d080]/60 bg-[linear-gradient(135deg,rgba(219,181,88,0.23),rgba(21,111,80,0.25))] text-[#ffe9af] shadow-[inset_0_1px_0_rgba(255,255,255,0.3),0_8px_24px_rgba(0,0,0,0.32),0_0_18px_rgba(218,179,86,0.12)] hover:border-[#f4d787]/80"
+                    : "border-white/10 bg-white/[0.045] text-white/70 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] hover:border-[#dfbd68]/55 hover:bg-[#168461]/15 hover:text-[#f7dda0]",
+                ].join(" ")}
               >
                 <span className="absolute inset-0 translate-y-full bg-gradient-to-t from-[#d5ad4d]/16 via-[#168461]/10 to-transparent transition-transform duration-500 group-hover:translate-y-0" />
 
                 <MagicIconFrame
-                  active
+                  active={isHomeActive}
                 >
                   <HomeRuneIcon className="size-[21px]" />
                 </MagicIconFrame>
@@ -353,7 +383,12 @@ export function SiteHeader() {
                   handleWorldBlur
                 }
               >
-                <div className="group relative flex h-11 items-center overflow-hidden rounded-2xl border border-white/10 bg-white/[0.045] text-white/70 transition duration-500 hover:-translate-y-0.5 hover:border-[#dfbd68]/55 hover:bg-[#168461]/15 hover:text-[#f7dda0]">
+                <div className={[
+                    "group relative flex h-10 items-center overflow-hidden rounded-xl border transition duration-500 hover:-translate-y-0.5 sm:h-11 sm:rounded-2xl",
+                    isWorldActive
+                      ? "border-[#f0d080]/48 bg-[linear-gradient(135deg,rgba(219,181,88,0.15),rgba(21,111,80,0.2))] text-[#f8dfa0]"
+                      : "border-white/10 bg-white/[0.045] text-white/70 hover:border-[#dfbd68]/55 hover:bg-[#168461]/15 hover:text-[#f7dda0]",
+                  ].join(" ")}>
                   <Link
                     href={
                       collectionsHref
@@ -368,6 +403,7 @@ export function SiteHeader() {
                     className="flex h-full items-center gap-2 px-1.5 lg:min-w-24 lg:px-3"
                   >
                     <MagicIconFrame
+                      active={isWorldActive}
                       reverse
                     >
                       <WorldRuneIcon className="size-[22px]" />
@@ -458,7 +494,7 @@ export function SiteHeader() {
                         duration:
                           0.28,
                       }}
-                      className="absolute left-1/2 top-full w-[min(92vw,430px)] -translate-x-1/2 pt-3"
+                      className="absolute left-1/2 top-full w-[min(94vw,430px)] -translate-x-1/2 pt-3 max-sm:fixed max-sm:left-1/2 max-sm:top-24"
                     >
                       <div className="relative overflow-hidden rounded-[1.8rem] border border-[#e7ca78]/42 bg-[linear-gradient(145deg,rgba(4,61,43,0.99),rgba(1,24,17,0.99))] p-3 shadow-[0_30px_80px_rgba(0,0,0,0.65),0_0_36px_rgba(214,182,106,0.15)] backdrop-blur-2xl">
                         <div className="absolute inset-x-8 top-0 h-px bg-gradient-to-r from-transparent via-[#f8e2a1]/85 to-transparent" />
@@ -588,7 +624,7 @@ export function SiteHeader() {
               </div>
 
               <Link
-                href={`/${locale}/#contact`}
+                href="#contact"
                 title={
                   t("contact")
                 }
@@ -609,9 +645,14 @@ export function SiteHeader() {
             <div className="relative z-10 flex shrink-0 items-center gap-1.5 sm:gap-2">
               <CartHeaderButton
                 locale={locale}
+                variant="compact"
               />
 
-              <LocaleSwitcher />
+              <div className="hidden sm:block">
+                <LocaleSwitcher />
+              </div>
+
+              <MobileSiteMenu />
             </div>
           </div>
         </div>

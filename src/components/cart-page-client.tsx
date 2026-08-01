@@ -33,6 +33,10 @@ import {
 } from "@/components/cart-live-price-refresh";
 
 import {
+  PurchaseProgress,
+} from "@/components/purchase-progress";
+
+import {
   readCartItems,
   removeCartItem,
   subscribeToCart,
@@ -1343,7 +1347,7 @@ export function CartPageClient({
   }
 
   return (
-    <section className="relative z-10 mx-auto w-full max-w-[1450px] px-4 pb-28 pt-36 sm:px-6 lg:px-10 lg:pt-40">
+    <section className="relative z-10 mx-auto w-full max-w-[1450px] px-4 pb-44 pt-36 sm:px-6 lg:px-10 lg:pb-28 lg:pt-40">
       {priceChangeNotice && (
         <div
           role="status"
@@ -1477,6 +1481,11 @@ export function CartPageClient({
           {text.title}
         </h1>
 
+        <PurchaseProgress
+          locale={locale}
+          currentStep={1}
+        />
+
         {shouldShowLiveStatus && (
           <div className="mt-5 flex justify-center">
             <div className="inline-flex max-w-full items-center gap-2 rounded-full border border-amber-300/20 bg-amber-200/[0.05] px-4 py-2 text-[10px] leading-5 text-amber-100/60">
@@ -1560,16 +1569,19 @@ export function CartPageClient({
                     .stock;
 
                 return (
-                  <article
+                  <div
                     key={`${item.slug}:${item.variantId ?? "default"}`}
-                    className={[
-                      "overflow-hidden rounded-[2rem] border bg-[linear-gradient(145deg,rgba(7,35,27,0.9),rgba(3,21,15,0.94))] p-4 shadow-[0_24px_80px_rgba(0,0,0,0.2)] transition sm:p-5",
-                      item.canPurchase
-                        ? "border-[#d8b860]/20"
-                        : "border-amber-300/25",
-                    ].join(" ")}
+                    className="rounded-[2rem]"
                   >
-                    <div className="grid gap-5 sm:grid-cols-[150px_minmax(0,1fr)]">
+                    <article
+                      className={[
+                        "relative overflow-hidden rounded-[2rem] border bg-[linear-gradient(145deg,rgba(7,35,27,0.92),rgba(3,21,15,0.96))] p-4 shadow-[0_24px_80px_rgba(0,0,0,0.24)] transition-shadow duration-300 sm:p-5",
+                        item.canPurchase
+                          ? "border-[#d8b860]/22 hover:shadow-[0_34px_100px_rgba(0,0,0,0.34)]"
+                          : "border-amber-300/25",
+                      ].join(" ")}
+                    >
+                    <div className="grid grid-cols-[96px_minmax(0,1fr)] gap-4 sm:grid-cols-[150px_minmax(0,1fr)] sm:gap-5">
                       <div className="relative aspect-square overflow-hidden rounded-[1.5rem] border border-white/[0.07] bg-[#041b14]">
                         {item.image ? (
                           <Image
@@ -1586,7 +1598,12 @@ export function CartPageClient({
                               productName
                             }
                             fill
-                            sizes="(min-width: 640px) 150px, 100vw"
+                            unoptimized={
+                              /^https?:\/\//.test(
+                                item.image.url,
+                              )
+                            }
+                            sizes="(min-width: 640px) 150px, 96px"
                             className="object-cover"
                           />
                         ) : (
@@ -1601,7 +1618,7 @@ export function CartPageClient({
                           <div>
                             <Link
                               href={`/${locale}/products/${item.slug}`}
-                              className="text-lg font-medium text-[#f3e3be] transition hover:text-[#f7d981]"
+                              className="text-base font-medium leading-7 text-[#f3e3be] transition hover:text-[#f7d981] sm:text-lg"
                             >
                               {
                                 productName
@@ -1663,7 +1680,7 @@ export function CartPageClient({
                           </div>
                         )}
 
-                        <div className="mt-5 grid gap-4 border-t border-white/[0.07] pt-5 sm:grid-cols-3">
+                        <div className="mt-4 grid grid-cols-2 gap-4 border-t border-white/[0.07] pt-4 sm:mt-5 sm:grid-cols-3 sm:pt-5">
                           <div>
                             <p className="text-[10px] text-[#c8b992]/45">
                               {
@@ -1734,7 +1751,7 @@ export function CartPageClient({
                             </div>
                           </div>
 
-                          <div>
+                          <div className="col-span-2 sm:col-span-1">
                             <p className="text-[10px] text-[#c8b992]/45">
                               {
                                 text.lineTotal
@@ -1757,6 +1774,7 @@ export function CartPageClient({
                       </div>
                     </div>
                   </article>
+                </div>
                 );
               },
             )}
@@ -1811,7 +1829,8 @@ export function CartPageClient({
           </div>
 
           <aside className="lg:sticky lg:top-28">
-            <div className="rounded-[2rem] border border-[#d9b85f]/25 bg-[linear-gradient(150deg,rgba(9,39,29,0.95),rgba(3,21,15,0.98))] p-6 shadow-[0_30px_100px_rgba(0,0,0,0.28)]">
+            <div className="rounded-[2rem]">
+              <div className="relative rounded-[2rem] border border-[#d9b85f]/25 bg-[linear-gradient(150deg,rgba(9,39,29,0.97),rgba(3,21,15,0.99))] p-6 shadow-[0_30px_100px_rgba(0,0,0,0.32)]">
               <p className="text-[9px] uppercase tracking-[0.4em] text-[#d7ba67]/50">
                 Eloria Order
               </p>
@@ -1913,8 +1932,54 @@ export function CartPageClient({
                   }
                 </p>
               )}
+              </div>
             </div>
           </aside>
+
+            <div className="fixed inset-x-0 bottom-0 z-[80] border-t border-[#d9b85f]/22 bg-[linear-gradient(180deg,rgba(3,25,18,0.96),rgba(2,18,13,0.99))] px-4 pb-[calc(0.75rem+env(safe-area-inset-bottom))] pt-3 shadow-[0_-20px_60px_rgba(0,0,0,0.42)] backdrop-blur-2xl lg:hidden">
+              <div className="mx-auto flex max-w-xl items-center gap-3">
+                <div className="min-w-0 flex-1">
+                  <p className="text-[10px] text-[#c9bb9a]/55">
+                    {text.subtotal}
+                  </p>
+
+                  <p className="mt-0.5 truncate text-base font-semibold text-[#f0d477]">
+                    {formatPrice(
+                      quote.summary
+                        .subtotalToman,
+                    )}{" "}
+                    <span className="text-[10px] font-normal text-[#c9bb9a]/55">
+                      {text.toman}
+                    </span>
+                  </p>
+                </div>
+
+                <button
+                  type="button"
+                  disabled={
+                    checkoutBlocked
+                  }
+                  onClick={() => {
+                    window.location.assign(
+                      `/${locale}/checkout`,
+                    );
+                  }}
+                  className="flex min-h-12 shrink-0 items-center justify-center gap-2 rounded-full border border-[#e0c16d]/55 bg-[linear-gradient(100deg,rgba(112,80,20,0.22),rgba(218,183,90,0.3),rgba(112,80,20,0.22))] px-5 text-xs font-medium text-[#f6e4af] transition disabled:cursor-not-allowed disabled:opacity-35"
+                >
+                  {loading ? (
+                    <LoaderCircle className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <ShoppingBag className="h-4 w-4" />
+                  )}
+
+                  <span>
+                    {isPersian
+                      ? "ادامه خرید"
+                      : "Checkout"}
+                  </span>
+                </button>
+              </div>
+            </div>
         </div>
       )}
     </section>

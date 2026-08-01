@@ -3,7 +3,6 @@
 import {
   AnimatePresence,
   motion,
-  useReducedMotion,
 } from "motion/react";
 
 import {
@@ -26,9 +25,6 @@ type IntroPhase =
   | "hero-reveal"
   | "complete";
 
-const INTRO_SESSION_KEY =
-  "eloria:intro:completed:v3";
-
 /**
  * ابتدا نور طلایی روی ویدیوی دوم افزایش می‌یابد.
  */
@@ -49,9 +45,6 @@ const TOTAL_TRANSITION_DURATION_MS =
 export function EloriaIntroExperience({
   locale,
 }: EloriaIntroExperienceProps) {
-  const reducedMotion =
-    useReducedMotion();
-
   const firstVideoRef =
     useRef<HTMLVideoElement>(
       null,
@@ -132,18 +125,6 @@ export function EloriaIntroExperience({
     useCallback(() => {
       clearTransitionTimers();
 
-      try {
-        window.sessionStorage.setItem(
-          INTRO_SESSION_KEY,
-          "1",
-        );
-      } catch {
-        /*
-         * در صورت غیرفعال‌بودن Session Storage،
-         * ورود سایت همچنان ادامه پیدا می‌کند.
-         */
-      }
-
       setPhase(
         "complete",
       );
@@ -193,64 +174,17 @@ export function EloriaIntroExperience({
     ]);
 
   /**
-   * Intro فقط یک‌بار در هر Session نمایش داده می‌شود.
-   *
-   * اجرای اجباری هنگام تست:
-   * /fa?intro=1
+   * Intro در هر بار ورود یا بارگذاری مجدد صفحه اصلی اجرا می‌شود.
+   * هیچ وضعیت تکمیل‌شده‌ای در مرورگر ذخیره نمی‌شود.
    */
   useEffect(() => {
     const timeoutId =
       window.setTimeout(
         () => {
-          const searchParams =
-            new URLSearchParams(
-              window.location.search,
-            );
-
-          const forceIntro =
-            searchParams.get(
-              "intro",
-            ) ===
-            "1";
-
-          let alreadyCompleted =
-            false;
-
-          try {
-            alreadyCompleted =
-              window.sessionStorage.getItem(
-                INTRO_SESSION_KEY,
-              ) ===
-              "1";
-          } catch {
-            alreadyCompleted =
-              false;
-          }
-
-          if (
-            reducedMotion &&
-            !forceIntro
-          ) {
-            setPhase(
-              "complete",
-            );
-
-            return;
-          }
-
-          if (
-            alreadyCompleted &&
-            !forceIntro
-          ) {
-            setPhase(
-              "complete",
-            );
-
-            return;
-          }
-
           setPhase(
-            "video-one",
+            window.location.hash === "#hero"
+              ? "complete"
+              : "video-one",
           );
         },
         0,
@@ -261,9 +195,7 @@ export function EloriaIntroExperience({
         timeoutId,
       );
     };
-  }, [
-    reducedMotion,
-  ]);
+  }, []);
 
   /**
    * هنگام نمایش Intro، اسکرول قفل می‌شود.
@@ -499,6 +431,22 @@ export function EloriaIntroExperience({
     phase ===
     "hero-reveal";
 
+  const introStep =
+    phase === "video-two" ||
+    phase === "flash-in" ||
+    phase === "hero-reveal"
+      ? 2
+      : 1;
+
+  const introStatus =
+    isPersian
+      ? introStep === 1
+        ? "پرده نخست"
+        : "پرده دوم"
+      : introStep === 1
+        ? "Act One"
+        : "Act Two";
+
   return (
     <AnimatePresence>
       <motion.div
@@ -510,7 +458,7 @@ export function EloriaIntroExperience({
         className="eloria-intro-root fixed inset-0 z-[100] overflow-hidden"
         aria-label={
           isPersian
-            ? "ورود سینمایی به دنیای الــوریا"
+            ? "ورود سینمایی به دنیای الوریا"
             : "Cinematic entrance to Eloria"
         }
       >
@@ -584,12 +532,13 @@ export function EloriaIntroExperience({
               firstVideoRef
             }
             className={[
-              "absolute inset-0 size-full object-cover transition-opacity duration-700",
+              "absolute inset-0 size-full object-cover object-[center_48%] transition-opacity duration-700 sm:object-center",
               showFirstVideo
                 ? "opacity-100"
                 : "pointer-events-none opacity-0",
             ].join(" ")}
             src="/videos/eloria-intro-01.mp4"
+            poster="/images/hero/eloria-hero.jpeg"
             preload="auto"
             autoPlay
             muted
@@ -612,12 +561,13 @@ export function EloriaIntroExperience({
               secondVideoRef
             }
             className={[
-              "absolute inset-0 size-full object-cover transition-opacity duration-700",
+              "absolute inset-0 size-full object-cover object-[center_48%] transition-opacity duration-700 sm:object-center",
               showSecondVideo
                 ? "opacity-100"
                 : "pointer-events-none opacity-0",
             ].join(" ")}
             src="/videos/eloria-intro-02.mp4"
+            poster="/images/hero/eloria-hero.jpeg"
             preload="metadata"
             playsInline
             disablePictureInPicture
@@ -649,6 +599,11 @@ export function EloriaIntroExperience({
           <div
             aria-hidden="true"
             className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_30%,rgba(0,7,4,0.14)_66%,rgba(0,4,2,0.65)_100%)]"
+          />
+
+          <div
+            aria-hidden="true"
+            className="absolute inset-x-0 bottom-0 h-[42%] bg-[linear-gradient(180deg,transparent,rgba(0,7,4,0.72))] sm:h-[34%]"
           />
         </motion.div>
 
@@ -849,6 +804,42 @@ export function EloriaIntroExperience({
           }}
         />
 
+        {/* نشانگر مرحله Intro */}
+        {!transitionActive && phase !== "checking" && (
+          <div
+            className="absolute start-[max(1rem,env(safe-area-inset-left))] top-[max(1rem,env(safe-area-inset-top))] z-[130] flex items-center gap-3 rounded-full border border-[#e7ca78]/22 bg-black/25 px-3.5 py-2 backdrop-blur-xl sm:start-8 sm:top-8"
+            aria-label={
+              isPersian
+                ? `مرحله ${introStep} از ۲`
+                : `Step ${introStep} of 2`
+            }
+          >
+            <span className="font-eloria-brand text-[9px] text-[#f0d98e]/82 sm:text-[10px]">
+              ELORIA
+            </span>
+
+            <span className="h-3 w-px bg-[#e3c66f]/24" />
+
+            <span className="text-[9px] font-medium tracking-[0.08em] text-white/62 sm:text-[10px]">
+              {introStatus}
+            </span>
+
+            <span className="flex items-center gap-1" aria-hidden="true">
+              {[1, 2].map((step) => (
+                <span
+                  key={step}
+                  className={[
+                    "h-1 rounded-full transition-all duration-500",
+                    step <= introStep
+                      ? "w-4 bg-[#efd382] shadow-[0_0_10px_rgba(239,211,130,0.48)]"
+                      : "w-2 bg-white/18",
+                  ].join(" ")}
+                />
+              ))}
+            </span>
+          </div>
+        )}
+
         {/* دکمه ردکردن */}
         {!transitionActive && (
           <button
@@ -856,7 +847,7 @@ export function EloriaIntroExperience({
             onClick={
               completeIntro
             }
-            className="absolute end-5 top-5 z-[130] rounded-full border border-white/20 bg-black/30 px-4 py-2 text-[11px] tracking-[0.12em] text-white/70 backdrop-blur-xl transition duration-300 hover:border-[#e7ca78]/60 hover:bg-black/45 hover:text-[#f5dda0] sm:end-8 sm:top-8"
+            className="absolute end-[max(1rem,env(safe-area-inset-right))] top-[max(1rem,env(safe-area-inset-top))] z-[130] min-h-11 rounded-full border border-white/20 bg-black/30 px-4 py-2 text-[11px] tracking-[0.1em] text-white/72 backdrop-blur-xl transition duration-300 hover:border-[#e7ca78]/60 hover:bg-black/45 hover:text-[#f5dda0] sm:end-8 sm:top-8"
           >
             {isPersian
               ? "رد کردن"
@@ -871,7 +862,7 @@ export function EloriaIntroExperience({
             <div className="flex flex-col items-center gap-4">
               <span className="size-10 animate-spin rounded-full border border-[#e6c975]/20 border-t-[#f4dc96]" />
 
-              <span className="text-[10px] tracking-[0.3em] text-[#e8ce87]/70">
+              <span className="font-eloria-brand text-[10px] text-[#e8ce87]/70">
                 ELORIA
               </span>
             </div>
@@ -888,7 +879,7 @@ export function EloriaIntroExperience({
                 onClick={
                   handleManualStart
                 }
-                className="group relative overflow-hidden rounded-full border border-[#efd17f]/65 bg-[linear-gradient(135deg,rgba(222,187,99,0.25),rgba(6,64,44,0.82))] px-9 py-4 text-sm text-[#ffebaf] shadow-[0_0_48px_rgba(226,190,98,0.22)] transition duration-500 hover:scale-[1.03] hover:border-[#ffe09a]"
+                className="group relative min-h-12 w-full max-w-xs overflow-hidden rounded-full border border-[#efd17f]/65 bg-[linear-gradient(135deg,rgba(222,187,99,0.25),rgba(6,64,44,0.82))] px-7 py-3.5 text-sm text-[#ffebaf] shadow-[0_0_48px_rgba(226,190,98,0.22)] transition duration-500 hover:scale-[1.03] hover:border-[#ffe09a]"
               >
                 <span className="absolute inset-0 translate-y-full bg-gradient-to-t from-[#f0ce75]/20 to-transparent transition-transform duration-500 group-hover:translate-y-0" />
 
@@ -901,7 +892,7 @@ export function EloriaIntroExperience({
             </div>
           )}
 
-        {/* دکمه ورود به دنیای الــوریا */}
+        {/* دکمه ورود به دنیای الوریا */}
         <AnimatePresence>
           {phase ===
             "awaiting-entry" && (
@@ -947,9 +938,9 @@ export function EloriaIntroExperience({
                   1,
                 ],
               }}
-              className="absolute inset-x-0 bottom-[11vh] z-[130] flex justify-center px-6"
+              className="absolute inset-x-0 bottom-[max(2rem,env(safe-area-inset-bottom))] z-[130] flex justify-center px-4 sm:bottom-[11vh] sm:px-6"
             >
-              <div className="relative flex items-center justify-center">
+              <div className="relative flex w-full max-w-[390px] items-center justify-center">
                 {/* هاله تنفسی پشت دکمه */}
                 <motion.div
                   aria-hidden="true"
@@ -982,7 +973,7 @@ export function EloriaIntroExperience({
                 {/* حلقه‌های جادویی */}
                 <div
                   aria-hidden="true"
-                  className="pointer-events-none absolute left-1/2 top-1/2 size-[19rem] -translate-x-1/2 -translate-y-1/2 sm:size-[22rem]"
+                  className="pointer-events-none absolute left-1/2 top-1/2 size-[16.5rem] -translate-x-1/2 -translate-y-1/2 min-[380px]:size-[18.5rem] sm:size-[22rem]"
                 >
                   <motion.span
                     className="absolute inset-0 rounded-full border border-dashed border-[#f6dc94]/24"
@@ -1082,7 +1073,7 @@ export function EloriaIntroExperience({
                     scale:
                       0.97,
                   }}
-                  className="group relative isolate min-w-[290px] overflow-hidden rounded-full border border-[#ffe19a]/80 bg-[linear-gradient(135deg,rgba(247,219,141,0.3),rgba(184,133,39,0.14)_35%,rgba(7,71,49,0.94)_78%)] px-[5px] py-[5px] text-[#fff4cb] shadow-[0_24px_75px_rgba(0,0,0,0.62),0_0_28px_rgba(255,218,123,0.25),0_0_80px_rgba(210,158,48,0.2)] backdrop-blur-2xl transition-shadow duration-500 hover:shadow-[0_28px_85px_rgba(0,0,0,0.68),0_0_40px_rgba(255,226,143,0.48),0_0_100px_rgba(222,171,57,0.32)] sm:min-w-[365px]"
+                  className="group relative isolate w-full max-w-[365px] overflow-hidden rounded-full border border-[#ffe19a]/80 bg-[linear-gradient(135deg,rgba(247,219,141,0.3),rgba(184,133,39,0.14)_35%,rgba(7,71,49,0.94)_78%)] px-[5px] py-[5px] text-[#fff4cb] shadow-[0_24px_75px_rgba(0,0,0,0.62),0_0_28px_rgba(255,218,123,0.25),0_0_80px_rgba(210,158,48,0.2)] backdrop-blur-2xl transition-shadow duration-500 hover:shadow-[0_28px_85px_rgba(0,0,0,0.68),0_0_40px_rgba(255,226,143,0.48),0_0_100px_rgba(222,171,57,0.32)] sm:min-w-[365px]"
                 >
                   {/* حاشیه طلایی چرخان */}
                   <motion.span
@@ -1110,15 +1101,15 @@ export function EloriaIntroExperience({
 
                   <span className="absolute inset-y-0 -left-1/2 w-1/3 -skew-x-12 bg-gradient-to-r from-transparent via-white/35 to-transparent blur-sm transition-transform duration-1000 group-hover:translate-x-[540%]" />
 
-                  <span className="relative z-10 flex min-h-[64px] items-center justify-between gap-5 rounded-full px-5 sm:px-6">
+                  <span className="relative z-10 flex min-h-[60px] items-center justify-between gap-4 rounded-full px-4 sm:min-h-[64px] sm:gap-5 sm:px-6">
                     <span className="flex flex-col items-start">
-                      <span className="text-[13px] font-medium tracking-[0.12em] text-[#fff0bb] sm:text-[15px]">
+                      <span className="text-[12px] font-medium tracking-[0.08em] text-[#fff0bb] min-[380px]:text-[13px] sm:text-[15px] sm:tracking-[0.12em]">
                         {isPersian
-                          ? "ورود به دنیای الــوریا"
+                          ? "ورود به دنیای الوریا"
                           : "Enter the World of Eloria"}
                       </span>
 
-                      <span className="mt-1.5 text-[9px] tracking-[0.14em] text-[#d9bd78]/75 sm:text-[10px]">
+                      <span className="mt-1 text-[8px] tracking-[0.08em] text-[#d9bd78]/75 min-[380px]:text-[9px] sm:mt-1.5 sm:text-[10px] sm:tracking-[0.14em]">
                         {isPersian
                           ? "آغاز یک روایت افسانه‌ای"
                           : "Begin the legendary journey"}
@@ -1192,9 +1183,16 @@ export function EloriaIntroExperience({
                   opacity:
                     0,
                 }}
-                className="pointer-events-none absolute inset-0 z-[125] grid place-items-center bg-black/15"
+                className="pointer-events-none absolute inset-0 z-[125] grid place-items-center bg-black/20 backdrop-blur-[2px]"
+                role="status"
+                aria-live="polite"
               >
-                <span className="size-10 animate-spin rounded-full border border-white/20 border-t-[#f1d68d]" />
+                <div className="flex flex-col items-center gap-3 rounded-2xl border border-white/10 bg-black/25 px-5 py-4 backdrop-blur-xl">
+                  <span className="size-9 animate-spin rounded-full border border-white/20 border-t-[#f1d68d]" />
+                  <span className="text-[10px] tracking-[0.08em] text-white/64">
+                    {isPersian ? "آماده‌سازی ادامه روایت" : "Preparing the next scene"}
+                  </span>
+                </div>
               </motion.div>
             )}
         </AnimatePresence>
@@ -1479,6 +1477,16 @@ export function EloriaIntroExperience({
                   35rem,
                   72vh
                 );
+            }
+          }
+
+          @media (max-height: 700px) and (max-width: 767px) {
+            .eloria-intro-root {
+              --eloria-door-y: 50%;
+            }
+
+            .eloria-door-light {
+              height: min(28rem, 68vh);
             }
           }
 
