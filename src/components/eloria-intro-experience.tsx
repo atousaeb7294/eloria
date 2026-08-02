@@ -892,267 +892,86 @@ export function EloriaIntroExperience({
             </div>
           )}
 
-        {/* دکمه ورود به دنیای الوریا */}
+        {/* دکمه ورود به جهان الوریا */}
         <AnimatePresence>
-          {phase ===
-            "awaiting-entry" && (
+          {phase === "awaiting-entry" && (
             <motion.div
               initial={{
-                opacity:
-                  0,
-
-                y:
-                  38,
-
-                scale:
-                  0.86,
+                opacity: 0,
+                y: 28,
               }}
               animate={{
-                opacity:
-                  1,
-
-                y:
-                  0,
-
-                scale:
-                  1,
+                opacity: 1,
+                y: 0,
               }}
               exit={{
-                opacity:
-                  0,
-
-                y:
-                  -22,
-
-                scale:
-                  1.08,
+                opacity: 0,
+                y: 18,
               }}
               transition={{
-                duration:
-                  0.95,
-
-                ease: [
-                  0.16,
-                  1,
-                  0.3,
-                  1,
-                ],
+                duration: 0.7,
+                ease: [0.16, 1, 0.3, 1],
               }}
-              className="absolute inset-x-0 bottom-[max(2rem,env(safe-area-inset-bottom))] z-[130] flex justify-center px-4 sm:bottom-[11vh] sm:px-6"
+              className="absolute inset-x-0 bottom-[max(1.25rem,env(safe-area-inset-bottom))] z-[130] flex justify-center px-4 sm:bottom-[2.5rem] sm:px-6"
             >
-              <div className="relative flex w-full max-w-[390px] items-center justify-center">
-                {/* هاله تنفسی پشت دکمه */}
-                <motion.div
-                  aria-hidden="true"
-                  className="pointer-events-none absolute h-32 w-[25rem] max-w-[92vw] rounded-full bg-[radial-gradient(ellipse,rgba(255,232,159,0.44),rgba(220,174,67,0.18)_40%,transparent_73%)] blur-2xl"
-                  animate={{
-                    opacity: [
-                      0.38,
-                      0.98,
-                      0.38,
-                    ],
-
-                    scale: [
-                      0.88,
-                      1.18,
-                      0.88,
-                    ],
-                  }}
-                  transition={{
-                    duration:
-                      2.7,
-
-                    repeat:
-                      Infinity,
-
-                    ease:
-                      "easeInOut",
-                  }}
-                />
-
-                {/* حلقه‌های جادویی */}
+              <div className="relative w-full max-w-[340px] sm:max-w-[380px]">
                 <div
                   aria-hidden="true"
-                  className="pointer-events-none absolute left-1/2 top-1/2 size-[16.5rem] -translate-x-1/2 -translate-y-1/2 min-[380px]:size-[18.5rem] sm:size-[22rem]"
-                >
-                  <motion.span
-                    className="absolute inset-0 rounded-full border border-dashed border-[#f6dc94]/24"
-                    animate={{
-                      rotate:
-                        360,
-                    }}
-                    transition={{
-                      duration:
-                        21,
-
-                      repeat:
-                        Infinity,
-
-                      ease:
-                        "linear",
-                    }}
-                  />
-
-                  <motion.span
-                    className="absolute inset-6 rounded-full border border-[#d9af53]/22"
-                    animate={{
-                      rotate:
-                        -360,
-                    }}
-                    transition={{
-                      duration:
-                        14,
-
-                      repeat:
-                        Infinity,
-
-                      ease:
-                        "linear",
-                    }}
-                  />
-
-                  <motion.span
-                    className="absolute inset-12 rounded-full border border-dotted border-[#ffe3a0]/18"
-                    animate={{
-                      rotate:
-                        360,
-                    }}
-                    transition={{
-                      duration:
-                        10,
-
-                      repeat:
-                        Infinity,
-
-                      ease:
-                        "linear",
-                    }}
-                  />
-
-                  <motion.span
-                    className="absolute left-1/2 top-0 size-2.5 -translate-x-1/2 rounded-full bg-[#ffe8a3] shadow-[0_0_12px_#ffe8a3,0_0_36px_rgba(239,195,91,0.9)]"
-                    animate={{
-                      scale: [
-                        0.65,
-                        1.45,
-                        0.65,
-                      ],
-
-                      opacity: [
-                        0.42,
-                        1,
-                        0.42,
-                      ],
-                    }}
-                    transition={{
-                      duration:
-                        1.8,
-
-                      repeat:
-                        Infinity,
-
-                      ease:
-                        "easeInOut",
-                    }}
-                  />
-                </div>
+                  className="pointer-events-none absolute inset-x-6 -inset-y-2 rounded-full bg-[radial-gradient(ellipse,rgba(231,202,120,0.18),rgba(231,202,120,0.06)_45%,transparent_75%)] blur-2xl"
+                />
 
                 <motion.button
                   type="button"
-                  onClick={
-                    handleEnterEloria
-                  }
+                  onClick={handleEnterEloria}
                   whileHover={{
-                    scale:
-                      1.045,
-
-                    y:
-                      -4,
+                    y: -2,
+                    scale: 1.015,
                   }}
                   whileTap={{
-                    scale:
-                      0.97,
+                    scale: 0.985,
                   }}
-                  className="group relative isolate w-full max-w-[365px] overflow-hidden rounded-full border border-[#ffe19a]/80 bg-[linear-gradient(135deg,rgba(247,219,141,0.3),rgba(184,133,39,0.14)_35%,rgba(7,71,49,0.94)_78%)] px-[5px] py-[5px] text-[#fff4cb] shadow-[0_24px_75px_rgba(0,0,0,0.62),0_0_28px_rgba(255,218,123,0.25),0_0_80px_rgba(210,158,48,0.2)] backdrop-blur-2xl transition-shadow duration-500 hover:shadow-[0_28px_85px_rgba(0,0,0,0.68),0_0_40px_rgba(255,226,143,0.48),0_0_100px_rgba(222,171,57,0.32)] sm:min-w-[365px]"
+                  className="group relative w-full overflow-hidden rounded-full border border-[#e8c977]/45 bg-[linear-gradient(135deg,rgba(6,44,31,0.92),rgba(3,25,18,0.96))] px-3 py-3 text-[#f8ebc4] shadow-[0_18px_50px_rgba(0,0,0,0.42)] backdrop-blur-xl transition duration-300 hover:border-[#f0d58c]/75 hover:shadow-[0_24px_60px_rgba(0,0,0,0.5)] sm:px-4 sm:py-3.5"
                 >
-                  {/* حاشیه طلایی چرخان */}
-                  <motion.span
-                    aria-hidden="true"
-                    className="absolute -inset-[80%] bg-[conic-gradient(from_0deg,transparent_0deg,rgba(255,232,163,1)_48deg,transparent_112deg,rgba(205,148,33,0.9)_205deg,transparent_286deg)]"
-                    animate={{
-                      rotate:
-                        360,
-                    }}
-                    transition={{
-                      duration:
-                        6,
+                  <span className="absolute inset-0 rounded-full bg-[linear-gradient(180deg,rgba(255,255,255,0.10),transparent_38%)]" />
+                  <span className="absolute inset-[1.5px] rounded-full border border-white/8" />
 
-                      repeat:
-                        Infinity,
-
-                      ease:
-                        "linear",
-                    }}
-                  />
-
-                  <span className="absolute inset-[2px] rounded-full border border-white/10 bg-[linear-gradient(125deg,rgba(13,92,65,0.98),rgba(2,31,22,0.99)_48%,rgba(76,52,12,0.97))]" />
-
-                  <span className="absolute inset-[3px] rounded-full bg-[radial-gradient(circle_at_50%_0%,rgba(255,237,180,0.26),transparent_50%)]" />
-
-                  <span className="absolute inset-y-0 -left-1/2 w-1/3 -skew-x-12 bg-gradient-to-r from-transparent via-white/35 to-transparent blur-sm transition-transform duration-1000 group-hover:translate-x-[540%]" />
-
-                  <span className="relative z-10 flex min-h-[60px] items-center justify-between gap-4 rounded-full px-4 sm:min-h-[64px] sm:gap-5 sm:px-6">
-                    <span className="flex flex-col items-start">
-                      <span className="text-[12px] font-medium tracking-[0.08em] text-[#fff0bb] min-[380px]:text-[13px] sm:text-[15px] sm:tracking-[0.12em]">
+                  <span className="relative z-10 flex min-h-[52px] items-center justify-between gap-3 rounded-full px-3 sm:min-h-[56px] sm:px-4">
+                    <span className="flex flex-col items-start text-start">
+                      <span className="text-[13px] font-medium tracking-[0.04em] text-[#fff1c8] sm:text-[15px]">
                         {isPersian
-                          ? "ورود به دنیای الوریا"
+                          ? "ورود به جهان الوریا"
                           : "Enter the World of Eloria"}
                       </span>
 
-                      <span className="mt-1 text-[8px] tracking-[0.08em] text-[#d9bd78]/75 min-[380px]:text-[9px] sm:mt-1.5 sm:text-[10px] sm:tracking-[0.14em]">
-                        {isPersian
-                          ? "آغاز یک روایت افسانه‌ای"
-                          : "Begin the legendary journey"}
+                      <span className="mt-1 text-[9px] tracking-[0.06em] text-[#d9be7a]/72 sm:text-[10px]">
+                        {isPersian ? "آغاز روایت شما" : "Begin your story"}
                       </span>
                     </span>
 
                     <motion.span
                       aria-hidden="true"
-                      className="grid size-11 shrink-0 place-items-center rounded-full border border-[#f3d584]/55 bg-[#e0b959]/10 text-[#ffe6a0] shadow-[inset_0_0_18px_rgba(255,231,161,0.14),0_0_20px_rgba(225,180,76,0.22)]"
+                      className="grid size-10 shrink-0 place-items-center rounded-full border border-[#ecd28a]/30 bg-[#e2be67]/10 text-[#ffe6a2] shadow-[inset_0_0_12px_rgba(255,230,162,0.08)] sm:size-11"
                       animate={{
-                        x: [
-                          0,
-                          isPersian
-                            ? -4
-                            : 4,
-                          0,
-                        ],
+                        x: [0, isPersian ? -3 : 3, 0],
                       }}
                       transition={{
-                        duration:
-                          1.7,
-
-                        repeat:
-                          Infinity,
-
-                        ease:
-                          "easeInOut",
+                        duration: 1.8,
+                        repeat: Infinity,
+                        ease: "easeInOut",
                       }}
                     >
                       <svg
                         viewBox="0 0 24 24"
                         fill="none"
                         className={[
-                          "size-5",
-                          isPersian
-                            ? "rotate-180"
-                            : "",
+                          "size-4 sm:size-5",
+                          isPersian ? "rotate-180" : "",
                         ].join(" ")}
                       >
                         <path
                           d="M5 12H19M13 6L19 12L13 18"
                           stroke="currentColor"
-                          strokeWidth="1.6"
+                          strokeWidth="1.7"
                           strokeLinecap="round"
                           strokeLinejoin="round"
                         />
