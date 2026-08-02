@@ -107,6 +107,9 @@ type CartQuoteResponse = {
 
 type CreatedOrder = {
   id: string;
+  paymentConfigured?: boolean;
+  paymentUrl?: string | null;
+  paymentMessage?: string;
   orderNumber: string;
   status: string;
   currency: "TOMAN";
@@ -133,6 +136,11 @@ type CreateOrderResponse = {
   successful: true;
   reused: boolean;
   order: CreatedOrder;
+  payment: {
+    configured: boolean;
+    redirectUrl: string | null;
+    message: string;
+  };
   requestId: string;
 };
 
@@ -540,7 +548,10 @@ function isCreateOrderResponse(
     typeof candidate.order.payableToman ===
       "string" &&
     typeof candidate.order.inventoryExpiresAt ===
-      "string"
+      "string" &&
+    typeof candidate.payment === "object" &&
+    candidate.payment !== null &&
+    typeof candidate.payment.configured === "boolean"
   );
 }
 
@@ -1411,11 +1422,20 @@ export function CheckoutPageClient({
           );
         }
 
-        setCreatedOrder(
-          data.order,
-        );
+        const createdOrderWithPayment: CreatedOrder = {
+          ...data.order,
+          paymentConfigured: data.payment.configured,
+          paymentUrl: data.payment.redirectUrl,
+          paymentMessage: data.payment.message,
+        };
 
+        setCreatedOrder(createdOrderWithPayment);
         setSubmitError(null);
+
+        if (data.payment.redirectUrl) {
+          window.location.assign(data.payment.redirectUrl);
+          return;
+        }
       } catch (error) {
         setSubmitError(
           error instanceof Error
@@ -2055,22 +2075,27 @@ export function CheckoutPageClient({
                       </div>
 
                       <p className="mt-5 text-xs leading-7 text-amber-100/55">
-                        {
-                          text.gatewayPending
-                        }
+                        {createdOrder.paymentMessage || text.gatewayPending}
                       </p>
 
-                      <button
-                        type="button"
-                        disabled
-                        className="mt-6 flex min-h-13 w-full cursor-not-allowed items-center justify-center gap-3 rounded-full border border-[#e0c16d]/25 bg-[#d9b85f]/[0.05] px-6 text-sm text-[#f6e4af]/40"
-                      >
-                        <WalletCards className="h-4 w-4" />
-
-                        {
-                          text.gatewayButton
-                        }
-                      </button>
+                      {createdOrder.paymentUrl ? (
+                        <a
+                          href={createdOrder.paymentUrl}
+                          className="mt-6 flex min-h-13 w-full items-center justify-center gap-3 rounded-full border border-[#e0c16d]/45 bg-[#d9b85f]/[0.11] px-6 text-sm text-[#f6e4af]"
+                        >
+                          <WalletCards className="h-4 w-4" />
+                          {locale === "fa" ? "ورود به درگاه پرداخت" : "Continue to payment"}
+                        </a>
+                      ) : (
+                        <button
+                          type="button"
+                          disabled
+                          className="mt-6 flex min-h-13 w-full cursor-not-allowed items-center justify-center gap-3 rounded-full border border-[#e0c16d]/25 bg-[#d9b85f]/[0.05] px-6 text-sm text-[#f6e4af]/40"
+                        >
+                          <WalletCards className="h-4 w-4" />
+                          {text.gatewayButton}
+                        </button>
+                      )}
                     </>
                   ) : (
                     <>

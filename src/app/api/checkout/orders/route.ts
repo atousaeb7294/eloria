@@ -11,6 +11,11 @@ import {
   type CheckoutCustomerInput,
 } from "@/lib/checkout-customer";
 
+import { consumeRateLimit } from "@/lib/security/rate-limit";
+import { hasTrustedOrigin, requestIp } from "@/lib/security/request";
+
+import { initiateOrderPayment } from "@/lib/payment-service";
+
 import {
   CheckoutOrderError,
   createCheckoutOrder,
@@ -230,6 +235,15 @@ export async function POST(
   request:
     NextRequest,
 ) {
+  if (!hasTrustedOrigin(request)) {
+    return NextResponse.json({ successful: false, code: "INVALID_ORIGIN", message: "مبدأ درخواست معتبر نیست." }, { status: 403, headers: noStoreHeaders() });
+  }
+
+  const rate = consumeRateLimit({ key: `checkout:${requestIp(request)}`, limit: 12, windowMs: 60_000 });
+  if (!rate.allowed) {
+    return NextResponse.json({ successful: false, code: "RATE_LIMITED", message: "تعداد درخواست‌ها بیش از حد مجاز است." }, { status: 429, headers: { ...noStoreHeaders(), "Retry-After": String(rate.retryAfterSeconds) } });
+  }
+
   const requestId =
     getRequestId(
       request,
@@ -425,6 +439,21 @@ export async function POST(
         requestId,
       });
 
+    let payment: { configured: boolean; redirectUrl: string | null; message: string };
+
+    try {
+      payment = await initiateOrderPayment(result.order.id);
+    } catch (paymentError) {
+      payment = {
+        configured: true,
+        redirectUrl: null,
+        message:
+          paymentError instanceof Error
+            ? paymentError.message
+            : "ساخت درخواست پرداخت انجام نشد.",
+      };
+    }
+
     return NextResponse.json(
       {
         successful:
@@ -435,6 +464,8 @@ export async function POST(
 
         order:
           result.order,
+
+        payment,
 
         requestId,
       },
