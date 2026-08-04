@@ -74,29 +74,12 @@ export async function generateMetadata({
         "Metadata",
     });
 
-  const base = process.env.NEXT_PUBLIC_SITE_URL?.trim().replace(/\/$/, "") || "https://eloria.example";
-  const title = t("title");
-  const description = t("description");
-
   return {
-    metadataBase: new URL(base),
-    title: { default: title, template: `%s | ELORIA` },
-    description,
-    applicationName: "ELORIA",
-    alternates: {
-      canonical: `/${locale}`,
-      languages: { fa: "/fa", en: "/en", "x-default": "/fa" },
-    },
-    openGraph: {
-      type: "website",
-      siteName: "ELORIA",
-      locale: locale === "fa" ? "fa_IR" : "en_US",
-      title,
-      description,
-      images: [{ url: "/images/hero/eloria-hero.jpeg", width: 1600, height: 900, alt: "ELORIA" }],
-    },
-    twitter: { card: "summary_large_image", title, description, images: ["/images/hero/eloria-hero.jpeg"] },
-    manifest: "/manifest.webmanifest",
+    title:
+      t("title"),
+
+    description:
+      t("description"),
   };
 }
 
