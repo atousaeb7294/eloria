@@ -42,6 +42,8 @@ const TOTAL_TRANSITION_DURATION_MS =
   FLASH_IN_DURATION_MS +
   HERO_REVEAL_DURATION_MS;
 
+const INTRO_SESSION_KEY = "eloria_intro_seen_v1";
+
 export function EloriaIntroExperience({
   locale,
 }: EloriaIntroExperienceProps) {
@@ -125,6 +127,12 @@ export function EloriaIntroExperience({
     useCallback(() => {
       clearTransitionTimers();
 
+      try {
+        window.sessionStorage.setItem(INTRO_SESSION_KEY, "1");
+      } catch {
+        // Storage can be unavailable in privacy mode.
+      }
+
       setPhase(
         "complete",
       );
@@ -181,8 +189,15 @@ export function EloriaIntroExperience({
     const timeoutId =
       window.setTimeout(
         () => {
+          const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+          let alreadySeen = false;
+          try {
+            alreadySeen = window.sessionStorage.getItem(INTRO_SESSION_KEY) === "1";
+          } catch {
+            alreadySeen = false;
+          }
           setPhase(
-            window.location.hash === "#hero"
+            window.location.hash === "#hero" || reducedMotion || alreadySeen
               ? "complete"
               : "video-one",
           );
@@ -539,7 +554,7 @@ export function EloriaIntroExperience({
             ].join(" ")}
             src="/videos/eloria-intro-01.mp4"
             poster="/images/hero/eloria-hero.jpeg"
-            preload="auto"
+            preload="metadata"
             autoPlay
             muted
             playsInline

@@ -14,6 +14,7 @@ import {
 } from "next/navigation";
 
 import { AdminOrderWorkflow } from "@/components/admin/admin-order-workflow";
+import { markAdminPaymentRefundedAction } from "../actions";
 
 import {
   formatAdminDate,
@@ -171,6 +172,17 @@ export default async function AdminOrderDetailPage({
         latestShipment={latestShipment}
       />
 
+      {one(query.paymentRefunded) === "1" ? (
+        <div className="rounded-2xl border border-emerald-300/20 bg-emerald-950/20 px-5 py-4 text-sm text-emerald-100">
+          بازپرداخت دستی تلاش پرداخت ثبت شد.
+        </div>
+      ) : null}
+      {decode(query.paymentError) ? (
+        <div className="rounded-2xl border border-red-300/20 bg-red-950/20 px-5 py-4 text-sm text-red-100">
+          {decode(query.paymentError)}
+        </div>
+      ) : null}
+
       <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         <article className="rounded-[22px] border border-[#d0b359]/15 bg-[#041d15]/82 p-5">
           <div className="flex items-center gap-3 text-[#d8bd68]">
@@ -303,6 +315,25 @@ export default async function AdminOrderDetailPage({
                       <p className="mt-3 rounded-xl bg-red-950/20 px-3 py-2 text-xs leading-6 text-red-100/80">
                         {payment.errorCode ? `${payment.errorCode}: ` : ""}{payment.errorMessage}
                       </p>
+                    ) : null}
+                    {payment.status === "REQUIRES_REVIEW" ? (
+                      <form
+                        action={markAdminPaymentRefundedAction.bind(null, payment.id, order.id, safeLocale)}
+                        className="mt-4 rounded-xl border border-amber-300/15 bg-amber-950/10 p-3"
+                      >
+                        <p className="text-xs leading-6 text-amber-100/80">
+                          ابتدا مبلغ را از مسیر بانکی/زرین‌پال بازگردانید؛ سپس ثبت سیستمی را انجام دهید.
+                        </p>
+                        <input
+                          name="note"
+                          maxLength={1000}
+                          placeholder="یادداشت یا شماره پیگیری بازپرداخت"
+                          className="mt-3 h-10 w-full rounded-lg border border-[#d0b359]/15 bg-black/20 px-3 text-xs text-[#dfcfac] outline-none"
+                        />
+                        <button className="mt-3 rounded-lg border border-amber-300/30 px-3 py-2 text-xs text-amber-100 hover:bg-amber-300/10">
+                          ثبت بازپرداخت دستی این پرداخت
+                        </button>
+                      </form>
                     ) : null}
                   </div>
                 ),

@@ -3,7 +3,12 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { hasValidAdminSession } from "@/lib/admin-auth";
-import { saveShipmentDetails, transitionOrderByAdmin, type AdminOrderTransition } from "@/lib/order-operations";
+import {
+  markReviewedPaymentRefunded,
+  saveShipmentDetails,
+  transitionOrderByAdmin,
+  type AdminOrderTransition,
+} from "@/lib/order-operations";
 
 function localeOf(value: string) { return value === "en" ? "en" : "fa"; }
 function text(form: FormData, key: string, max: number, required = false) {
@@ -20,7 +25,7 @@ export async function transitionAdminOrderAction(orderId: string, localeValue: s
   await session();
   const locale = localeOf(localeValue);
   const target = text(form, "target", 40, true) as AdminOrderTransition;
-  if (!["CANCELLED", "PROCESSING", "SHIPPED", "COMPLETED"].includes(target)) redirect(`/${locale}/admin/orders/${orderId}?workflowError=invalid-target`);
+  if (!["CANCELLED", "PROCESSING", "SHIPPED", "COMPLETED", "REFUNDED"].includes(target)) redirect(`/${locale}/admin/orders/${orderId}?workflowError=invalid-target`);
   try { await transitionOrderByAdmin({ orderId, target, note: text(form, "note", 1000) }); }
   catch (error) { redirect(`/${locale}/admin/orders/${orderId}?workflowError=${encodeURIComponent(error instanceof Error ? error.message : "خطا")}`); }
   refresh(locale, orderId);
@@ -40,4 +45,26 @@ export async function saveAdminShipmentAction(orderId: string, localeValue: stri
   } catch (error) { redirect(`/${locale}/admin/orders/${orderId}?shipmentError=${encodeURIComponent(error instanceof Error ? error.message : "خطا")}`); }
   refresh(locale, orderId);
   redirect(`/${locale}/admin/orders/${orderId}?shipmentSaved=1`);
+}
+
+
+export async function markAdminPaymentRefundedAction(
+  paymentAttemptId: string,
+  orderId: string,
+  localeValue: string,
+  form: FormData,
+): Promise<void> {
+  await session();
+  const locale = localeOf(localeValue);
+  try {
+    await markReviewedPaymentRefunded({
+      orderId,
+      paymentAttemptId,
+      note: text(form, "note", 1000),
+    });
+  } catch (error) {
+    redirect(`/${locale}/admin/orders/${orderId}?paymentError=${encodeURIComponent(error instanceof Error ? error.message : "خطا")}`);
+  }
+  refresh(locale, orderId);
+  redirect(`/${locale}/admin/orders/${orderId}?paymentRefunded=1`);
 }

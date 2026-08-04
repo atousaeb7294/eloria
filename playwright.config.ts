@@ -20,7 +20,7 @@ export default defineConfig({
       name: "Google Chrome",
       use: {
         ...devices["Desktop Chrome"],
-        channel: "chrome",
+        ...(process.env.CI ? {} : { channel: "chrome" as const }),
       },
     },
   ],

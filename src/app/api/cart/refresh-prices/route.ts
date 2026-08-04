@@ -7,6 +7,15 @@ import {
   getMetalPriceSnapshot,
 } from "@/lib/metal-prices";
 
+import {
+  consumeRateLimit,
+} from "@/lib/security/rate-limit";
+
+import {
+  hasTrustedOrigin,
+  requestIp,
+} from "@/lib/security/request";
+
 export const dynamic =
   "force-dynamic";
 
@@ -27,28 +36,6 @@ function noStoreHeaders() {
     Expires:
       "0",
   };
-}
-
-function isSameOrigin(
-  request: NextRequest,
-): boolean {
-  const origin =
-    request.headers.get(
-      "origin",
-    );
-
-  /*
-   * بعضی درخواست‌های داخلی یا ابزارهای سمت سرور
-   * ممکن است هدر Origin نداشته باشند.
-   */
-  if (!origin) {
-    return true;
-  }
-
-  return (
-    origin ===
-    request.nextUrl.origin
-  );
 }
 
 function getLatestSuccessTimestamp(
@@ -95,7 +82,7 @@ export async function POST(
   request: NextRequest,
 ) {
   if (
-    !isSameOrigin(
+    !hasTrustedOrigin(
       request,
     )
   ) {
@@ -117,6 +104,19 @@ export async function POST(
         headers:
           noStoreHeaders(),
       },
+    );
+  }
+
+  const rate = await consumeRateLimit({
+    key: `metal-price-refresh:${requestIp(request)}`,
+    limit: 20,
+    windowMs: 60_000,
+  });
+
+  if (!rate.allowed) {
+    return NextResponse.json(
+      { successful: false, code: "RATE_LIMITED", message: "تعداد درخواست‌ها بیش از حد مجاز است." },
+      { status: 429, headers: { ...noStoreHeaders(), "Retry-After": String(rate.retryAfterSeconds) } },
     );
   }
 

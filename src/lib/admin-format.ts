@@ -90,6 +90,7 @@ export function getOrderStatusLabel(
     SHIPPED: "ارسال‌شده",
     COMPLETED: "تکمیل‌شده",
     PAYMENT_FAILED: "پرداخت ناموفق",
+    PAYMENT_REVIEW: "پرداخت نیازمند بررسی",
     CANCELLED: "لغوشده",
     EXPIRED: "منقضی‌شده",
     REFUNDED: "بازپرداخت‌شده",

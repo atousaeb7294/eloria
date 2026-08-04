@@ -1,0 +1,1196 @@
+﻿===== .\src\app\[locale]\cart\page.tsx =====
+import {
+  Noto_Nastaliq_Urdu,
+} from "next/font/google";
+
+import {
+  notFound,
+} from "next/navigation";
+
+import {
+  setRequestLocale,
+} from "next-intl/server";
+
+import {
+  AmbientEffects,
+} from "@/components/ambient-effects";
+
+import {
+  CartLivePriceRefresh,
+} from "@/components/cart-live-price-refresh";
+
+import {
+  CartPageClient,
+} from "@/components/cart-page-client";
+
+import {
+  SiteHeader,
+} from "@/components/site-header";
+
+export const dynamic =
+  "force-dynamic";
+
+export const revalidate = 0;
+
+const persianTitleFont =
+  Noto_Nastaliq_Urdu({
+    subsets: [
+      "arabic",
+    ],
+
+    weight: [
+      "400",
+      "500",
+      "600",
+      "700",
+    ],
+
+    display:
+      "swap",
+  });
+
+type CartPageProps = {
+  params: Promise<{
+    locale: string;
+  }>;
+};
+
+export default async function CartPage({
+  params,
+}: CartPageProps) {
+  const { locale } =
+    await params;
+
+  if (
+    locale !== "fa" &&
+    locale !== "en"
+  ) {
+    notFound();
+  }
+
+  setRequestLocale(locale);
+
+  const isPersian =
+    locale === "fa";
+
+  return (
+    <main
+      dir={
+        isPersian
+          ? "rtl"
+          : "ltr"
+      }
+      className="relative min-h-screen overflow-hidden bg-[#02140e] text-[#f8f0df]"
+    >
+      <AmbientEffects />
+
+      <SiteHeader />
+
+      <CartPageClient
+        locale={locale}
+        persianTitleClassName={
+          persianTitleFont.className
+        }
+      />
+
+      <CartLivePriceRefresh />
+    </main>
+  );
+}
+
+===== .\src\app\[locale]\checkout\page.tsx =====
+import {
+  Noto_Nastaliq_Urdu,
+} from "next/font/google";
+
+import {
+  notFound,
+} from "next/navigation";
+
+import {
+  setRequestLocale,
+} from "next-intl/server";
+
+import {
+  AmbientEffects,
+} from "@/components/ambient-effects";
+
+import {
+  CartLivePriceRefresh,
+} from "@/components/cart-live-price-refresh";
+
+import {
+  CheckoutPageClient,
+} from "@/components/checkout-page-client";
+
+import {
+  SiteHeader,
+} from "@/components/site-header";
+
+export const dynamic =
+  "force-dynamic";
+
+export const revalidate =
+  0;
+
+const persianTitleFont =
+  Noto_Nastaliq_Urdu({
+    subsets: [
+      "arabic",
+    ],
+
+    weight: [
+      "400",
+      "500",
+      "600",
+      "700",
+    ],
+
+    display:
+      "swap",
+  });
+
+type CheckoutPageProps = {
+  params: Promise<{
+    locale: string;
+  }>;
+};
+
+export default async function CheckoutPage({
+  params,
+}: CheckoutPageProps) {
+  const {
+    locale,
+  } = await params;
+
+  if (
+    locale !== "fa" &&
+    locale !== "en"
+  ) {
+    notFound();
+  }
+
+  setRequestLocale(
+    locale,
+  );
+
+  const isPersian =
+    locale === "fa";
+
+  return (
+    <main
+      dir={
+        isPersian
+          ? "rtl"
+          : "ltr"
+      }
+      className="relative min-h-screen overflow-hidden bg-[#02140e] text-[#f8f0df]"
+    >
+      <AmbientEffects />
+
+      <SiteHeader />
+
+      <CheckoutPageClient
+        locale={locale}
+        persianTitleClassName={
+          persianTitleFont.className
+        }
+      />
+
+      <CartLivePriceRefresh />
+    </main>
+  );
+}
+
+===== .\src\app\api\checkout\orders\route.ts =====
+import {
+  randomUUID,
+} from "node:crypto";
+
+import {
+  NextRequest,
+  NextResponse,
+} from "next/server";
+
+import {
+  type CheckoutCustomerInput,
+} from "@/lib/checkout-customer";
+
+import {
+  CheckoutOrderError,
+  createCheckoutOrder,
+  type CheckoutOrderItemInput,
+} from "@/lib/checkout-order";
+
+export const dynamic =
+  "force-dynamic";
+
+export const revalidate =
+  0;
+
+export const runtime =
+  "nodejs";
+
+type IncomingCheckoutBody = {
+  idempotencyKey?: unknown;
+  locale?: unknown;
+  customer?: unknown;
+  items?: unknown;
+};
+
+type IncomingCheckoutItem = {
+  slug?: unknown;
+  variantId?: unknown;
+  quantity?: unknown;
+};
+
+function noStoreHeaders() {
+  return {
+    "Cache-Control":
+      "no-store, no-cache, must-revalidate",
+
+    Pragma:
+      "no-cache",
+
+    Expires:
+      "0",
+  };
+}
+
+function getRequestId(
+  request:
+    NextRequest,
+): string {
+  const suppliedRequestId =
+    request.headers
+      .get(
+        "x-request-id",
+      )
+      ?.trim();
+
+  if (
+    suppliedRequestId
+  ) {
+    return suppliedRequestId.slice(
+      0,
+      128,
+    );
+  }
+
+  return randomUUID();
+}
+
+function normalizeCustomerInput(
+  value:
+    unknown,
+): CheckoutCustomerInput | null {
+  if (
+    typeof value !==
+      "object" ||
+    value === null
+  ) {
+    return null;
+  }
+
+  const customer =
+    value as Record<
+      string,
+      unknown
+    >;
+
+  if (
+    typeof customer.fullName !==
+      "string" ||
+    typeof customer.mobile !==
+      "string" ||
+    typeof customer.province !==
+      "string" ||
+    typeof customer.city !==
+      "string" ||
+    typeof customer.postalCode !==
+      "string" ||
+    typeof customer.address !==
+      "string"
+  ) {
+    return null;
+  }
+
+  if (
+    customer.email !==
+      undefined &&
+    customer.email !==
+      null &&
+    typeof customer.email !==
+      "string"
+  ) {
+    return null;
+  }
+
+  return {
+    fullName:
+      customer.fullName,
+
+    mobile:
+      customer.mobile,
+
+    email:
+      customer.email ===
+        undefined
+        ? null
+        : customer.email as
+            string | null,
+
+    province:
+      customer.province,
+
+    city:
+      customer.city,
+
+    postalCode:
+      customer.postalCode,
+
+    address:
+      customer.address,
+  };
+}
+
+function normalizeCheckoutItem(
+  value:
+    unknown,
+): CheckoutOrderItemInput | null {
+  if (
+    typeof value !==
+      "object" ||
+    value === null
+  ) {
+    return null;
+  }
+
+  const item =
+    value as IncomingCheckoutItem;
+
+  if (
+    typeof item.slug !==
+      "string"
+  ) {
+    return null;
+  }
+
+  const slug =
+    item.slug.trim();
+
+  if (
+    !slug ||
+    slug.length >
+      160
+  ) {
+    return null;
+  }
+
+  let variantId:
+    string | null =
+      null;
+
+  if (
+    typeof item.variantId ===
+      "string"
+  ) {
+    variantId =
+      item.variantId.trim() ||
+      null;
+  } else if (
+    item.variantId !==
+      null &&
+    item.variantId !==
+      undefined
+  ) {
+    return null;
+  }
+
+  if (
+    typeof item.quantity !==
+      "number" ||
+    !Number.isInteger(
+      item.quantity,
+    ) ||
+    item.quantity <
+      1 ||
+    item.quantity >
+      99
+  ) {
+    return null;
+  }
+
+  return {
+    slug,
+
+    variantId,
+
+    quantity:
+      item.quantity,
+  };
+}
+
+export async function POST(
+  request:
+    NextRequest,
+) {
+  const requestId =
+    getRequestId(
+      request,
+    );
+
+  try {
+    let body:
+      IncomingCheckoutBody;
+
+    try {
+      const parsed:
+        unknown =
+          await request.json();
+
+      if (
+        typeof parsed !==
+          "object" ||
+        parsed === null
+      ) {
+        throw new Error(
+          "INVALID_BODY",
+        );
+      }
+
+      body =
+        parsed as IncomingCheckoutBody;
+    } catch {
+      return NextResponse.json(
+        {
+          successful:
+            false,
+
+          code:
+            "INVALID_JSON",
+
+          message:
+            "ساختار اطلاعات سفارش معتبر نیست.",
+
+          requestId,
+        },
+        {
+          status:
+            400,
+
+          headers:
+            noStoreHeaders(),
+        },
+      );
+    }
+
+    const normalizedCustomer =
+      normalizeCustomerInput(
+        body.customer,
+      );
+
+    if (
+      typeof body.idempotencyKey !==
+        "string" ||
+      typeof body.locale !==
+        "string" ||
+      !normalizedCustomer ||
+      !Array.isArray(
+        body.items,
+      )
+    ) {
+      return NextResponse.json(
+        {
+          successful:
+            false,
+
+          code:
+            "INVALID_CHECKOUT",
+
+          message:
+            "اطلاعات ثبت سفارش کامل یا معتبر نیست.",
+
+          requestId,
+        },
+        {
+          status:
+            400,
+
+          headers:
+            noStoreHeaders(),
+        },
+      );
+    }
+
+    if (
+      body.items.length ===
+      0
+    ) {
+      return NextResponse.json(
+        {
+          successful:
+            false,
+
+          code:
+            "EMPTY_CART",
+
+          message:
+            "سبد خرید خالی است.",
+
+          requestId,
+        },
+        {
+          status:
+            400,
+
+          headers:
+            noStoreHeaders(),
+        },
+      );
+    }
+
+    if (
+      body.items.length >
+      30
+    ) {
+      return NextResponse.json(
+        {
+          successful:
+            false,
+
+          code:
+            "TOO_MANY_ITEMS",
+
+          message:
+            "تعداد اقلام سفارش بیش از حد مجاز است.",
+
+          requestId,
+        },
+        {
+          status:
+            400,
+
+          headers:
+            noStoreHeaders(),
+        },
+      );
+    }
+
+    const normalizedItems =
+      body.items.map(
+        normalizeCheckoutItem,
+      );
+
+    if (
+      normalizedItems.some(
+        (
+          item,
+        ) =>
+          item === null,
+      )
+    ) {
+      return NextResponse.json(
+        {
+          successful:
+            false,
+
+          code:
+            "INVALID_CART_ITEM",
+
+          message:
+            "حداقل یکی از اقلام سبد خرید معتبر نیست.",
+
+          requestId,
+        },
+        {
+          status:
+            400,
+
+          headers:
+            noStoreHeaders(),
+        },
+      );
+    }
+
+    const result =
+      await createCheckoutOrder({
+        idempotencyKey:
+          body.idempotencyKey,
+
+        locale:
+          body.locale,
+
+        customer:
+          normalizedCustomer,
+
+        items:
+          normalizedItems as CheckoutOrderItemInput[],
+
+        requestId,
+      });
+
+    return NextResponse.json(
+      {
+        successful:
+          true,
+
+        reused:
+          result.reused,
+
+        order:
+          result.order,
+
+        requestId,
+      },
+      {
+        status:
+          result.reused
+            ? 200
+            : 201,
+
+        headers:
+          noStoreHeaders(),
+      },
+    );
+  } catch (error) {
+    if (
+      error instanceof
+      CheckoutOrderError
+    ) {
+      return NextResponse.json(
+        {
+          successful:
+            false,
+
+          code:
+            error.code,
+
+          message:
+            error.message,
+
+          requestId,
+        },
+        {
+          status:
+            error.status,
+
+          headers:
+            noStoreHeaders(),
+        },
+      );
+    }
+
+    console.error(
+      "[Eloria Checkout API] Unexpected order creation error.",
+      {
+        requestId,
+        error,
+      },
+    );
+
+    return NextResponse.json(
+      {
+        successful:
+          false,
+
+        code:
+          "INTERNAL_ERROR",
+
+        message:
+          "ثبت سفارش در حال حاضر امکان‌پذیر نیست. لطفاً دوباره تلاش کنید.",
+
+        requestId,
+      },
+      {
+        status:
+          500,
+
+        headers:
+          noStoreHeaders(),
+      },
+    );
+  }
+}
+
+===== .\src\components\add-to-cart-button.tsx =====
+"use client";
+
+import Link from "next/link";
+
+import {
+  Check,
+  Minus,
+  Plus,
+  ShoppingBag,
+} from "lucide-react";
+
+import {
+  useCallback,
+  useState,
+  useSyncExternalStore,
+} from "react";
+
+import {
+  addCartItem,
+  getCartItemQuantity,
+  subscribeToCart,
+  updateCartItemQuantity,
+} from "@/lib/cart-storage";
+
+type AddToCartButtonProps = {
+  locale: string;
+  slug: string;
+  variantId?: string | null;
+  maxQuantity: number;
+  disabled?: boolean;
+};
+
+function getServerCartQuantitySnapshot(): number {
+  return 0;
+}
+
+export function AddToCartButton({
+  locale,
+  slug,
+  variantId = null,
+  maxQuantity,
+  disabled = false,
+}: AddToCartButtonProps) {
+  const isPersian =
+    locale === "fa";
+
+  const safeMaximum =
+    Math.max(
+      Math.trunc(maxQuantity),
+      0,
+    );
+
+  const getQuantitySnapshot =
+    useCallback(
+      () =>
+        getCartItemQuantity({
+          slug,
+          variantId,
+        }),
+      [
+        slug,
+        variantId,
+      ],
+    );
+
+  const quantity =
+    useSyncExternalStore(
+      subscribeToCart,
+      getQuantitySnapshot,
+      getServerCartQuantitySnapshot,
+    );
+
+  const [
+    recentlyAdded,
+    setRecentlyAdded,
+  ] = useState(false);
+
+  const isUnavailable =
+    disabled ||
+    safeMaximum <= 0;
+
+  const addFirstItem = () => {
+    if (isUnavailable) {
+      return;
+    }
+
+    addCartItem({
+      slug,
+      variantId,
+      quantity: 1,
+    });
+
+    setRecentlyAdded(true);
+
+    window.setTimeout(() => {
+      setRecentlyAdded(false);
+    }, 1800);
+  };
+
+  const increaseQuantity = () => {
+    if (
+      isUnavailable ||
+      quantity >= safeMaximum ||
+      quantity >= 99
+    ) {
+      return;
+    }
+
+    if (quantity === 0) {
+      addFirstItem();
+      return;
+    }
+
+    updateCartItemQuantity({
+      slug,
+      variantId,
+      quantity:
+        quantity + 1,
+    });
+  };
+
+  const decreaseQuantity = () => {
+    if (quantity <= 0) {
+      return;
+    }
+
+    updateCartItemQuantity({
+      slug,
+      variantId,
+      quantity:
+        quantity - 1,
+    });
+  };
+
+  const formattedQuantity =
+    quantity.toLocaleString(
+      isPersian
+        ? "fa-IR"
+        : "en-US",
+    );
+
+  const unavailableText =
+    safeMaximum <= 0
+      ? isPersian
+        ? "ناموجود"
+        : "Out of stock"
+      : isPersian
+        ? "این محصول قابل سفارش نیست"
+        : "This product is unavailable";
+
+  if (
+    isUnavailable &&
+    quantity === 0
+  ) {
+    return (
+      <button
+        type="button"
+        disabled
+        className="flex min-h-14 w-full cursor-not-allowed items-center justify-center gap-3 rounded-full border border-white/10 bg-white/[0.025] px-7 text-sm text-white/30"
+      >
+        <ShoppingBag className="h-5 w-5" />
+
+        <span>
+          {unavailableText}
+        </span>
+      </button>
+    );
+  }
+
+  if (quantity === 0) {
+    return (
+      <button
+        type="button"
+        onClick={addFirstItem}
+        className="group relative flex min-h-14 w-full items-center justify-center gap-3 overflow-hidden rounded-full border border-[#e4c66f]/55 bg-[linear-gradient(105deg,rgba(83,59,17,0.34),rgba(213,177,82,0.3),rgba(13,82,58,0.35))] px-7 text-sm font-medium text-[#f7e6b5] shadow-[inset_0_1px_0_rgba(255,255,255,0.12)] transition duration-500 hover:-translate-y-0.5 hover:border-[#f0d681]/85 hover:shadow-[0_0_34px_rgba(218,183,91,0.16)]"
+      >
+        <span className="absolute inset-0 translate-x-full bg-[linear-gradient(110deg,transparent_25%,rgba(255,245,210,0.14)_50%,transparent_75%)] transition-transform duration-1000 group-hover:-translate-x-full" />
+
+        <span className="relative flex h-9 w-9 items-center justify-center rounded-xl border border-[#f0d487]/30 bg-[#d9b85f]/[0.08]">
+          <span className="absolute inset-[3px] rounded-lg border border-dashed border-[#efd184]/25" />
+
+          {recentlyAdded ? (
+            <Check className="relative h-4.5 w-4.5" />
+          ) : (
+            <ShoppingBag className="relative h-4.5 w-4.5" />
+          )}
+        </span>
+
+        <span className="relative">
+          {recentlyAdded
+            ? isPersian
+              ? "به سبد خرید اضافه شد"
+              : "Added to shopping bag"
+            : isPersian
+              ? "افزودن به سبد خرید"
+              : "Add to shopping bag"}
+        </span>
+      </button>
+    );
+  }
+
+  return (
+    <div className="overflow-hidden rounded-[1.6rem] border border-[#dfc16e]/35 bg-[linear-gradient(145deg,rgba(7,39,29,0.92),rgba(2,25,18,0.96))] p-3 shadow-[0_20px_55px_rgba(0,0,0,0.22)]">
+      <div className="flex items-center justify-between gap-3">
+        <div className="inline-flex shrink-0 items-center rounded-full border border-[#dfc16e]/25 bg-black/15 p-1">
+          <button
+            type="button"
+            onClick={decreaseQuantity}
+            aria-label={
+              isPersian
+                ? "کاهش تعداد"
+                : "Decrease quantity"
+            }
+            className="flex h-10 w-10 items-center justify-center rounded-full text-[#dbc98f]/70 transition hover:bg-white/[0.06] hover:text-[#ffe8a9]"
+          >
+            <Minus className="h-4 w-4" />
+          </button>
+
+          <span className="min-w-12 text-center text-sm font-medium text-[#f7e4af]">
+            {formattedQuantity}
+          </span>
+
+          <button
+            type="button"
+            onClick={increaseQuantity}
+            disabled={
+              quantity >=
+                safeMaximum ||
+              quantity >= 99
+            }
+            aria-label={
+              isPersian
+                ? "افزایش تعداد"
+                : "Increase quantity"
+            }
+            className="flex h-10 w-10 items-center justify-center rounded-full text-[#dbc98f]/70 transition hover:bg-white/[0.06] hover:text-[#ffe8a9] disabled:cursor-not-allowed disabled:opacity-25"
+          >
+            <Plus className="h-4 w-4" />
+          </button>
+        </div>
+
+        <div className="min-w-0 flex-1">
+          <p className="text-xs text-[#f2dfaa]">
+            {isPersian
+              ? "در سبد خرید"
+              : "In your shopping bag"}
+          </p>
+
+          <p className="mt-1 text-[10px] text-[#c9bb98]/50">
+            {isPersian
+              ? `حداکثر موجودی: ${safeMaximum.toLocaleString(
+                  "fa-IR",
+                )}`
+              : `Available: ${safeMaximum.toLocaleString(
+                  "en-US",
+                )}`}
+          </p>
+        </div>
+
+        <Link
+          href={`/${locale}/cart`}
+          className="group flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-full border border-[#e1c16f]/40 bg-[#d9b85f]/[0.08] px-4 text-xs text-[#f1d98e] transition hover:border-[#efd47d]/70 hover:bg-[#d9b85f]/[0.13]"
+        >
+          <ShoppingBag className="h-4 w-4 transition group-hover:scale-110" />
+
+          <span className="hidden sm:inline">
+            {isPersian
+              ? "مشاهده سبد"
+              : "View bag"}
+          </span>
+        </Link>
+      </div>
+    </div>
+  );
+}
+
+===== .\src\components\cart-header-button.tsx =====
+"use client";
+
+import Link from "next/link";
+import {
+  useSyncExternalStore,
+} from "react";
+
+import {
+  getCartQuantity,
+  subscribeToCart,
+} from "@/lib/cart-storage";
+
+type CartHeaderButtonProps = {
+  locale: string;
+  variant?: "default" | "compact";
+  className?: string;
+};
+
+function getServerCartQuantitySnapshot(): number {
+  return 0;
+}
+
+function EloriaBagIcon({
+  className,
+}: {
+  className?: string;
+}) {
+  return (
+    <svg
+      viewBox="0 0 32 32"
+      fill="none"
+      aria-hidden="true"
+      className={className}
+    >
+      <path
+        d="M9.4 12.2H22.6L24.3 26H7.7L9.4 12.2Z"
+        stroke="currentColor"
+        strokeWidth="1.35"
+        strokeLinejoin="round"
+      />
+
+      <path
+        d="M12 13V10.1C12 7.8 13.8 6 16 6C18.2 6 20 7.8 20 10.1V13"
+        stroke="currentColor"
+        strokeWidth="1.35"
+        strokeLinecap="round"
+      />
+
+      <path
+        d="M16 15.5C17.5 18.1 19.1 19.3 21.4 20.1C19.1 20.9 17.5 22.1 16 24.7C14.5 22.1 12.9 20.9 10.6 20.1C12.9 19.3 14.5 18.1 16 15.5Z"
+        stroke="currentColor"
+        strokeWidth="1.05"
+        strokeLinejoin="round"
+      />
+
+      <circle
+        cx="16"
+        cy="20.1"
+        r="1.05"
+        fill="currentColor"
+      />
+    </svg>
+  );
+}
+
+export function CartHeaderButton({
+  locale,
+  variant = "default",
+  className = "",
+}: CartHeaderButtonProps) {
+  const isPersian =
+    locale === "fa";
+
+  const quantity =
+    useSyncExternalStore(
+      subscribeToCart,
+      getCartQuantity,
+      getServerCartQuantitySnapshot,
+    );
+
+  const displayedQuantity =
+    quantity > 99
+      ? "99+"
+      : quantity.toLocaleString(
+          isPersian
+            ? "fa-IR"
+            : "en-US",
+        );
+
+  const cartText =
+    isPersian
+      ? "سبد خرید"
+      : "Shopping Bag";
+
+  const label =
+    quantity > 0
+      ? isPersian
+        ? `${cartText}، ${displayedQuantity} محصول`
+        : `${cartText}, ${displayedQuantity} items`
+      : cartText;
+
+  if (
+    variant ===
+    "compact"
+  ) {
+    return (
+      <Link
+        href={`/${locale}/cart`}
+        aria-label={label}
+        title={label}
+        className={[
+          "group relative grid size-11 shrink-0 place-items-center rounded-[13px]",
+          "border border-[#dabe6e]/28",
+          "bg-[linear-gradient(145deg,rgba(8,65,46,0.5),rgba(2,29,20,0.72))]",
+          "text-[#e9d493]",
+          "shadow-[inset_0_1px_0_rgba(255,255,255,0.055),0_8px_24px_rgba(0,0,0,0.2)]",
+          "transition duration-300",
+          "hover:-translate-y-0.5",
+          "hover:border-[#edd387]/64",
+          "hover:bg-[linear-gradient(145deg,rgba(13,91,64,0.58),rgba(2,38,26,0.78))]",
+          "hover:text-[#ffe8aa]",
+          "focus-visible:outline-none",
+          "focus-visible:ring-2",
+          "focus-visible:ring-[#e3c675]/55",
+          "sm:size-12",
+          className,
+        ].join(" ")}
+      >
+        {/* گوشه‌های تزئینی */}
+        <span
+          aria-hidden="true"
+          className="pointer-events-none absolute left-1.5 top-1.5 size-1.5 border-l border-t border-[#e9cd80]/42"
+        />
+
+        <span
+          aria-hidden="true"
+          className="pointer-events-none absolute bottom-1.5 right-1.5 size-1.5 border-b border-r border-[#e9cd80]/42"
+        />
+
+        {/* نور داخلی */}
+        <span
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-[5px] rounded-[9px] bg-[radial-gradient(circle_at_50%_35%,rgba(235,205,126,0.12),transparent_68%)] opacity-70 transition duration-300 group-hover:opacity-100"
+        />
+
+        <EloriaBagIcon className="relative size-[25px] transition duration-300 group-hover:scale-[1.06]" />
+
+        {quantity > 0 && (
+          <span className="absolute -end-1 -top-1 z-20 flex min-h-[18px] min-w-[18px] items-center justify-center rounded-full border border-[#f1d483]/75 bg-[#0b4934] px-1 text-[8px] font-semibold leading-none text-[#ffe6a2] shadow-[0_0_10px_rgba(239,207,121,0.32)]">
+            {displayedQuantity}
+          </span>
+        )}
+      </Link>
+    );
+  }
+
+  return (
+    <Link
+      href={`/${locale}/cart`}
+      aria-label={label}
+      title={label}
+      className={[
+        "group relative inline-flex h-11 shrink-0 items-center justify-center gap-2",
+        "rounded-2xl border border-[#e4c66f]/35",
+        "bg-[linear-gradient(145deg,rgba(217,184,95,0.1),rgba(7,70,50,0.4),rgba(2,35,25,0.9))]",
+        "px-2.5 text-[#e9d493]",
+        "shadow-[inset_0_1px_0_rgba(255,255,255,0.1),0_10px_25px_rgba(0,0,0,0.22)]",
+        "transition duration-500",
+        "hover:-translate-y-0.5",
+        "hover:border-[#efd37d]/65",
+        "hover:text-[#ffe8aa]",
+        "hover:shadow-[0_0_24px_rgba(224,193,111,0.14)]",
+        "focus-visible:outline-none",
+        "focus-visible:ring-2",
+        "focus-visible:ring-[#e3c675]/55",
+        "sm:px-3",
+        className,
+      ].join(" ")}
+    >
+      <span
+        aria-hidden="true"
+        className="absolute inset-[3px] rounded-[12px] border border-dashed border-[#efd184]/15 transition duration-500 group-hover:border-[#efd184]/30"
+      />
+
+      <span className="relative flex size-8 items-center justify-center">
+        <span className="absolute inset-0 rounded-xl bg-[radial-gradient(circle,rgba(238,210,133,0.17),transparent_70%)] opacity-70 transition group-hover:opacity-100" />
+
+        <EloriaBagIcon className="relative size-7 transition duration-500 group-hover:scale-110" />
+
+        {quantity > 0 && (
+          <span className="absolute -end-1.5 -top-1.5 z-20 flex min-h-[18px] min-w-[18px] items-center justify-center rounded-full border border-[#f1d483]/75 bg-[#0d4a36] px-1 text-[8px] font-semibold leading-none text-[#ffe6a2] shadow-[0_0_10px_rgba(239,207,121,0.34)]">
+            {displayedQuantity}
+          </span>
+        )}
+      </span>
+
+      <span className="relative hidden whitespace-nowrap text-[11px] font-medium sm:inline">
+        {cartText}
+      </span>
+    </Link>
+  );
+}
+

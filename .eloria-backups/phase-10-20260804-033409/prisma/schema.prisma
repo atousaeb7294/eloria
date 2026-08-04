@@ -1,0 +1,548 @@
+generator client {
+  provider        = "prisma-client"
+  output          = "../src/generated/prisma"
+  previewFeatures = ["relationJoins"]
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum ProductStatus {
+  DRAFT
+  ACTIVE
+  OUT_OF_STOCK
+  ARCHIVED
+}
+
+enum Currency {
+  TOMAN
+  USD
+}
+
+enum MaterialType {
+  GOLD
+  SILVER
+}
+
+enum PricingMode {
+  DYNAMIC
+  MANUAL
+}
+
+enum MakingChargeType {
+  NONE
+  FIXED
+  PER_GRAM
+  PERCENT
+  COMBINED
+}
+
+enum OrderStatus {
+  PENDING_PAYMENT
+  PAID
+  PROCESSING
+  SHIPPED
+  COMPLETED
+  PAYMENT_FAILED
+  CANCELLED
+  EXPIRED
+  REFUNDED
+}
+
+enum PaymentStatus {
+  CREATED
+  REDIRECTED
+  PENDING_VERIFICATION
+  PAID
+  FAILED
+  CANCELLED
+  EXPIRED
+  REFUNDED
+}
+
+enum AuditActorType {
+  SYSTEM
+  CUSTOMER
+  ADMIN
+  PAYMENT_GATEWAY
+}
+
+model Collection {
+  id            String  @id @default(uuid()) @db.Uuid
+  slug          String  @unique
+  nameFa        String
+  nameEn        String
+  descriptionFa String?
+  descriptionEn String?
+  imageUrl      String?
+  displayOrder  Int     @default(0)
+  isActive      Boolean @default(true)
+
+  products Product[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([isActive, displayOrder])
+  @@map("collections")
+}
+
+model Product {
+  id           String @id @default(uuid()) @db.Uuid
+  collectionId String @db.Uuid
+
+  slug String  @unique
+  sku  String? @unique
+
+  nameFa String
+  nameEn String
+
+  descriptionFa String?
+  descriptionEn String?
+
+  material MaterialType @default(GOLD)
+
+  metalWeight Decimal? @map("goldWeight") @db.Decimal(10, 3)
+
+  purity String?
+
+  purityFineness Int?
+
+  pricingMode PricingMode @default(DYNAMIC)
+
+  price Decimal? @db.Decimal(18, 0)
+
+  compareAtPrice Decimal? @db.Decimal(18, 0)
+
+  makingChargeType MakingChargeType @default(NONE)
+
+  makingChargeFixed Decimal @default(0) @db.Decimal(18, 0)
+
+  makingChargePerGram Decimal @default(0) @db.Decimal(18, 0)
+
+  makingChargePercent Decimal @default(0) @db.Decimal(7, 3)
+
+  artisticFee Decimal @default(0) @db.Decimal(18, 0)
+
+  profitPercent Decimal? @db.Decimal(7, 3)
+
+  taxPercent Decimal? @db.Decimal(7, 3)
+
+  currency Currency @default(TOMAN)
+
+  legendFa String?
+  legendEn String?
+
+  stock          Int           @default(0)
+  specifications Json?
+  status         ProductStatus @default(DRAFT)
+  isFeatured     Boolean       @default(false)
+  displayOrder   Int           @default(0)
+
+  collection Collection       @relation(fields: [collectionId], references: [id], onDelete: Restrict)
+  images     ProductImage[]
+  variants   ProductVariant[]
+  orderItems OrderItem[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([collectionId, status, displayOrder])
+  @@index([material, status])
+  @@index([pricingMode, status])
+  @@index([isFeatured, status])
+  @@map("products")
+}
+
+model ProductImage {
+  id        String @id @default(uuid()) @db.Uuid
+  productId String @db.Uuid
+
+  imageUrl String
+  altFa    String?
+  altEn    String?
+
+  width        Int?
+  height       Int?
+  isPrimary    Boolean @default(false)
+  displayOrder Int     @default(0)
+
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([productId, displayOrder])
+  @@index([productId, isPrimary])
+  @@map("product_images")
+}
+
+model ProductVariant {
+  id        String @id @default(uuid()) @db.Uuid
+  productId String @db.Uuid
+
+  titleFa String
+  titleEn String
+
+  sku String? @unique
+
+  price Decimal? @db.Decimal(18, 0)
+
+  stock Int @default(0)
+
+  metalWeight Decimal? @map("goldWeight") @db.Decimal(10, 3)
+
+  purity String?
+
+  purityFineness Int?
+
+  makingChargeFixed Decimal? @db.Decimal(18, 0)
+
+  makingChargePerGram Decimal? @db.Decimal(18, 0)
+
+  makingChargePercent Decimal? @db.Decimal(7, 3)
+
+  artisticFee Decimal? @db.Decimal(18, 0)
+
+  attributes Json?
+
+  isActive     Boolean @default(true)
+  displayOrder Int     @default(0)
+
+  product    Product     @relation(fields: [productId], references: [id], onDelete: Cascade)
+  orderItems OrderItem[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([productId, isActive, displayOrder])
+  @@map("product_variants")
+}
+
+model PricingPolicy {
+  id String @id @default(uuid()) @db.Uuid
+
+  material MaterialType @unique
+
+  referencePurity Int
+
+  defaultProfitPercent Decimal @default(7) @db.Decimal(7, 3)
+
+  defaultTaxPercent Decimal @default(10) @db.Decimal(7, 3)
+
+  taxMetalValue Boolean @default(false)
+
+  quoteTtlSeconds Int @default(120)
+
+  staleAfterMinutes Int @default(15)
+
+  closedMarketPricingEnabled Boolean @default(true)
+
+  closedMarketMaxAgeMinutes Int @default(720)
+
+  closedMarketSafetyMarginPercent Decimal @default(2) @db.Decimal(7, 3)
+
+  roundingStep Int @default(1)
+
+  isActive Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([material, isActive])
+  @@map("pricing_policies")
+}
+
+model MetalPrice {
+  id String @id @default(uuid()) @db.Uuid
+
+  material MaterialType @unique
+
+  pricePerGram Decimal @db.Decimal(18, 0)
+
+  referencePurity Int @default(750)
+
+  currency Currency @default(TOMAN)
+
+  source String?
+
+  sourceSymbol String @default("")
+
+  sourceUnit String?
+
+  sourceDate String?
+
+  sourceTime String?
+
+  sourceTimeUnix BigInt?
+
+  fetchedAt DateTime @default(now())
+
+  lastSuccessAt DateTime @default(now())
+
+  lastError String? @db.Text
+
+  rawPayload Json?
+
+  history MetalPriceHistory[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([material, lastSuccessAt])
+  @@index([updatedAt])
+  @@map("metal_prices")
+}
+
+model MetalPriceHistory {
+  id String @id @default(uuid()) @db.Uuid
+
+  metalPriceId String @db.Uuid
+
+  material MaterialType
+
+  pricePerGram Decimal @db.Decimal(18, 0)
+
+  referencePurity Int
+
+  currency Currency @default(TOMAN)
+
+  source String?
+
+  sourceSymbol String
+
+  sourceUnit String?
+
+  sourceDate String?
+
+  sourceTime String?
+
+  sourceTimeUnix BigInt?
+
+  fetchedAt DateTime
+
+  fingerprint String @unique @db.VarChar(64)
+
+  rawPayload Json?
+
+  metalPrice MetalPrice @relation(fields: [metalPriceId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@index([material, fetchedAt])
+  @@index([metalPriceId, fetchedAt])
+  @@map("metal_price_history")
+}
+
+model Order {
+  id String @id @default(uuid()) @db.Uuid
+
+  orderNumber String @unique @db.VarChar(32)
+
+  idempotencyKey String @unique @db.VarChar(128)
+
+  locale String @default("fa") @db.VarChar(10)
+
+  currency Currency @default(TOMAN)
+
+  status OrderStatus @default(PENDING_PAYMENT)
+
+  customerFullName String?
+  customerMobile   String? @db.VarChar(20)
+  customerEmail    String?
+
+  province   String?
+  city       String?
+  postalCode String? @db.VarChar(20)
+  address    String? @db.Text
+
+  subtotalToman Decimal @db.Decimal(18, 0)
+
+  shippingToman Decimal @default(0) @db.Decimal(18, 0)
+
+  discountToman Decimal @default(0) @db.Decimal(18, 0)
+
+  payableToman Decimal @db.Decimal(18, 0)
+
+  pricingSnapshot Json
+
+  priceVerifiedAt DateTime
+
+  priceExpiresAt DateTime
+
+  inventoryReservedAt DateTime
+
+  inventoryExpiresAt DateTime
+
+  inventoryReleasedAt DateTime?
+
+  inventoryCommittedAt DateTime?
+
+  paidAt DateTime?
+
+  cancelledAt DateTime?
+
+  expiredAt DateTime?
+
+  refundedAt DateTime?
+
+  items       OrderItem[]
+  payments    PaymentAttempt[]
+  auditEvents OrderAuditEvent[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([status, createdAt])
+  @@index([customerMobile, createdAt])
+  @@index([priceExpiresAt])
+  @@index([inventoryExpiresAt])
+  @@map("orders")
+}
+
+model OrderItem {
+  id String @id @default(uuid()) @db.Uuid
+
+  orderId String @db.Uuid
+
+  productId String? @db.Uuid
+
+  variantId String? @db.Uuid
+
+  productSlug String
+
+  productSku String?
+
+  productNameFa String
+
+  productNameEn String
+
+  variantTitleFa String?
+
+  variantTitleEn String?
+
+  variantSku String?
+
+  material MaterialType
+
+  quantity Int
+
+  unitPriceToman Decimal @db.Decimal(18, 0)
+
+  lineTotalToman Decimal @db.Decimal(18, 0)
+
+  metalValueToman Decimal? @db.Decimal(18, 0)
+
+  makingChargeToman Decimal? @db.Decimal(18, 0)
+
+  artisticFeeToman Decimal? @db.Decimal(18, 0)
+
+  profitToman Decimal? @db.Decimal(18, 0)
+
+  taxToman Decimal? @db.Decimal(18, 0)
+
+  originalMetalRateToman Decimal? @db.Decimal(18, 0)
+
+  effectiveMetalRateToman Decimal? @db.Decimal(18, 0)
+
+  metalRateMode String? @db.VarChar(32)
+
+  metalRateReason String? @db.VarChar(64)
+
+  safetyMarginPercent Decimal? @db.Decimal(7, 3)
+
+  safetyMarginToman Decimal? @db.Decimal(18, 0)
+
+  stockBeforeReservation Int
+
+  stockAfterReservation Int
+
+  pricingSnapshot Json
+
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  product Product? @relation(fields: [productId], references: [id], onDelete: SetNull)
+
+  variant ProductVariant? @relation(fields: [variantId], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now())
+
+  @@index([orderId])
+  @@index([productId])
+  @@index([variantId])
+  @@index([material])
+  @@map("order_items")
+}
+
+model PaymentAttempt {
+  id String @id @default(uuid()) @db.Uuid
+
+  orderId String @db.Uuid
+
+  provider String @db.VarChar(50)
+
+  status PaymentStatus @default(CREATED)
+
+  amountToman Decimal @db.Decimal(18, 0)
+
+  gatewayAuthority String? @unique @db.VarChar(128)
+
+  gatewayReference String? @unique @db.VarChar(128)
+
+  requestPayload Json?
+
+  responsePayload Json?
+
+  callbackPayload Json?
+
+  verificationPayload Json?
+
+  errorCode String? @db.VarChar(100)
+
+  errorMessage String? @db.Text
+
+  requestedAt DateTime @default(now())
+
+  redirectedAt DateTime?
+
+  callbackReceivedAt DateTime?
+
+  verifiedAt DateTime?
+
+  failedAt DateTime?
+
+  refundedAt DateTime?
+
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([orderId, status])
+  @@index([status, createdAt])
+  @@index([provider, createdAt])
+  @@map("payment_attempts")
+}
+
+model OrderAuditEvent {
+  id String @id @default(uuid()) @db.Uuid
+
+  orderId String @db.Uuid
+
+  actorType AuditActorType @default(SYSTEM)
+
+  eventType String @db.VarChar(100)
+
+  requestId String? @db.VarChar(128)
+
+  payload Json?
+
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@index([orderId, createdAt])
+  @@index([eventType, createdAt])
+  @@map("order_audit_events")
+}

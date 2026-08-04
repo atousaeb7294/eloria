@@ -81,45 +81,20 @@ function getDatabaseUrl(): string {
   return databaseUrl;
 }
 
-/**
- * پارامترهای SSL از Connection String حذف می‌شوند
- * تا تنظیم SSL فقط یک‌بار و مستقیماً روی Pool اعمال شود.
- */
 function getRuntimeDatabaseUrl(): string {
-  let parsedUrl:
-    URL;
-
+  const databaseUrl = getDatabaseUrl();
   try {
-    parsedUrl =
-      new URL(
-        getDatabaseUrl(),
-      );
+    return new URL(databaseUrl).toString();
   } catch {
-    throw new Error(
-      "ساختار DATABASE_URL معتبر نیست.",
-    );
+    throw new Error("ساختار DATABASE_URL معتبر نیست.");
   }
+}
 
-  const sslParameters = [
-    "sslmode",
-    "sslcert",
-    "sslkey",
-    "sslrootcert",
-    "sslidentity",
-    "sslpassword",
-    "sslaccept",
-  ];
-
-  for (
-    const parameter of
-    sslParameters
-  ) {
-    parsedUrl.searchParams.delete(
-      parameter,
-    );
-  }
-
-  return parsedUrl.toString();
+function databaseSsl(): false | { rejectUnauthorized: boolean } {
+  const mode = process.env.DATABASE_SSL_MODE?.trim().toLowerCase();
+  if (mode === "disable") return false;
+  if (mode === "require") return { rejectUnauthorized: false };
+  return { rejectUnauthorized: true };
 }
 
 function createPostgresPool():
@@ -129,10 +104,7 @@ function createPostgresPool():
       connectionString:
         getRuntimeDatabaseUrl(),
 
-      ssl: {
-        rejectUnauthorized:
-          false,
-      },
+      ssl: databaseSsl(),
 
       /**
        * در محیط فعلی یک اتصال گرم کافی است.

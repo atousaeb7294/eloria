@@ -6,6 +6,8 @@ import {
   prisma,
 } from "@/lib/prisma";
 
+import { restoreReservedInventory } from "@/lib/inventory";
+
 const DEFAULT_BATCH_SIZE =
   25;
 
@@ -151,6 +153,13 @@ async function releaseSingleExpiredOrder(
 
                 paidAt:
                   null,
+
+                payments: {
+                  none: {
+                    status: "PENDING_VERIFICATION",
+                    verificationLeaseExpiresAt: { gt: checkedAt },
+                  },
+                },
               },
 
               data: {
@@ -222,138 +231,17 @@ async function releaseSingleExpiredOrder(
               },
             });
 
-          let restoredUnits =
-            0;
+          const inventoryResult =
+            await restoreReservedInventory(
+              transaction,
+              candidate.id,
+            );
 
-          const restorationIssues:
-            RestorationIssue[] =
-              [];
+          const restoredUnits =
+            inventoryResult.restoredUnits;
 
-          for (
-            const item of orderItems
-          ) {
-            /*
-             * اگر سفارش مربوط به مدل محصول باشد،
-             * همان موجودی مدل باید برگردانده شود.
-             */
-            if (item.variantId) {
-              const restoredVariant =
-                await transaction.productVariant.updateMany({
-                  where: {
-                    id:
-                      item.variantId,
-                  },
-
-                  data: {
-                    stock: {
-                      increment:
-                        item.quantity,
-                    },
-                  },
-                });
-
-              if (
-                restoredVariant.count ===
-                1
-              ) {
-                restoredUnits +=
-                  item.quantity;
-
-                continue;
-              }
-
-              restorationIssues.push({
-                orderItemId:
-                  item.id,
-
-                productId:
-                  item.productId,
-
-                variantId:
-                  item.variantId,
-
-                quantity:
-                  item.quantity,
-
-                reason:
-                  "VARIANT_NOT_FOUND",
-              });
-
-              continue;
-            }
-
-            /*
-             * اگر مدل انتخاب نشده باشد، موجودی خود محصول
-             * هنگام رزرو کم شده و حالا باید بازگردانده شود.
-             */
-            if (item.productId) {
-              const restoredProduct =
-                await transaction.product.updateMany({
-                  where: {
-                    id:
-                      item.productId,
-                  },
-
-                  data: {
-                    stock: {
-                      increment:
-                        item.quantity,
-                    },
-                  },
-                });
-
-              if (
-                restoredProduct.count ===
-                1
-              ) {
-                restoredUnits +=
-                  item.quantity;
-
-                continue;
-              }
-
-              restorationIssues.push({
-                orderItemId:
-                  item.id,
-
-                productId:
-                  item.productId,
-
-                variantId:
-                  null,
-
-                quantity:
-                  item.quantity,
-
-                reason:
-                  "PRODUCT_NOT_FOUND",
-              });
-
-              continue;
-            }
-
-            /*
-             * اگر محصول بعد از ثبت سفارش حذف شده باشد،
-             * Foreign Key آن می‌تواند null شده باشد.
-             * این مورد برای بررسی مدیریتی در Audit ثبت می‌شود.
-             */
-            restorationIssues.push({
-              orderItemId:
-                item.id,
-
-              productId:
-                null,
-
-              variantId:
-                null,
-
-              quantity:
-                item.quantity,
-
-              reason:
-                "INVENTORY_REFERENCE_MISSING",
-            });
-          }
+          const restorationIssues =
+            inventoryResult.issues;
 
           const eventType =
             restorationIssues.length >
@@ -470,6 +358,7 @@ export async function releaseExpiredCheckoutOrders(
   options: {
     batchSize?: number;
     now?: Date;
+    orderIds?: string[];
   } = {},
 ): Promise<ReleaseExpiredOrdersResult> {
   const batchSize =
@@ -484,6 +373,8 @@ export async function releaseExpiredCheckoutOrders(
   const candidates =
     await prisma.order.findMany({
       where: {
+        ...(options.orderIds?.length ? { id: { in: options.orderIds } } : {}),
+
         status: {
           in: [
             "PENDING_PAYMENT",
@@ -503,6 +394,13 @@ export async function releaseExpiredCheckoutOrders(
 
         paidAt:
           null,
+
+        payments: {
+          none: {
+            status: "PENDING_VERIFICATION",
+            verificationLeaseExpiresAt: { gt: checkedAt },
+          },
+        },
       },
 
       orderBy: {

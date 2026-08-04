@@ -1,243 +1,236 @@
 import {
+  createHash,
   createHmac,
   randomBytes,
+  randomUUID,
   timingSafeEqual,
 } from "node:crypto";
+import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
+import { Prisma } from "@/generated/prisma/client";
+import { prisma } from "@/lib/prisma";
 
-import {
-  cookies,
-} from "next/headers";
-
-import {
-  redirect,
-} from "next/navigation";
-
-const ADMIN_COOKIE_NAME =
-  "eloria_admin_session";
-
-const SESSION_LIFETIME_SECONDS =
-  8 * 60 * 60;
+const ADMIN_COOKIE_NAME = "eloria_admin_session";
+const SESSION_LIFETIME_SECONDS = 8 * 60 * 60;
 
 type AdminSessionPayload = {
+  sessionId: string;
   expiresAt: number;
-  nonce: string;
+  version: string;
 };
 
-function getAdminPassword(): string {
-  return process.env.ELORIA_ADMIN_PASSWORD?.trim() ?? "";
+function env(key: string): string {
+  return process.env[key]?.trim() ?? "";
+}
+function adminUsername(): string {
+  return env("ELORIA_ADMIN_USERNAME");
+}
+function adminPassword(): string {
+  return env("ELORIA_ADMIN_PASSWORD");
+}
+function sessionSecret(): string {
+  return env("ELORIA_ADMIN_SESSION_SECRET");
+}
+function sessionVersion(): string {
+  return env("ELORIA_ADMIN_SESSION_VERSION") || "1";
+}
+function totpSecret(): string {
+  return env("ELORIA_ADMIN_TOTP_SECRET").replace(/\s+/g, "").toUpperCase();
 }
 
-function getAdminSessionSecret(): string {
-  return process.env.ELORIA_ADMIN_SESSION_SECRET?.trim() ?? "";
+export function isAdminTotpRequired(): boolean {
+  return totpSecret().length > 0;
 }
 
 export function isAdminConfigured(): boolean {
   return (
-    getAdminPassword().length >= 12 &&
-    getAdminSessionSecret().length >= 32
+    adminUsername().length >= 3 &&
+    adminPassword().length >= 14 &&
+    sessionSecret().length >= 48 &&
+    sessionVersion().length >= 1
   );
 }
 
-function safeEqual(
-  left: string,
-  right: string,
-): boolean {
-  const leftBuffer =
-    Buffer.from(left);
-
-  const rightBuffer =
-    Buffer.from(right);
-
-  if (
-    leftBuffer.length !==
-    rightBuffer.length
-  ) {
-    return false;
-  }
-
-  return timingSafeEqual(
-    leftBuffer,
-    rightBuffer,
-  );
+function safeEqual(left: string, right: string): boolean {
+  const a = Buffer.from(left);
+  const b = Buffer.from(right);
+  return a.length === b.length && timingSafeEqual(a, b);
 }
 
-function signPayload(
-  encodedPayload: string,
-): string {
-  return createHmac(
-    "sha256",
-    getAdminSessionSecret(),
-  )
-    .update(encodedPayload)
-    .digest("base64url");
+function signPayload(encodedPayload: string): string {
+  return createHmac("sha256", sessionSecret()).update(encodedPayload).digest("base64url");
 }
 
-function createSessionToken(): {
-  token: string;
-  expiresAt: number;
-} {
-  const expiresAt =
-    Math.floor(Date.now() / 1000) +
-    SESSION_LIFETIME_SECONDS;
-
-  const payload: AdminSessionPayload = {
-    expiresAt,
-    nonce:
-      randomBytes(24).toString("base64url"),
-  };
-
-  const encodedPayload =
-    Buffer.from(
-      JSON.stringify(payload),
-      "utf8",
-    ).toString("base64url");
-
-  const signature =
-    signPayload(encodedPayload);
-
-  return {
-    token:
-      `${encodedPayload}.${signature}`,
-    expiresAt,
-  };
+function hash(value: string): string {
+  return createHash("sha256").update(value).digest("hex");
 }
 
-function verifySessionToken(
-  token: string,
-): boolean {
-  if (!isAdminConfigured()) {
-    return false;
-  }
+function json(value: unknown): Prisma.InputJsonValue {
+  return JSON.parse(JSON.stringify(value)) as Prisma.InputJsonValue;
+}
 
-  const [
-    encodedPayload,
-    suppliedSignature,
-  ] = token.split(".");
-
-  if (
-    !encodedPayload ||
-    !suppliedSignature
-  ) {
-    return false;
-  }
-
-  const expectedSignature =
-    signPayload(encodedPayload);
-
-  if (
-    !safeEqual(
-      suppliedSignature,
-      expectedSignature,
-    )
-  ) {
-    return false;
-  }
-
+function parseSessionToken(token: string): AdminSessionPayload | null {
+  if (!isAdminConfigured()) return null;
+  const [encodedPayload, suppliedSignature] = token.split(".");
+  if (!encodedPayload || !suppliedSignature) return null;
+  const expected = signPayload(encodedPayload);
+  if (!safeEqual(suppliedSignature, expected)) return null;
   try {
-    const payload =
-      JSON.parse(
-        Buffer.from(
-          encodedPayload,
-          "base64url",
-        ).toString("utf8"),
-      ) as Partial<AdminSessionPayload>;
-
-    return (
-      typeof payload.expiresAt ===
-        "number" &&
-      typeof payload.nonce ===
-        "string" &&
-      payload.nonce.length >= 16 &&
-      payload.expiresAt >
-        Math.floor(Date.now() / 1000)
-    );
+    const payload = JSON.parse(Buffer.from(encodedPayload, "base64url").toString("utf8")) as Partial<AdminSessionPayload>;
+    if (
+      typeof payload.sessionId !== "string" ||
+      typeof payload.expiresAt !== "number" ||
+      typeof payload.version !== "string" ||
+      payload.expiresAt <= Math.floor(Date.now() / 1000) ||
+      payload.version !== sessionVersion()
+    ) return null;
+    return payload as AdminSessionPayload;
   } catch {
-    return false;
+    return null;
   }
 }
 
-export function verifyAdminPassword(
-  suppliedPassword: string,
-): boolean {
-  if (!isAdminConfigured()) {
-    return false;
+function decodeBase32(value: string): Buffer {
+  const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
+  let bits = "";
+  for (const character of value.replace(/=+$/, "")) {
+    const index = alphabet.indexOf(character);
+    if (index < 0) throw new Error("Invalid base32 secret");
+    bits += index.toString(2).padStart(5, "0");
   }
-
-  return safeEqual(
-    suppliedPassword,
-    getAdminPassword(),
-  );
+  const bytes: number[] = [];
+  for (let offset = 0; offset + 8 <= bits.length; offset += 8) {
+    bytes.push(Number.parseInt(bits.slice(offset, offset + 8), 2));
+  }
+  return Buffer.from(bytes);
 }
 
-export async function createAdminSession(): Promise<void> {
-  const session =
-    createSessionToken();
+function totpAt(secret: string, counter: number): string {
+  const buffer = Buffer.alloc(8);
+  buffer.writeBigUInt64BE(BigInt(counter));
+  const digest = createHmac("sha1", decodeBase32(secret)).update(buffer).digest();
+  const offset = digest[digest.length - 1]! & 0x0f;
+  const code =
+    (((digest[offset]! & 0x7f) << 24) |
+      ((digest[offset + 1]! & 0xff) << 16) |
+      ((digest[offset + 2]! & 0xff) << 8) |
+      (digest[offset + 3]! & 0xff)) %
+    1_000_000;
+  return code.toString().padStart(6, "0");
+}
 
-  const cookieStore =
-    await cookies();
+export function verifyAdminCredentials(input: {
+  username: string;
+  password: string;
+  totpCode: string;
+}): boolean {
+  if (!isAdminConfigured()) return false;
+  if (!safeEqual(input.username.trim(), adminUsername())) return false;
+  if (!safeEqual(input.password, adminPassword())) return false;
+  if (!isAdminTotpRequired()) return true;
+  if (!/^\d{6}$/.test(input.totpCode)) return false;
+  const current = Math.floor(Date.now() / 30_000);
+  return [-1, 0, 1].some(delta => safeEqual(input.totpCode, totpAt(totpSecret(), current + delta)));
+}
 
-  cookieStore.set(
-    ADMIN_COOKIE_NAME,
-    session.token,
-    {
-      httpOnly: true,
-      sameSite: "strict",
-      secure:
-        process.env.NODE_ENV ===
-        "production",
-      path: "/",
-      maxAge:
-        SESSION_LIFETIME_SECONDS,
-      expires:
-        new Date(
-          session.expiresAt * 1000,
-        ),
+export async function recordAdminSecurityEvent(input: {
+  eventType: string;
+  successful: boolean;
+  ip?: string | null;
+  userAgent?: string | null;
+  payload?: unknown;
+}): Promise<void> {
+  await prisma.adminSecurityEvent.create({
+    data: {
+      eventType: input.eventType.slice(0, 100),
+      successful: input.successful,
+      ipHash: input.ip ? hash(input.ip) : null,
+      userAgent: input.userAgent?.slice(0, 500) || null,
+      payload: input.payload === undefined ? undefined : json(input.payload),
     },
-  );
+  }).catch(error => console.error("[Eloria Admin Audit]", error));
+}
+
+export async function createAdminSession(input: {
+  ip?: string | null;
+  userAgent?: string | null;
+} = {}): Promise<void> {
+  const sessionId = randomUUID();
+  const expiresAt = Math.floor(Date.now() / 1000) + SESSION_LIFETIME_SECONDS;
+  const nonce = randomBytes(32).toString("base64url");
+  const sessionHash = hash(`${sessionId}:${nonce}`);
+  await prisma.adminSession.create({
+    data: {
+      id: sessionId,
+      sessionHash,
+      ipHash: input.ip ? hash(input.ip) : null,
+      userAgent: input.userAgent?.slice(0, 500) || null,
+      expiresAt: new Date(expiresAt * 1000),
+    },
+  });
+  const payload: AdminSessionPayload = { sessionId, expiresAt, version: sessionVersion() };
+  const encodedPayload = Buffer.from(JSON.stringify(payload), "utf8").toString("base64url");
+  const token = `${encodedPayload}.${signPayload(encodedPayload)}.${nonce}`;
+  const cookieStore = await cookies();
+  cookieStore.set(ADMIN_COOKIE_NAME, token, {
+    httpOnly: true,
+    sameSite: "strict",
+    secure: process.env.NODE_ENV === "production",
+    path: "/",
+    maxAge: SESSION_LIFETIME_SECONDS,
+    expires: new Date(expiresAt * 1000),
+  });
 }
 
 export async function clearAdminSession(): Promise<void> {
-  const cookieStore =
-    await cookies();
-
-  cookieStore.set(
-    ADMIN_COOKIE_NAME,
-    "",
-    {
-      httpOnly: true,
-      sameSite: "strict",
-      secure:
-        process.env.NODE_ENV ===
-        "production",
-      path: "/",
-      maxAge: 0,
-      expires: new Date(0),
-    },
-  );
+  const cookieStore = await cookies();
+  const token = cookieStore.get(ADMIN_COOKIE_NAME)?.value;
+  if (token) {
+    const [encodedPayload, , nonce] = token.split(".");
+    if (encodedPayload && nonce) {
+      try {
+        const payload = JSON.parse(Buffer.from(encodedPayload, "base64url").toString("utf8")) as Partial<AdminSessionPayload>;
+        if (typeof payload.sessionId === "string") {
+          await prisma.adminSession.updateMany({
+            where: { id: payload.sessionId, sessionHash: hash(`${payload.sessionId}:${nonce}`) },
+            data: { revokedAt: new Date() },
+          });
+        }
+      } catch {
+        // Invalid cookies are deleted below.
+      }
+    }
+  }
+  cookieStore.set(ADMIN_COOKIE_NAME, "", {
+    httpOnly: true,
+    sameSite: "strict",
+    secure: process.env.NODE_ENV === "production",
+    path: "/",
+    maxAge: 0,
+    expires: new Date(0),
+  });
 }
 
 export async function hasValidAdminSession(): Promise<boolean> {
-  const cookieStore =
-    await cookies();
-
-  const token =
-    cookieStore.get(
-      ADMIN_COOKIE_NAME,
-    )?.value;
-
-  return token
-    ? verifySessionToken(token)
-    : false;
+  const cookieStore = await cookies();
+  const token = cookieStore.get(ADMIN_COOKIE_NAME)?.value;
+  if (!token) return false;
+  const [encodedPayload, signature, nonce] = token.split(".");
+  if (!encodedPayload || !signature || !nonce) return false;
+  const payload = parseSessionToken(`${encodedPayload}.${signature}`);
+  if (!payload) return false;
+  const session = await prisma.adminSession.findFirst({
+    where: {
+      id: payload.sessionId,
+      sessionHash: hash(`${payload.sessionId}:${nonce}`),
+      revokedAt: null,
+      expiresAt: { gt: new Date() },
+    },
+    select: { id: true },
+  });
+  return Boolean(session);
 }
 
-export async function requireAdmin(
-  locale: string,
-): Promise<void> {
-  if (
-    !(await hasValidAdminSession())
-  ) {
-    redirect(
-      `/${locale}/admin/login`,
-    );
-  }
+export async function requireAdmin(locale: string): Promise<void> {
+  if (!(await hasValidAdminSession())) redirect(`/${locale}/admin/login`);
 }

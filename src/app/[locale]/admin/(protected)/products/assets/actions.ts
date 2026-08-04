@@ -6,6 +6,7 @@ import { Prisma } from "@/generated/prisma/client";
 import { hasValidAdminSession } from "@/lib/admin-auth";
 import { removeStoredProductImage, storeProductImage } from "@/lib/product-media-storage";
 import { prisma } from "@/lib/prisma";
+import { syncProductInventory } from "@/lib/inventory";
 
 type Locale = "fa" | "en";
 const MAX_UPLOAD_COUNT = 8;
@@ -158,39 +159,25 @@ async function uniqueSku(sku: string | null, excluded?: string) {
     throw new Error("این SKU قبلاً استفاده شده است.");
   }
 }
-async function syncStock(productId: string) {
-  const variants = await prisma.productVariant.findMany({ where: { productId, isActive: true }, select: { stock: true } });
-  if (!variants.length) return;
-  const stock = variants.reduce((sum, variant) => sum + variant.stock, 0);
-  const current = await prisma.product.findUnique({ where: { id: productId }, select: { status: true } });
-  if (!current) return;
-  await prisma.product.update({ where: { id: productId }, data: {
-    stock,
-    status: stock === 0 && current.status === "ACTIVE" ? "OUT_OF_STOCK" : stock > 0 && current.status === "OUT_OF_STOCK" ? "ACTIVE" : current.status,
-  }});
-}
-
 export async function createAdminProductVariantAction(productId: string, localeValue: string, form: FormData): Promise<void> {
   await session(); const locale = localeOf(localeValue); const item = await product(productId);
-  try { const data = variantData(form); await uniqueSku(data.sku); await prisma.productVariant.create({ data: { productId, ...data } }); await syncStock(productId); }
+  try { const data = variantData(form); await uniqueSku(data.sku); await prisma.$transaction(async transaction => { await transaction.productVariant.create({ data: { productId, ...data } }); await syncProductInventory(transaction, productId); }); }
   catch (error) { redirect(messageUrl(locale, productId, "variantError", error instanceof Error ? error.message : "ساخت تنوع ناموفق بود.")); }
   refresh(productId, item.slug); redirect(messageUrl(locale, productId, "variantSaved"));
 }
 export async function updateAdminProductVariantAction(productId: string, variantId: string, localeValue: string, form: FormData): Promise<void> {
   await session(); const locale = localeOf(localeValue); const item = await product(productId);
   if (!(await prisma.productVariant.findFirst({ where: { id: variantId, productId }, select: { id: true } }))) redirect(messageUrl(locale, productId, "variantError", "تنوع پیدا نشد."));
-  try { const data = variantData(form); await uniqueSku(data.sku, variantId); await prisma.productVariant.update({ where: { id: variantId }, data }); await syncStock(productId); }
+  try { const data = variantData(form); await uniqueSku(data.sku, variantId); await prisma.$transaction(async transaction => { await transaction.productVariant.update({ where: { id: variantId }, data }); await syncProductInventory(transaction, productId); }); }
   catch (error) { redirect(messageUrl(locale, productId, "variantError", error instanceof Error ? error.message : "ویرایش تنوع ناموفق بود.")); }
   refresh(productId, item.slug); redirect(messageUrl(locale, productId, "variantSaved"));
 }
 export async function deleteAdminProductVariantAction(productId: string, variantId: string, localeValue: string): Promise<void> {
   await session(); const locale = localeOf(localeValue); const item = await product(productId);
   if (await prisma.orderItem.count({ where: { variantId } })) {
-    await prisma.productVariant.update({ where: { id: variantId }, data: { isActive: false } });
-    await syncStock(productId); refresh(productId, item.slug); redirect(messageUrl(locale, productId, "variantArchived"));
+    await prisma.$transaction(async transaction => { await transaction.productVariant.update({ where: { id: variantId }, data: { isActive: false } }); await syncProductInventory(transaction, productId); }); refresh(productId, item.slug); redirect(messageUrl(locale, productId, "variantArchived"));
   }
-  await prisma.productVariant.deleteMany({ where: { id: variantId, productId } });
-  await syncStock(productId); refresh(productId, item.slug); redirect(messageUrl(locale, productId, "variantSaved"));
+  await prisma.$transaction(async transaction => { await transaction.productVariant.deleteMany({ where: { id: variantId, productId } }); await syncProductInventory(transaction, productId); }); refresh(productId, item.slug); redirect(messageUrl(locale, productId, "variantSaved"));
 }
 export async function deleteAdminProductAction(productId: string, localeValue: string): Promise<void> {
   await session(); const locale = localeOf(localeValue);

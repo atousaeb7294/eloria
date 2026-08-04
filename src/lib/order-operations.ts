@@ -1,12 +1,14 @@
 import { Prisma } from "@/generated/prisma/client";
 import { prisma } from "@/lib/prisma";
+import { restoreReservedInventory } from "@/lib/inventory";
 
-export type AdminOrderTransition = "CANCELLED" | "PROCESSING" | "SHIPPED" | "COMPLETED";
+export type AdminOrderTransition = "CANCELLED" | "PROCESSING" | "SHIPPED" | "COMPLETED" | "REFUNDED";
 
 const ALLOWED: Record<string, AdminOrderTransition[]> = {
   PENDING_PAYMENT: ["CANCELLED"],
   PAYMENT_FAILED: ["CANCELLED"],
-  PAID: ["PROCESSING"],
+  PAID: ["PROCESSING", "REFUNDED"],
+  PAYMENT_REVIEW: ["PROCESSING", "REFUNDED"],
   PROCESSING: ["SHIPPED"],
   SHIPPED: ["COMPLETED"],
 };
@@ -20,39 +22,6 @@ export class OrderOperationError extends Error {
     super(message);
     this.name = "OrderOperationError";
   }
-}
-
-async function restoreReservedInventory(transaction: Prisma.TransactionClient, orderId: string) {
-  const items = await transaction.orderItem.findMany({
-    where: { orderId },
-    select: { id: true, productId: true, variantId: true, quantity: true },
-  });
-  const issues: Array<Record<string, unknown>> = [];
-  let restoredUnits = 0;
-
-  for (const item of items) {
-    if (item.variantId) {
-      const updated = await transaction.productVariant.updateMany({
-        where: { id: item.variantId },
-        data: { stock: { increment: item.quantity } },
-      });
-      if (updated.count === 1) restoredUnits += item.quantity;
-      else issues.push({ itemId: item.id, reason: "VARIANT_NOT_FOUND" });
-      continue;
-    }
-    if (item.productId) {
-      const updated = await transaction.product.updateMany({
-        where: { id: item.productId },
-        data: { stock: { increment: item.quantity } },
-      });
-      if (updated.count === 1) restoredUnits += item.quantity;
-      else issues.push({ itemId: item.id, reason: "PRODUCT_NOT_FOUND" });
-      continue;
-    }
-    issues.push({ itemId: item.id, reason: "INVENTORY_REFERENCE_MISSING" });
-  }
-
-  return { restoredUnits, issues };
 }
 
 export async function transitionOrderByAdmin({
@@ -90,7 +59,32 @@ export async function transitionOrderByAdmin({
         where: { id: orderId },
         data: { status: "CANCELLED", cancelledAt: now, inventoryReleasedAt: order.inventoryReleasedAt ?? now },
       });
+    } else if (target === "REFUNDED") {
+      if (!order.inventoryReleasedAt) inventoryResult = await restoreReservedInventory(transaction, orderId);
+      await transaction.paymentAttempt.updateMany({
+        where: { orderId, status: { in: ["PAID", "REQUIRES_REVIEW"] } },
+        data: { status: "REFUNDED", activeKey: null, refundedAt: now },
+      });
+      await transaction.order.update({
+        where: { id: orderId },
+        data: {
+          status: "REFUNDED",
+          refundedAt: now,
+          inventoryReleasedAt: order.inventoryReleasedAt ?? now,
+        },
+      });
     } else if (target === "PROCESSING") {
+      if (order.status === "PAYMENT_REVIEW") {
+        if (order.inventoryReleasedAt) {
+          throw new OrderOperationError(
+            "موجودی این پرداخت قبلاً آزاد شده است؛ ابتدا موجودی را دستی بررسی کنید و در صورت نبود کالا بازپرداخت انجام دهید.",
+          );
+        }
+        await transaction.paymentAttempt.updateMany({
+          where: { orderId, status: "REQUIRES_REVIEW" },
+          data: { status: "PAID", activeKey: null, errorMessage: null },
+        });
+      }
       await transaction.order.update({
         where: { id: orderId },
         data: { status: "PROCESSING", inventoryCommittedAt: order.inventoryCommittedAt ?? now },
@@ -111,6 +105,64 @@ export async function transitionOrderByAdmin({
     });
 
     return { orderNumber: order.orderNumber, from: order.status, to: target };
+  }, { isolationLevel: Prisma.TransactionIsolationLevel.Serializable });
+}
+
+
+export async function markReviewedPaymentRefunded({
+  orderId,
+  paymentAttemptId,
+  note,
+}: {
+  orderId: string;
+  paymentAttemptId: string;
+  note: string | null;
+}) {
+  return prisma.$transaction(async transaction => {
+    await transaction.$queryRaw`SELECT id FROM payment_attempts WHERE id = ${paymentAttemptId}::uuid FOR UPDATE`;
+
+    const attempt = await transaction.paymentAttempt.findFirst({
+      where: { id: paymentAttemptId, orderId },
+      select: {
+        id: true,
+        status: true,
+        gatewayReference: true,
+        amountToman: true,
+      },
+    });
+
+    if (!attempt) throw new OrderOperationError("تلاش پرداخت پیدا نشد.");
+    if (attempt.status !== "REQUIRES_REVIEW") {
+      throw new OrderOperationError("فقط پرداخت نیازمند بررسی را می‌توان بازپرداخت‌شده ثبت کرد.");
+    }
+
+    const refundedAt = new Date();
+    await transaction.paymentAttempt.update({
+      where: { id: attempt.id },
+      data: {
+        status: "REFUNDED",
+        activeKey: null,
+        refundedAt,
+        errorMessage: note,
+      },
+    });
+
+    await transaction.orderAuditEvent.create({
+      data: {
+        orderId,
+        actorType: "ADMIN",
+        eventType: "PAYMENT_ATTEMPT_MANUALLY_REFUNDED",
+        payload: json({
+          paymentAttemptId: attempt.id,
+          gatewayReference: attempt.gatewayReference,
+          amountToman: attempt.amountToman.toString(),
+          note,
+          refundedAt: refundedAt.toISOString(),
+        }),
+      },
+    });
+
+    return { paymentAttemptId: attempt.id };
   }, { isolationLevel: Prisma.TransactionIsolationLevel.Serializable });
 }
 

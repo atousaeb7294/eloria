@@ -45,6 +45,7 @@ enum OrderStatus {
   SHIPPED
   COMPLETED
   PAYMENT_FAILED
+  PAYMENT_REVIEW
   CANCELLED
   EXPIRED
   REFUNDED
@@ -54,6 +55,7 @@ enum PaymentStatus {
   CREATED
   REDIRECTED
   PENDING_VERIFICATION
+  REQUIRES_REVIEW
   PAID
   FAILED
   CANCELLED
@@ -66,6 +68,57 @@ enum AuditActorType {
   CUSTOMER
   ADMIN
   PAYMENT_GATEWAY
+}
+
+model AdminSession {
+  id          String    @id @default(uuid()) @db.Uuid
+  sessionHash String    @unique @db.VarChar(64)
+  ipHash      String?   @db.VarChar(64)
+  userAgent   String?   @db.VarChar(500)
+  expiresAt   DateTime
+  revokedAt   DateTime?
+  lastSeenAt  DateTime  @default(now())
+  createdAt   DateTime  @default(now())
+
+  @@index([expiresAt])
+  @@index([revokedAt])
+  @@map("admin_sessions")
+}
+
+model AdminSecurityEvent {
+  id         String   @id @default(uuid()) @db.Uuid
+  eventType  String   @db.VarChar(100)
+  successful Boolean
+  ipHash     String?  @db.VarChar(64)
+  userAgent  String?  @db.VarChar(500)
+  payload    Json?
+  createdAt  DateTime @default(now())
+
+  @@index([eventType, createdAt])
+  @@index([successful, createdAt])
+  @@map("admin_security_events")
+}
+
+model CronLease {
+  key         String   @id @db.VarChar(100)
+  holder      String   @db.VarChar(128)
+  lockedUntil DateTime
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([lockedUntil])
+  @@map("cron_leases")
+}
+
+model RateLimitBucket {
+  key       String   @id @db.VarChar(190)
+  count     Int      @default(0)
+  resetAt   DateTime
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([resetAt])
+  @@map("rate_limit_buckets")
 }
 
 model Collection {
@@ -490,6 +543,8 @@ model PaymentAttempt {
 
   gatewayReference String? @unique @db.VarChar(128)
 
+  activeKey String? @unique @db.VarChar(180)
+
   requestPayload Json?
 
   responsePayload Json?
@@ -508,6 +563,10 @@ model PaymentAttempt {
 
   callbackReceivedAt DateTime?
 
+  verificationStartedAt DateTime?
+
+  verificationLeaseExpiresAt DateTime?
+
   verifiedAt DateTime?
 
   failedAt DateTime?
@@ -522,6 +581,7 @@ model PaymentAttempt {
   @@index([orderId, status])
   @@index([status, createdAt])
   @@index([provider, createdAt])
+  @@index([verificationLeaseExpiresAt])
   @@map("payment_attempts")
 }
 

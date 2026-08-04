@@ -36,6 +36,8 @@ import {
   PurchaseProgress,
 } from "@/components/purchase-progress";
 
+import { TurnstileWidget } from "@/components/turnstile-widget";
+
 import {
   CheckoutCustomerError,
   normalizeCheckoutCustomer,
@@ -160,7 +162,7 @@ type PriceChangeNotice = {
 };
 
 type CheckoutPageClientProps = {
-  locale: string;
+  locale: "fa" | "en";
   persianTitleClassName: string;
 };
 
@@ -776,6 +778,8 @@ export function CheckoutPageClient({
       null,
     );
 
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
+
   const [
     createdOrder,
     setCreatedOrder,
@@ -1383,6 +1387,8 @@ export function CheckoutPageClient({
 
                   customer:
                     normalizedCustomer,
+
+                  turnstileToken,
 
                   items:
                     storedItems.map(
@@ -2183,6 +2189,11 @@ export function CheckoutPageClient({
                           }
                         </div>
                       </div>
+
+                      <TurnstileWidget
+                        locale={locale}
+                        onTokenChange={setTurnstileToken}
+                      />
 
                       {submitError && (
                         <div className="mt-5 flex items-start gap-3 rounded-xl border border-red-300/20 bg-red-300/[0.055] px-4 py-3 text-xs leading-6 text-red-100/75">

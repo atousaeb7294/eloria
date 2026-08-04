@@ -1,0 +1,221 @@
+import Link from "next/link";
+import {
+  Languages,
+  Scale,
+  ShieldCheck,
+} from "lucide-react";
+
+import {
+  MagicArrowIcon,
+} from "@/components/luxury-icons";
+import {
+  SectionBackground,
+} from "@/components/section-background";
+
+type HomeShowcaseSectionsProps = {
+  locale: string;
+  persianTitleClassName?: string;
+};
+
+type HomeCopy = {
+  trustEyebrow: string;
+  trustTitle: string;
+  trustDescription: string;
+  finalEyebrow: string;
+  finalTitle: string;
+  finalDescription: string;
+  finalPrimary: string;
+  finalSecondary: string;
+  principles: Array<{
+    title: string;
+    description: string;
+  }>;
+};
+
+export function HomeShowcaseSections({
+  locale,
+  persianTitleClassName,
+}: HomeShowcaseSectionsProps) {
+  const isPersian = locale === "fa";
+
+  const copy: HomeCopy = isPersian
+    ? {
+        trustEyebrow: "انتخاب با اطمینان",
+        trustTitle: "زیبایی باید با وضوح همراه باشد",
+        trustDescription:
+          "اطلاعات هر اثر با ساختاری روشن نمایش داده می‌شود تا پیش از انتخاب، جزئیات مهم را در یک نگاه ببینید.",
+        finalEyebrow: "آغاز یک روایت",
+        finalTitle: "اثری را انتخاب کنید که بخشی از روایت شما شود",
+        finalDescription:
+          "تمام آثار الوریا را ببینید و انتخاب خود را براساس دسته‌بندی، جنس، موجودی و بازه قیمت دقیق‌تر کنید.",
+        finalPrimary: "تماشای تمام آثار",
+        finalSecondary: "مرور گنجینه‌ها",
+        principles: [
+          {
+            title: "قیمت‌گذاری شفاف",
+            description:
+              "قیمت نهایی و اطلاعات اثر پیش از افزودن به سبد، به‌صورت روشن نمایش داده می‌شود.",
+          },
+          {
+            title: "جزئیات قابل بررسی",
+            description:
+              "وزن، متریال، مدل و وضعیت موجودی هر محصول در مسیر انتخاب در دسترس است.",
+          },
+          {
+            title: "تجربه دو‌زبانه",
+            description:
+              "مسیرهای فارسی و انگلیسی با ساختاری یکپارچه و قابل‌استفاده ارائه می‌شوند.",
+          },
+        ],
+      }
+    : {
+        trustEyebrow: "Choose with clarity",
+        trustTitle: "Beauty should be accompanied by transparency",
+        trustDescription:
+          "Each creation is presented through a clear information structure, helping you understand its essential details before choosing.",
+        finalEyebrow: "Begin a narrative",
+        finalTitle: "Choose a creation that becomes part of your story",
+        finalDescription:
+          "Browse every Eloria creation and refine your selection by category, material, availability and price range.",
+        finalPrimary: "View all creations",
+        finalSecondary: "Browse collections",
+        principles: [
+          {
+            title: "Transparent pricing",
+            description:
+              "The final price and essential product information are displayed clearly before an item enters your cart.",
+          },
+          {
+            title: "Verifiable details",
+            description:
+              "Weight, material, variation and availability remain visible throughout the selection journey.",
+          },
+          {
+            title: "Bilingual experience",
+            description:
+              "Persian and English journeys are presented through a consistent, usable structure.",
+          },
+        ],
+      };
+
+  const titleClassName = isPersian
+    ? `${persianTitleClassName ?? ""} pb-3 leading-[1.8]`
+    : "font-serif leading-tight";
+
+  const principleIcons = [Scale, ShieldCheck, Languages];
+
+  return (
+    <div dir={isPersian ? "rtl" : "ltr"} className="relative z-10">
+      <section
+        id="trust"
+        aria-labelledby="home-trust-title"
+        className="relative scroll-mt-28 overflow-hidden px-4 py-24 sm:px-6 sm:py-28 lg:px-10"
+      >
+        <SectionBackground
+          sectionKey="home-trust"
+          fixedIndex={6}
+          tone="deep"
+          objectPosition="center 44%"
+          imageClassName="scale-[1.04]"
+        />
+        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(1,13,9,0.82),rgba(2,23,16,0.9))]" />
+
+        <div className="relative mx-auto max-w-7xl">
+          <header className="mx-auto max-w-4xl text-center">
+            <p className="text-[10px] font-medium uppercase tracking-[0.3em] text-[#dfc476]/72 sm:text-xs">
+              {copy.trustEyebrow}
+            </p>
+            <h2
+              id="home-trust-title"
+              className={`${titleClassName} mt-5 text-4xl font-semibold text-[#f9e9c2] sm:text-5xl`}
+            >
+              {copy.trustTitle}
+            </h2>
+            <p className="mx-auto mt-5 max-w-3xl text-sm leading-8 text-[#d9ccb0]/68 sm:text-base sm:leading-9">
+              {copy.trustDescription}
+            </p>
+          </header>
+
+          <div className="mt-12 grid gap-4 md:grid-cols-3">
+            {copy.principles.map((principle, index) => {
+              const Icon = principleIcons[index];
+
+              return (
+                <article
+                  key={principle.title}
+                  className="relative overflow-hidden rounded-[2rem] border border-[#dfc16f]/18 bg-[linear-gradient(145deg,rgba(7,49,35,0.82),rgba(2,25,18,0.93))] p-6 shadow-[0_28px_75px_rgba(0,0,0,0.34)] sm:p-7"
+                >
+                  <div
+                    aria-hidden="true"
+                    className="absolute -end-12 -top-12 size-36 rounded-full bg-[#d9b75d]/[0.06] blur-3xl"
+                  />
+                  <span className="relative grid size-14 place-items-center rounded-2xl border border-[#dfc16f]/28 bg-[#d9b75d]/[0.07] text-[#e7cb7c]">
+                    <Icon className="size-6" aria-hidden="true" />
+                  </span>
+                  <h3 className="relative mt-6 text-xl font-semibold text-[#f3e3bd]">
+                    {principle.title}
+                  </h3>
+                  <p className="relative mt-3 text-sm leading-8 text-[#d6c9ad]/64">
+                    {principle.description}
+                  </p>
+                </article>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      <section
+        aria-labelledby="home-final-title"
+        className="relative overflow-hidden px-4 pb-24 sm:px-6 sm:pb-28 lg:px-10"
+      >
+        <div className="relative mx-auto max-w-7xl overflow-hidden rounded-[2.8rem] border border-[#e2c570]/30 bg-[#031a13] px-5 py-14 text-center shadow-[0_36px_100px_rgba(0,0,0,0.5)] sm:px-10 sm:py-20">
+          <SectionBackground
+            sectionKey="home-final-iranian"
+            fixedIndex={4}
+            tone="none"
+            quality={92}
+            objectPosition="center 45%"
+            imageClassName="scale-[1.04]"
+          />
+
+          <div className="absolute inset-0 bg-[linear-gradient(135deg,rgba(1,18,12,0.9),rgba(2,43,30,0.72)_48%,rgba(54,35,6,0.82))]" />
+          <div className="absolute inset-0 opacity-[0.11] [background-image:linear-gradient(45deg,transparent_46%,rgba(255,231,164,0.7)_47%,rgba(255,231,164,0.7)_49%,transparent_50%),linear-gradient(-45deg,transparent_46%,rgba(255,231,164,0.7)_47%,rgba(255,231,164,0.7)_49%,transparent_50%)] [background-size:44px_44px] [mask-image:linear-gradient(to_bottom,transparent,black_22%,black_78%,transparent)]" />
+          <div className="absolute inset-x-20 top-0 h-px bg-gradient-to-r from-transparent via-[#ffe6a1]/75 to-transparent" />
+          <div className="absolute left-1/2 top-1/2 size-[34rem] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#d5ad4a]/[0.08] blur-[95px]" />
+
+          <div className="relative mx-auto max-w-4xl">
+            <p className="text-[10px] uppercase tracking-[0.32em] text-[#e9cf82]/82 sm:text-xs">
+              {copy.finalEyebrow}
+            </p>
+            <h2
+              id="home-final-title"
+              className={`${titleClassName} mt-5 text-4xl font-semibold text-[#fff0cb] sm:text-5xl lg:text-6xl`}
+            >
+              {copy.finalTitle}
+            </h2>
+            <p className="mx-auto mt-5 max-w-3xl text-sm leading-8 text-[#eee3cc]/78 sm:text-base sm:leading-9">
+              {copy.finalDescription}
+            </p>
+
+            <div className="mt-9 flex flex-col justify-center gap-3 sm:flex-row">
+              <Link
+                href={`/${locale}/products`}
+                className="inline-flex min-h-[52px] items-center justify-center gap-3 rounded-full border border-[#ffe29a]/68 bg-[linear-gradient(100deg,rgba(82,57,12,0.55),rgba(215,180,91,0.25),rgba(9,75,53,0.72))] px-8 text-sm font-semibold text-[#ffebae] shadow-[0_16px_42px_rgba(0,0,0,0.3)] transition duration-500 hover:-translate-y-1 hover:border-[#ffe8ac]/95 hover:shadow-[0_22px_50px_rgba(0,0,0,0.42),0_0_26px_rgba(221,185,92,0.16)]"
+              >
+                {copy.finalPrimary}
+                <MagicArrowIcon className="size-5 rtl:rotate-180" />
+              </Link>
+              <Link
+                href={`/${locale}/collections`}
+                className="inline-flex min-h-[52px] items-center justify-center rounded-full border border-white/18 bg-[#02140e]/55 px-8 text-sm text-[#f0e7d5] backdrop-blur-md transition duration-500 hover:-translate-y-1 hover:border-[#e4ca80]/48 hover:bg-[#07291e]/75"
+              >
+                {copy.finalSecondary}
+              </Link>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+  );
+}

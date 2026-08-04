@@ -1,0 +1,4 @@
+-- ELORIA existing-schema baseline.
+-- This migration intentionally contains no DDL because the project database
+-- existed before Prisma Migrate was introduced. Mark it as applied once on the
+-- existing Supabase database, then run `prisma migrate deploy`.

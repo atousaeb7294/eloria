@@ -7,6 +7,8 @@ import {
   NextResponse,
 } from "next/server";
 
+import { acquireCronLease, releaseCronLease } from "@/lib/cron-lease";
+
 import {
   syncMetalPrices,
 } from "@/lib/metal-price-sync";
@@ -191,6 +193,11 @@ export async function GET(
     return unauthorizedResponse();
   }
 
+  const lease = await acquireCronLease({ key: "metal-prices", leaseMs: 540000 });
+  if (!lease.acquired) {
+    return NextResponse.json({ successful: true, skipped: true, reason: "LEASE_HELD" }, { status: 202, headers: noStoreHeaders() });
+  }
+
   try {
     const syncedRates =
       await syncMetalPrices();
@@ -262,5 +269,7 @@ export async function GET(
           noStoreHeaders(),
       },
     );
+  } finally {
+    await releaseCronLease("metal-prices", lease.holder).catch(() => undefined);
   }
 }

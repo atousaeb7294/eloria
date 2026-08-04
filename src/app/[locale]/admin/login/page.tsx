@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import {
   Gem,
   ShieldCheck,
@@ -15,7 +16,10 @@ import {
 import {
   hasValidAdminSession,
   isAdminConfigured,
+  isAdminTotpRequired,
 } from "@/lib/admin-auth";
+
+export const metadata: Metadata = { robots: { index: false, follow: false } };
 
 export const dynamic =
   "force-dynamic";
@@ -85,6 +89,7 @@ export default async function AdminLoginPage({
               تنظیمات امنیتی ناقص است
             </div>
             متغیرهای
+            <code className="mx-1 text-[#efd37e]">ELORIA_ADMIN_USERNAME</code>،
             <code className="mx-1 text-[#efd37e]">ELORIA_ADMIN_PASSWORD</code>
             و
             <code className="mx-1 text-[#efd37e]">ELORIA_ADMIN_SESSION_SECRET</code>
@@ -96,6 +101,7 @@ export default async function AdminLoginPage({
 
         <AdminLoginForm
           locale={locale}
+          totpRequired={isAdminTotpRequired()}
         />
       </section>
     </main>

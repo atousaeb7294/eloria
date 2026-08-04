@@ -2,13 +2,12 @@ import { readFile } from "node:fs/promises";
 import path from "node:path";
 
 type SecurityCheck = readonly [name: string, passed: boolean];
-
 const root = process.cwd();
 
-async function fileIncludes(file: string, value: string): Promise<boolean> {
+async function fileIncludes(file: string, values: string | string[]): Promise<boolean> {
   try {
     const content = await readFile(path.join(root, file), "utf8");
-    return content.includes(value);
+    return (Array.isArray(values) ? values : [values]).every(value => content.includes(value));
   } catch {
     return false;
   }
@@ -16,63 +15,34 @@ async function fileIncludes(file: string, value: string): Promise<boolean> {
 
 async function main(): Promise<void> {
   const checks: SecurityCheck[] = [
-    [
-      "Security headers",
-      await fileIncludes("next.config.ts", "Content-Security-Policy"),
-    ],
-    [
-      "Admin login rate limit",
-      await fileIncludes(
-        "src/app/[locale]/admin/login/actions.ts",
-        "admin-login:",
-      ),
-    ],
-    [
-      "Checkout origin check",
-      await fileIncludes(
-        "src/app/api/checkout/orders/route.ts",
-        "hasTrustedOrigin",
-      ),
-    ],
-    [
-      "Payment verification",
-      await fileIncludes(
-        "src/lib/payment-service.ts",
-        "verifyZarinpalPayment",
-      ),
-    ],
-    [
-      "Cron bearer secret",
-      await fileIncludes(
-        "src/app/api/cron/metal-prices/route.ts",
-        "timingSafeEqual",
-      ),
-    ],
-    [
-      "Health endpoint",
-      await fileIncludes("src/app/api/health/route.ts", "SELECT 1"),
-    ],
+    ["Security headers and HSTS", await fileIncludes("next.config.ts", ["Content-Security-Policy", "Strict-Transport-Security"])],
+    ["Shared database rate limiter", await fileIncludes("src/lib/security/rate-limit.ts", "rate_limit_buckets")],
+    ["Strict checkout origin", await fileIncludes("src/lib/security/request.ts", "sec-fetch-site")],
+    ["Checkout anti-abuse controls", await fileIncludes("src/app/api/checkout/orders/route.ts", ["PENDING_ORDER_LIMIT", "verifyTurnstileToken"])],
+    ["Payment idempotency key", await fileIncludes("src/lib/payment-service.ts", ["activeKey", "Stale payment initialization"])],
+    ["Payment verification lease", await fileIncludes("src/lib/payment-service.ts", ["verificationLeaseExpiresAt", "PAYMENT_VERIFIED_REQUIRES_REVIEW"])],
+    ["Stale callback protection", await fileIncludes("src/lib/payment-service.ts", "STALE_PAYMENT_CALLBACK_IGNORED")],
+    ["Signed payment receipt", await fileIncludes("src/lib/payment-receipt-token.ts", "createHmac")],
+    ["Signed private order tracking", await fileIncludes("src/lib/order-tracking-token.ts", "timingSafeEqual")],
+    ["Revocable admin sessions", await fileIncludes("src/lib/admin-auth.ts", ["adminSession", "revokedAt"])],
+    ["Admin TOTP", await fileIncludes("src/lib/admin-auth.ts", ["totpAt", "ELORIA_ADMIN_TOTP_SECRET"])],
+    ["Cron distributed lease", await fileIncludes("src/lib/cron-lease.ts", "lockedUntil")],
+    ["Prisma production migrations", await fileIncludes("prisma/migrations/20260804000100_commerce_hardening/migration.sql", "orders_total_consistency")],
+    ["Standalone Docker healthcheck", await fileIncludes("Dockerfile", ["standalone", "HEALTHCHECK"])],
+    ["Health endpoint", await fileIncludes("src/app/api/health/route.ts", "SELECT 1")],
   ];
 
-  for (const [name, passed] of checks) {
-    console.log(`${passed ? "PASS" : "FAIL"}  ${name}`);
-  }
-
-  const failedChecks = checks.filter(([, passed]) => !passed);
-
-  if (failedChecks.length > 0) {
-    console.error(
-      `\n${failedChecks.length} مورد از کنترل‌های امنیتی ناموفق بود.`,
-    );
+  for (const [name, passed] of checks) console.log(`${passed ? "PASS" : "FAIL"}  ${name}`);
+  const failed = checks.filter(([, passed]) => !passed);
+  if (failed.length) {
+    console.error(`\n${failed.length} کنترل امنیتی ناموفق بود.`);
     process.exitCode = 1;
     return;
   }
-
-  console.log("\nتمام کنترل‌های امنیتی با موفقیت انجام شدند.");
+  console.log("\nتمام کنترل‌های استاتیک Hardening با موفقیت انجام شدند. تست درگاه و تست نفوذ همچنان باید روی Staging اجرا شود.");
 }
 
 main().catch((error: unknown) => {
-  const message = error instanceof Error ? error.message : String(error);
-  console.error(`\nاجرای ممیزی امنیتی ناموفق بود: ${message}`);
+  console.error(error instanceof Error ? error.message : String(error));
   process.exitCode = 1;
 });

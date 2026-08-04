@@ -36,9 +36,8 @@ export type GetMetalRateSaleDecisionInput = {
     boolean;
 
   /**
-   * این فیلد برای سازگاری با ساختار فعلی دیتابیس
-   * و سایر بخش‌های پروژه نگه داشته شده است،
-   * اما دیگر باعث توقف فروش نمی‌شود.
+   * بیشترین زمانی که آخرین نرخ معتبر در حالت بازار بسته
+   * می‌تواند برای فروش استفاده شود.
    */
   closedMarketMaxAgeMinutes:
     number;
@@ -364,7 +363,7 @@ function createUnavailableDecision({
  *    بدون حاشیه امنیت و در حالت LIVE استفاده می‌شود.
  *
  * ۲. نرخ قدیمی با زمان معتبر:
- *    بدون محدودیت زمانی و با حاشیه امنیت تعیین‌شده
+ *    فقط تا سقف closedMarketMaxAgeMinutes و با حاشیه امنیت
  *    در حالت CLOSED_MARKET استفاده می‌شود.
  *
  * ۳. نرخ دارای زمان مفقود، نامعتبر یا آینده:
@@ -373,8 +372,7 @@ function createUnavailableDecision({
  * ۴. اگر قیمت‌گذاری بازار بسته غیرفعال باشد:
  *    نرخ قدیمی قابل استفاده نیست.
  *
- * closedMarketMaxAgeMinutes عمداً در تصمیم‌گیری استفاده
- * نمی‌شود و فقط برای سازگاری با ساختار فعلی نگه داشته شده است.
+ * بعد از عبور از سقف بازار بسته، نرخ برای فروش غیرقابل استفاده است.
  */
 export function getMetalRateSaleDecision(
   input: GetMetalRateSaleDecisionInput,
@@ -383,6 +381,7 @@ export function getMetalRateSaleDecision(
     referencePricePerGramToman,
     freshness,
     closedMarketPricingEnabled,
+    closedMarketMaxAgeMinutes,
     closedMarketSafetyMarginPercent,
   } =
     input;
@@ -471,12 +470,25 @@ export function getMetalRateSaleDecision(
     });
   }
 
-  /*
-   * محدودیت ۱۲ ساعته حذف شده است.
-   *
-   * در تمام مدت قدیمی‌بودن نرخ، آخرین نرخ معتبر
-   * همراه با حاشیه امنیت استفاده می‌شود.
-   */
+  const normalizedMaxAgeMinutes =
+    Number.isFinite(closedMarketMaxAgeMinutes)
+      ? Math.max(0, Math.trunc(closedMarketMaxAgeMinutes))
+      : 0;
+
+  const maximumAgeSeconds =
+    normalizedMaxAgeMinutes * 60;
+
+  if (
+    maximumAgeSeconds <= 0 ||
+    freshness.ageSeconds > maximumAgeSeconds
+  ) {
+    return createUnavailableDecision({
+      referencePrice,
+      freshness,
+      reason: "RATE_TOO_OLD",
+    });
+  }
+
   const safetyMarginPercent =
     parseSafetyMarginPercent(
       closedMarketSafetyMarginPercent,

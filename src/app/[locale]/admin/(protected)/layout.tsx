@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import type {
   ReactNode,
 } from "react";
@@ -13,6 +14,8 @@ import {
 import {
   requireAdmin,
 } from "@/lib/admin-auth";
+
+export const metadata: Metadata = { robots: { index: false, follow: false } };
 
 export const dynamic =
   "force-dynamic";

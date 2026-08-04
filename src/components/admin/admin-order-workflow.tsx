@@ -2,7 +2,7 @@ import { PackageCheck, Save, Truck } from "lucide-react";
 import { saveAdminShipmentAction, transitionAdminOrderAction } from "@/app/[locale]/admin/(protected)/orders/actions";
 import { availableAdminTransitions } from "@/lib/order-operations";
 
-const labels: Record<string, string> = { CANCELLED: "لغو و بازگردانی موجودی", PROCESSING: "شروع پردازش", SHIPPED: "ثبت ارسال", COMPLETED: "تکمیل سفارش" };
+const labels: Record<string, string> = { CANCELLED: "لغو و بازگردانی موجودی", PROCESSING: "شروع پردازش", SHIPPED: "ثبت ارسال", COMPLETED: "تکمیل سفارش", REFUNDED: "ثبت بازپرداخت و آزادسازی موجودی" };
 const input = "h-11 w-full rounded-xl border border-[#cfb45f]/20 bg-[#031a13] px-3 text-sm text-[#f7e7c2] outline-none focus:border-[#dfc36d]/60";
 export function AdminOrderWorkflow({ orderId, locale, status, workflowSaved, workflowError, shipmentSaved, shipmentError, latestShipment }: { orderId: string; locale: "fa"|"en"; status: string; workflowSaved: boolean; workflowError?: string; shipmentSaved: boolean; shipmentError?: string; latestShipment?: { carrier?: string; trackingCode?: string; note?: string } }) {
   const transitions = availableAdminTransitions(status);

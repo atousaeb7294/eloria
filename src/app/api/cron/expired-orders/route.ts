@@ -7,6 +7,9 @@ import {
   NextResponse,
 } from "next/server";
 
+import { acquireCronLease, releaseCronLease } from "@/lib/cron-lease";
+import { clearExpiredRateLimits } from "@/lib/security/rate-limit";
+
 import {
   releaseExpiredCheckoutOrders,
 } from "@/lib/expired-order-release";
@@ -210,6 +213,11 @@ export async function GET(
     return unauthorizedResponse();
   }
 
+  const lease = await acquireCronLease({ key: "expired-orders", leaseMs: 240000 });
+  if (!lease.acquired) {
+    return NextResponse.json({ successful: true, skipped: true, reason: "LEASE_HELD" }, { status: 202, headers: noStoreHeaders() });
+  }
+
   try {
     const result =
       await releaseExpiredCheckoutOrders({
@@ -219,11 +227,14 @@ export async function GET(
           ),
       });
 
+    const clearedRateLimitBuckets = await clearExpiredRateLimits();
+
     return NextResponse.json(
       {
         successful: true,
 
         ...result,
+        clearedRateLimitBuckets,
       },
       {
         status:
@@ -258,5 +269,7 @@ export async function GET(
           noStoreHeaders(),
       },
     );
+  } finally {
+    await releaseCronLease("expired-orders", lease.holder).catch(() => undefined);
   }
 }

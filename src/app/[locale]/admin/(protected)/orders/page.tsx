@@ -31,6 +31,8 @@ type OrderStatusFilter =
   | "SHIPPED"
   | "COMPLETED"
   | "PAYMENT_FAILED"
+  | "PAYMENT_REVIEW"
+  | "PAYMENT_ATTEMPT_REVIEW"
   | "CANCELLED"
   | "EXPIRED"
   | "REFUNDED";
@@ -85,6 +87,8 @@ export default async function AdminOrdersPage({
     "SHIPPED",
     "COMPLETED",
     "PAYMENT_FAILED",
+    "PAYMENT_REVIEW",
+    "PAYMENT_ATTEMPT_REVIEW",
     "CANCELLED",
     "EXPIRED",
     "REFUNDED",
@@ -100,11 +104,11 @@ export default async function AdminOrdersPage({
   const orders =
     await prisma.order.findMany({
       where: {
-        ...(status
-          ? {
-              status,
-            }
-          : {}),
+        ...(status === "PAYMENT_ATTEMPT_REVIEW"
+          ? { payments: { some: { status: "REQUIRES_REVIEW" } } }
+          : status
+            ? { status }
+            : {}),
         ...(search
           ? {
               OR: [
@@ -154,6 +158,10 @@ export default async function AdminOrdersPage({
             payments: true,
           },
         },
+        payments: {
+          where: { status: "REQUIRES_REVIEW" },
+          select: { id: true },
+        },
       },
     });
 
@@ -194,7 +202,9 @@ export default async function AdminOrdersPage({
                 key={orderStatus}
                 value={orderStatus}
               >
-                {getOrderStatusLabel(orderStatus)}
+                {orderStatus === "PAYMENT_ATTEMPT_REVIEW"
+                  ? "پرداخت اضافه/نیازمند بازپرداخت"
+                  : getOrderStatusLabel(orderStatus)}
               </option>
             ),
           )}
@@ -257,7 +267,12 @@ export default async function AdminOrdersPage({
                         {formatAdminMoney(order.payableToman)}
                       </td>
                       <td className="px-5 py-4 text-[#c2b397]">
-                        {getOrderStatusLabel(order.status)}
+                        <div>{getOrderStatusLabel(order.status)}</div>
+                        {order.payments.length ? (
+                          <div className="mt-1 text-xs text-amber-200">
+                            پرداخت نیازمند بازپرداخت: {new Intl.NumberFormat("fa-IR").format(order.payments.length)}
+                          </div>
+                        ) : null}
                       </td>
                       <td className="px-5 py-4 text-xs text-[#857a66]">
                         {formatAdminDate(order.createdAt)}

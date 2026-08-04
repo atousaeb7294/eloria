@@ -25,9 +25,17 @@ jobs:
     env:
       DATABASE_URL: postgresql://postgres:postgres@localhost:5432/eloria
       DIRECT_URL: postgresql://postgres:postgres@localhost:5432/eloria
+      ELORIA_ADMIN_USERNAME: admin
       ELORIA_ADMIN_PASSWORD: CI-only-password-1234
+      ELORIA_ADMIN_SESSION_VERSION: "1"
       ELORIA_ADMIN_SESSION_SECRET: ci-session-secret-ci-session-secret-ci-session-secret
-      CRON_SECRET: ci-cron-secret-ci-cron-secret-ci-cron-secret
+      CRON_SECRET: ci-cron-secret-ci-cron-secret-ci-cron-secret-ci
+      ELORIA_TRACKING_SECRET: ci-tracking-secret-ci-tracking-secret-ci
+      ELORIA_PAYMENT_RECEIPT_SECRET: ci-receipt-secret-ci-receipt-secret-ci
+      ELORIA_TRUST_PROXY: "true"
+      DATABASE_SSL_MODE: disable
+      NEXT_SERVER_ACTIONS_ENCRYPTION_KEY: AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=
+      ELORIA_DEPLOYMENT_ID: ci-build
       NEXT_PUBLIC_SITE_URL: https://example.com
       SUPABASE_URL: https://example.supabase.co
       SUPABASE_SERVICE_ROLE_KEY: ci-service-role-key-ci-service-role-key-ci-service-role-key
@@ -41,6 +49,13 @@ jobs:
       - run: npm ci
       - run: npx prisma generate
       - run: npx prisma db push
+      - run: npx prisma migrate resolve --applied 00000000000000_existing_schema_baseline
+      - run: npx prisma migrate deploy
+      - run: npx prisma migrate status
       - run: npm run lint
       - run: npm run build
       - run: npm run audit:security
+      - run: npm run audit:dependencies
+      - run: npm run test:tokens
+      - run: npm run check:env
+      - run: docker build --target runner -t eloria-ci .

@@ -23,6 +23,8 @@ import {
   prisma,
 } from "@/lib/prisma";
 
+import { syncProductInventory } from "@/lib/inventory";
+
 const MAX_CART_ITEMS =
   30;
 
@@ -134,6 +136,7 @@ export type CheckoutOrderErrorCode =
   | "TOO_MANY_ITEMS"
   | "PRODUCT_UNAVAILABLE"
   | "INSUFFICIENT_STOCK"
+  | "PENDING_ORDER_LIMIT"
   | "PRICE_EXPIRED"
   | "PRICING_FAILED"
   | "TRANSACTION_FAILED";
@@ -1248,6 +1251,25 @@ export async function createCheckoutOrder({
               };
             }
 
+            await transaction.$queryRaw`SELECT pg_advisory_xact_lock(hashtext(${normalizedCustomer.mobile}))`;
+
+            const activeReservationCount = await transaction.order.count({
+              where: {
+                customerMobile: normalizedCustomer.mobile,
+                status: { in: ["PENDING_PAYMENT", "PAYMENT_FAILED"] },
+                inventoryReleasedAt: null,
+                inventoryExpiresAt: { gt: new Date() },
+              },
+            });
+
+            if (activeReservationCount >= 3) {
+              throw new CheckoutOrderError(
+                "PENDING_ORDER_LIMIT",
+                "ابتدا یکی از سفارش‌های در انتظار پرداخت قبلی را تکمیل کنید.",
+                409,
+              );
+            }
+
             if (
               priceExpiresAt.getTime() <=
               Date.now()
@@ -1318,6 +1340,29 @@ export async function createCheckoutOrder({
                   );
                 }
 
+                const currentProduct =
+                  await transaction.product.findUnique({
+                    where: {
+                      id: productId,
+                    },
+                    select: {
+                      status: true,
+                      stock: true,
+                    },
+                  });
+
+                if (
+                  !currentProduct ||
+                  currentProduct.status !== "ACTIVE" ||
+                  currentProduct.stock < quantity
+                ) {
+                  throw new CheckoutOrderError(
+                    "INSUFFICIENT_STOCK",
+                    `موجودی کلی محصول «${pricedItem.result.product.nameFa}» تغییر کرده است.`,
+                    409,
+                  );
+                }
+
                 const reservation =
                   await transaction.productVariant.updateMany({
                     where: {
@@ -1355,6 +1400,8 @@ export async function createCheckoutOrder({
                     409,
                   );
                 }
+
+                await syncProductInventory(transaction, productId);
 
                 reservedItems.push({
                   pricedItem,
@@ -1434,6 +1481,13 @@ export async function createCheckoutOrder({
 
                   409,
                 );
+              }
+
+              if (currentProduct.stock - quantity === 0) {
+                await transaction.product.updateMany({
+                  where: { id: productId, stock: 0, status: "ACTIVE" },
+                  data: { status: "OUT_OF_STOCK" },
+                });
               }
 
               reservedItems.push({

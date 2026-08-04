@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import {
   notFound,
 } from "next/navigation";
@@ -17,6 +18,8 @@ import {
 import {
   InternalPageShell,
 } from "@/components/internal-page-shell";
+
+export const metadata: Metadata = { robots: { index: false, follow: false } };
 
 export const dynamic =
   "force-dynamic";

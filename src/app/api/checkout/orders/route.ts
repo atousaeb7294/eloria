@@ -8,11 +8,15 @@ import {
 } from "next/server";
 
 import {
+  CheckoutCustomerError,
+  normalizeCheckoutCustomer,
   type CheckoutCustomerInput,
 } from "@/lib/checkout-customer";
 
 import { consumeRateLimit } from "@/lib/security/rate-limit";
 import { hasTrustedOrigin, requestIp } from "@/lib/security/request";
+import { verifyTurnstileToken } from "@/lib/security/turnstile";
+import { prisma } from "@/lib/prisma";
 
 import { initiateOrderPayment } from "@/lib/payment-service";
 
@@ -36,6 +40,7 @@ type IncomingCheckoutBody = {
   locale?: unknown;
   customer?: unknown;
   items?: unknown;
+  turnstileToken?: unknown;
 };
 
 type IncomingCheckoutItem = {
@@ -239,7 +244,7 @@ export async function POST(
     return NextResponse.json({ successful: false, code: "INVALID_ORIGIN", message: "مبدأ درخواست معتبر نیست." }, { status: 403, headers: noStoreHeaders() });
   }
 
-  const rate = consumeRateLimit({ key: `checkout:${requestIp(request)}`, limit: 12, windowMs: 60_000 });
+  const rate = await consumeRateLimit({ key: `checkout:${requestIp(request)}`, limit: 12, windowMs: 60_000 });
   if (!rate.allowed) {
     return NextResponse.json({ successful: false, code: "RATE_LIMITED", message: "تعداد درخواست‌ها بیش از حد مجاز است." }, { status: 429, headers: { ...noStoreHeaders(), "Retry-After": String(rate.retryAfterSeconds) } });
   }
@@ -329,6 +334,60 @@ export async function POST(
           headers:
             noStoreHeaders(),
         },
+      );
+    }
+
+    let canonicalCustomer;
+    try {
+      canonicalCustomer = normalizeCheckoutCustomer(normalizedCustomer);
+    } catch (error) {
+      return NextResponse.json(
+        {
+          successful: false,
+          code: error instanceof CheckoutCustomerError ? error.code : "INVALID_CUSTOMER",
+          message: error instanceof Error ? error.message : "اطلاعات مشتری معتبر نیست.",
+          requestId,
+        },
+        { status: 400, headers: noStoreHeaders() },
+      );
+    }
+
+    const clientIp = requestIp(request);
+    const challenge = await verifyTurnstileToken({
+      token: typeof body.turnstileToken === "string" ? body.turnstileToken : null,
+      ip: clientIp,
+    });
+    if (!challenge.successful) {
+      return NextResponse.json(
+        { successful: false, code: "CHALLENGE_FAILED", message: "تأیید امنیتی سفارش ناموفق بود.", requestId },
+        { status: 403, headers: noStoreHeaders() },
+      );
+    }
+
+    const mobileRate = await consumeRateLimit({
+      key: `checkout-mobile:${canonicalCustomer.mobile}`,
+      limit: 4,
+      windowMs: 30 * 60_000,
+    });
+    if (!mobileRate.allowed) {
+      return NextResponse.json(
+        { successful: false, code: "MOBILE_RATE_LIMITED", message: "برای این شماره موبایل سفارش‌های زیادی ثبت شده است.", requestId },
+        { status: 429, headers: { ...noStoreHeaders(), "Retry-After": String(mobileRate.retryAfterSeconds) } },
+      );
+    }
+
+    const pendingOrders = await prisma.order.count({
+      where: {
+        customerMobile: canonicalCustomer.mobile,
+        status: { in: ["PENDING_PAYMENT", "PAYMENT_FAILED"] },
+        inventoryReleasedAt: null,
+        inventoryExpiresAt: { gt: new Date() },
+      },
+    });
+    if (pendingOrders >= 3) {
+      return NextResponse.json(
+        { successful: false, code: "PENDING_ORDER_LIMIT", message: "ابتدا یکی از سفارش‌های در انتظار پرداخت قبلی را تکمیل کنید.", requestId },
+        { status: 409, headers: noStoreHeaders() },
       );
     }
 
@@ -431,7 +490,7 @@ export async function POST(
           body.locale,
 
         customer:
-          normalizedCustomer,
+          canonicalCustomer,
 
         items:
           normalizedItems as CheckoutOrderItemInput[],

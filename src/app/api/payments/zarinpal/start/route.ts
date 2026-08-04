@@ -7,7 +7,7 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 export async function POST(request: NextRequest) {
   if (!hasTrustedOrigin(request)) return NextResponse.json({ successful: false, message: "مبدأ درخواست معتبر نیست." }, { status: 403 });
-  const rate = consumeRateLimit({ key: `payment-start:${requestIp(request)}`, limit: 8, windowMs: 60_000 });
+  const rate = await consumeRateLimit({ key: `payment-start:${requestIp(request)}`, limit: 8, windowMs: 60_000 });
   if (!rate.allowed) return NextResponse.json({ successful: false, message: "درخواست‌های پرداخت بیش از حد مجاز است." }, { status: 429, headers: { "Retry-After": String(rate.retryAfterSeconds) } });
   const body = await request.json().catch(() => null) as { orderId?: unknown; mobile?: unknown } | null;
   if (!body || typeof body.orderId !== "string" || typeof body.mobile !== "string") return NextResponse.json({ successful: false, message: "اطلاعات پرداخت معتبر نیست." }, { status: 400 });

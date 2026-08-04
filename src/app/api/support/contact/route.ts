@@ -7,7 +7,7 @@ export const dynamic = "force-dynamic";
 function clean(value: unknown, max: number) { return typeof value === "string" ? value.trim().slice(0, max) : ""; }
 export async function POST(request: NextRequest) {
   if (!hasTrustedOrigin(request)) return NextResponse.json({ successful: false, message: "مبدأ درخواست معتبر نیست." }, { status: 403 });
-  const rate = consumeRateLimit({ key: `contact:${requestIp(request)}`, limit: 5, windowMs: 10 * 60_000 });
+  const rate = await consumeRateLimit({ key: `contact:${requestIp(request)}`, limit: 5, windowMs: 10 * 60_000 });
   if (!rate.allowed) return NextResponse.json({ successful: false, message: "تعداد پیام‌های ارسالی بیش از حد مجاز است." }, { status: 429, headers: { "Retry-After": String(rate.retryAfterSeconds) } });
   const body = await request.json().catch(() => null) as Record<string, unknown> | null;
   if (!body) return NextResponse.json({ successful: false, message: "ساختار پیام معتبر نیست." }, { status: 400 });

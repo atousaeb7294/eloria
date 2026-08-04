@@ -12,6 +12,15 @@ import {
   prisma,
 } from "@/lib/prisma";
 
+import {
+  consumeRateLimit,
+} from "@/lib/security/rate-limit";
+
+import {
+  hasTrustedOrigin,
+  requestIp,
+} from "@/lib/security/request";
+
 export const dynamic =
   "force-dynamic";
 
@@ -511,6 +520,26 @@ async function quoteCartItem(
 export async function POST(
   request: NextRequest,
 ) {
+  if (!hasTrustedOrigin(request)) {
+    return NextResponse.json(
+      { successful: false, code: "FORBIDDEN_ORIGIN", message: "مبدأ درخواست معتبر نیست." },
+      { status: 403, headers: noStoreHeaders() },
+    );
+  }
+
+  const rate = await consumeRateLimit({
+    key: `cart-quote:${requestIp(request)}`,
+    limit: 30,
+    windowMs: 60_000,
+  });
+
+  if (!rate.allowed) {
+    return NextResponse.json(
+      { successful: false, code: "RATE_LIMITED", message: "تعداد درخواست‌های بررسی قیمت بیش از حد مجاز است." },
+      { status: 429, headers: { ...noStoreHeaders(), "Retry-After": String(rate.retryAfterSeconds) } },
+    );
+  }
+
   try {
     let body: unknown;
 

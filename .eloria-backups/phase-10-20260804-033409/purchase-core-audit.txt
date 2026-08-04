@@ -1,0 +1,7259 @@
+﻿===== .\src\components\cart-page-client.tsx =====
+"use client";
+
+import Image from "next/image";
+import Link from "next/link";
+
+import {
+  AlertTriangle,
+  ArrowDownRight,
+  ArrowLeft,
+  ArrowRight,
+  ArrowUpRight,
+  LoaderCircle,
+  Minus,
+  Plus,
+  RefreshCw,
+  ShoppingBag,
+  Trash2,
+  X,
+} from "lucide-react";
+
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  useSyncExternalStore,
+} from "react";
+
+import {
+  CART_LIVE_PRICE_EVENT,
+  type CartLivePriceEventDetail,
+} from "@/components/cart-live-price-refresh";
+
+import {
+  readCartItems,
+  removeCartItem,
+  subscribeToCart,
+  updateCartItemQuantity,
+  type CartItem,
+} from "@/lib/cart-storage";
+
+type QuotedCartItem = {
+  slug: string;
+  variantId: string | null;
+  quantity: number;
+
+  product: {
+    id: string;
+    nameFa: string;
+    nameEn: string;
+    material: "GOLD" | "SILVER";
+    sku: string | null;
+    stock: number;
+    isPurchasable: boolean;
+  };
+
+  variant: {
+    id: string;
+    titleFa: string;
+    titleEn: string;
+    sku: string | null;
+    stock: number;
+  } | null;
+
+  image: {
+    url: string;
+    altFa: string | null;
+    altEn: string | null;
+  } | null;
+
+  pricing: {
+    currency: "TOMAN";
+    unitPriceToman: string;
+    lineTotalToman: string;
+  };
+
+  canPurchase: boolean;
+  unavailableReason: string | null;
+};
+
+type FailedCartItem = {
+  slug: string;
+  variantId: string | null;
+  quantity: number;
+  code: string;
+  message: string;
+};
+
+type CartQuoteSummary = {
+  uniqueItems: number;
+  totalQuantity: number;
+  subtotalToman: string;
+  canCheckout: boolean;
+};
+
+type CartQuoteResponse = {
+  successful: true;
+  currency: "TOMAN";
+  items: QuotedCartItem[];
+  failedItems: FailedCartItem[];
+  summary: CartQuoteSummary;
+  generatedAt: string;
+};
+
+type LivePriceState =
+  | "idle"
+  | "refreshing"
+  | "success"
+  | "failed";
+
+type PriceChangeDirection =
+  | "INCREASED"
+  | "DECREASED"
+  | "CHANGED";
+
+type PriceChangeNotice = {
+  id: number;
+  direction: PriceChangeDirection;
+  changedItemsCount: number;
+  previousSubtotalToman: string;
+  currentSubtotalToman: string;
+  differenceToman: string;
+};
+
+type QuoteLoadOptions = {
+  background?: boolean;
+  notifyOnPriceChange?: boolean;
+};
+
+type CartPageClientProps = {
+  locale: string;
+  persianTitleClassName: string;
+};
+
+function getCartSnapshot(): string {
+  return JSON.stringify(readCartItems());
+}
+
+function getServerCartSnapshot(): string {
+  return "[]";
+}
+
+function parseCartSnapshot(
+  snapshot: string,
+): CartItem[] {
+  try {
+    const parsed: unknown =
+      JSON.parse(snapshot);
+
+    return Array.isArray(parsed)
+      ? (parsed as CartItem[])
+      : [];
+  } catch {
+    return [];
+  }
+}
+
+function isCartQuoteResponse(
+  value: unknown,
+): value is CartQuoteResponse {
+  if (
+    typeof value !== "object" ||
+    value === null
+  ) {
+    return false;
+  }
+
+  const candidate =
+    value as Partial<CartQuoteResponse>;
+
+  return (
+    candidate.successful === true &&
+    Array.isArray(candidate.items) &&
+    Array.isArray(
+      candidate.failedItems,
+    ) &&
+    typeof candidate.summary ===
+      "object" &&
+    candidate.summary !== null &&
+    typeof candidate.generatedAt ===
+      "string"
+  );
+}
+
+function isSameItem(
+  first: {
+    slug: string;
+    variantId: string | null;
+  },
+  second: {
+    slug: string;
+    variantId: string | null;
+  },
+) {
+  return (
+    first.slug === second.slug &&
+    first.variantId === second.variantId
+  );
+}
+
+function getItemKey(item: {
+  slug: string;
+  variantId: string | null;
+}) {
+  return `${item.slug}:${item.variantId ?? "default"}`;
+}
+
+function parseToman(
+  value: string,
+): bigint | null {
+  try {
+    return BigInt(value);
+  } catch {
+    return null;
+  }
+}
+
+function detectPriceChange(
+  previousQuote: CartQuoteResponse,
+  currentQuote: CartQuoteResponse,
+): PriceChangeNotice | null {
+  const previousPrices =
+    new Map<string, string>();
+
+  for (const item of previousQuote.items) {
+    previousPrices.set(
+      getItemKey(item),
+      item.pricing.unitPriceToman,
+    );
+  }
+
+  let changedItemsCount = 0;
+
+  for (const item of currentQuote.items) {
+    const previousPrice =
+      previousPrices.get(
+        getItemKey(item),
+      );
+
+    if (
+      previousPrice !== undefined &&
+      previousPrice !==
+        item.pricing.unitPriceToman
+    ) {
+      changedItemsCount += 1;
+    }
+  }
+
+  if (changedItemsCount === 0) {
+    return null;
+  }
+
+  const previousSubtotal =
+    parseToman(
+      previousQuote.summary
+        .subtotalToman,
+    );
+
+  const currentSubtotal =
+    parseToman(
+      currentQuote.summary
+        .subtotalToman,
+    );
+
+  if (
+    previousSubtotal === null ||
+    currentSubtotal === null
+  ) {
+    return {
+      id: Date.now(),
+      direction: "CHANGED",
+      changedItemsCount,
+      previousSubtotalToman:
+        previousQuote.summary
+          .subtotalToman,
+      currentSubtotalToman:
+        currentQuote.summary
+          .subtotalToman,
+      differenceToman: "0",
+    };
+  }
+
+  const difference =
+    currentSubtotal -
+    previousSubtotal;
+
+  const absoluteDifference =
+    difference < BigInt(0)
+      ? difference * BigInt(-1)
+      : difference;
+
+  const direction:
+    PriceChangeDirection =
+    difference > BigInt(0)
+      ? "INCREASED"
+      : difference < BigInt(0)
+        ? "DECREASED"
+        : "CHANGED";
+
+  return {
+    id: Date.now(),
+    direction,
+    changedItemsCount,
+    previousSubtotalToman:
+      previousSubtotal.toString(),
+    currentSubtotalToman:
+      currentSubtotal.toString(),
+    differenceToman:
+      absoluteDifference.toString(),
+  };
+}
+
+function calculateSummary(
+  items: QuotedCartItem[],
+  failedItems: FailedCartItem[],
+): CartQuoteSummary {
+  const subtotalToman =
+    items.reduce(
+      (total, item) => {
+        if (!item.canPurchase) {
+          return total;
+        }
+
+        try {
+          return (
+            total +
+            BigInt(
+              item.pricing
+                .lineTotalToman,
+            )
+          );
+        } catch {
+          return total;
+        }
+      },
+      BigInt(0),
+    );
+
+  const totalQuantity =
+    items.reduce(
+      (total, item) =>
+        total + item.quantity,
+      0,
+    );
+
+  return {
+    uniqueItems: items.length,
+    totalQuantity,
+    subtotalToman:
+      subtotalToman.toString(),
+    canCheckout:
+      items.length > 0 &&
+      failedItems.length === 0 &&
+      items.every(
+        (item) =>
+          item.canPurchase,
+      ),
+  };
+}
+
+export function CartPageClient({
+  locale,
+  persianTitleClassName,
+}: CartPageClientProps) {
+  const isPersian =
+    locale === "fa";
+
+  const cartSnapshot =
+    useSyncExternalStore(
+      subscribeToCart,
+      getCartSnapshot,
+      getServerCartSnapshot,
+    );
+
+  const storedItems =
+    useMemo(
+      () =>
+        parseCartSnapshot(
+          cartSnapshot,
+        ),
+      [cartSnapshot],
+    );
+
+  const [
+    quote,
+    setQuote,
+  ] =
+    useState<CartQuoteResponse | null>(
+      null,
+    );
+
+  const [
+    loading,
+    setLoading,
+  ] = useState(true);
+
+  const [
+    error,
+    setError,
+  ] =
+    useState<string | null>(
+      null,
+    );
+
+  const [
+    livePriceState,
+    setLivePriceState,
+  ] =
+    useState<LivePriceState>(
+      "idle",
+    );
+
+  const [
+    livePriceMessage,
+    setLivePriceMessage,
+  ] =
+    useState<string | null>(
+      null,
+    );
+
+  const [
+    priceChangeNotice,
+    setPriceChangeNotice,
+  ] =
+    useState<PriceChangeNotice | null>(
+      null,
+    );
+
+  const quoteRef =
+    useRef<CartQuoteResponse | null>(
+      null,
+    );
+
+  const requestIdRef =
+    useRef(0);
+
+  const requestControllerRef =
+    useRef<AbortController | null>(
+      null,
+    );
+
+  const quoteTimerRef =
+    useRef<
+      ReturnType<typeof setTimeout> | null
+    >(null);
+
+  const noticeTimerRef =
+    useRef<
+      ReturnType<typeof setTimeout> | null
+    >(null);
+
+  const text =
+    isPersian
+      ? {
+          title: "سبد خرید",
+          eyebrow:
+            "Eloria Shopping Bag",
+
+          emptyTitle:
+            "سبد خرید شما خالی است",
+
+          emptyDescription:
+            "هنوز محصولی به سبد خرید اضافه نکرده‌اید.",
+
+          products:
+            "مشاهده محصولات",
+
+          quantity: "تعداد",
+          unitPrice:
+            "قیمت هر واحد",
+          lineTotal:
+            "مجموع محصول",
+          remove: "حذف",
+          summary:
+            "خلاصه سفارش",
+          itemCount:
+            "تعداد محصولات",
+          subtotal:
+            "جمع کل",
+          toman: "تومان",
+
+          checkout:
+            "ادامه فرایند خرید",
+
+          unavailable:
+            "این محصول در حال حاضر قابل سفارش نیست.",
+
+          insufficientStock:
+            "موجودی این محصول برای تعداد انتخاب‌شده کافی نیست.",
+
+          quoteFailed:
+            "دریافت قیمت این محصول انجام نشد.",
+
+          retry:
+            "بررسی دوباره",
+
+          loading:
+            "در حال بررسی قیمت و موجودی...",
+
+          securePricing:
+            "قیمت نهایی هنگام پرداخت دوباره از سرور بررسی و محاسبه می‌شود.",
+
+          checkoutBlocked:
+            "برای ادامه خرید، مشکلات سبد را برطرف کنید.",
+
+          genericError:
+            "دریافت اطلاعات سبد خرید امکان‌پذیر نیست.",
+
+          variant: "مدل",
+          material: "جنس",
+          gold: "طلا",
+          silver: "نقره",
+
+          liveFailed:
+            "بررسی نرخ بازار انجام نشد. لطفاً دوباره تلاش کنید.",
+
+          checkedAt:
+            "آخرین بررسی",
+
+          priceUpdated:
+            "قیمت سبد خرید به‌روزرسانی شد",
+
+          priceIncreased:
+            "جمع سبد خرید افزایش یافت.",
+
+          priceDecreased:
+            "جمع سبد خرید کاهش یافت.",
+
+          priceChanged:
+            "قیمت محصولات سبد خرید تغییر کرد.",
+
+          changedItems:
+            "محصول دارای قیمت جدید",
+
+          previousTotal:
+            "مبلغ قبلی",
+
+          currentTotal:
+            "مبلغ جدید",
+
+          dismiss:
+            "بستن اعلان",
+        }
+      : {
+          title:
+            "Shopping Bag",
+
+          eyebrow:
+            "Eloria Shopping Bag",
+
+          emptyTitle:
+            "Your shopping bag is empty",
+
+          emptyDescription:
+            "You have not added any products yet.",
+
+          products:
+            "Explore products",
+
+          quantity:
+            "Quantity",
+
+          unitPrice:
+            "Unit price",
+
+          lineTotal:
+            "Item total",
+
+          remove:
+            "Remove",
+
+          summary:
+            "Order summary",
+
+          itemCount:
+            "Items",
+
+          subtotal:
+            "Subtotal",
+
+          toman:
+            "Toman",
+
+          checkout:
+            "Continue to checkout",
+
+          unavailable:
+            "This product is currently unavailable.",
+
+          insufficientStock:
+            "There is not enough stock for the selected quantity.",
+
+          quoteFailed:
+            "The price for this product could not be retrieved.",
+
+          retry:
+            "Check again",
+
+          loading:
+            "Checking prices and availability...",
+
+          securePricing:
+            "The final price is recalculated and verified by the server before payment.",
+
+          checkoutBlocked:
+            "Resolve the cart issues before continuing.",
+
+          genericError:
+            "Unable to retrieve shopping bag information.",
+
+          variant:
+            "Variant",
+
+          material:
+            "Material",
+
+          gold:
+            "Gold",
+
+          silver:
+            "Silver",
+
+          liveFailed:
+            "The market rate could not be verified. Please try again.",
+
+          checkedAt:
+            "Last checked",
+
+          priceUpdated:
+            "Shopping bag price updated",
+
+          priceIncreased:
+            "The shopping bag total increased.",
+
+          priceDecreased:
+            "The shopping bag total decreased.",
+
+          priceChanged:
+            "Product prices in your shopping bag changed.",
+
+          changedItems:
+            "products have new prices",
+
+          previousTotal:
+            "Previous total",
+
+          currentTotal:
+            "New total",
+
+          dismiss:
+            "Dismiss notification",
+        };
+
+  const formatNumber = (
+    value: number,
+  ) =>
+    value.toLocaleString(
+      isPersian
+        ? "fa-IR"
+        : "en-US",
+    );
+
+  const formatPrice = (
+    value: string,
+  ) => {
+    try {
+      return new Intl.NumberFormat(
+        isPersian
+          ? "fa-IR"
+          : "en-US",
+      ).format(BigInt(value));
+    } catch {
+      return value;
+    }
+  };
+
+  const formatTime = (
+    value: string,
+  ) => {
+    const date =
+      new Date(value);
+
+    if (
+      Number.isNaN(
+        date.getTime(),
+      )
+    ) {
+      return "";
+    }
+
+    return new Intl.DateTimeFormat(
+      isPersian
+        ? "fa-IR"
+        : "en-US",
+      {
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+      },
+    ).format(date);
+  };
+
+  const dismissPriceChangeNotice =
+    useCallback(() => {
+      if (
+        noticeTimerRef.current
+      ) {
+        clearTimeout(
+          noticeTimerRef.current,
+        );
+
+        noticeTimerRef.current =
+          null;
+      }
+
+      setPriceChangeNotice(null);
+    }, []);
+
+  const showPriceChangeNotice =
+    useCallback(
+      (
+        notice:
+          PriceChangeNotice,
+      ) => {
+        if (
+          noticeTimerRef.current
+        ) {
+          clearTimeout(
+            noticeTimerRef.current,
+          );
+        }
+
+        setPriceChangeNotice(
+          notice,
+        );
+
+        noticeTimerRef.current =
+          setTimeout(() => {
+            noticeTimerRef.current =
+              null;
+
+            setPriceChangeNotice(
+              null,
+            );
+          }, 8_000);
+      },
+      [],
+    );
+
+  const loadQuote =
+    useCallback(
+      async (
+        items: CartItem[],
+        options: QuoteLoadOptions =
+          {},
+      ) => {
+        const requestId =
+          requestIdRef.current +
+          1;
+
+        requestIdRef.current =
+          requestId;
+
+        requestControllerRef.current?.abort();
+
+        if (items.length === 0) {
+          quoteRef.current =
+            null;
+
+          setQuote(null);
+          setError(null);
+          setLoading(false);
+          dismissPriceChangeNotice();
+
+          return;
+        }
+
+        const controller =
+          new AbortController();
+
+        requestControllerRef.current =
+          controller;
+
+        if (!options.background) {
+          setLoading(true);
+        }
+
+        setError(null);
+
+        try {
+          const response =
+            await fetch(
+              "/api/cart/quote",
+              {
+                method: "POST",
+
+                headers: {
+                  "Content-Type":
+                    "application/json",
+
+                  Accept:
+                    "application/json",
+                },
+
+                cache:
+                  "no-store",
+
+                signal:
+                  controller.signal,
+
+                body:
+                  JSON.stringify({
+                    items,
+                  }),
+              },
+            );
+
+          const data: unknown =
+            await response
+              .json()
+              .catch(
+                () => null,
+              );
+
+          if (
+            !response.ok ||
+            !isCartQuoteResponse(
+              data,
+            )
+          ) {
+            let message =
+              text.genericError;
+
+            if (
+              typeof data ===
+                "object" &&
+              data !== null &&
+              "message" in data &&
+              typeof data.message ===
+                "string"
+            ) {
+              message =
+                data.message;
+            }
+
+            throw new Error(
+              message,
+            );
+          }
+
+          if (
+            requestId !==
+            requestIdRef.current
+          ) {
+            return;
+          }
+
+          const previousQuote =
+            quoteRef.current;
+
+          if (
+            options.notifyOnPriceChange &&
+            previousQuote
+          ) {
+            const priceChange =
+              detectPriceChange(
+                previousQuote,
+                data,
+              );
+
+            if (priceChange) {
+              showPriceChangeNotice(
+                priceChange,
+              );
+            }
+          }
+
+          quoteRef.current =
+            data;
+
+          setQuote(data);
+          setError(null);
+        } catch (
+          requestError
+        ) {
+          if (
+            requestError instanceof
+              DOMException &&
+            requestError.name ===
+              "AbortError"
+          ) {
+            return;
+          }
+
+          if (
+            requestId !==
+            requestIdRef.current
+          ) {
+            return;
+          }
+
+          setError(
+            requestError instanceof
+              Error
+              ? requestError.message
+              : text.genericError,
+          );
+        } finally {
+          if (
+            requestId ===
+            requestIdRef.current
+          ) {
+            setLoading(false);
+
+            if (
+              requestControllerRef.current ===
+              controller
+            ) {
+              requestControllerRef.current =
+                null;
+            }
+          }
+        }
+      },
+      [
+        dismissPriceChangeNotice,
+        showPriceChangeNotice,
+        text.genericError,
+      ],
+    );
+
+  const scheduleQuote =
+    useCallback(
+      (
+        items: CartItem[],
+        immediate = false,
+        options: QuoteLoadOptions =
+          {},
+      ) => {
+        if (
+          quoteTimerRef.current
+        ) {
+          clearTimeout(
+            quoteTimerRef.current,
+          );
+
+          quoteTimerRef.current =
+            null;
+        }
+
+        const delay =
+          immediate ? 0 : 100;
+
+        quoteTimerRef.current =
+          setTimeout(() => {
+            quoteTimerRef.current =
+              null;
+
+            void loadQuote(
+              items,
+              options,
+            );
+          }, delay);
+      },
+      [loadQuote],
+    );
+
+  useEffect(() => {
+    scheduleQuote(
+      storedItems,
+      true,
+    );
+  }, [
+    scheduleQuote,
+    storedItems,
+  ]);
+
+  useEffect(() => {
+    const handleLivePriceEvent =
+      (event: Event) => {
+        const customEvent =
+          event as CustomEvent<CartLivePriceEventDetail>;
+
+        const detail =
+          customEvent.detail;
+
+        if (!detail) {
+          return;
+        }
+
+        setLivePriceState(
+          detail.status,
+        );
+
+        setLivePriceMessage(
+          detail.message ?? null,
+        );
+
+        if (
+          detail.status ===
+          "success"
+        ) {
+          scheduleQuote(
+            storedItems,
+            true,
+            {
+              background: true,
+              notifyOnPriceChange:
+                true,
+            },
+          );
+        }
+      };
+
+    window.addEventListener(
+      CART_LIVE_PRICE_EVENT,
+      handleLivePriceEvent,
+    );
+
+    return () => {
+      window.removeEventListener(
+        CART_LIVE_PRICE_EVENT,
+        handleLivePriceEvent,
+      );
+    };
+  }, [
+    scheduleQuote,
+    storedItems,
+  ]);
+
+  useEffect(() => {
+    return () => {
+      if (
+        quoteTimerRef.current
+      ) {
+        clearTimeout(
+          quoteTimerRef.current,
+        );
+      }
+
+      if (
+        noticeTimerRef.current
+      ) {
+        clearTimeout(
+          noticeTimerRef.current,
+        );
+      }
+
+      requestControllerRef.current?.abort();
+    };
+  }, []);
+
+  const updateQuoteOptimistically =
+    useCallback(
+      ({
+        slug,
+        variantId,
+        quantity,
+      }: {
+        slug: string;
+        variantId:
+          string | null;
+        quantity: number;
+      }) => {
+        setQuote(
+          (current) => {
+            if (!current) {
+              return current;
+            }
+
+            const target = {
+              slug,
+              variantId,
+            };
+
+            const nextItems =
+              quantity <= 0
+                ? current.items.filter(
+                    (item) =>
+                      !isSameItem(
+                        item,
+                        target,
+                      ),
+                  )
+                : current.items.map(
+                    (item) => {
+                      if (
+                        !isSameItem(
+                          item,
+                          target,
+                        )
+                      ) {
+                        return item;
+                      }
+
+                      let lineTotalToman =
+                        item.pricing
+                          .lineTotalToman;
+
+                      try {
+                        lineTotalToman =
+                          (
+                            BigInt(
+                              item.pricing
+                                .unitPriceToman,
+                            ) *
+                            BigInt(
+                              quantity,
+                            )
+                          ).toString();
+                      } catch {
+                        // قیمت سرور تا دریافت پاسخ جدید حفظ می‌شود.
+                      }
+
+                      const availableStock =
+                        item.variant
+                          ?.stock ??
+                        item.product
+                          .stock;
+
+                      const hasEnoughStock =
+                        availableStock >=
+                        quantity;
+
+                      const canPurchase =
+                        item.product
+                          .isPurchasable &&
+                        hasEnoughStock;
+
+                      return {
+                        ...item,
+                        quantity,
+                        canPurchase,
+
+                        unavailableReason:
+                          !item.product
+                            .isPurchasable
+                            ? "PRODUCT_UNAVAILABLE"
+                            : hasEnoughStock
+                              ? null
+                              : "INSUFFICIENT_STOCK",
+
+                        pricing: {
+                          ...item.pricing,
+                          lineTotalToman,
+                        },
+                      };
+                    },
+                  );
+
+            const nextFailedItems =
+              quantity <= 0
+                ? current.failedItems.filter(
+                    (item) =>
+                      !isSameItem(
+                        item,
+                        target,
+                      ),
+                  )
+                : current.failedItems.map(
+                    (item) =>
+                      isSameItem(
+                        item,
+                        target,
+                      )
+                        ? {
+                            ...item,
+                            quantity,
+                          }
+                        : item,
+                  );
+
+            const nextQuote = {
+              ...current,
+              items: nextItems,
+              failedItems:
+                nextFailedItems,
+
+              summary:
+                calculateSummary(
+                  nextItems,
+                  nextFailedItems,
+                ),
+            };
+
+            quoteRef.current =
+              nextQuote;
+
+            return nextQuote;
+          },
+        );
+      },
+      [],
+    );
+
+  const changeQuantity = (
+    item: QuotedCartItem,
+    requestedQuantity: number,
+  ) => {
+    const availableStock =
+      item.variant?.stock ??
+      item.product.stock;
+
+    const safeQuantity =
+      Math.min(
+        Math.max(
+          Math.trunc(
+            requestedQuantity,
+          ),
+          0,
+        ),
+        Math.max(
+          availableStock,
+          0,
+        ),
+        99,
+      );
+
+    updateQuoteOptimistically({
+      slug: item.slug,
+      variantId:
+        item.variantId,
+      quantity:
+        safeQuantity,
+    });
+
+    updateCartItemQuantity({
+      slug: item.slug,
+      variantId:
+        item.variantId,
+      quantity:
+        safeQuantity,
+    });
+  };
+
+  const removeItem = ({
+    slug,
+    variantId,
+  }: {
+    slug: string;
+    variantId: string | null;
+  }) => {
+    updateQuoteOptimistically({
+      slug,
+      variantId,
+      quantity: 0,
+    });
+
+    removeCartItem({
+      slug,
+      variantId,
+    });
+  };
+
+  const getUnavailableText = (
+    reason: string | null,
+  ) => {
+    if (
+      reason ===
+      "INSUFFICIENT_STOCK"
+    ) {
+      return text.insufficientStock;
+    }
+
+    return text.unavailable;
+  };
+
+  const isEmpty =
+    storedItems.length === 0;
+
+  /*
+   * بررسی‌های دوره‌ای در پس‌زمینه بدون پیام انجام می‌شوند.
+   * فقط خطا یا تغییر واقعی قیمت به مشتری نمایش داده می‌شود.
+   */
+  const shouldShowLiveStatus =
+    livePriceState ===
+    "failed";
+
+  const checkoutBlocked =
+    !quote?.summary
+      .canCheckout ||
+    loading ||
+    Boolean(error) ||
+    livePriceState === "failed";
+
+  const priceNoticeDescription =
+    priceChangeNotice?.direction ===
+    "INCREASED"
+      ? text.priceIncreased
+      : priceChangeNotice?.direction ===
+          "DECREASED"
+        ? text.priceDecreased
+        : text.priceChanged;
+
+  if (
+    !loading &&
+    isEmpty
+  ) {
+    return (
+      <section className="relative z-10 mx-auto flex min-h-[75vh] w-full max-w-[1100px] items-center justify-center px-4 pb-24 pt-36 sm:px-6">
+        <div className="w-full max-w-2xl rounded-[2.5rem] border border-[#d9b85f]/20 bg-[linear-gradient(145deg,rgba(7,36,27,0.9),rgba(2,18,13,0.94))] px-6 py-16 text-center shadow-[0_35px_100px_rgba(0,0,0,0.28)] sm:px-12">
+          <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full border border-[#d9b85f]/30 bg-[#d9b85f]/[0.07]">
+            <ShoppingBag className="h-9 w-9 text-[#e3c46b]" />
+          </div>
+
+          <p className="mt-7 text-[9px] uppercase tracking-[0.42em] text-[#d6b965]/55">
+            {text.eyebrow}
+          </p>
+
+          <h1
+            className={[
+              "mt-4 text-[#f5e6c2]",
+              isPersian
+                ? `${persianTitleClassName} pb-3 text-3xl font-semibold leading-[1.9] sm:text-4xl`
+                : "text-2xl font-semibold sm:text-3xl",
+            ].join(" ")}
+          >
+            {text.emptyTitle}
+          </h1>
+
+          <p className="mx-auto mt-3 max-w-lg text-sm leading-8 text-[#cbbd9d]/65">
+            {
+              text.emptyDescription
+            }
+          </p>
+
+          <Link
+            href={`/${locale}/products`}
+            className="mx-auto mt-9 inline-flex min-h-12 items-center justify-center gap-3 rounded-full border border-[#d9b85f]/45 bg-[#d9b85f]/[0.09] px-7 text-sm text-[#f1d98e] transition hover:-translate-y-0.5 hover:border-[#eed37f]/80 hover:bg-[#d9b85f]/[0.14]"
+          >
+            {text.products}
+
+            {isPersian ? (
+              <ArrowLeft className="h-4 w-4" />
+            ) : (
+              <ArrowRight className="h-4 w-4" />
+            )}
+          </Link>
+        </div>
+      </section>
+    );
+  }
+
+  return (
+    <section className="relative z-10 mx-auto w-full max-w-[1450px] px-4 pb-28 pt-36 sm:px-6 lg:px-10 lg:pt-40">
+      {priceChangeNotice && (
+        <div
+          role="status"
+          aria-live="polite"
+          className={[
+            "fixed top-24 z-[100] w-[calc(100%-2rem)] max-w-md overflow-hidden rounded-2xl border border-[#d9b85f]/35 bg-[linear-gradient(145deg,rgba(8,42,31,0.98),rgba(2,23,16,0.99))] p-4 shadow-[0_25px_90px_rgba(0,0,0,0.5)] backdrop-blur-xl sm:w-full",
+            isPersian
+              ? "right-4 sm:right-6"
+              : "right-4 sm:right-6",
+          ].join(" ")}
+        >
+          <div className="flex items-start gap-3">
+            <div
+              className={[
+                "mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-full border",
+                priceChangeNotice.direction ===
+                "INCREASED"
+                  ? "border-amber-300/25 bg-amber-200/[0.08] text-amber-200"
+                  : priceChangeNotice.direction ===
+                      "DECREASED"
+                    ? "border-emerald-300/25 bg-emerald-200/[0.08] text-emerald-200"
+                    : "border-[#d9b85f]/30 bg-[#d9b85f]/[0.08] text-[#ead27e]",
+              ].join(" ")}
+            >
+              {priceChangeNotice.direction ===
+              "INCREASED" ? (
+                <ArrowUpRight className="h-5 w-5" />
+              ) : priceChangeNotice.direction ===
+                "DECREASED" ? (
+                <ArrowDownRight className="h-5 w-5" />
+              ) : (
+                <RefreshCw className="h-4 w-4" />
+              )}
+            </div>
+
+            <div className="min-w-0 flex-1">
+              <p className="text-sm font-medium text-[#f4e5bd]">
+                {
+                  text.priceUpdated
+                }
+              </p>
+
+              <p className="mt-1 text-xs leading-6 text-[#d2c4a4]/65">
+                {
+                  priceNoticeDescription
+                }
+              </p>
+
+              <p className="mt-1 text-[10px] text-[#d6c9aa]/45">
+                {formatNumber(
+                  priceChangeNotice
+                    .changedItemsCount,
+                )}{" "}
+                {
+                  text.changedItems
+                }
+              </p>
+
+              <div className="mt-3 grid grid-cols-2 gap-3">
+                <div className="rounded-xl border border-white/[0.06] bg-black/10 px-3 py-2">
+                  <p className="text-[9px] text-[#c9bb9a]/45">
+                    {
+                      text.previousTotal
+                    }
+                  </p>
+
+                  <p className="mt-1 text-xs text-[#d8caa8]/70">
+                    {formatPrice(
+                      priceChangeNotice
+                        .previousSubtotalToman,
+                    )}{" "}
+                    {
+                      text.toman
+                    }
+                  </p>
+                </div>
+
+                <div className="rounded-xl border border-[#d9b85f]/15 bg-[#d9b85f]/[0.04] px-3 py-2">
+                  <p className="text-[9px] text-[#c9bb9a]/45">
+                    {
+                      text.currentTotal
+                    }
+                  </p>
+
+                  <p className="mt-1 text-xs font-medium text-[#efd985]">
+                    {formatPrice(
+                      priceChangeNotice
+                        .currentSubtotalToman,
+                    )}{" "}
+                    {
+                      text.toman
+                    }
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              aria-label={
+                text.dismiss
+              }
+              onClick={
+                dismissPriceChangeNotice
+              }
+              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[#d5c8a8]/45 transition hover:bg-white/[0.06] hover:text-[#f1e4c3]"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          </div>
+        </div>
+      )}
+
+      <header className="mx-auto max-w-3xl text-center">
+        <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full border border-[#d9b85f]/30 bg-[#d9b85f]/[0.07]">
+          <ShoppingBag className="h-7 w-7 text-[#e3c46b]" />
+        </div>
+
+        <p className="mt-5 text-[9px] uppercase tracking-[0.45em] text-[#d6b965]/55">
+          {text.eyebrow}
+        </p>
+
+        <h1
+          className={[
+            "mt-3 text-[#f6e8c6]",
+            isPersian
+              ? `${persianTitleClassName} pb-3 text-3xl font-semibold leading-[1.9] sm:text-4xl`
+              : "text-3xl font-semibold sm:text-4xl",
+          ].join(" ")}
+        >
+          {text.title}
+        </h1>
+
+        {shouldShowLiveStatus && (
+          <div className="mt-5 flex justify-center">
+            <div className="inline-flex max-w-full items-center gap-2 rounded-full border border-amber-300/20 bg-amber-200/[0.05] px-4 py-2 text-[10px] leading-5 text-amber-100/60">
+              <AlertTriangle className="h-3.5 w-3.5 shrink-0" />
+
+              <span>
+                {livePriceMessage ??
+                  text.liveFailed}
+              </span>
+            </div>
+          </div>
+        )}
+      </header>
+
+      {error && (
+        <div className="mx-auto mt-10 flex max-w-3xl items-start gap-4 rounded-2xl border border-red-300/20 bg-red-300/[0.06] px-5 py-4 text-sm text-red-100/80">
+          <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0" />
+
+          <div className="flex-1">
+            <p>{error}</p>
+
+            <button
+              type="button"
+              onClick={() =>
+                scheduleQuote(
+                  storedItems,
+                  true,
+                )
+              }
+              className="mt-3 inline-flex items-center gap-2 text-xs text-[#efd98e] transition hover:text-[#fff0bd]"
+            >
+              <RefreshCw className="h-3.5 w-3.5" />
+
+              {text.retry}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {loading &&
+        !quote && (
+          <div className="mt-16 flex items-center justify-center gap-3 text-sm text-[#d2c29d]/65">
+            <LoaderCircle className="h-5 w-5 animate-spin text-[#dec36f]" />
+
+            {text.loading}
+          </div>
+        )}
+
+      {quote && (
+        <div className="mt-12 grid items-start gap-8 lg:grid-cols-[minmax(0,1fr)_370px]">
+          <div className="space-y-5">
+            {quote.items.map(
+              (item) => {
+                const productName =
+                  isPersian
+                    ? item.product
+                        .nameFa
+                    : item.product
+                        .nameEn;
+
+                const variantName =
+                  item.variant
+                    ? isPersian
+                      ? item.variant
+                          .titleFa
+                      : item.variant
+                          .titleEn
+                    : null;
+
+                const material =
+                  item.product
+                    .material ===
+                  "GOLD"
+                    ? text.gold
+                    : text.silver;
+
+                const availableStock =
+                  item.variant
+                    ?.stock ??
+                  item.product
+                    .stock;
+
+                return (
+                  <article
+                    key={`${item.slug}:${item.variantId ?? "default"}`}
+                    className={[
+                      "overflow-hidden rounded-[2rem] border bg-[linear-gradient(145deg,rgba(7,35,27,0.9),rgba(3,21,15,0.94))] p-4 shadow-[0_24px_80px_rgba(0,0,0,0.2)] transition sm:p-5",
+                      item.canPurchase
+                        ? "border-[#d8b860]/20"
+                        : "border-amber-300/25",
+                    ].join(" ")}
+                  >
+                    <div className="grid gap-5 sm:grid-cols-[150px_minmax(0,1fr)]">
+                      <div className="relative aspect-square overflow-hidden rounded-[1.5rem] border border-white/[0.07] bg-[#041b14]">
+                        {item.image ? (
+                          <Image
+                            src={
+                              item.image
+                                .url
+                            }
+                            alt={
+                              (isPersian
+                                ? item.image
+                                    .altFa
+                                : item.image
+                                    .altEn) ??
+                              productName
+                            }
+                            fill
+                            sizes="(min-width: 640px) 150px, 100vw"
+                            className="object-cover"
+                          />
+                        ) : (
+                          <div className="flex h-full w-full items-center justify-center">
+                            <ShoppingBag className="h-8 w-8 text-[#d9b85f]/35" />
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="flex min-w-0 flex-col">
+                        <div className="flex items-start justify-between gap-4">
+                          <div>
+                            <Link
+                              href={`/${locale}/products/${item.slug}`}
+                              className="text-lg font-medium text-[#f3e3be] transition hover:text-[#f7d981]"
+                            >
+                              {
+                                productName
+                              }
+                            </Link>
+
+                            <div className="mt-2 flex flex-wrap gap-x-5 gap-y-2 text-[11px] text-[#c8b992]/60">
+                              <span>
+                                {
+                                  text.material
+                                }
+                                :{" "}
+                                {
+                                  material
+                                }
+                              </span>
+
+                              {variantName && (
+                                <span>
+                                  {
+                                    text.variant
+                                  }
+                                  :{" "}
+                                  {
+                                    variantName
+                                  }
+                                </span>
+                              )}
+                            </div>
+                          </div>
+
+                          <button
+                            type="button"
+                            aria-label={
+                              text.remove
+                            }
+                            onClick={() =>
+                              removeItem({
+                                slug:
+                                  item.slug,
+
+                                variantId:
+                                  item.variantId,
+                              })
+                            }
+                            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-red-200/15 text-red-100/45 transition hover:border-red-200/35 hover:bg-red-200/[0.07] hover:text-red-100"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </button>
+                        </div>
+
+                        {!item.canPurchase && (
+                          <div className="mt-4 flex items-start gap-2 rounded-xl border border-amber-300/15 bg-amber-200/[0.05] px-3 py-2 text-[11px] leading-6 text-amber-100/70">
+                            <AlertTriangle className="mt-1 h-3.5 w-3.5 shrink-0" />
+
+                            {getUnavailableText(
+                              item.unavailableReason,
+                            )}
+                          </div>
+                        )}
+
+                        <div className="mt-5 grid gap-4 border-t border-white/[0.07] pt-5 sm:grid-cols-3">
+                          <div>
+                            <p className="text-[10px] text-[#c8b992]/45">
+                              {
+                                text.unitPrice
+                              }
+                            </p>
+
+                            <p className="mt-1 text-sm text-[#ead597]">
+                              {formatPrice(
+                                item.pricing
+                                  .unitPriceToman,
+                              )}{" "}
+                              <span className="text-[10px] text-[#c8b992]/50">
+                                {
+                                  text.toman
+                                }
+                              </span>
+                            </p>
+                          </div>
+
+                          <div>
+                            <p className="text-[10px] text-[#c8b992]/45">
+                              {
+                                text.quantity
+                              }
+                            </p>
+
+                            <div className="mt-2 inline-flex items-center rounded-full border border-[#d8b860]/20 bg-black/10 p-1">
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  changeQuantity(
+                                    item,
+                                    item.quantity -
+                                      1,
+                                  )
+                                }
+                                className="flex h-7 w-7 items-center justify-center rounded-full text-[#d7c79f]/65 transition hover:bg-white/[0.06] hover:text-[#f4dfaa]"
+                              >
+                                <Minus className="h-3.5 w-3.5" />
+                              </button>
+
+                              <span className="min-w-9 text-center text-xs text-[#f3e4be]">
+                                {formatNumber(
+                                  item.quantity,
+                                )}
+                              </span>
+
+                              <button
+                                type="button"
+                                disabled={
+                                  item.quantity >=
+                                    99 ||
+                                  item.quantity >=
+                                    availableStock
+                                }
+                                onClick={() =>
+                                  changeQuantity(
+                                    item,
+                                    item.quantity +
+                                      1,
+                                  )
+                                }
+                                className="flex h-7 w-7 items-center justify-center rounded-full text-[#d7c79f]/65 transition hover:bg-white/[0.06] hover:text-[#f4dfaa] disabled:cursor-not-allowed disabled:opacity-25"
+                              >
+                                <Plus className="h-3.5 w-3.5" />
+                              </button>
+                            </div>
+                          </div>
+
+                          <div>
+                            <p className="text-[10px] text-[#c8b992]/45">
+                              {
+                                text.lineTotal
+                              }
+                            </p>
+
+                            <p className="mt-1 text-sm font-medium text-[#f1d982]">
+                              {formatPrice(
+                                item.pricing
+                                  .lineTotalToman,
+                              )}{" "}
+                              <span className="text-[10px] font-normal text-[#c8b992]/50">
+                                {
+                                  text.toman
+                                }
+                              </span>
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </article>
+                );
+              },
+            )}
+
+            {quote.failedItems.map(
+              (item) => (
+                <article
+                  key={`${item.slug}:${item.variantId ?? "default"}:failed`}
+                  className="rounded-[1.5rem] border border-red-300/20 bg-red-300/[0.045] px-5 py-4"
+                >
+                  <div className="flex items-start gap-4">
+                    <AlertTriangle className="mt-1 h-5 w-5 shrink-0 text-red-200/70" />
+
+                    <div className="flex-1">
+                      <p className="text-sm text-red-100/80">
+                        {
+                          text.quoteFailed
+                        }
+                      </p>
+
+                      <p
+                        dir="ltr"
+                        className="mt-1 text-left text-xs text-red-100/45"
+                      >
+                        {item.slug}
+                      </p>
+
+                      <button
+                        type="button"
+                        onClick={() =>
+                          removeItem({
+                            slug:
+                              item.slug,
+
+                            variantId:
+                              item.variantId,
+                          })
+                        }
+                        className="mt-3 inline-flex items-center gap-2 text-xs text-red-100/60 transition hover:text-red-100"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+
+                        {
+                          text.remove
+                        }
+                      </button>
+                    </div>
+                  </div>
+                </article>
+              ),
+            )}
+          </div>
+
+          <aside className="lg:sticky lg:top-28">
+            <div className="rounded-[2rem] border border-[#d9b85f]/25 bg-[linear-gradient(150deg,rgba(9,39,29,0.95),rgba(3,21,15,0.98))] p-6 shadow-[0_30px_100px_rgba(0,0,0,0.28)]">
+              <p className="text-[9px] uppercase tracking-[0.4em] text-[#d7ba67]/50">
+                Eloria Order
+              </p>
+
+              <h2 className="mt-3 text-xl font-medium text-[#f2e1bb]">
+                {text.summary}
+              </h2>
+
+              <div className="mt-7 space-y-4 border-y border-white/[0.07] py-6">
+                <div className="flex items-center justify-between gap-4 text-sm">
+                  <span className="text-[#c9bb9a]/60">
+                    {
+                      text.itemCount
+                    }
+                  </span>
+
+                  <span className="text-[#eee1c7]">
+                    {formatNumber(
+                      quote.summary
+                        .totalQuantity,
+                    )}
+                  </span>
+                </div>
+
+                <div className="flex items-end justify-between gap-4">
+                  <span className="text-sm text-[#c9bb9a]/60">
+                    {
+                      text.subtotal
+                    }
+                  </span>
+
+                  <div className="text-end">
+                    <span className="text-xl font-semibold text-[#f0d477]">
+                      {formatPrice(
+                        quote.summary
+                          .subtotalToman,
+                      )}
+                    </span>
+
+                    <span className="ms-2 text-[10px] text-[#c9bb9a]/50">
+                      {
+                        text.toman
+                      }
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="mt-5 flex items-center justify-between gap-3 text-[10px] text-[#c9bb9a]/45">
+                <span>
+                  {
+                    text.checkedAt
+                  }
+                </span>
+
+                <span
+                  dir="ltr"
+                  className="text-[#dfc87e]/65"
+                >
+                  {formatTime(
+                    quote.generatedAt,
+                  )}
+                </span>
+              </div>
+
+              <p className="mt-4 text-[10px] leading-6 text-[#c9bb9a]/50">
+                {
+                  text.securePricing
+                }
+              </p>
+
+              <button
+                type="button"
+                disabled={
+                  checkoutBlocked
+                }
+                onClick={() => {
+                  window.location.assign(
+                    `/${locale}/checkout`,
+                  );
+                }}
+                className="mt-6 flex min-h-13 w-full items-center justify-center gap-3 rounded-full border border-[#e0c16d]/55 bg-[linear-gradient(100deg,rgba(112,80,20,0.22),rgba(218,183,90,0.3),rgba(112,80,20,0.22))] px-6 text-sm font-medium text-[#f6e4af] transition hover:-translate-y-0.5 hover:border-[#f0d681]/85 hover:shadow-[0_0_30px_rgba(218,183,91,0.14)] disabled:cursor-not-allowed disabled:opacity-35 disabled:hover:translate-y-0"
+              >
+                {loading ? (
+                  <LoaderCircle className="h-4 w-4 animate-spin" />
+                ) : (
+                  <ShoppingBag className="h-4 w-4" />
+                )}
+
+                {
+                  text.checkout
+                }
+              </button>
+
+              {checkoutBlocked && (
+                <p className="mt-3 text-center text-[10px] leading-5 text-amber-100/45">
+                  {
+                    text.checkoutBlocked
+                  }
+                </p>
+              )}
+            </div>
+          </aside>
+        </div>
+      )}
+    </section>
+  );
+}
+
+===== .\src\components\checkout-page-client.tsx =====
+"use client";
+
+import Link from "next/link";
+
+import {
+  AlertTriangle,
+  ArrowLeft,
+  ArrowRight,
+  CheckCircle2,
+  Clock3,
+  LoaderCircle,
+  RefreshCw,
+  ShieldCheck,
+  ShoppingBag,
+  UserRound,
+  WalletCards,
+  X,
+} from "lucide-react";
+
+import {
+  type FormEvent,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  useSyncExternalStore,
+} from "react";
+
+import {
+  CART_LIVE_PRICE_EVENT,
+  type CartLivePriceEventDetail,
+} from "@/components/cart-live-price-refresh";
+
+import {
+  CheckoutCustomerError,
+  normalizeCheckoutCustomer,
+  type CheckoutCustomerInput,
+} from "@/lib/checkout-customer";
+
+import {
+  readCartItems,
+  subscribeToCart,
+  type CartItem,
+} from "@/lib/cart-storage";
+
+type QuotedCartItem = {
+  slug: string;
+  variantId: string | null;
+  quantity: number;
+
+  product: {
+    id: string;
+    nameFa: string;
+    nameEn: string;
+    material: "GOLD" | "SILVER";
+    sku: string | null;
+    stock: number;
+    isPurchasable: boolean;
+  };
+
+  variant: {
+    id: string;
+    titleFa: string;
+    titleEn: string;
+    sku: string | null;
+    stock: number;
+  } | null;
+
+  pricing: {
+    currency: "TOMAN";
+    unitPriceToman: string;
+    lineTotalToman: string;
+  };
+
+  canPurchase: boolean;
+  unavailableReason: string | null;
+};
+
+type FailedCartItem = {
+  slug: string;
+  variantId: string | null;
+  quantity: number;
+  code: string;
+  message: string;
+};
+
+type CartQuoteResponse = {
+  successful: true;
+  currency: "TOMAN";
+  items: QuotedCartItem[];
+  failedItems: FailedCartItem[];
+
+  summary: {
+    uniqueItems: number;
+    totalQuantity: number;
+    subtotalToman: string;
+    canCheckout: boolean;
+  };
+
+  generatedAt: string;
+};
+
+type CreatedOrder = {
+  id: string;
+  orderNumber: string;
+  status: string;
+  currency: "TOMAN";
+  subtotalToman: string;
+  payableToman: string;
+  priceVerifiedAt: string;
+  priceExpiresAt: string;
+  inventoryReservedAt: string;
+  inventoryExpiresAt: string;
+
+  items: Array<{
+    id: string;
+    productSlug: string;
+    variantId: string | null;
+    quantity: number;
+    unitPriceToman: string;
+    lineTotalToman: string;
+    stockBeforeReservation: number;
+    stockAfterReservation: number;
+  }>;
+};
+
+type CreateOrderResponse = {
+  successful: true;
+  reused: boolean;
+  order: CreatedOrder;
+  requestId: string;
+};
+
+type CustomerForm = {
+  fullName: string;
+  mobile: string;
+  email: string;
+  province: string;
+  city: string;
+  postalCode: string;
+  address: string;
+};
+
+type PriceChangeNotice = {
+  previousSubtotalToman: string;
+  currentSubtotalToman: string;
+};
+
+type CheckoutPageClientProps = {
+  locale: string;
+  persianTitleClassName: string;
+};
+
+const FA_TEXT = {
+  eyebrow: "Eloria Secure Checkout",
+  title: "تکمیل سفارش",
+  description:
+    "قیمت و موجودی پیش از ثبت سفارش دوباره مستقیماً از سرور بررسی می‌شود.",
+
+  customerTitle:
+    "اطلاعات خریدار و تحویل",
+
+  customerDescription:
+    "اطلاعات را دقیق و مطابق نشانی دریافت سفارش وارد کنید.",
+
+  fullName:
+    "نام و نام خانوادگی",
+
+  mobile:
+    "شماره موبایل",
+
+  email:
+    "ایمیل اختیاری",
+
+  province:
+    "استان",
+
+  city:
+    "شهر",
+
+  postalCode:
+    "کد پستی",
+
+  address:
+    "نشانی کامل تحویل",
+
+  fullNamePlaceholder:
+    "نام و نام خانوادگی خریدار",
+
+  mobilePlaceholder:
+    "مثلاً ۰۹۱۲۱۲۳۴۵۶۷",
+
+  emailPlaceholder:
+    "example@email.com",
+
+  provincePlaceholder:
+    "نام استان",
+
+  cityPlaceholder:
+    "نام شهر",
+
+  postalCodePlaceholder:
+    "کد پستی ۱۰ رقمی",
+
+  addressPlaceholder:
+    "خیابان، کوچه، پلاک، واحد و توضیحات لازم",
+
+  summary:
+    "خلاصه سفارش",
+
+  quantity:
+    "تعداد",
+
+  unitPrice:
+    "قیمت واحد",
+
+  subtotal:
+    "مبلغ سفارش",
+
+  payable:
+    "مبلغ قابل پرداخت",
+
+  toman:
+    "تومان",
+
+  loading:
+    "در حال دریافت آخرین قیمت و موجودی...",
+
+  retry:
+    "بررسی دوباره",
+
+  cart:
+    "بازگشت به سبد خرید",
+
+  products:
+    "مشاهده محصولات",
+
+  emptyTitle:
+    "سبد خرید خالی است",
+
+  emptyDescription:
+    "برای ادامه پرداخت ابتدا محصولی به سبد خرید اضافه کنید.",
+
+  unavailable:
+    "حداقل یکی از محصولات در حال حاضر قابل سفارش نیست.",
+
+  rateFailed:
+    "بررسی نرخ بازار انجام نشد. ثبت سفارش تا دریافت نرخ معتبر متوقف است.",
+
+  priceUpdated:
+    "قیمت سفارش به‌روزرسانی شد",
+
+  priceUpdatedDescription:
+    "قیمت یا مبلغ یکی از محصولات تغییر کرده است. مبلغ جدید جایگزین شد.",
+
+  previousAmount:
+    "مبلغ قبلی",
+
+  currentAmount:
+    "مبلغ جدید",
+
+  submit:
+    "ثبت سفارش و ادامه پرداخت",
+
+  submitting:
+    "در حال بررسی نهایی و ثبت سفارش...",
+
+  secureNotice:
+    "مبلغ ارسالی مرورگر پذیرفته نمی‌شود؛ قیمت نهایی توسط سرور الوریا محاسبه می‌شود.",
+
+  reservationNotice:
+    "پس از ثبت سفارش، موجودی محصولات به مدت ۱۵ دقیقه برای شما رزرو می‌شود.",
+
+  orderCreated:
+    "سفارش با موفقیت ثبت شد",
+
+  orderNumber:
+    "شماره سفارش",
+
+  verifiedAmount:
+    "مبلغ تأییدشده سرور",
+
+  reservedUntil:
+    "مهلت رزرو موجودی",
+
+  gatewayPending:
+    "اتصال نهایی درگاه پرداخت هم‌زمان با راه‌اندازی هاست و دامنه فعال می‌شود.",
+
+  gatewayButton:
+    "درگاه پرداخت هنوز فعال نشده است",
+
+  changedBeforeSubmit:
+    "قیمت سفارش تغییر کرده است. مبلغ جدید را بررسی کرده و دوباره دکمه ادامه پرداخت را بزنید.",
+
+  genericError:
+    "ثبت سفارش در حال حاضر امکان‌پذیر نیست. لطفاً دوباره تلاش کنید.",
+
+  dismiss:
+    "بستن اعلان",
+
+  lastChecked:
+    "آخرین بررسی",
+} as const;
+
+const EN_TEXT = {
+  eyebrow: "Eloria Secure Checkout",
+  title: "Complete your order",
+  description:
+    "Price and availability are verified directly by the server before order creation.",
+
+  customerTitle:
+    "Customer and delivery details",
+
+  customerDescription:
+    "Enter accurate information for delivery and order processing.",
+
+  fullName:
+    "Full name",
+
+  mobile:
+    "Mobile number",
+
+  email:
+    "Optional email",
+
+  province:
+    "Province",
+
+  city:
+    "City",
+
+  postalCode:
+    "Postal code",
+
+  address:
+    "Full delivery address",
+
+  fullNamePlaceholder:
+    "Customer full name",
+
+  mobilePlaceholder:
+    "Example: 09121234567",
+
+  emailPlaceholder:
+    "example@email.com",
+
+  provincePlaceholder:
+    "Province",
+
+  cityPlaceholder:
+    "City",
+
+  postalCodePlaceholder:
+    "10-digit postal code",
+
+  addressPlaceholder:
+    "Street, building number, unit, and delivery notes",
+
+  summary:
+    "Order summary",
+
+  quantity:
+    "Quantity",
+
+  unitPrice:
+    "Unit price",
+
+  subtotal:
+    "Order amount",
+
+  payable:
+    "Payable amount",
+
+  toman:
+    "Toman",
+
+  loading:
+    "Checking the latest price and availability...",
+
+  retry:
+    "Check again",
+
+  cart:
+    "Back to shopping bag",
+
+  products:
+    "Explore products",
+
+  emptyTitle:
+    "Your shopping bag is empty",
+
+  emptyDescription:
+    "Add a product to your shopping bag before continuing.",
+
+  unavailable:
+    "At least one product is currently unavailable.",
+
+  rateFailed:
+    "The market rate could not be verified. Order creation is temporarily unavailable.",
+
+  priceUpdated:
+    "Order price updated",
+
+  priceUpdatedDescription:
+    "A product price or the order amount changed. The new amount is now displayed.",
+
+  previousAmount:
+    "Previous amount",
+
+  currentAmount:
+    "New amount",
+
+  submit:
+    "Create order and continue",
+
+  submitting:
+    "Verifying and creating your order...",
+
+  secureNotice:
+    "Browser-submitted amounts are ignored; the final amount is calculated by the Eloria server.",
+
+  reservationNotice:
+    "After order creation, inventory is reserved for 15 minutes.",
+
+  orderCreated:
+    "Order created successfully",
+
+  orderNumber:
+    "Order number",
+
+  verifiedAmount:
+    "Server-verified amount",
+
+  reservedUntil:
+    "Inventory reserved until",
+
+  gatewayPending:
+    "The payment gateway will be activated when hosting and the production domain are connected.",
+
+  gatewayButton:
+    "Payment gateway is not active yet",
+
+  changedBeforeSubmit:
+    "The order price changed. Review the new amount and submit again.",
+
+  genericError:
+    "The order cannot be created right now. Please try again.",
+
+  dismiss:
+    "Dismiss notification",
+
+  lastChecked:
+    "Last checked",
+} as const;
+
+const CHECKOUT_SESSION_KEY =
+  "eloria-checkout-idempotency-v1";
+
+function getCartSnapshot(): string {
+  return JSON.stringify(
+    readCartItems(),
+  );
+}
+
+function getServerCartSnapshot(): string {
+  return "[]";
+}
+
+function parseCartSnapshot(
+  snapshot: string,
+): CartItem[] {
+  try {
+    const parsed: unknown =
+      JSON.parse(snapshot);
+
+    return Array.isArray(parsed)
+      ? (parsed as CartItem[])
+      : [];
+  } catch {
+    return [];
+  }
+}
+
+function isCartQuoteResponse(
+  value: unknown,
+): value is CartQuoteResponse {
+  if (
+    typeof value !== "object" ||
+    value === null
+  ) {
+    return false;
+  }
+
+  const candidate =
+    value as Partial<CartQuoteResponse>;
+
+  return (
+    candidate.successful === true &&
+    Array.isArray(candidate.items) &&
+    Array.isArray(
+      candidate.failedItems,
+    ) &&
+    typeof candidate.summary ===
+      "object" &&
+    candidate.summary !== null &&
+    typeof candidate.generatedAt ===
+      "string"
+  );
+}
+
+function isCreateOrderResponse(
+  value: unknown,
+): value is CreateOrderResponse {
+  if (
+    typeof value !== "object" ||
+    value === null
+  ) {
+    return false;
+  }
+
+  const candidate =
+    value as Partial<CreateOrderResponse>;
+
+  return (
+    candidate.successful === true &&
+    typeof candidate.reused ===
+      "boolean" &&
+    typeof candidate.order ===
+      "object" &&
+    candidate.order !== null &&
+    typeof candidate.order.id ===
+      "string" &&
+    typeof candidate.order.orderNumber ===
+      "string" &&
+    typeof candidate.order.payableToman ===
+      "string" &&
+    typeof candidate.order.inventoryExpiresAt ===
+      "string"
+  );
+}
+
+function getErrorMessage(
+  value: unknown,
+  fallback: string,
+): string {
+  if (
+    typeof value === "object" &&
+    value !== null &&
+    "message" in value &&
+    typeof value.message ===
+      "string"
+  ) {
+    return value.message;
+  }
+
+  return fallback;
+}
+
+function getItemKey(
+  item: {
+    slug: string;
+    variantId: string | null;
+  },
+): string {
+  return `${item.slug}:${item.variantId ?? "default"}`;
+}
+
+function didQuotePriceChange(
+  previousQuote: CartQuoteResponse,
+  currentQuote: CartQuoteResponse,
+): boolean {
+  if (
+    previousQuote.summary
+      .subtotalToman !==
+    currentQuote.summary
+      .subtotalToman
+  ) {
+    return true;
+  }
+
+  const previousPrices =
+    new Map<string, string>();
+
+  for (
+    const item of
+    previousQuote.items
+  ) {
+    previousPrices.set(
+      getItemKey(item),
+      item.pricing
+        .unitPriceToman,
+    );
+  }
+
+  if (
+    previousQuote.items.length !==
+    currentQuote.items.length
+  ) {
+    return true;
+  }
+
+  return currentQuote.items.some(
+    (item) =>
+      previousPrices.get(
+        getItemKey(item),
+      ) !==
+      item.pricing
+        .unitPriceToman,
+  );
+}
+
+function getCartFingerprint(
+  items: CartItem[],
+): string {
+  return items
+    .map((item) => ({
+      slug:
+        item.slug,
+
+      variantId:
+        item.variantId,
+
+      quantity:
+        item.quantity,
+    }))
+    .sort((first, second) =>
+      getItemKey(first).localeCompare(
+        getItemKey(second),
+      ),
+    )
+    .map(
+      (item) =>
+        `${getItemKey(item)}:${item.quantity}`,
+    )
+    .join("|");
+}
+
+function generateIdempotencyKey(): string {
+  return `checkout:${window.crypto.randomUUID()}`;
+}
+
+function getOrCreateIdempotencyKey(
+  items: CartItem[],
+): string {
+  const fingerprint =
+    getCartFingerprint(items);
+
+  try {
+    const stored =
+      window.sessionStorage.getItem(
+        CHECKOUT_SESSION_KEY,
+      );
+
+    if (stored) {
+      const parsed: unknown =
+        JSON.parse(stored);
+
+      if (
+        typeof parsed === "object" &&
+        parsed !== null &&
+        "fingerprint" in parsed &&
+        "key" in parsed &&
+        parsed.fingerprint ===
+          fingerprint &&
+        typeof parsed.key ===
+          "string"
+      ) {
+        return parsed.key;
+      }
+    }
+  } catch {
+    // در صورت غیرفعال بودن Session Storage، کلید حافظه‌ای استفاده می‌شود.
+  }
+
+  const key =
+    generateIdempotencyKey();
+
+  try {
+    window.sessionStorage.setItem(
+      CHECKOUT_SESSION_KEY,
+      JSON.stringify({
+        fingerprint,
+        key,
+      }),
+    );
+  } catch {
+    // ادامه فرایند بدون ذخیره Session Storage ممکن است.
+  }
+
+  return key;
+}
+
+export function CheckoutPageClient({
+  locale,
+  persianTitleClassName,
+}: CheckoutPageClientProps) {
+  const isPersian =
+    locale === "fa";
+
+  const text =
+    isPersian
+      ? FA_TEXT
+      : EN_TEXT;
+
+  const cartSnapshot =
+    useSyncExternalStore(
+      subscribeToCart,
+      getCartSnapshot,
+      getServerCartSnapshot,
+    );
+
+  const storedItems =
+    useMemo(
+      () =>
+        parseCartSnapshot(
+          cartSnapshot,
+        ),
+      [cartSnapshot],
+    );
+
+  const [
+    quote,
+    setQuote,
+  ] =
+    useState<CartQuoteResponse | null>(
+      null,
+    );
+
+  const [
+    quoteLoading,
+    setQuoteLoading,
+  ] =
+    useState(true);
+
+  const [
+    quoteError,
+    setQuoteError,
+  ] =
+    useState<string | null>(
+      null,
+    );
+
+  const [
+    livePriceFailed,
+    setLivePriceFailed,
+  ] =
+    useState(false);
+
+  const [
+    submitting,
+    setSubmitting,
+  ] =
+    useState(false);
+
+  const [
+    submitError,
+    setSubmitError,
+  ] =
+    useState<string | null>(
+      null,
+    );
+
+  const [
+    createdOrder,
+    setCreatedOrder,
+  ] =
+    useState<CreatedOrder | null>(
+      null,
+    );
+
+  const [
+    priceChangeNotice,
+    setPriceChangeNotice,
+  ] =
+    useState<PriceChangeNotice | null>(
+      null,
+    );
+
+  const [
+    form,
+    setForm,
+  ] =
+    useState<CustomerForm>({
+      fullName: "",
+      mobile: "",
+      email: "",
+      province: "",
+      city: "",
+      postalCode: "",
+      address: "",
+    });
+
+  const quoteRef =
+    useRef<CartQuoteResponse | null>(
+      null,
+    );
+
+  const quoteRequestRef =
+    useRef<AbortController | null>(
+      null,
+    );
+
+  const noticeTimerRef =
+    useRef<
+      ReturnType<typeof setTimeout> | null
+    >(null);
+
+  const idempotencyRef =
+    useRef<{
+      fingerprint: string;
+      key: string;
+    } | null>(null);
+
+  const formatPrice =
+    useCallback(
+      (value: string) => {
+        try {
+          return new Intl.NumberFormat(
+            isPersian
+              ? "fa-IR"
+              : "en-US",
+          ).format(
+            BigInt(value),
+          );
+        } catch {
+          return value;
+        }
+      },
+      [isPersian],
+    );
+
+  const formatNumber =
+    useCallback(
+      (value: number) =>
+        value.toLocaleString(
+          isPersian
+            ? "fa-IR"
+            : "en-US",
+        ),
+      [isPersian],
+    );
+
+  const formatDateTime =
+    useCallback(
+      (value: string) => {
+        const date =
+          new Date(value);
+
+        if (
+          Number.isNaN(
+            date.getTime(),
+          )
+        ) {
+          return "";
+        }
+
+        return new Intl.DateTimeFormat(
+          isPersian
+            ? "fa-IR"
+            : "en-US",
+          {
+            dateStyle:
+              "medium",
+
+            timeStyle:
+              "short",
+          },
+        ).format(date);
+      },
+      [isPersian],
+    );
+
+  const dismissPriceNotice =
+    useCallback(() => {
+      if (
+        noticeTimerRef.current
+      ) {
+        clearTimeout(
+          noticeTimerRef.current,
+        );
+
+        noticeTimerRef.current =
+          null;
+      }
+
+      setPriceChangeNotice(null);
+    }, []);
+
+  const showPriceNotice =
+    useCallback(
+      (
+        previousSubtotalToman:
+          string,
+
+        currentSubtotalToman:
+          string,
+      ) => {
+        if (
+          noticeTimerRef.current
+        ) {
+          clearTimeout(
+            noticeTimerRef.current,
+          );
+        }
+
+        setPriceChangeNotice({
+          previousSubtotalToman,
+          currentSubtotalToman,
+        });
+
+        noticeTimerRef.current =
+          setTimeout(() => {
+            noticeTimerRef.current =
+              null;
+
+            setPriceChangeNotice(
+              null,
+            );
+          }, 10_000);
+      },
+      [],
+    );
+
+  const loadQuote =
+    useCallback(
+      async (
+        items: CartItem[],
+        options: {
+          background?: boolean;
+          notifyOnChange?: boolean;
+        } = {},
+      ): Promise<CartQuoteResponse | null> => {
+        quoteRequestRef.current?.abort();
+
+        if (
+          items.length === 0
+        ) {
+          quoteRef.current =
+            null;
+
+          setQuote(null);
+          setQuoteError(null);
+          setQuoteLoading(false);
+
+          return null;
+        }
+
+        const controller =
+          new AbortController();
+
+        quoteRequestRef.current =
+          controller;
+
+        if (
+          !options.background
+        ) {
+          setQuoteLoading(true);
+        }
+
+        setQuoteError(null);
+
+        try {
+          const response =
+            await fetch(
+              "/api/cart/quote",
+              {
+                method:
+                  "POST",
+
+                headers: {
+                  "Content-Type":
+                    "application/json",
+
+                  Accept:
+                    "application/json",
+                },
+
+                cache:
+                  "no-store",
+
+                signal:
+                  controller.signal,
+
+                body:
+                  JSON.stringify({
+                    items,
+                  }),
+              },
+            );
+
+          const data: unknown =
+            await response
+              .json()
+              .catch(
+                () => null,
+              );
+
+          if (
+            !response.ok ||
+            !isCartQuoteResponse(
+              data,
+            )
+          ) {
+            throw new Error(
+              getErrorMessage(
+                data,
+                text.genericError,
+              ),
+            );
+          }
+
+          const previousQuote =
+            quoteRef.current;
+
+          if (
+            options.notifyOnChange &&
+            previousQuote &&
+            didQuotePriceChange(
+              previousQuote,
+              data,
+            )
+          ) {
+            showPriceNotice(
+              previousQuote.summary
+                .subtotalToman,
+
+              data.summary
+                .subtotalToman,
+            );
+          }
+
+          quoteRef.current =
+            data;
+
+          setQuote(data);
+          setQuoteError(null);
+
+          return data;
+        } catch (error) {
+          if (
+            error instanceof
+              DOMException &&
+            error.name ===
+              "AbortError"
+          ) {
+            return null;
+          }
+
+          const message =
+            error instanceof Error
+              ? error.message
+              : text.genericError;
+
+          setQuoteError(
+            message,
+          );
+
+          return null;
+        } finally {
+          if (
+            quoteRequestRef.current ===
+            controller
+          ) {
+            quoteRequestRef.current =
+              null;
+
+            setQuoteLoading(false);
+          }
+        }
+      },
+      [
+        showPriceNotice,
+        text.genericError,
+      ],
+    );
+
+ useEffect(() => {
+  const timeoutId =
+    window.setTimeout(
+      () => {
+        void loadQuote(
+          storedItems,
+        );
+      },
+      0,
+    );
+
+  return () => {
+    window.clearTimeout(
+      timeoutId,
+    );
+  };
+}, [
+  loadQuote,
+  storedItems,
+]);
+
+  useEffect(() => {
+    const handleLivePriceEvent =
+      (event: Event) => {
+        const customEvent =
+          event as CustomEvent<CartLivePriceEventDetail>;
+
+        const detail =
+          customEvent.detail;
+
+        if (!detail) {
+          return;
+        }
+
+        if (
+          detail.status ===
+          "failed"
+        ) {
+          setLivePriceFailed(
+            true,
+          );
+
+          return;
+        }
+
+        if (
+          detail.status ===
+          "success"
+        ) {
+          setLivePriceFailed(
+            false,
+          );
+
+          void loadQuote(
+            storedItems,
+            {
+              background:
+                true,
+
+              notifyOnChange:
+                true,
+            },
+          );
+        }
+      };
+
+    window.addEventListener(
+      CART_LIVE_PRICE_EVENT,
+      handleLivePriceEvent,
+    );
+
+    return () => {
+      window.removeEventListener(
+        CART_LIVE_PRICE_EVENT,
+        handleLivePriceEvent,
+      );
+    };
+  }, [
+    loadQuote,
+    storedItems,
+  ]);
+
+  useEffect(() => {
+    const fingerprint =
+      getCartFingerprint(
+        storedItems,
+      );
+
+    if (
+      idempotencyRef.current &&
+      idempotencyRef.current
+        .fingerprint !==
+        fingerprint
+    ) {
+      idempotencyRef.current =
+        null;
+
+      setCreatedOrder(null);
+    }
+  }, [
+    storedItems,
+  ]);
+
+  useEffect(() => {
+    return () => {
+      quoteRequestRef.current?.abort();
+
+      if (
+        noticeTimerRef.current
+      ) {
+        clearTimeout(
+          noticeTimerRef.current,
+        );
+      }
+    };
+  }, []);
+
+  const getIdempotencyKey =
+    useCallback(() => {
+      const fingerprint =
+        getCartFingerprint(
+          storedItems,
+        );
+
+      if (
+        idempotencyRef.current
+          ?.fingerprint ===
+        fingerprint
+      ) {
+        return idempotencyRef.current
+          .key;
+      }
+
+      const key =
+        getOrCreateIdempotencyKey(
+          storedItems,
+        );
+
+      idempotencyRef.current =
+        {
+          fingerprint,
+          key,
+        };
+
+      return key;
+    }, [
+      storedItems,
+    ]);
+
+  const handleSubmit =
+    async (
+      event:
+        FormEvent<HTMLFormElement>,
+    ) => {
+      event.preventDefault();
+
+      if (
+        submitting ||
+        createdOrder
+      ) {
+        return;
+      }
+
+      setSubmitError(null);
+
+      let normalizedCustomer:
+        CheckoutCustomerInput;
+
+      try {
+        normalizedCustomer =
+          normalizeCheckoutCustomer({
+            fullName:
+              form.fullName,
+
+            mobile:
+              form.mobile,
+
+            email:
+              form.email,
+
+            province:
+              form.province,
+
+            city:
+              form.city,
+
+            postalCode:
+              form.postalCode,
+
+            address:
+              form.address,
+          });
+      } catch (error) {
+        setSubmitError(
+          error instanceof
+            CheckoutCustomerError
+            ? error.message
+            : text.genericError,
+        );
+
+        return;
+      }
+
+      if (
+        storedItems.length ===
+        0
+      ) {
+        setSubmitError(
+          text.emptyDescription,
+        );
+
+        return;
+      }
+
+      setSubmitting(true);
+
+      try {
+        const previousQuote =
+          quoteRef.current;
+
+        const currentQuote =
+          await loadQuote(
+            storedItems,
+          );
+
+        if (!currentQuote) {
+          setSubmitError(
+            text.genericError,
+          );
+
+          return;
+        }
+
+        if (
+          !currentQuote.summary
+            .canCheckout
+        ) {
+          setSubmitError(
+            text.unavailable,
+          );
+
+          return;
+        }
+
+        if (
+          previousQuote &&
+          didQuotePriceChange(
+            previousQuote,
+            currentQuote,
+          )
+        ) {
+          showPriceNotice(
+            previousQuote.summary
+              .subtotalToman,
+
+            currentQuote.summary
+              .subtotalToman,
+          );
+
+          setSubmitError(
+            text.changedBeforeSubmit,
+          );
+
+          return;
+        }
+
+        const response =
+          await fetch(
+            "/api/checkout/orders",
+            {
+              method:
+                "POST",
+
+              headers: {
+                "Content-Type":
+                  "application/json",
+
+                Accept:
+                  "application/json",
+              },
+
+              cache:
+                "no-store",
+
+              body:
+                JSON.stringify({
+                  idempotencyKey:
+                    getIdempotencyKey(),
+
+                  locale,
+
+                  customer:
+                    normalizedCustomer,
+
+                  items:
+                    storedItems.map(
+                      (item) => ({
+                        slug:
+                          item.slug,
+
+                        variantId:
+                          item.variantId,
+
+                        quantity:
+                          item.quantity,
+                      }),
+                    ),
+                }),
+            },
+          );
+
+        const data: unknown =
+          await response
+            .json()
+            .catch(
+              () => null,
+            );
+
+        if (
+          !response.ok ||
+          !isCreateOrderResponse(
+            data,
+          )
+        ) {
+          throw new Error(
+            getErrorMessage(
+              data,
+              text.genericError,
+            ),
+          );
+        }
+
+        setCreatedOrder(
+          data.order,
+        );
+
+        setSubmitError(null);
+      } catch (error) {
+        setSubmitError(
+          error instanceof Error
+            ? error.message
+            : text.genericError,
+        );
+      } finally {
+        setSubmitting(false);
+      }
+    };
+
+  const isEmpty =
+    storedItems.length ===
+    0;
+
+  const checkoutBlocked =
+    quoteLoading ||
+    Boolean(
+      quoteError,
+    ) ||
+    livePriceFailed ||
+    !quote?.summary
+      .canCheckout ||
+    submitting ||
+    Boolean(
+      createdOrder,
+    );
+
+  if (
+    !quoteLoading &&
+    isEmpty
+  ) {
+    return (
+      <section className="relative z-10 mx-auto flex min-h-[75vh] w-full max-w-[1100px] items-center justify-center px-4 pb-24 pt-36 sm:px-6">
+        <div className="w-full max-w-2xl rounded-[2.5rem] border border-[#d9b85f]/20 bg-[linear-gradient(145deg,rgba(7,36,27,0.92),rgba(2,18,13,0.96))] px-6 py-16 text-center shadow-[0_35px_100px_rgba(0,0,0,0.3)] sm:px-12">
+          <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full border border-[#d9b85f]/30 bg-[#d9b85f]/[0.07]">
+            <ShoppingBag className="h-9 w-9 text-[#e3c46b]" />
+          </div>
+
+          <h1
+            className={[
+              "mt-7 text-[#f5e6c2]",
+              isPersian
+                ? `${persianTitleClassName} pb-3 text-3xl font-semibold leading-[1.9] sm:text-4xl`
+                : "text-3xl font-semibold",
+            ].join(" ")}
+          >
+            {text.emptyTitle}
+          </h1>
+
+          <p className="mx-auto mt-3 max-w-lg text-sm leading-8 text-[#cbbd9d]/65">
+            {
+              text.emptyDescription
+            }
+          </p>
+
+          <Link
+            href={`/${locale}/products`}
+            className="mx-auto mt-9 inline-flex min-h-12 items-center justify-center gap-3 rounded-full border border-[#d9b85f]/45 bg-[#d9b85f]/[0.09] px-7 text-sm text-[#f1d98e] transition hover:-translate-y-0.5 hover:border-[#eed37f]/80 hover:bg-[#d9b85f]/[0.14]"
+          >
+            {text.products}
+
+            {isPersian ? (
+              <ArrowLeft className="h-4 w-4" />
+            ) : (
+              <ArrowRight className="h-4 w-4" />
+            )}
+          </Link>
+        </div>
+      </section>
+    );
+  }
+
+  return (
+    <section className="relative z-10 mx-auto w-full max-w-[1450px] px-4 pb-28 pt-36 sm:px-6 lg:px-10 lg:pt-40">
+      {priceChangeNotice && (
+        <div
+          role="status"
+          aria-live="polite"
+          className="fixed right-4 top-24 z-[100] w-[calc(100%-2rem)] max-w-md rounded-2xl border border-[#d9b85f]/35 bg-[linear-gradient(145deg,rgba(8,42,31,0.98),rgba(2,23,16,0.99))] p-4 shadow-[0_25px_90px_rgba(0,0,0,0.52)] backdrop-blur-xl sm:right-6 sm:w-full"
+        >
+          <div className="flex items-start gap-3">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-[#d9b85f]/30 bg-[#d9b85f]/[0.08] text-[#ead27e]">
+              <RefreshCw className="h-4 w-4" />
+            </div>
+
+            <div className="min-w-0 flex-1">
+              <p className="text-sm font-medium text-[#f4e5bd]">
+                {
+                  text.priceUpdated
+                }
+              </p>
+
+              <p className="mt-1 text-xs leading-6 text-[#d2c4a4]/65">
+                {
+                  text.priceUpdatedDescription
+                }
+              </p>
+
+              <div className="mt-3 grid grid-cols-2 gap-3">
+                <div className="rounded-xl border border-white/[0.06] bg-black/10 px-3 py-2">
+                  <p className="text-[9px] text-[#c9bb9a]/45">
+                    {
+                      text.previousAmount
+                    }
+                  </p>
+
+                  <p className="mt-1 text-xs text-[#d8caa8]/70">
+                    {formatPrice(
+                      priceChangeNotice
+                        .previousSubtotalToman,
+                    )}{" "}
+                    {
+                      text.toman
+                    }
+                  </p>
+                </div>
+
+                <div className="rounded-xl border border-[#d9b85f]/15 bg-[#d9b85f]/[0.04] px-3 py-2">
+                  <p className="text-[9px] text-[#c9bb9a]/45">
+                    {
+                      text.currentAmount
+                    }
+                  </p>
+
+                  <p className="mt-1 text-xs font-medium text-[#efd985]">
+                    {formatPrice(
+                      priceChangeNotice
+                        .currentSubtotalToman,
+                    )}{" "}
+                    {
+                      text.toman
+                    }
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              aria-label={
+                text.dismiss
+              }
+              onClick={
+                dismissPriceNotice
+              }
+              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[#d5c8a8]/45 transition hover:bg-white/[0.06] hover:text-[#f1e4c3]"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          </div>
+        </div>
+      )}
+
+      <header className="mx-auto max-w-3xl text-center">
+        <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full border border-[#d9b85f]/30 bg-[#d9b85f]/[0.07]">
+          <ShieldCheck className="h-7 w-7 text-[#e3c46b]" />
+        </div>
+
+        <p className="mt-5 text-[9px] uppercase tracking-[0.45em] text-[#d6b965]/55">
+          {text.eyebrow}
+        </p>
+
+        <h1
+          className={[
+            "mt-3 text-[#f6e8c6]",
+            isPersian
+              ? `${persianTitleClassName} pb-3 text-3xl font-semibold leading-[1.9] sm:text-4xl`
+              : "text-3xl font-semibold sm:text-4xl",
+          ].join(" ")}
+        >
+          {text.title}
+        </h1>
+
+        <p className="mx-auto mt-3 max-w-2xl text-sm leading-8 text-[#cbbd9d]/60">
+          {text.description}
+        </p>
+      </header>
+
+      {(quoteError ||
+        livePriceFailed) && (
+        <div className="mx-auto mt-8 flex max-w-3xl items-start gap-4 rounded-2xl border border-red-300/20 bg-red-300/[0.06] px-5 py-4 text-sm text-red-100/80">
+          <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0" />
+
+          <div className="flex-1">
+            <p>
+              {quoteError ??
+                text.rateFailed}
+            </p>
+
+            <button
+              type="button"
+              onClick={() =>
+                void loadQuote(
+                  storedItems,
+                )
+              }
+              className="mt-3 inline-flex items-center gap-2 text-xs text-[#efd98e] transition hover:text-[#fff0bd]"
+            >
+              <RefreshCw className="h-3.5 w-3.5" />
+
+              {text.retry}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {quoteLoading &&
+        !quote ? (
+          <div className="mt-16 flex items-center justify-center gap-3 text-sm text-[#d2c29d]/65">
+            <LoaderCircle className="h-5 w-5 animate-spin text-[#dec36f]" />
+
+            {text.loading}
+          </div>
+        ) : (
+          quote && (
+            <form
+              onSubmit={
+                handleSubmit
+              }
+              className="mt-12 grid items-start gap-8 lg:grid-cols-[minmax(0,1fr)_400px]"
+            >
+              <div className="space-y-6">
+                <section className="rounded-[2rem] border border-[#d9b85f]/20 bg-[linear-gradient(145deg,rgba(7,35,27,0.92),rgba(3,21,15,0.96))] p-5 shadow-[0_24px_80px_rgba(0,0,0,0.22)] sm:p-7">
+                  <div className="flex items-start gap-4">
+                    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-[#d9b85f]/25 bg-[#d9b85f]/[0.06]">
+                      <UserRound className="h-5 w-5 text-[#e2c872]" />
+                    </div>
+
+                    <div>
+                      <h2 className="text-lg font-medium text-[#f1e2bd]">
+                        {
+                          text.customerTitle
+                        }
+                      </h2>
+
+                      <p className="mt-1 text-xs leading-6 text-[#c9bb9a]/55">
+                        {
+                          text.customerDescription
+                        }
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="mt-7 grid gap-5 sm:grid-cols-2">
+                    <label className="block">
+                      <span className="mb-2 block text-xs text-[#d7c9a7]/65">
+                        {
+                          text.fullName
+                        }
+                      </span>
+
+                      <input
+                        required
+                        autoComplete="name"
+                        value={
+                          form.fullName
+                        }
+                        onChange={(event) =>
+                          setForm(
+                            (current) => ({
+                              ...current,
+                              fullName:
+                                event.target
+                                  .value,
+                            }),
+                          )
+                        }
+                        placeholder={
+                          text.fullNamePlaceholder
+                        }
+                        className="min-h-12 w-full rounded-xl border border-white/[0.09] bg-black/10 px-4 text-sm text-[#f3e6c9] outline-none transition placeholder:text-[#c8b996]/25 focus:border-[#d9b85f]/45 focus:bg-[#d9b85f]/[0.025]"
+                      />
+                    </label>
+
+                    <label className="block">
+                      <span className="mb-2 block text-xs text-[#d7c9a7]/65">
+                        {
+                          text.mobile
+                        }
+                      </span>
+
+                      <input
+                        required
+                        dir="ltr"
+                        inputMode="tel"
+                        autoComplete="tel"
+                        value={
+                          form.mobile
+                        }
+                        onChange={(event) =>
+                          setForm(
+                            (current) => ({
+                              ...current,
+                              mobile:
+                                event.target
+                                  .value,
+                            }),
+                          )
+                        }
+                        placeholder={
+                          text.mobilePlaceholder
+                        }
+                        className="min-h-12 w-full rounded-xl border border-white/[0.09] bg-black/10 px-4 text-left text-sm text-[#f3e6c9] outline-none transition placeholder:text-[#c8b996]/25 focus:border-[#d9b85f]/45 focus:bg-[#d9b85f]/[0.025]"
+                      />
+                    </label>
+
+                    <label className="block sm:col-span-2">
+                      <span className="mb-2 block text-xs text-[#d7c9a7]/65">
+                        {
+                          text.email
+                        }
+                      </span>
+
+                      <input
+                        dir="ltr"
+                        type="email"
+                        inputMode="email"
+                        autoComplete="email"
+                        value={
+                          form.email
+                        }
+                        onChange={(event) =>
+                          setForm(
+                            (current) => ({
+                              ...current,
+                              email:
+                                event.target
+                                  .value,
+                            }),
+                          )
+                        }
+                        placeholder={
+                          text.emailPlaceholder
+                        }
+                        className="min-h-12 w-full rounded-xl border border-white/[0.09] bg-black/10 px-4 text-left text-sm text-[#f3e6c9] outline-none transition placeholder:text-[#c8b996]/25 focus:border-[#d9b85f]/45 focus:bg-[#d9b85f]/[0.025]"
+                      />
+                    </label>
+
+                    <label className="block">
+                      <span className="mb-2 block text-xs text-[#d7c9a7]/65">
+                        {
+                          text.province
+                        }
+                      </span>
+
+                      <input
+                        required
+                        autoComplete="address-level1"
+                        value={
+                          form.province
+                        }
+                        onChange={(event) =>
+                          setForm(
+                            (current) => ({
+                              ...current,
+                              province:
+                                event.target
+                                  .value,
+                            }),
+                          )
+                        }
+                        placeholder={
+                          text.provincePlaceholder
+                        }
+                        className="min-h-12 w-full rounded-xl border border-white/[0.09] bg-black/10 px-4 text-sm text-[#f3e6c9] outline-none transition placeholder:text-[#c8b996]/25 focus:border-[#d9b85f]/45 focus:bg-[#d9b85f]/[0.025]"
+                      />
+                    </label>
+
+                    <label className="block">
+                      <span className="mb-2 block text-xs text-[#d7c9a7]/65">
+                        {
+                          text.city
+                        }
+                      </span>
+
+                      <input
+                        required
+                        autoComplete="address-level2"
+                        value={
+                          form.city
+                        }
+                        onChange={(event) =>
+                          setForm(
+                            (current) => ({
+                              ...current,
+                              city:
+                                event.target
+                                  .value,
+                            }),
+                          )
+                        }
+                        placeholder={
+                          text.cityPlaceholder
+                        }
+                        className="min-h-12 w-full rounded-xl border border-white/[0.09] bg-black/10 px-4 text-sm text-[#f3e6c9] outline-none transition placeholder:text-[#c8b996]/25 focus:border-[#d9b85f]/45 focus:bg-[#d9b85f]/[0.025]"
+                      />
+                    </label>
+
+                    <label className="block sm:col-span-2">
+                      <span className="mb-2 block text-xs text-[#d7c9a7]/65">
+                        {
+                          text.postalCode
+                        }
+                      </span>
+
+                      <input
+                        required
+                        dir="ltr"
+                        inputMode="numeric"
+                        autoComplete="postal-code"
+                        maxLength={10}
+                        value={
+                          form.postalCode
+                        }
+                        onChange={(event) =>
+                          setForm(
+                            (current) => ({
+                              ...current,
+                              postalCode:
+                                event.target
+                                  .value,
+                            }),
+                          )
+                        }
+                        placeholder={
+                          text.postalCodePlaceholder
+                        }
+                        className="min-h-12 w-full rounded-xl border border-white/[0.09] bg-black/10 px-4 text-left text-sm text-[#f3e6c9] outline-none transition placeholder:text-[#c8b996]/25 focus:border-[#d9b85f]/45 focus:bg-[#d9b85f]/[0.025]"
+                      />
+                    </label>
+
+                    <label className="block sm:col-span-2">
+                      <span className="mb-2 block text-xs text-[#d7c9a7]/65">
+                        {
+                          text.address
+                        }
+                      </span>
+
+                      <textarea
+                        required
+                        rows={5}
+                        autoComplete="street-address"
+                        value={
+                          form.address
+                        }
+                        onChange={(event) =>
+                          setForm(
+                            (current) => ({
+                              ...current,
+                              address:
+                                event.target
+                                  .value,
+                            }),
+                          )
+                        }
+                        placeholder={
+                          text.addressPlaceholder
+                        }
+                        className="w-full resize-y rounded-xl border border-white/[0.09] bg-black/10 px-4 py-3 text-sm leading-7 text-[#f3e6c9] outline-none transition placeholder:text-[#c8b996]/25 focus:border-[#d9b85f]/45 focus:bg-[#d9b85f]/[0.025]"
+                      />
+                    </label>
+                  </div>
+                </section>
+
+                <section className="rounded-[2rem] border border-[#d9b85f]/20 bg-[linear-gradient(145deg,rgba(7,35,27,0.92),rgba(3,21,15,0.96))] p-5 shadow-[0_24px_80px_rgba(0,0,0,0.22)] sm:p-7">
+                  <div className="flex items-center gap-3">
+                    <ShoppingBag className="h-5 w-5 text-[#dfc46d]" />
+
+                    <h2 className="text-lg font-medium text-[#f1e2bd]">
+                      {
+                        text.summary
+                      }
+                    </h2>
+                  </div>
+
+                  <div className="mt-6 divide-y divide-white/[0.07]">
+                    {quote.items.map(
+                      (item) => {
+                        const productName =
+                          isPersian
+                            ? item.product
+                                .nameFa
+                            : item.product
+                                .nameEn;
+
+                        const variantName =
+                          item.variant
+                            ? isPersian
+                              ? item.variant
+                                  .titleFa
+                              : item.variant
+                                  .titleEn
+                            : null;
+
+                        return (
+                          <div
+                            key={
+                              getItemKey(
+                                item,
+                              )
+                            }
+                            className="flex items-start justify-between gap-5 py-4 first:pt-0 last:pb-0"
+                          >
+                            <div className="min-w-0">
+                              <Link
+                                href={`/${locale}/products/${item.slug}`}
+                                className="text-sm text-[#eee0bd] transition hover:text-[#f2d678]"
+                              >
+                                {
+                                  productName
+                                }
+                              </Link>
+
+                              {variantName && (
+                                <p className="mt-1 text-[10px] text-[#cabc9a]/45">
+                                  {
+                                    variantName
+                                  }
+                                </p>
+                              )}
+
+                              <p className="mt-2 text-[10px] text-[#cabc9a]/45">
+                                {
+                                  text.quantity
+                                }
+                                :{" "}
+                                {formatNumber(
+                                  item.quantity,
+                                )}
+                              </p>
+                            </div>
+
+                            <div className="shrink-0 text-end">
+                              <p className="text-sm font-medium text-[#ecd078]">
+                                {formatPrice(
+                                  item.pricing
+                                    .lineTotalToman,
+                                )}
+                              </p>
+
+                              <p className="mt-1 text-[9px] text-[#cabc9a]/45">
+                                {
+                                  text.toman
+                                }
+                              </p>
+                            </div>
+                          </div>
+                        );
+                      },
+                    )}
+                  </div>
+                </section>
+              </div>
+
+              <aside className="lg:sticky lg:top-28">
+                <div className="rounded-[2rem] border border-[#d9b85f]/25 bg-[linear-gradient(150deg,rgba(9,39,29,0.97),rgba(3,21,15,0.99))] p-6 shadow-[0_30px_100px_rgba(0,0,0,0.3)]">
+                  {createdOrder ? (
+                    <>
+                      <div className="flex h-12 w-12 items-center justify-center rounded-full border border-emerald-300/25 bg-emerald-200/[0.07] text-emerald-200">
+                        <CheckCircle2 className="h-6 w-6" />
+                      </div>
+
+                      <h2 className="mt-5 text-xl font-medium text-[#f2e1bb]">
+                        {
+                          text.orderCreated
+                        }
+                      </h2>
+
+                      <div className="mt-6 space-y-4 border-y border-white/[0.07] py-6">
+                        <div className="flex items-center justify-between gap-4 text-sm">
+                          <span className="text-[#c9bb9a]/55">
+                            {
+                              text.orderNumber
+                            }
+                          </span>
+
+                          <span
+                            dir="ltr"
+                            className="text-xs text-[#efd985]"
+                          >
+                            {
+                              createdOrder.orderNumber
+                            }
+                          </span>
+                        </div>
+
+                        <div className="flex items-end justify-between gap-4">
+                          <span className="text-sm text-[#c9bb9a]/55">
+                            {
+                              text.verifiedAmount
+                            }
+                          </span>
+
+                          <div className="text-end">
+                            <span className="text-xl font-semibold text-[#f0d477]">
+                              {formatPrice(
+                                createdOrder
+                                  .payableToman,
+                              )}
+                            </span>
+
+                            <span className="ms-2 text-[10px] text-[#c9bb9a]/45">
+                              {
+                                text.toman
+                              }
+                            </span>
+                          </div>
+                        </div>
+
+                        <div className="flex items-start justify-between gap-4 text-xs">
+                          <span className="text-[#c9bb9a]/55">
+                            {
+                              text.reservedUntil
+                            }
+                          </span>
+
+                          <span className="text-end leading-6 text-[#e0cb8a]/70">
+                            {formatDateTime(
+                              createdOrder
+                                .inventoryExpiresAt,
+                            )}
+                          </span>
+                        </div>
+                      </div>
+
+                      <p className="mt-5 text-xs leading-7 text-amber-100/55">
+                        {
+                          text.gatewayPending
+                        }
+                      </p>
+
+                      <button
+                        type="button"
+                        disabled
+                        className="mt-6 flex min-h-13 w-full cursor-not-allowed items-center justify-center gap-3 rounded-full border border-[#e0c16d]/25 bg-[#d9b85f]/[0.05] px-6 text-sm text-[#f6e4af]/40"
+                      >
+                        <WalletCards className="h-4 w-4" />
+
+                        {
+                          text.gatewayButton
+                        }
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <p className="text-[9px] uppercase tracking-[0.4em] text-[#d7ba67]/50">
+                        Eloria Order
+                      </p>
+
+                      <h2 className="mt-3 text-xl font-medium text-[#f2e1bb]">
+                        {
+                          text.summary
+                        }
+                      </h2>
+
+                      <div className="mt-7 space-y-4 border-y border-white/[0.07] py-6">
+                        <div className="flex items-center justify-between gap-4 text-sm">
+                          <span className="text-[#c9bb9a]/60">
+                            {
+                              text.quantity
+                            }
+                          </span>
+
+                          <span className="text-[#eee1c7]">
+                            {formatNumber(
+                              quote.summary
+                                .totalQuantity,
+                            )}
+                          </span>
+                        </div>
+
+                        <div className="flex items-end justify-between gap-4">
+                          <span className="text-sm text-[#c9bb9a]/60">
+                            {
+                              text.payable
+                            }
+                          </span>
+
+                          <div className="text-end">
+                            <span className="text-xl font-semibold text-[#f0d477]">
+                              {formatPrice(
+                                quote.summary
+                                  .subtotalToman,
+                              )}
+                            </span>
+
+                            <span className="ms-2 text-[10px] text-[#c9bb9a]/50">
+                              {
+                                text.toman
+                              }
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="mt-5 flex items-center justify-between gap-3 text-[10px] text-[#c9bb9a]/45">
+                        <span>
+                          {
+                            text.lastChecked
+                          }
+                        </span>
+
+                        <span
+                          dir="ltr"
+                          className="text-[#dfc87e]/65"
+                        >
+                          {formatDateTime(
+                            quote.generatedAt,
+                          )}
+                        </span>
+                      </div>
+
+                      <div className="mt-5 space-y-3">
+                        <div className="flex items-start gap-3 rounded-xl border border-[#d9b85f]/12 bg-[#d9b85f]/[0.03] px-3 py-3 text-[10px] leading-6 text-[#cfc19e]/55">
+                          <ShieldCheck className="mt-1 h-3.5 w-3.5 shrink-0 text-[#d9be6b]/65" />
+
+                          {
+                            text.secureNotice
+                          }
+                        </div>
+
+                        <div className="flex items-start gap-3 rounded-xl border border-[#d9b85f]/12 bg-[#d9b85f]/[0.03] px-3 py-3 text-[10px] leading-6 text-[#cfc19e]/55">
+                          <Clock3 className="mt-1 h-3.5 w-3.5 shrink-0 text-[#d9be6b]/65" />
+
+                          {
+                            text.reservationNotice
+                          }
+                        </div>
+                      </div>
+
+                      {submitError && (
+                        <div className="mt-5 flex items-start gap-3 rounded-xl border border-red-300/20 bg-red-300/[0.055] px-4 py-3 text-xs leading-6 text-red-100/75">
+                          <AlertTriangle className="mt-1 h-4 w-4 shrink-0" />
+
+                          <span>
+                            {
+                              submitError
+                            }
+                          </span>
+                        </div>
+                      )}
+
+                      <button
+                        type="submit"
+                        disabled={
+                          checkoutBlocked
+                        }
+                        className="mt-6 flex min-h-13 w-full items-center justify-center gap-3 rounded-full border border-[#e0c16d]/55 bg-[linear-gradient(100deg,rgba(112,80,20,0.22),rgba(218,183,90,0.3),rgba(112,80,20,0.22))] px-6 text-sm font-medium text-[#f6e4af] transition hover:-translate-y-0.5 hover:border-[#f0d681]/85 hover:shadow-[0_0_30px_rgba(218,183,91,0.14)] disabled:cursor-not-allowed disabled:opacity-35 disabled:hover:translate-y-0"
+                      >
+                        {submitting ? (
+                          <LoaderCircle className="h-4 w-4 animate-spin" />
+                        ) : (
+                          <WalletCards className="h-4 w-4" />
+                        )}
+
+                        {submitting
+                          ? text.submitting
+                          : text.submit}
+                      </button>
+
+                      <Link
+                        href={`/${locale}/cart`}
+                        className="mt-4 flex min-h-11 w-full items-center justify-center gap-2 rounded-full border border-white/[0.08] text-xs text-[#cfc19e]/60 transition hover:border-[#d9b85f]/25 hover:text-[#efd98e]"
+                      >
+                        {isPersian ? (
+                          <ArrowRight className="h-3.5 w-3.5" />
+                        ) : (
+                          <ArrowLeft className="h-3.5 w-3.5" />
+                        )}
+
+                        {
+                          text.cart
+                        }
+                      </Link>
+                    </>
+                  )}
+                </div>
+              </aside>
+            </form>
+          )
+        )}
+    </section>
+  );
+}
+
+===== .\src\components\cart-live-price-refresh.tsx =====
+"use client";
+
+import {
+  useCallback,
+  useEffect,
+  useRef,
+} from "react";
+
+import {
+  CART_UPDATED_EVENT,
+  readCartItems,
+} from "@/lib/cart-storage";
+
+export const CART_LIVE_PRICE_EVENT =
+  "eloria-live-price-refresh";
+
+export type CartLivePriceMode =
+  | "LIVE"
+  | "CLOSED_MARKET";
+
+export type CartLivePriceEventDetail = {
+  status:
+    | "refreshing"
+    | "success"
+    | "failed";
+
+  refreshedAt?: string;
+
+  message?: string;
+
+  pricingMode?: CartLivePriceMode;
+
+  closedMarketMaterials?: string[];
+};
+
+/*
+ * قیمت و موجودی سبد در زمان نمایش صفحه
+ * هر ۳۰ ثانیه از سرور بررسی می‌شوند.
+ */
+const VISIBLE_REFRESH_INTERVAL_MS =
+  30_000;
+
+const REQUEST_TIMEOUT_MS =
+  20_000;
+
+type ApiResponse = {
+  successful?: unknown;
+
+  refreshedAt?: unknown;
+
+  checkedAt?: unknown;
+
+  message?: unknown;
+
+  hasUnavailableRates?: unknown;
+
+  unavailableMaterials?: unknown;
+
+  hasClosedMarketRates?: unknown;
+
+  closedMarketMaterials?: unknown;
+
+  /*
+   * فیلدهای قدیمی برای سازگاری با نسخه قبلی API
+   */
+  hasStaleRates?: unknown;
+
+  staleMaterials?: unknown;
+};
+
+function dispatchLivePriceStatus(
+  detail: CartLivePriceEventDetail,
+) {
+  window.dispatchEvent(
+    new CustomEvent(
+      CART_LIVE_PRICE_EVENT,
+      {
+        detail,
+      },
+    ),
+  );
+}
+
+function isRecord(
+  value: unknown,
+): value is Record<
+  string,
+  unknown
+> {
+  return (
+    typeof value ===
+      "object" &&
+    value !== null
+  );
+}
+
+function getResponseMessage(
+  data: ApiResponse,
+  fallback: string,
+): string {
+  return typeof data.message ===
+    "string"
+    ? data.message
+    : fallback;
+}
+
+function getResponseTimestamp(
+  data: ApiResponse,
+): string {
+  if (
+    typeof data.checkedAt ===
+    "string"
+  ) {
+    return data.checkedAt;
+  }
+
+  if (
+    typeof data.refreshedAt ===
+    "string"
+  ) {
+    return data.refreshedAt;
+  }
+
+  return new Date().toISOString();
+}
+
+function getStringArray(
+  value: unknown,
+): string[] {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  return value.filter(
+    (
+      item,
+    ): item is string =>
+      typeof item ===
+      "string",
+  );
+}
+
+function translateMaterial(
+  material: string,
+): string {
+  if (material === "GOLD") {
+    return "طلا";
+  }
+
+  if (material === "SILVER") {
+    return "نقره";
+  }
+
+  return material;
+}
+
+function getUnavailableRateMessage(
+  data: ApiResponse,
+): string {
+  const unavailableMaterials =
+    getStringArray(
+      data.unavailableMaterials,
+    );
+
+  const legacyStaleMaterials =
+    getStringArray(
+      data.staleMaterials,
+    );
+
+  const materials =
+    (
+      unavailableMaterials.length >
+      0
+        ? unavailableMaterials
+        : legacyStaleMaterials
+    ).map(translateMaterial);
+
+  if (materials.length === 0) {
+    return "نرخ معتبر بازار در دسترس نیست. خرید تا دریافت نرخ معتبر موقتاً متوقف شده است.";
+  }
+
+  return `نرخ ${materials.join(
+    " و ",
+  )} قابل استفاده نیست. خرید تا دریافت نرخ معتبر موقتاً متوقف شده است.`;
+}
+
+export function CartLivePriceRefresh() {
+  const controllerRef =
+    useRef<AbortController | null>(
+      null,
+    );
+
+  const refreshingRef =
+    useRef(false);
+
+  const lastRefreshAtRef =
+    useRef(0);
+
+  const mountedRef =
+    useRef(true);
+
+  const refreshLatestPrices =
+    useCallback(async () => {
+      if (refreshingRef.current) {
+        return;
+      }
+
+      const cartItems =
+        readCartItems();
+
+      if (cartItems.length === 0) {
+        return;
+      }
+
+      refreshingRef.current =
+        true;
+
+      controllerRef.current?.abort();
+
+      const controller =
+        new AbortController();
+
+      controllerRef.current =
+        controller;
+
+      const timeoutId =
+        window.setTimeout(
+          () => {
+            controller.abort();
+          },
+          REQUEST_TIMEOUT_MS,
+        );
+
+      dispatchLivePriceStatus({
+        status: "refreshing",
+      });
+
+      try {
+        const response =
+          await fetch(
+            "/api/cart/refresh-prices",
+            {
+              method: "POST",
+
+              cache: "no-store",
+
+              headers: {
+                Accept:
+                  "application/json",
+              },
+
+              signal:
+                controller.signal,
+            },
+          );
+
+        const rawData: unknown =
+          await response
+            .json()
+            .catch(() => null);
+
+        if (!isRecord(rawData)) {
+          dispatchLivePriceStatus({
+            status: "failed",
+
+            message:
+              "پاسخ سرور برای بررسی نرخ بازار معتبر نیست.",
+          });
+
+          return;
+        }
+
+        const data: ApiResponse =
+          rawData;
+
+        if (
+          !response.ok ||
+          data.successful !== true
+        ) {
+          dispatchLivePriceStatus({
+            status: "failed",
+
+            message:
+              getResponseMessage(
+                data,
+                "بررسی نرخ بازار انجام نشد.",
+              ),
+          });
+
+          return;
+        }
+
+        /*
+         * زمان آخرین بررسی فقط بعد از پاسخ معتبر سرور ثبت می‌شود.
+         */
+        lastRefreshAtRef.current =
+          Date.now();
+
+        const hasUnavailableRates =
+          data.hasUnavailableRates ===
+            true ||
+          data.hasStaleRates === true;
+
+        if (hasUnavailableRates) {
+          dispatchLivePriceStatus({
+            status: "failed",
+
+            message:
+              getUnavailableRateMessage(
+                data,
+              ),
+          });
+
+          return;
+        }
+
+        const refreshedAt =
+          getResponseTimestamp(data);
+
+        const closedMarketMaterials =
+          getStringArray(
+            data.closedMarketMaterials,
+          );
+
+        const pricingMode:
+          CartLivePriceMode =
+          data.hasClosedMarketRates ===
+            true ||
+          closedMarketMaterials.length >
+            0
+            ? "CLOSED_MARKET"
+            : "LIVE";
+
+        /*
+         * وضعیت بازار بسته فقط برای منطق داخلی نگهداری می‌شود
+         * و هیچ پیام دائمی برای مشتری نمایش داده نمی‌شود.
+         */
+        dispatchLivePriceStatus({
+          status: "success",
+
+          refreshedAt,
+
+          pricingMode,
+
+          closedMarketMaterials,
+        });
+
+        /*
+         * پس از تأیید نرخ معتبر، قیمت و موجودی سبد
+         * دوباره مستقیماً از سرور دریافت می‌شود.
+         */
+        window.dispatchEvent(
+          new CustomEvent(
+            CART_UPDATED_EVENT,
+            {
+              detail: {
+                reason:
+                  "live-price-refresh",
+
+                refreshedAt,
+              },
+            },
+          ),
+        );
+      } catch (error) {
+        if (
+          error instanceof
+            DOMException &&
+          error.name ===
+            "AbortError"
+        ) {
+          if (!mountedRef.current) {
+            return;
+          }
+
+          dispatchLivePriceStatus({
+            status: "failed",
+
+            message:
+              "زمان دریافت نرخ بازار بیش از حد طول کشید.",
+          });
+
+          return;
+        }
+
+        console.error(
+          "[Eloria Cart] Unable to check current market rates.",
+          error,
+        );
+
+        dispatchLivePriceStatus({
+          status: "failed",
+
+          message:
+            "ارتباط با سرویس بررسی نرخ بازار برقرار نشد.",
+        });
+      } finally {
+        window.clearTimeout(
+          timeoutId,
+        );
+
+        refreshingRef.current =
+          false;
+
+        if (
+          controllerRef.current ===
+          controller
+        ) {
+          controllerRef.current =
+            null;
+        }
+      }
+    }, []);
+
+  useEffect(() => {
+    mountedRef.current =
+      true;
+
+    const initialTimer =
+      window.setTimeout(
+        () => {
+          void refreshLatestPrices();
+        },
+        0,
+      );
+
+    const shouldRefreshNow =
+      () => {
+        const elapsed =
+          Date.now() -
+          lastRefreshAtRef.current;
+
+        return (
+          elapsed >=
+          VISIBLE_REFRESH_INTERVAL_MS
+        );
+      };
+
+    const handleVisibilityChange =
+      () => {
+        if (
+          document.visibilityState !==
+          "visible"
+        ) {
+          return;
+        }
+
+        if (shouldRefreshNow()) {
+          void refreshLatestPrices();
+        }
+      };
+
+    const handleWindowFocus =
+      () => {
+        if (shouldRefreshNow()) {
+          void refreshLatestPrices();
+        }
+      };
+
+    const handleOnline =
+      () => {
+        void refreshLatestPrices();
+      };
+
+    const intervalId =
+      window.setInterval(
+        () => {
+          if (
+            document.visibilityState ===
+            "visible"
+          ) {
+            void refreshLatestPrices();
+          }
+        },
+        VISIBLE_REFRESH_INTERVAL_MS,
+      );
+
+    document.addEventListener(
+      "visibilitychange",
+      handleVisibilityChange,
+    );
+
+    window.addEventListener(
+      "focus",
+      handleWindowFocus,
+    );
+
+    window.addEventListener(
+      "online",
+      handleOnline,
+    );
+
+    return () => {
+      mountedRef.current =
+        false;
+
+      window.clearTimeout(
+        initialTimer,
+      );
+
+      window.clearInterval(
+        intervalId,
+      );
+
+      document.removeEventListener(
+        "visibilitychange",
+        handleVisibilityChange,
+      );
+
+      window.removeEventListener(
+        "focus",
+        handleWindowFocus,
+      );
+
+      window.removeEventListener(
+        "online",
+        handleOnline,
+      );
+
+      controllerRef.current?.abort();
+    };
+  }, [
+    refreshLatestPrices,
+  ]);
+
+  return null;
+}
+
+===== .\src\lib\cart-storage.ts =====
+"use client";
+
+export const CART_STORAGE_KEY =
+  "eloria-cart-v1";
+
+export const CART_UPDATED_EVENT =
+  "eloria-cart-updated";
+
+export type CartItem = {
+  slug: string;
+  variantId: string | null;
+  quantity: number;
+  addedAt: string;
+};
+
+function isCartItem(
+  value: unknown,
+): value is CartItem {
+  if (
+    typeof value !== "object" ||
+    value === null
+  ) {
+    return false;
+  }
+
+  const item =
+    value as Partial<CartItem>;
+
+  return (
+    typeof item.slug ===
+      "string" &&
+    item.slug.trim().length > 0 &&
+    (
+      typeof item.variantId ===
+        "string" ||
+      item.variantId === null
+    ) &&
+    typeof item.quantity ===
+      "number" &&
+    Number.isInteger(
+      item.quantity,
+    ) &&
+    item.quantity > 0 &&
+    typeof item.addedAt ===
+      "string"
+  );
+}
+
+function notifyCartUpdated(
+  items: CartItem[],
+) {
+  if (
+    typeof window ===
+    "undefined"
+  ) {
+    return;
+  }
+
+  window.dispatchEvent(
+    new CustomEvent(
+      CART_UPDATED_EVENT,
+      {
+        detail: {
+          items,
+          totalQuantity:
+            items.reduce(
+              (
+                total,
+                item,
+              ) =>
+                total +
+                item.quantity,
+              0,
+            ),
+        },
+      },
+    ),
+  );
+}
+
+export function readCartItems(): CartItem[] {
+  if (
+    typeof window ===
+    "undefined"
+  ) {
+    return [];
+  }
+
+  try {
+    const raw =
+      window.localStorage.getItem(
+        CART_STORAGE_KEY,
+      );
+
+    if (!raw) {
+      return [];
+    }
+
+    const parsed: unknown =
+      JSON.parse(raw);
+
+    if (
+      !Array.isArray(
+        parsed,
+      )
+    ) {
+      return [];
+    }
+
+    return parsed.filter(
+      isCartItem,
+    );
+  } catch {
+    return [];
+  }
+}
+
+export function subscribeToCart(
+  listener: () => void,
+): () => void {
+  if (
+    typeof window ===
+    "undefined"
+  ) {
+    return () => undefined;
+  }
+
+  const handleCartUpdate =
+    () => {
+      listener();
+    };
+
+  const handleStorage = (
+    event: StorageEvent,
+  ) => {
+    if (
+      event.key ===
+        CART_STORAGE_KEY ||
+      event.key === null
+    ) {
+      listener();
+    }
+  };
+
+  window.addEventListener(
+    CART_UPDATED_EVENT,
+    handleCartUpdate,
+  );
+
+  window.addEventListener(
+    "storage",
+    handleStorage,
+  );
+
+  return () => {
+    window.removeEventListener(
+      CART_UPDATED_EVENT,
+      handleCartUpdate,
+    );
+
+    window.removeEventListener(
+      "storage",
+      handleStorage,
+    );
+  };
+}
+
+export function getCartItemQuantity({
+  slug,
+  variantId = null,
+}: {
+  slug: string;
+  variantId?: string | null;
+}): number {
+  return (
+    readCartItems().find(
+      (item) =>
+        item.slug === slug &&
+        item.variantId ===
+          variantId,
+    )?.quantity ?? 0
+  );
+}
+
+export function writeCartItems(
+  items: CartItem[],
+): void {
+  if (
+    typeof window ===
+    "undefined"
+  ) {
+    return;
+  }
+
+  const validItems =
+    items.filter(
+      isCartItem,
+    );
+
+  window.localStorage.setItem(
+    CART_STORAGE_KEY,
+    JSON.stringify(
+      validItems,
+    ),
+  );
+
+  notifyCartUpdated(
+    validItems,
+  );
+}
+
+export function addCartItem({
+  slug,
+  variantId = null,
+  quantity = 1,
+}: {
+  slug: string;
+  variantId?: string | null;
+  quantity?: number;
+}): CartItem[] {
+  const normalizedSlug =
+    slug.trim();
+
+  if (!normalizedSlug) {
+    return readCartItems();
+  }
+
+  const safeQuantity =
+    Math.min(
+      Math.max(
+        Math.trunc(
+          quantity,
+        ),
+        1,
+      ),
+      99,
+    );
+
+  const currentItems =
+    readCartItems();
+
+  const existingIndex =
+    currentItems.findIndex(
+      (item) =>
+        item.slug ===
+          normalizedSlug &&
+        item.variantId ===
+          variantId,
+    );
+
+  if (
+    existingIndex >= 0
+  ) {
+    const existingItem =
+      currentItems[
+        existingIndex
+      ];
+
+    currentItems[
+      existingIndex
+    ] = {
+      ...existingItem,
+
+      quantity:
+        Math.min(
+          existingItem.quantity +
+            safeQuantity,
+          99,
+        ),
+    };
+  } else {
+    currentItems.push({
+      slug:
+        normalizedSlug,
+
+      variantId,
+
+      quantity:
+        safeQuantity,
+
+      addedAt:
+        new Date().toISOString(),
+    });
+  }
+
+  writeCartItems(
+    currentItems,
+  );
+
+  return currentItems;
+}
+
+export function updateCartItemQuantity({
+  slug,
+  variantId = null,
+  quantity,
+}: {
+  slug: string;
+  variantId?: string | null;
+  quantity: number;
+}): CartItem[] {
+  const currentItems =
+    readCartItems();
+
+  const safeQuantity =
+    Math.min(
+      Math.max(
+        Math.trunc(
+          quantity,
+        ),
+        0,
+      ),
+      99,
+    );
+
+  const nextItems =
+    safeQuantity === 0
+      ? currentItems.filter(
+          (item) =>
+            !(
+              item.slug ===
+                slug &&
+              item.variantId ===
+                variantId
+            ),
+        )
+      : currentItems.map(
+          (item) =>
+            item.slug ===
+                slug &&
+            item.variantId ===
+                variantId
+              ? {
+                  ...item,
+
+                  quantity:
+                    safeQuantity,
+                }
+              : item,
+        );
+
+  writeCartItems(
+    nextItems,
+  );
+
+  return nextItems;
+}
+
+export function removeCartItem({
+  slug,
+  variantId = null,
+}: {
+  slug: string;
+  variantId?: string | null;
+}): CartItem[] {
+  const nextItems =
+    readCartItems().filter(
+      (item) =>
+        !(
+          item.slug ===
+            slug &&
+          item.variantId ===
+            variantId
+        ),
+    );
+
+  writeCartItems(
+    nextItems,
+  );
+
+  return nextItems;
+}
+
+export function clearCart(): void {
+  writeCartItems([]);
+}
+
+export function getCartQuantity(): number {
+  return readCartItems().reduce(
+    (
+      total,
+      item,
+    ) =>
+      total +
+      item.quantity,
+    0,
+  );
+}
+
+===== .\src\lib\checkout-customer.ts =====
+export type CheckoutCustomerInput = {
+  fullName: string;
+  mobile: string;
+  email?: string | null;
+  province: string;
+  city: string;
+  postalCode: string;
+  address: string;
+};
+
+export type NormalizedCheckoutCustomer = {
+  fullName: string;
+  mobile: string;
+  email: string | null;
+  province: string;
+  city: string;
+  postalCode: string;
+  address: string;
+};
+
+export type CheckoutCustomerErrorCode =
+  | "INVALID_CUSTOMER_NAME"
+  | "INVALID_CUSTOMER_MOBILE"
+  | "INVALID_CUSTOMER_EMAIL"
+  | "INVALID_CUSTOMER_PROVINCE"
+  | "INVALID_CUSTOMER_CITY"
+  | "INVALID_CUSTOMER_POSTAL_CODE"
+  | "INVALID_CUSTOMER_ADDRESS";
+
+export class CheckoutCustomerError extends Error {
+  readonly code: CheckoutCustomerErrorCode;
+
+  constructor(
+    code: CheckoutCustomerErrorCode,
+    message: string,
+  ) {
+    super(message);
+
+    this.name =
+      "CheckoutCustomerError";
+
+    this.code =
+      code;
+  }
+}
+
+function normalizeDigits(
+  value: string,
+): string {
+  const persianDigits =
+    "۰۱۲۳۴۵۶۷۸۹";
+
+  const arabicDigits =
+    "٠١٢٣٤٥٦٧٨٩";
+
+  return value
+    .replace(
+      /[۰-۹]/g,
+      (digit) =>
+        String(
+          persianDigits.indexOf(
+            digit,
+          ),
+        ),
+    )
+    .replace(
+      /[٠-٩]/g,
+      (digit) =>
+        String(
+          arabicDigits.indexOf(
+            digit,
+          ),
+        ),
+    );
+}
+
+function normalizeText(
+  value: string,
+): string {
+  return value
+    .replace(
+      /\s+/g,
+      " ",
+    )
+    .trim();
+}
+
+function normalizeFullName(
+  value: unknown,
+): string {
+  if (
+    typeof value !==
+    "string"
+  ) {
+    throw new CheckoutCustomerError(
+      "INVALID_CUSTOMER_NAME",
+      "نام و نام خانوادگی معتبر نیست.",
+    );
+  }
+
+  const normalized =
+    normalizeText(value);
+
+  if (
+    normalized.length < 3 ||
+    normalized.length > 120
+  ) {
+    throw new CheckoutCustomerError(
+      "INVALID_CUSTOMER_NAME",
+      "نام و نام خانوادگی باید بین ۳ تا ۱۲۰ نویسه باشد.",
+    );
+  }
+
+  return normalized;
+}
+
+function normalizeMobile(
+  value: unknown,
+): string {
+  if (
+    typeof value !==
+    "string"
+  ) {
+    throw new CheckoutCustomerError(
+      "INVALID_CUSTOMER_MOBILE",
+      "شماره موبایل معتبر نیست.",
+    );
+  }
+
+  let normalized =
+    normalizeDigits(value)
+      .replace(
+        /[\s()-]/g,
+        "",
+      )
+      .trim();
+
+  if (
+    normalized.startsWith(
+      "+98",
+    )
+  ) {
+    normalized =
+      `0${normalized.slice(3)}`;
+  } else if (
+    normalized.startsWith(
+      "0098",
+    )
+  ) {
+    normalized =
+      `0${normalized.slice(4)}`;
+  } else if (
+    normalized.startsWith(
+      "98",
+    )
+  ) {
+    normalized =
+      `0${normalized.slice(2)}`;
+  }
+
+  if (
+    !/^09\d{9}$/.test(
+      normalized,
+    )
+  ) {
+    throw new CheckoutCustomerError(
+      "INVALID_CUSTOMER_MOBILE",
+      "شماره موبایل باید با ۰۹ شروع شود و ۱۱ رقم داشته باشد.",
+    );
+  }
+
+  return normalized;
+}
+
+function normalizeEmail(
+  value: unknown,
+): string | null {
+  if (
+    value === undefined ||
+    value === null ||
+    value === ""
+  ) {
+    return null;
+  }
+
+  if (
+    typeof value !==
+    "string"
+  ) {
+    throw new CheckoutCustomerError(
+      "INVALID_CUSTOMER_EMAIL",
+      "نشانی ایمیل معتبر نیست.",
+    );
+  }
+
+  const normalized =
+    value
+      .trim()
+      .toLowerCase();
+
+  if (
+    normalized.length > 254 ||
+    !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(
+      normalized,
+    )
+  ) {
+    throw new CheckoutCustomerError(
+      "INVALID_CUSTOMER_EMAIL",
+      "نشانی ایمیل معتبر نیست.",
+    );
+  }
+
+  return normalized;
+}
+
+function normalizeLocation(
+  value: unknown,
+  field:
+    | "province"
+    | "city",
+): string {
+  const isProvince =
+    field === "province";
+
+  if (
+    typeof value !==
+    "string"
+  ) {
+    throw new CheckoutCustomerError(
+      isProvince
+        ? "INVALID_CUSTOMER_PROVINCE"
+        : "INVALID_CUSTOMER_CITY",
+
+      isProvince
+        ? "نام استان معتبر نیست."
+        : "نام شهر معتبر نیست.",
+    );
+  }
+
+  const normalized =
+    normalizeText(value);
+
+  if (
+    normalized.length < 2 ||
+    normalized.length > 100
+  ) {
+    throw new CheckoutCustomerError(
+      isProvince
+        ? "INVALID_CUSTOMER_PROVINCE"
+        : "INVALID_CUSTOMER_CITY",
+
+      isProvince
+        ? "نام استان معتبر نیست."
+        : "نام شهر معتبر نیست.",
+    );
+  }
+
+  return normalized;
+}
+
+function normalizePostalCode(
+  value: unknown,
+): string {
+  if (
+    typeof value !==
+    "string"
+  ) {
+    throw new CheckoutCustomerError(
+      "INVALID_CUSTOMER_POSTAL_CODE",
+      "کد پستی معتبر نیست.",
+    );
+  }
+
+  const normalized =
+    normalizeDigits(value)
+      .replace(
+        /\D/g,
+        "",
+      );
+
+  if (
+    !/^\d{10}$/.test(
+      normalized,
+    )
+  ) {
+    throw new CheckoutCustomerError(
+      "INVALID_CUSTOMER_POSTAL_CODE",
+      "کد پستی باید دقیقاً ۱۰ رقم باشد.",
+    );
+  }
+
+  return normalized;
+}
+
+function normalizeAddress(
+  value: unknown,
+): string {
+  if (
+    typeof value !==
+    "string"
+  ) {
+    throw new CheckoutCustomerError(
+      "INVALID_CUSTOMER_ADDRESS",
+      "نشانی تحویل معتبر نیست.",
+    );
+  }
+
+  const normalized =
+    normalizeText(value);
+
+  if (
+    normalized.length < 10 ||
+    normalized.length > 1000
+  ) {
+    throw new CheckoutCustomerError(
+      "INVALID_CUSTOMER_ADDRESS",
+      "نشانی تحویل باید بین ۱۰ تا ۱۰۰۰ نویسه باشد.",
+    );
+  }
+
+  return normalized;
+}
+
+export function normalizeCheckoutCustomer(
+  input: CheckoutCustomerInput,
+): NormalizedCheckoutCustomer {
+  if (
+    typeof input !==
+      "object" ||
+    input === null
+  ) {
+    throw new CheckoutCustomerError(
+      "INVALID_CUSTOMER_NAME",
+      "اطلاعات خریدار معتبر نیست.",
+    );
+  }
+
+  return {
+    fullName:
+      normalizeFullName(
+        input.fullName,
+      ),
+
+    mobile:
+      normalizeMobile(
+        input.mobile,
+      ),
+
+    email:
+      normalizeEmail(
+        input.email,
+      ),
+
+    province:
+      normalizeLocation(
+        input.province,
+        "province",
+      ),
+
+    city:
+      normalizeLocation(
+        input.city,
+        "city",
+      ),
+
+    postalCode:
+      normalizePostalCode(
+        input.postalCode,
+      ),
+
+    address:
+      normalizeAddress(
+        input.address,
+      ),
+  };
+}
+
+===== .\src\lib\checkout-order.ts =====
+import {
+  randomBytes,
+} from "node:crypto";
+
+import {
+  Prisma,
+} from "@/generated/prisma/client";
+
+import {
+  CheckoutCustomerError,
+  normalizeCheckoutCustomer,
+  type CheckoutCustomerInput,
+  type NormalizedCheckoutCustomer,
+} from "@/lib/checkout-customer";
+
+import {
+  getProductLivePrice,
+  ProductPricingError,
+  type ProductPriceResult,
+} from "@/lib/product-pricing";
+
+import {
+  prisma,
+} from "@/lib/prisma";
+
+const MAX_CART_ITEMS =
+  30;
+
+const MAX_ITEM_QUANTITY =
+  99;
+
+const INVENTORY_RESERVATION_MINUTES =
+  15;
+
+const TRANSACTION_RETRY_COUNT =
+  3;
+
+export type CheckoutOrderItemInput = {
+  slug: string;
+
+  variantId:
+    string | null;
+
+  quantity:
+    number;
+};
+
+export type CreateCheckoutOrderInput = {
+  idempotencyKey:
+    string;
+
+  locale:
+    string;
+
+  customer:
+    CheckoutCustomerInput;
+
+  items:
+    CheckoutOrderItemInput[];
+
+  requestId?:
+    string | null;
+};
+
+export type CheckoutOrderResult = {
+  reused:
+    boolean;
+
+  order: {
+    id:
+      string;
+
+    orderNumber:
+      string;
+
+    status:
+      string;
+
+    currency:
+      "TOMAN";
+
+    subtotalToman:
+      string;
+
+    payableToman:
+      string;
+
+    priceVerifiedAt:
+      string;
+
+    priceExpiresAt:
+      string;
+
+    inventoryReservedAt:
+      string;
+
+    inventoryExpiresAt:
+      string;
+
+    items: Array<{
+      id:
+        string;
+
+      productSlug:
+        string;
+
+      variantId:
+        string | null;
+
+      quantity:
+        number;
+
+      unitPriceToman:
+        string;
+
+      lineTotalToman:
+        string;
+
+      stockBeforeReservation:
+        number;
+
+      stockAfterReservation:
+        number;
+    }>;
+  };
+};
+
+export type CheckoutOrderErrorCode =
+  | "INVALID_IDEMPOTENCY_KEY"
+  | "INVALID_LOCALE"
+  | "INVALID_CUSTOMER"
+  | "INVALID_CART"
+  | "INVALID_CART_ITEM"
+  | "TOO_MANY_ITEMS"
+  | "PRODUCT_UNAVAILABLE"
+  | "INSUFFICIENT_STOCK"
+  | "PRICE_EXPIRED"
+  | "PRICING_FAILED"
+  | "TRANSACTION_FAILED";
+
+export class CheckoutOrderError extends Error {
+  readonly code:
+    CheckoutOrderErrorCode;
+
+  readonly status:
+    number;
+
+  constructor(
+    code:
+      CheckoutOrderErrorCode,
+
+    message:
+      string,
+
+    status =
+      400,
+  ) {
+    super(message);
+
+    this.name =
+      "CheckoutOrderError";
+
+    this.code =
+      code;
+
+    this.status =
+      status;
+  }
+}
+
+type PricedCheckoutItem = {
+  input:
+    CheckoutOrderItemInput;
+
+  result:
+    ProductPriceResult;
+
+  unitPriceToman:
+    string;
+
+  lineTotalToman:
+    string;
+
+  pricingSnapshot:
+    Prisma.InputJsonValue;
+};
+
+type ReservedCheckoutItem = {
+  pricedItem:
+    PricedCheckoutItem;
+
+  stockBeforeReservation:
+    number;
+
+  stockAfterReservation:
+    number;
+};
+
+type SerializableOrder = {
+  id:
+    string;
+
+  orderNumber:
+    string;
+
+  status:
+    string;
+
+  currency:
+    string;
+
+  subtotalToman: {
+    toString():
+      string;
+  };
+
+  payableToman: {
+    toString():
+      string;
+  };
+
+  priceVerifiedAt:
+    Date;
+
+  priceExpiresAt:
+    Date;
+
+  inventoryReservedAt:
+    Date;
+
+  inventoryExpiresAt:
+    Date;
+
+  items: Array<{
+    id:
+      string;
+
+    productSlug:
+      string;
+
+    variantId:
+      string | null;
+
+    quantity:
+      number;
+
+    unitPriceToman: {
+      toString():
+        string;
+    };
+
+    lineTotalToman: {
+      toString():
+        string;
+    };
+
+    stockBeforeReservation:
+      number;
+
+    stockAfterReservation:
+      number;
+  }>;
+};
+
+function normalizeIdempotencyKey(
+  value:
+    string,
+): string {
+  const normalized =
+    value.trim();
+
+  if (
+    normalized.length < 16 ||
+    normalized.length > 128
+  ) {
+    throw new CheckoutOrderError(
+      "INVALID_IDEMPOTENCY_KEY",
+
+      "شناسه یکتای درخواست پرداخت معتبر نیست.",
+
+      400,
+    );
+  }
+
+  if (
+    !/^[A-Za-z0-9._:-]+$/.test(
+      normalized,
+    )
+  ) {
+    throw new CheckoutOrderError(
+      "INVALID_IDEMPOTENCY_KEY",
+
+      "ساختار شناسه یکتای درخواست پرداخت معتبر نیست.",
+
+      400,
+    );
+  }
+
+  return normalized;
+}
+
+function normalizeLocale(
+  value:
+    string,
+): string {
+  const normalized =
+    value
+      .trim()
+      .toLowerCase();
+
+  if (
+    normalized !== "fa" &&
+    normalized !== "en"
+  ) {
+    throw new CheckoutOrderError(
+      "INVALID_LOCALE",
+
+      "زبان سفارش معتبر نیست.",
+
+      400,
+    );
+  }
+
+  return normalized;
+}
+
+function normalizeCustomer(
+  customer:
+    CheckoutCustomerInput,
+): NormalizedCheckoutCustomer {
+  try {
+    return normalizeCheckoutCustomer(
+      customer,
+    );
+  } catch (error) {
+    if (
+      error instanceof
+      CheckoutCustomerError
+    ) {
+      throw new CheckoutOrderError(
+        "INVALID_CUSTOMER",
+
+        error.message,
+
+        400,
+      );
+    }
+
+    throw error;
+  }
+}
+
+function normalizeCheckoutItem(
+  item:
+    CheckoutOrderItemInput,
+): CheckoutOrderItemInput {
+  if (
+    typeof item !==
+      "object" ||
+    item === null
+  ) {
+    throw new CheckoutOrderError(
+      "INVALID_CART_ITEM",
+
+      "حداقل یکی از اقلام سبد خرید معتبر نیست.",
+
+      400,
+    );
+  }
+
+  if (
+    typeof item.slug !==
+      "string"
+  ) {
+    throw new CheckoutOrderError(
+      "INVALID_CART_ITEM",
+
+      "شناسه محصول معتبر نیست.",
+
+      400,
+    );
+  }
+
+  const slug =
+    item.slug.trim();
+
+  if (
+    !slug ||
+    slug.length > 160
+  ) {
+    throw new CheckoutOrderError(
+      "INVALID_CART_ITEM",
+
+      "شناسه محصول معتبر نیست.",
+
+      400,
+    );
+  }
+
+  let variantId:
+    string | null = null;
+
+  if (
+    typeof item.variantId ===
+      "string"
+  ) {
+    variantId =
+      item.variantId.trim() ||
+      null;
+  } else if (
+    item.variantId !== null
+  ) {
+    throw new CheckoutOrderError(
+      "INVALID_CART_ITEM",
+
+      "شناسه مدل محصول معتبر نیست.",
+
+      400,
+    );
+  }
+
+  if (
+    typeof item.quantity !==
+      "number" ||
+    !Number.isInteger(
+      item.quantity,
+    ) ||
+    item.quantity < 1 ||
+    item.quantity >
+      MAX_ITEM_QUANTITY
+  ) {
+    throw new CheckoutOrderError(
+      "INVALID_CART_ITEM",
+
+      "تعداد محصول معتبر نیست.",
+
+      400,
+    );
+  }
+
+  return {
+    slug,
+
+    variantId,
+
+    quantity:
+      item.quantity,
+  };
+}
+
+function mergeDuplicateItems(
+  items:
+    CheckoutOrderItemInput[],
+): CheckoutOrderItemInput[] {
+  const merged =
+    new Map<
+      string,
+      CheckoutOrderItemInput
+    >();
+
+  for (
+    const item of items
+  ) {
+    const key =
+      `${item.slug}::${item.variantId ?? ""}`;
+
+    const existing =
+      merged.get(key);
+
+    if (!existing) {
+      merged.set(
+        key,
+        {
+          ...item,
+        },
+      );
+
+      continue;
+    }
+
+    const mergedQuantity =
+      existing.quantity +
+      item.quantity;
+
+    if (
+      mergedQuantity >
+      MAX_ITEM_QUANTITY
+    ) {
+      throw new CheckoutOrderError(
+        "INVALID_CART_ITEM",
+
+        "تعداد انتخاب‌شده برای یک محصول بیش از حد مجاز است.",
+
+        400,
+      );
+    }
+
+    existing.quantity =
+      mergedQuantity;
+  }
+
+  return Array.from(
+    merged.values(),
+  );
+}
+
+function toJsonValue(
+  value:
+    unknown,
+): Prisma.InputJsonValue {
+  return JSON.parse(
+    JSON.stringify(value),
+  ) as Prisma.InputJsonValue;
+}
+
+function generateOrderNumber(
+  now =
+    new Date(),
+): string {
+  const pad = (
+    value:
+      number,
+  ) =>
+    value
+      .toString()
+      .padStart(
+        2,
+        "0",
+      );
+
+  const timestamp = [
+    now
+      .getUTCFullYear()
+      .toString()
+      .slice(-2),
+
+    pad(
+      now.getUTCMonth() +
+        1,
+    ),
+
+    pad(
+      now.getUTCDate(),
+    ),
+
+    pad(
+      now.getUTCHours(),
+    ),
+
+    pad(
+      now.getUTCMinutes(),
+    ),
+
+    pad(
+      now.getUTCSeconds(),
+    ),
+  ].join("");
+
+  const randomPart =
+    randomBytes(4)
+      .toString("hex")
+      .toUpperCase();
+
+  return `ELR${timestamp}${randomPart}`;
+}
+
+function getPrismaErrorCode(
+  error:
+    unknown,
+): string | null {
+  if (
+    typeof error !==
+      "object" ||
+    error === null ||
+    !("code" in error) ||
+    typeof error.code !==
+      "string"
+  ) {
+    return null;
+  }
+
+  return error.code;
+}
+
+function serializeOrder(
+  order:
+    SerializableOrder,
+
+  reused:
+    boolean,
+): CheckoutOrderResult {
+  return {
+    reused,
+
+    order: {
+      id:
+        order.id,
+
+      orderNumber:
+        order.orderNumber,
+
+      status:
+        order.status,
+
+      currency:
+        "TOMAN",
+
+      subtotalToman:
+        order.subtotalToman.toString(),
+
+      payableToman:
+        order.payableToman.toString(),
+
+      priceVerifiedAt:
+        order.priceVerifiedAt.toISOString(),
+
+      priceExpiresAt:
+        order.priceExpiresAt.toISOString(),
+
+      inventoryReservedAt:
+        order.inventoryReservedAt.toISOString(),
+
+      inventoryExpiresAt:
+        order.inventoryExpiresAt.toISOString(),
+
+      items:
+        order.items.map(
+          (
+            item,
+          ) => ({
+            id:
+              item.id,
+
+            productSlug:
+              item.productSlug,
+
+            variantId:
+              item.variantId,
+
+            quantity:
+              item.quantity,
+
+            unitPriceToman:
+              item.unitPriceToman.toString(),
+
+            lineTotalToman:
+              item.lineTotalToman.toString(),
+
+            stockBeforeReservation:
+              item.stockBeforeReservation,
+
+            stockAfterReservation:
+              item.stockAfterReservation,
+          }),
+        ),
+    },
+  };
+}
+
+async function mapWithConcurrency<
+  T,
+  R,
+>(
+  items:
+    T[],
+
+  concurrency:
+    number,
+
+  mapper: (
+    item:
+      T,
+
+    index:
+      number,
+  ) => Promise<R>,
+): Promise<R[]> {
+  if (
+    items.length === 0
+  ) {
+    return [];
+  }
+
+  const output =
+    new Array<R>(
+      items.length,
+    );
+
+  let nextIndex =
+    0;
+
+  async function worker() {
+    while (true) {
+      const currentIndex =
+        nextIndex;
+
+      nextIndex +=
+        1;
+
+      if (
+        currentIndex >=
+        items.length
+      ) {
+        return;
+      }
+
+      output[currentIndex] =
+        await mapper(
+          items[currentIndex],
+          currentIndex,
+        );
+    }
+  }
+
+  const workerCount =
+    Math.min(
+      Math.max(
+        concurrency,
+        1,
+      ),
+      items.length,
+    );
+
+  await Promise.all(
+    Array.from(
+      {
+        length:
+          workerCount,
+      },
+
+      () =>
+        worker(),
+    ),
+  );
+
+  return output;
+}
+
+async function priceCheckoutItem(
+  item:
+    CheckoutOrderItemInput,
+): Promise<PricedCheckoutItem> {
+  try {
+    const result =
+      await getProductLivePrice({
+        slug:
+          item.slug,
+
+        variantId:
+          item.variantId,
+      });
+
+    if (
+      !result.product
+        .isPurchasable
+    ) {
+      throw new CheckoutOrderError(
+        "PRODUCT_UNAVAILABLE",
+
+        `محصول «${result.product.nameFa}» در حال حاضر قابل سفارش نیست.`,
+
+        409,
+      );
+    }
+
+    const availableStock =
+      result.variant
+        ?.stock ??
+      result.product.stock;
+
+    if (
+      availableStock <
+      item.quantity
+    ) {
+      throw new CheckoutOrderError(
+        "INSUFFICIENT_STOCK",
+
+        `موجودی محصول «${result.product.nameFa}» برای تعداد انتخاب‌شده کافی نیست.`,
+
+        409,
+      );
+    }
+
+    const unitPriceToman =
+      result.pricing
+        .finalPriceToman;
+
+    const lineTotalToman =
+      (
+        BigInt(
+          unitPriceToman,
+        ) *
+        BigInt(
+          item.quantity,
+        )
+      ).toString();
+
+    return {
+      input:
+        item,
+
+      result,
+
+      unitPriceToman,
+
+      lineTotalToman,
+
+      pricingSnapshot:
+        toJsonValue({
+          product:
+            result.product,
+
+          variant:
+            result.variant,
+
+          pricing:
+            result.pricing,
+
+          liveRate:
+            result.liveRate,
+
+          policy:
+            result.policy,
+
+          quote:
+            result.quote,
+
+          quantity:
+            item.quantity,
+
+          unitPriceToman,
+
+          lineTotalToman,
+        }),
+    };
+  } catch (error) {
+    if (
+      error instanceof
+      CheckoutOrderError
+    ) {
+      throw error;
+    }
+
+    if (
+      error instanceof
+      ProductPricingError
+    ) {
+      throw new CheckoutOrderError(
+        "PRICING_FAILED",
+
+        error.message,
+
+        error.status,
+      );
+    }
+
+    throw error;
+  }
+}
+
+async function findExistingOrder(
+  idempotencyKey:
+    string,
+): Promise<CheckoutOrderResult | null> {
+  const existingOrder =
+    await prisma.order.findUnique({
+      where: {
+        idempotencyKey,
+      },
+
+      include: {
+        items: {
+          orderBy: {
+            createdAt:
+              "asc",
+          },
+
+          select: {
+            id:
+              true,
+
+            productSlug:
+              true,
+
+            variantId:
+              true,
+
+            quantity:
+              true,
+
+            unitPriceToman:
+              true,
+
+            lineTotalToman:
+              true,
+
+            stockBeforeReservation:
+              true,
+
+            stockAfterReservation:
+              true,
+          },
+        },
+      },
+    });
+
+  if (
+    !existingOrder
+  ) {
+    return null;
+  }
+
+  return serializeOrder(
+    existingOrder,
+    true,
+  );
+}
+
+export async function createCheckoutOrder({
+  idempotencyKey,
+  locale,
+  customer,
+  items,
+  requestId = null,
+}: CreateCheckoutOrderInput): Promise<CheckoutOrderResult> {
+  const normalizedIdempotencyKey =
+    normalizeIdempotencyKey(
+      idempotencyKey,
+    );
+
+  const normalizedLocale =
+    normalizeLocale(
+      locale,
+    );
+
+  const normalizedCustomer =
+    normalizeCustomer(
+      customer,
+    );
+
+  if (
+    !Array.isArray(items) ||
+    items.length === 0
+  ) {
+    throw new CheckoutOrderError(
+      "INVALID_CART",
+
+      "سبد خرید خالی یا نامعتبر است.",
+
+      400,
+    );
+  }
+
+  if (
+    items.length >
+    MAX_CART_ITEMS
+  ) {
+    throw new CheckoutOrderError(
+      "TOO_MANY_ITEMS",
+
+      "تعداد اقلام سبد خرید بیش از حد مجاز است.",
+
+      400,
+    );
+  }
+
+  const existingOrder =
+    await findExistingOrder(
+      normalizedIdempotencyKey,
+    );
+
+  if (
+    existingOrder
+  ) {
+    return existingOrder;
+  }
+
+  const normalizedItems =
+    mergeDuplicateItems(
+      items.map(
+        normalizeCheckoutItem,
+      ),
+    );
+
+  if (
+    normalizedItems.length >
+    MAX_CART_ITEMS
+  ) {
+    throw new CheckoutOrderError(
+      "TOO_MANY_ITEMS",
+
+      "حداکثر ۳۰ محصول متفاوت می‌تواند در سفارش وجود داشته باشد.",
+
+      400,
+    );
+  }
+
+  const pricedItems =
+    await mapWithConcurrency(
+      normalizedItems,
+      2,
+      priceCheckoutItem,
+    );
+
+  const subtotalToman =
+    pricedItems.reduce(
+      (
+        total,
+        item,
+      ) =>
+        total +
+        BigInt(
+          item.lineTotalToman,
+        ),
+
+      BigInt(0),
+    );
+
+  if (
+    subtotalToman <=
+    BigInt(0)
+  ) {
+    throw new CheckoutOrderError(
+      "PRICING_FAILED",
+
+      "مبلغ سفارش معتبر نیست.",
+
+      422,
+    );
+  }
+
+  const quoteExpirationTimes =
+    pricedItems.map(
+      (
+        item,
+      ) =>
+        new Date(
+          item.result.quote
+            .expiresAt,
+        ).getTime(),
+    );
+
+  if (
+    quoteExpirationTimes.some(
+      (
+        value,
+      ) =>
+        !Number.isFinite(
+          value,
+        ),
+    )
+  ) {
+    throw new CheckoutOrderError(
+      "PRICING_FAILED",
+
+      "زمان اعتبار قیمت سفارش معتبر نیست.",
+
+      500,
+    );
+  }
+
+  const priceExpiresAt =
+    new Date(
+      Math.min(
+        ...quoteExpirationTimes,
+      ),
+    );
+
+  const priceVerifiedAt =
+    new Date();
+
+  if (
+    priceExpiresAt.getTime() <=
+    priceVerifiedAt.getTime()
+  ) {
+    throw new CheckoutOrderError(
+      "PRICE_EXPIRED",
+
+      "اعتبار قیمت سفارش پایان یافته است. قیمت‌ها باید دوباره بررسی شوند.",
+
+      409,
+    );
+  }
+
+  const inventoryExpiresAt =
+    new Date(
+      priceVerifiedAt.getTime() +
+        INVENTORY_RESERVATION_MINUTES *
+          60_000,
+    );
+
+  const orderPricingSnapshot =
+    toJsonValue({
+      currency:
+        "TOMAN",
+
+      subtotalToman:
+        subtotalToman.toString(),
+
+      shippingToman:
+        "0",
+
+      discountToman:
+        "0",
+
+      payableToman:
+        subtotalToman.toString(),
+
+      priceVerifiedAt:
+        priceVerifiedAt.toISOString(),
+
+      priceExpiresAt:
+        priceExpiresAt.toISOString(),
+
+      customer: {
+        fullName:
+          normalizedCustomer.fullName,
+
+        mobile:
+          normalizedCustomer.mobile,
+
+        email:
+          normalizedCustomer.email,
+
+        province:
+          normalizedCustomer.province,
+
+        city:
+          normalizedCustomer.city,
+
+        postalCode:
+          normalizedCustomer.postalCode,
+
+        address:
+          normalizedCustomer.address,
+      },
+
+      items:
+        pricedItems.map(
+          (
+            item,
+          ) => ({
+            slug:
+              item.result.product
+                .slug,
+
+            productId:
+              item.result.product
+                .id,
+
+            variantId:
+              item.result.variant
+                ?.id ??
+              null,
+
+            quantity:
+              item.input.quantity,
+
+            unitPriceToman:
+              item.unitPriceToman,
+
+            lineTotalToman:
+              item.lineTotalToman,
+
+            pricing:
+              item.result.pricing,
+
+            liveRate:
+              item.result.liveRate,
+
+            policy:
+              item.result.policy,
+
+            quote:
+              item.result.quote,
+          }),
+        ),
+    });
+
+  for (
+    let attempt =
+      1;
+
+    attempt <=
+      TRANSACTION_RETRY_COUNT;
+
+    attempt +=
+      1
+  ) {
+    try {
+      const transactionResult =
+        await prisma.$transaction(
+          async (
+            transaction,
+          ) => {
+            const orderAlreadyCreated =
+              await transaction.order.findUnique({
+                where: {
+                  idempotencyKey:
+                    normalizedIdempotencyKey,
+                },
+
+                include: {
+                  items: {
+                    orderBy: {
+                      createdAt:
+                        "asc",
+                    },
+
+                    select: {
+                      id:
+                        true,
+
+                      productSlug:
+                        true,
+
+                      variantId:
+                        true,
+
+                      quantity:
+                        true,
+
+                      unitPriceToman:
+                        true,
+
+                      lineTotalToman:
+                        true,
+
+                      stockBeforeReservation:
+                        true,
+
+                      stockAfterReservation:
+                        true,
+                    },
+                  },
+                },
+              });
+
+            if (
+              orderAlreadyCreated
+            ) {
+              return {
+                reused:
+                  true,
+
+                order:
+                  orderAlreadyCreated,
+              };
+            }
+
+            if (
+              priceExpiresAt.getTime() <=
+              Date.now()
+            ) {
+              throw new CheckoutOrderError(
+                "PRICE_EXPIRED",
+
+                "اعتبار قیمت سفارش پایان یافته است. قیمت‌ها باید دوباره بررسی شوند.",
+
+                409,
+              );
+            }
+
+            const reservedItems:
+              ReservedCheckoutItem[] =
+                [];
+
+            for (
+              const pricedItem of
+              pricedItems
+            ) {
+              const quantity =
+                pricedItem.input
+                  .quantity;
+
+              const productId =
+                pricedItem.result
+                  .product.id;
+
+              const selectedVariant =
+                pricedItem.result
+                  .variant;
+
+              if (
+                selectedVariant
+              ) {
+                const currentVariant =
+                  await transaction.productVariant.findUnique({
+                    where: {
+                      id:
+                        selectedVariant.id,
+                    },
+
+                    select: {
+                      productId:
+                        true,
+
+                      stock:
+                        true,
+
+                      isActive:
+                        true,
+                    },
+                  });
+
+                if (
+                  !currentVariant ||
+                  !currentVariant.isActive ||
+                  currentVariant.productId !==
+                    productId
+                ) {
+                  throw new CheckoutOrderError(
+                    "PRODUCT_UNAVAILABLE",
+
+                    `مدل انتخاب‌شده محصول «${pricedItem.result.product.nameFa}» دیگر قابل سفارش نیست.`,
+
+                    409,
+                  );
+                }
+
+                const reservation =
+                  await transaction.productVariant.updateMany({
+                    where: {
+                      id:
+                        selectedVariant.id,
+
+                      productId,
+
+                      isActive:
+                        true,
+
+                      stock: {
+                        gte:
+                          quantity,
+                      },
+                    },
+
+                    data: {
+                      stock: {
+                        decrement:
+                          quantity,
+                      },
+                    },
+                  });
+
+                if (
+                  reservation.count !==
+                  1
+                ) {
+                  throw new CheckoutOrderError(
+                    "INSUFFICIENT_STOCK",
+
+                    `موجودی محصول «${pricedItem.result.product.nameFa}» تغییر کرده است.`,
+
+                    409,
+                  );
+                }
+
+                reservedItems.push({
+                  pricedItem,
+
+                  stockBeforeReservation:
+                    currentVariant.stock,
+
+                  stockAfterReservation:
+                    currentVariant.stock -
+                    quantity,
+                });
+
+                continue;
+              }
+
+              const currentProduct =
+                await transaction.product.findUnique({
+                  where: {
+                    id:
+                      productId,
+                  },
+
+                  select: {
+                    status:
+                      true,
+
+                    stock:
+                      true,
+                  },
+                });
+
+              if (
+                !currentProduct ||
+                currentProduct.status !==
+                  "ACTIVE"
+              ) {
+                throw new CheckoutOrderError(
+                  "PRODUCT_UNAVAILABLE",
+
+                  `محصول «${pricedItem.result.product.nameFa}» دیگر قابل سفارش نیست.`,
+
+                  409,
+                );
+              }
+
+              const reservation =
+                await transaction.product.updateMany({
+                  where: {
+                    id:
+                      productId,
+
+                    status:
+                      "ACTIVE",
+
+                    stock: {
+                      gte:
+                        quantity,
+                    },
+                  },
+
+                  data: {
+                    stock: {
+                      decrement:
+                        quantity,
+                    },
+                  },
+                });
+
+              if (
+                reservation.count !==
+                1
+              ) {
+                throw new CheckoutOrderError(
+                  "INSUFFICIENT_STOCK",
+
+                  `موجودی محصول «${pricedItem.result.product.nameFa}» تغییر کرده است.`,
+
+                  409,
+                );
+              }
+
+              reservedItems.push({
+                pricedItem,
+
+                stockBeforeReservation:
+                  currentProduct.stock,
+
+                stockAfterReservation:
+                  currentProduct.stock -
+                  quantity,
+              });
+            }
+
+            const createdOrder =
+              await transaction.order.create({
+                data: {
+                  orderNumber:
+                    generateOrderNumber(),
+
+                  idempotencyKey:
+                    normalizedIdempotencyKey,
+
+                  locale:
+                    normalizedLocale,
+
+                  currency:
+                    "TOMAN",
+
+                  status:
+                    "PENDING_PAYMENT",
+
+                  customerFullName:
+                    normalizedCustomer.fullName,
+
+                  customerMobile:
+                    normalizedCustomer.mobile,
+
+                  customerEmail:
+                    normalizedCustomer.email,
+
+                  province:
+                    normalizedCustomer.province,
+
+                  city:
+                    normalizedCustomer.city,
+
+                  postalCode:
+                    normalizedCustomer.postalCode,
+
+                  address:
+                    normalizedCustomer.address,
+
+                  subtotalToman:
+                    subtotalToman.toString(),
+
+                  shippingToman:
+                    "0",
+
+                  discountToman:
+                    "0",
+
+                  payableToman:
+                    subtotalToman.toString(),
+
+                  pricingSnapshot:
+                    orderPricingSnapshot,
+
+                  priceVerifiedAt,
+
+                  priceExpiresAt,
+
+                  inventoryReservedAt:
+                    priceVerifiedAt,
+
+                  inventoryExpiresAt,
+
+                  items: {
+                    create:
+                      reservedItems.map(
+                        (
+                          reservedItem,
+                        ) => {
+                          const {
+                            pricedItem,
+                            stockBeforeReservation,
+                            stockAfterReservation,
+                          } =
+                            reservedItem;
+
+                          const {
+                            result,
+                            input,
+                          } =
+                            pricedItem;
+
+                          const breakdown =
+                            result.pricing
+                              .breakdown;
+
+                          return {
+                            productId:
+                              result.product
+                                .id,
+
+                            variantId:
+                              result.variant
+                                ?.id ??
+                              null,
+
+                            productSlug:
+                              result.product
+                                .slug,
+
+                            productSku:
+                              result.product
+                                .sku,
+
+                            productNameFa:
+                              result.product
+                                .nameFa,
+
+                            productNameEn:
+                              result.product
+                                .nameEn,
+
+                            variantTitleFa:
+                              result.variant
+                                ?.titleFa ??
+                              null,
+
+                            variantTitleEn:
+                              result.variant
+                                ?.titleEn ??
+                              null,
+
+                            variantSku:
+                              result.variant
+                                ?.sku ??
+                              null,
+
+                            material:
+                              result.product
+                                .material,
+
+                            quantity:
+                              input.quantity,
+
+                            unitPriceToman:
+                              pricedItem.unitPriceToman,
+
+                            lineTotalToman:
+                              pricedItem.lineTotalToman,
+
+                            metalValueToman:
+                              breakdown
+                                ?.metalValueToman ??
+                              null,
+
+                            makingChargeToman:
+                              breakdown
+                                ?.makingChargeTotalToman ??
+                              null,
+
+                            artisticFeeToman:
+                              breakdown
+                                ?.artisticFeeToman ??
+                              null,
+
+                            profitToman:
+                              breakdown
+                                ?.profitToman ??
+                              null,
+
+                            taxToman:
+                              breakdown
+                                ?.taxToman ??
+                              null,
+
+                            originalMetalRateToman:
+                              result.liveRate
+                                ?.originalPricePerGramToman ??
+                              null,
+
+                            effectiveMetalRateToman:
+                              result.liveRate
+                                ?.effectivePricePerGramToman ??
+                              null,
+
+                            metalRateMode:
+                              result.liveRate
+                                ?.saleMode ??
+                              null,
+
+                            metalRateReason:
+                              result.liveRate
+                                ?.saleReason ??
+                              null,
+
+                            safetyMarginPercent:
+                              result.liveRate
+                                ?.appliedSafetyMarginPercent ??
+                              null,
+
+                            safetyMarginToman:
+                              result.liveRate
+                                ?.safetyMarginAmountToman ??
+                              null,
+
+                            stockBeforeReservation,
+
+                            stockAfterReservation,
+
+                            pricingSnapshot:
+                              pricedItem.pricingSnapshot,
+                          };
+                        },
+                      ),
+                  },
+
+                  auditEvents: {
+                    create: {
+                      actorType:
+                        "CUSTOMER",
+
+                      eventType:
+                        "CHECKOUT_ORDER_CREATED",
+
+                      requestId:
+                        requestId
+                          ?.trim()
+                          .slice(
+                            0,
+                            128,
+                          ) ||
+                        null,
+
+                      payload:
+                        toJsonValue({
+                          idempotencyKey:
+                            normalizedIdempotencyKey,
+
+                          customerMobile:
+                            normalizedCustomer.mobile,
+
+                          itemCount:
+                            reservedItems.length,
+
+                          totalQuantity:
+                            reservedItems.reduce(
+                              (
+                                total,
+                                item,
+                              ) =>
+                                total +
+                                item.pricedItem
+                                  .input
+                                  .quantity,
+
+                              0,
+                            ),
+
+                          subtotalToman:
+                            subtotalToman.toString(),
+
+                          payableToman:
+                            subtotalToman.toString(),
+
+                          priceExpiresAt:
+                            priceExpiresAt.toISOString(),
+
+                          inventoryExpiresAt:
+                            inventoryExpiresAt.toISOString(),
+                        }),
+                    },
+                  },
+                },
+
+                include: {
+                  items: {
+                    orderBy: {
+                      createdAt:
+                        "asc",
+                    },
+
+                    select: {
+                      id:
+                        true,
+
+                      productSlug:
+                        true,
+
+                      variantId:
+                        true,
+
+                      quantity:
+                        true,
+
+                      unitPriceToman:
+                        true,
+
+                      lineTotalToman:
+                        true,
+
+                      stockBeforeReservation:
+                        true,
+
+                      stockAfterReservation:
+                        true,
+                    },
+                  },
+                },
+              });
+
+            return {
+              reused:
+                false,
+
+              order:
+                createdOrder,
+            };
+          },
+          {
+            isolationLevel:
+              "Serializable",
+
+            maxWait:
+              15_000,
+
+            timeout:
+              45_000,
+          },
+        );
+
+      return serializeOrder(
+        transactionResult.order,
+        transactionResult.reused,
+      );
+    } catch (error) {
+      if (
+        error instanceof
+        CheckoutOrderError
+      ) {
+        throw error;
+      }
+
+      const prismaErrorCode =
+        getPrismaErrorCode(
+          error,
+        );
+
+      if (
+        prismaErrorCode ===
+        "P2002"
+      ) {
+        const orderCreatedByConcurrentRequest =
+          await findExistingOrder(
+            normalizedIdempotencyKey,
+          );
+
+        if (
+          orderCreatedByConcurrentRequest
+        ) {
+          return orderCreatedByConcurrentRequest;
+        }
+      }
+
+      if (
+        prismaErrorCode ===
+          "P2034" &&
+        attempt <
+          TRANSACTION_RETRY_COUNT
+      ) {
+        continue;
+      }
+
+      console.error(
+        "[Eloria Checkout] Unable to create checkout order.",
+        error,
+      );
+
+      throw new CheckoutOrderError(
+        "TRANSACTION_FAILED",
+
+        "ثبت سفارش در حال حاضر امکان‌پذیر نیست. لطفاً دوباره تلاش کنید.",
+
+        500,
+      );
+    }
+  }
+
+  throw new CheckoutOrderError(
+    "TRANSACTION_FAILED",
+
+    "ثبت سفارش در حال حاضر امکان‌پذیر نیست. لطفاً دوباره تلاش کنید.",
+
+    500,
+  );
+}
+
