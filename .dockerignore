@@ -6,6 +6,15 @@ node_modules
 test-results
 playwright-report
 coverage
+.eloria-backups
+.github/.github
+.agents
+.claude
+.codex
+.cursor
+.windsurf
+.21st
 *.zip
 *.log
+*.tsbuildinfo
 .DS_Store

@@ -8,7 +8,10 @@ import {
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { Prisma } from "@/generated/prisma/client";
-import { prisma } from "@/lib/prisma";
+import {
+  prisma,
+  withDatabaseRetry,
+} from "@/lib/prisma";
 
 const ADMIN_COOKIE_NAME = "eloria_admin_session";
 const SESSION_LIFETIME_SECONDS = 8 * 60 * 60;
@@ -159,7 +162,7 @@ export async function createAdminSession(input: {
   const expiresAt = Math.floor(Date.now() / 1000) + SESSION_LIFETIME_SECONDS;
   const nonce = randomBytes(32).toString("base64url");
   const sessionHash = hash(`${sessionId}:${nonce}`);
-  await prisma.adminSession.create({
+  await withDatabaseRetry(() => prisma.adminSession.create({
     data: {
       id: sessionId,
       sessionHash,
@@ -167,7 +170,7 @@ export async function createAdminSession(input: {
       userAgent: input.userAgent?.slice(0, 500) || null,
       expiresAt: new Date(expiresAt * 1000),
     },
-  });
+  }));
   const payload: AdminSessionPayload = { sessionId, expiresAt, version: sessionVersion() };
   const encodedPayload = Buffer.from(JSON.stringify(payload), "utf8").toString("base64url");
   const token = `${encodedPayload}.${signPayload(encodedPayload)}.${nonce}`;
@@ -191,10 +194,10 @@ export async function clearAdminSession(): Promise<void> {
       try {
         const payload = JSON.parse(Buffer.from(encodedPayload, "base64url").toString("utf8")) as Partial<AdminSessionPayload>;
         if (typeof payload.sessionId === "string") {
-          await prisma.adminSession.updateMany({
+          await withDatabaseRetry(() => prisma.adminSession.updateMany({
             where: { id: payload.sessionId, sessionHash: hash(`${payload.sessionId}:${nonce}`) },
             data: { revokedAt: new Date() },
-          });
+          }));
         }
       } catch {
         // Invalid cookies are deleted below.
@@ -219,7 +222,8 @@ export async function hasValidAdminSession(): Promise<boolean> {
   if (!encodedPayload || !signature || !nonce) return false;
   const payload = parseSessionToken(`${encodedPayload}.${signature}`);
   if (!payload) return false;
-  const session = await prisma.adminSession.findFirst({
+  try {
+    const session = await withDatabaseRetry(() => prisma.adminSession.findFirst({
     where: {
       id: payload.sessionId,
       sessionHash: hash(`${payload.sessionId}:${nonce}`),
@@ -227,8 +231,16 @@ export async function hasValidAdminSession(): Promise<boolean> {
       expiresAt: { gt: new Date() },
     },
     select: { id: true },
-  });
-  return Boolean(session);
+  }));
+    return Boolean(session);
+  } catch (error) {
+    console.error(
+      "[Eloria Admin Session] Database check failed.",
+      error,
+    );
+
+    return false;
+  }
 }
 
 export async function requireAdmin(locale: string): Promise<void> {

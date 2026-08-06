@@ -63,7 +63,7 @@ export function SectionBackground({
   fixedIndex,
   offset = 0,
   priority = false,
-  quality = 88,
+  quality = 84,
   tone = "dark",
   objectPosition = "center",
   className = "",

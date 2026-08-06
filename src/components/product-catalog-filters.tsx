@@ -31,11 +31,7 @@ type MaterialFilter =
   | "gold"
   | "silver";
 
-type CollectionFilter =
-  | "all"
-  | "necklaces"
-  | "bracelets"
-  | "earrings";
+type CollectionFilter = string;
 
 type AvailabilityFilter =
   | "all"

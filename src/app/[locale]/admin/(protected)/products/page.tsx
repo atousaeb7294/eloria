@@ -19,6 +19,7 @@ import {
 
 import {
   prisma,
+  withDatabaseRetry,
 } from "@/lib/prisma";
 
 export const dynamic =
@@ -91,7 +92,9 @@ export default async function AdminProductsPage({
       : null;
 
   const products =
-    await prisma.product.findMany({
+    await withDatabaseRetry(
+      () =>
+        prisma.product.findMany({
       where: {
         ...(status
           ? {
@@ -168,7 +171,12 @@ export default async function AdminProductsPage({
           },
         },
       },
-    });
+    }),
+      {
+        attempts: 2,
+        delayMilliseconds: 200,
+      },
+    );
 
   return (
     <div className="space-y-6">

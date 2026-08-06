@@ -16,9 +16,7 @@ import {
 import { consumeRateLimit } from "@/lib/security/rate-limit";
 import { hasTrustedOrigin, requestIp } from "@/lib/security/request";
 import { verifyTurnstileToken } from "@/lib/security/turnstile";
-import { prisma } from "@/lib/prisma";
-
-import { initiateOrderPayment } from "@/lib/payment-service";
+import { isZarinpalConfigured } from "@/lib/payment/zarinpal";
 
 import {
   CheckoutOrderError,
@@ -376,21 +374,6 @@ export async function POST(
       );
     }
 
-    const pendingOrders = await prisma.order.count({
-      where: {
-        customerMobile: canonicalCustomer.mobile,
-        status: { in: ["PENDING_PAYMENT", "PAYMENT_FAILED"] },
-        inventoryReleasedAt: null,
-        inventoryExpiresAt: { gt: new Date() },
-      },
-    });
-    if (pendingOrders >= 3) {
-      return NextResponse.json(
-        { successful: false, code: "PENDING_ORDER_LIMIT", message: "ابتدا یکی از سفارش‌های در انتظار پرداخت قبلی را تکمیل کنید.", requestId },
-        { status: 409, headers: noStoreHeaders() },
-      );
-    }
-
     if (
       body.items.length ===
       0
@@ -498,20 +481,25 @@ export async function POST(
         requestId,
       });
 
-    let payment: { configured: boolean; redirectUrl: string | null; message: string };
+    const paymentConfigured =
+      isZarinpalConfigured();
 
-    try {
-      payment = await initiateOrderPayment(result.order.id);
-    } catch (paymentError) {
-      payment = {
-        configured: true,
-        redirectUrl: null,
-        message:
-          paymentError instanceof Error
-            ? paymentError.message
-            : "ساخت درخواست پرداخت انجام نشد.",
-      };
-    }
+    /*
+     * ساخت Authority زرین‌پال از ثبت سفارش جداست. سفارش و رزرو موجودی فوراً
+     * پاسخ داده می‌شوند و مشتری با دکمه مستقل وارد مرحله پرداخت می‌شود.
+     */
+    const payment = {
+      configured:
+        paymentConfigured,
+
+      redirectUrl:
+        null,
+
+      message:
+        paymentConfigured
+          ? "سفارش ثبت شد. برای ورود به درگاه پرداخت، دکمه پرداخت را بزنید."
+          : "درگاه پرداخت پیکربندی نشده است.",
+    };
 
     return NextResponse.json(
       {

@@ -10,11 +10,6 @@ import {
 } from "motion/react";
 
 import {
-  useLocale,
-  useTranslations,
-} from "next-intl";
-
-import {
   useEffect,
   useState,
 } from "react";
@@ -39,16 +34,36 @@ import {
 } from "@/components/locale-switcher";
 
 export function MobileSiteMenu() {
-  const locale =
-    useLocale();
-
   const pathname =
-    usePathname() ?? `/${locale}`;
+    usePathname() ?? "/fa";
 
-  const t =
-    useTranslations(
-      "Navigation",
-    );
+  const locale =
+    pathname.match(
+      /^\/(fa|en)(?=\/|$)/,
+    )?.[1] === "en"
+      ? "en"
+      : "fa";
+
+  const labels =
+    locale === "fa"
+      ? {
+          home: "خانه",
+          world: "دنیای الوریا",
+          necklaces: "گردنبندها",
+          bracelets: "دستبندها",
+          earrings: "گوشواره‌ها",
+          contact: "تماس",
+          menuLabel: "منوی اصلی",
+        }
+      : {
+          home: "Home",
+          world: "Eloria World",
+          necklaces: "Necklaces",
+          bracelets: "Bracelets",
+          earrings: "Earrings",
+          contact: "Contact",
+          menuLabel: "Main navigation",
+        };
 
   const reducedMotion =
     useReducedMotion();
@@ -139,7 +154,7 @@ export function MobileSiteMenu() {
 
   const primaryLinks = [
     {
-      label: t("home"),
+      label: labels.home,
       description:
         isPersian
           ? "بازگشت مستقیم به Hero"
@@ -149,7 +164,7 @@ export function MobileSiteMenu() {
       icon: HomeRuneIcon,
     },
     {
-      label: t("world"),
+      label: labels.world,
       description:
         isPersian
           ? "مرور دسته‌بندی‌های جواهرات"
@@ -188,17 +203,17 @@ export function MobileSiteMenu() {
 
   const categories = [
     {
-      label: t("necklaces"),
+      label: labels.necklaces,
       slug: "necklaces",
       icon: NecklaceRuneIcon,
     },
     {
-      label: t("bracelets"),
+      label: labels.bracelets,
       slug: "bracelets",
       icon: BraceletRuneIcon,
     },
     {
-      label: t("earrings"),
+      label: labels.earrings,
       slug: "earrings",
       icon: EarringRuneIcon,
     },
@@ -358,7 +373,7 @@ export function MobileSiteMenu() {
               </div>
 
               <nav
-                aria-label={t("menuLabel")}
+                aria-label={labels.menuLabel}
                 className="mt-3 space-y-1.5"
               >
                 {primaryLinks.map(
@@ -467,11 +482,11 @@ export function MobileSiteMenu() {
                   className="flex min-h-12 items-center justify-center gap-2 rounded-full border border-[#dfc16f]/30 bg-[#d7b14f]/[0.065] px-5 text-xs text-[#efd68e] transition hover:border-[#efd27c]/58 hover:bg-[#d7b14f]/[0.1]"
                 >
                   <ContactRuneIcon className="size-5" />
-                  {t("contact")}
+                  {labels.contact}
                 </Link>
 
                 <div className="rounded-full border border-white/[0.07] bg-black/10 px-2 py-1">
-                  <LocaleSwitcher />
+                  <LocaleSwitcher locale={locale} />
                 </div>
               </div>
             </motion.aside>

@@ -7,10 +7,21 @@ export type RateLimitResult = { allowed: boolean; remaining: number; retryAfterS
 
 declare global {
   var __eloriaRateLimitFallback: Map<string, Bucket> | undefined;
+  var __eloriaRateLimitSharedUnavailableUntil: number | undefined;
 }
 
 const fallback = globalThis.__eloriaRateLimitFallback ?? new Map<string, Bucket>();
-if (process.env.NODE_ENV !== "production") globalThis.__eloriaRateLimitFallback = fallback;
+globalThis.__eloriaRateLimitFallback = fallback;
+
+const SHARED_LIMITER_COOLDOWN_MS = 30_000;
+
+function shouldUseProcessLimiter(): boolean {
+  if (process.env.NODE_ENV !== "production") {
+    return true;
+  }
+
+  return (globalThis.__eloriaRateLimitSharedUnavailableUntil ?? 0) > Date.now();
+}
 
 function hashedKey(value: string): string {
   return createHash("sha256").update(value).digest("hex");
@@ -36,6 +47,10 @@ export async function consumeRateLimit({ key, limit, windowMs }: RateLimitInput)
   const safeLimit = Math.max(1, Math.trunc(limit));
   const safeWindow = Math.max(1_000, Math.trunc(windowMs));
   const bucketKey = hashedKey(key).slice(0, 190);
+  if (shouldUseProcessLimiter()) {
+    return consumeFallback(bucketKey, safeLimit, safeWindow);
+  }
+
   const now = new Date();
   const resetAt = new Date(now.getTime() + safeWindow);
 
@@ -63,7 +78,10 @@ export async function consumeRateLimit({ key, limit, windowMs }: RateLimitInput)
       retryAfterSeconds: Math.max(Math.ceil((new Date(row.resetAt).getTime() - now.getTime()) / 1000), 1),
     };
   } catch (error) {
-    console.error("[Eloria Rate Limit] Shared limiter unavailable; using process fallback.", error);
+    globalThis.__eloriaRateLimitSharedUnavailableUntil =
+      Date.now() + SHARED_LIMITER_COOLDOWN_MS;
+
+    console.error("[Eloria Rate Limit] Shared limiter unavailable; using process fallback temporarily.", error);
     return consumeFallback(bucketKey, safeLimit, safeWindow);
   }
 }

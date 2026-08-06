@@ -21,6 +21,9 @@ type DecimalInput =
   | bigint;
 
 export type GetMetalRateSaleDecisionInput = {
+  material:
+    "GOLD" | "SILVER";
+
   referencePricePerGramToman:
     DecimalInput;
 
@@ -84,6 +87,73 @@ const PERCENT_FACTOR =
 const PERCENT_DENOMINATOR =
   BigInt(100) *
   PERCENT_FACTOR;
+
+const CLOSED_MARKET_MARGIN_TIERS = {
+  GOLD: [
+    { maxAgeHours: 24, percent: "3" },
+    { maxAgeHours: 48, percent: "5" },
+    { maxAgeHours: 72, percent: "8" },
+    { maxAgeHours: 96, percent: "12" },
+    { maxAgeHours: 240, percent: "15" },
+  ],
+
+  SILVER: [
+    { maxAgeHours: 24, percent: "5" },
+    { maxAgeHours: 48, percent: "8" },
+    { maxAgeHours: 72, percent: "12" },
+    { maxAgeHours: 96, percent: "18" },
+    { maxAgeHours: 240, percent: "25" },
+  ],
+} as const;
+
+function getTierSafetyMarginPercent({
+  material,
+  ageSeconds,
+  configuredMinimumPercent,
+}: {
+  material:
+    GetMetalRateSaleDecisionInput["material"];
+
+  ageSeconds:
+    number;
+
+  configuredMinimumPercent:
+    DecimalInput;
+}): bigint {
+  const configuredMinimum =
+    parseSafetyMarginPercent(
+      configuredMinimumPercent,
+    );
+
+  const ageHours =
+    ageSeconds / 3600;
+
+  const tier =
+    CLOSED_MARKET_MARGIN_TIERS[
+      material
+    ].find(
+      (item) =>
+        ageHours <=
+        item.maxAgeHours,
+    ) ??
+    CLOSED_MARKET_MARGIN_TIERS[
+      material
+    ][
+      CLOSED_MARKET_MARGIN_TIERS[
+        material
+      ].length - 1
+    ];
+
+  const tierMinimum =
+    parseSafetyMarginPercent(
+      tier.percent,
+    );
+
+  return configuredMinimum >
+    tierMinimum
+    ? configuredMinimum
+    : tierMinimum;
+}
 
 function normalizeDecimalInput(
   value: DecimalInput,
@@ -364,7 +434,8 @@ function createUnavailableDecision({
  *
  * ۲. نرخ قدیمی با زمان معتبر:
  *    فقط تا سقف closedMarketMaxAgeMinutes و با حاشیه امنیت
- *    در حالت CLOSED_MARKET استفاده می‌شود.
+ *    پلکانی متناسب با نوع فلز و عمر نرخ در حالت CLOSED_MARKET
+ *    استفاده می‌شود.
  *
  * ۳. نرخ دارای زمان مفقود، نامعتبر یا آینده:
  *    قابل استفاده برای فروش نیست.
@@ -372,12 +443,14 @@ function createUnavailableDecision({
  * ۴. اگر قیمت‌گذاری بازار بسته غیرفعال باشد:
  *    نرخ قدیمی قابل استفاده نیست.
  *
- * بعد از عبور از سقف بازار بسته، نرخ برای فروش غیرقابل استفاده است.
+ * بازه پیش‌فرض بازار بسته تا ۱۰ روز است. بعد از عبور از سقف
+ * تنظیم‌شده، نرخ برای فروش غیرقابل استفاده می‌شود.
  */
 export function getMetalRateSaleDecision(
   input: GetMetalRateSaleDecisionInput,
 ): MetalRateSaleDecision {
   const {
+    material,
     referencePricePerGramToman,
     freshness,
     closedMarketPricingEnabled,
@@ -490,9 +563,13 @@ export function getMetalRateSaleDecision(
   }
 
   const safetyMarginPercent =
-    parseSafetyMarginPercent(
-      closedMarketSafetyMarginPercent,
-    );
+    getTierSafetyMarginPercent({
+      material,
+      ageSeconds:
+        freshness.ageSeconds,
+      configuredMinimumPercent:
+        closedMarketSafetyMarginPercent,
+    });
 
   const safetyMarginAmount =
     divideRoundUp(

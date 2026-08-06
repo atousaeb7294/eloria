@@ -364,25 +364,11 @@ export async function fetchBrsMetalRates(): Promise<
       },
     );
 
-  const commodityUrl =
-    buildApiUrl(
-      commodityApiUrl,
-    );
-
-  const [
-    marketResponse,
-    commodityResponse,
-  ] = await Promise.all([
-    fetchJson(
+  const marketResponse =
+    await fetchJson(
       marketUrl,
       "API طلا و ارز",
-    ),
-
-    fetchJson(
-      commodityUrl,
-      "API نقره",
-    ),
-  ]);
+    );
 
   if (
     marketResponse
@@ -429,71 +415,6 @@ export async function fetchBrsMetalRates(): Promise<
     );
   }
 
-  const currencyItems =
-    marketResponse
-      ?.currency
-      ?.free;
-
-  if (
-    !Array.isArray(
-      currencyItems,
-    )
-  ) {
-    throw new Error(
-      "فهرست نرخ ارز در پاسخ API پیدا نشد.",
-    );
-  }
-
-  const usd =
-    currencyItems.find(
-      (
-        item: Record<
-          string,
-          unknown
-        >,
-      ) =>
-        item.symbol ===
-        usdSymbol,
-    );
-
-  if (!usd) {
-    throw new Error(
-      `نماد ${usdSymbol} در پاسخ ارز پیدا نشد.`,
-    );
-  }
-
-  const preciousMetals =
-    commodityResponse
-      ?.metal_precious;
-
-  if (
-    !Array.isArray(
-      preciousMetals,
-    )
-  ) {
-    throw new Error(
-      "فهرست فلزات گران‌بها در پاسخ API پیدا نشد.",
-    );
-  }
-
-  const silverOunce =
-    preciousMetals.find(
-      (
-        item: Record<
-          string,
-          unknown
-        >,
-      ) =>
-        item.symbol ===
-        silverSymbol,
-    );
-
-  if (!silverOunce) {
-    throw new Error(
-      `نماد ${silverSymbol} در پاسخ نقره پیدا نشد.`,
-    );
-  }
-
   const goldPricePerGramToman =
     Math.round(
       convertIranianPriceToToman(
@@ -502,44 +423,7 @@ export async function fetchBrsMetalRates(): Promise<
       ),
     );
 
-  const usdPriceToman =
-    convertIranianPriceToToman(
-      usd.price,
-      usd.unit,
-    );
-
-  const silverOunceUsd =
-    Number(
-      silverOunce.price,
-    );
-
-  if (
-    !Number.isFinite(
-      silverOunceUsd,
-    ) ||
-    silverOunceUsd <= 0
-  ) {
-    throw new Error(
-      "قیمت انس نقره معتبر نیست.",
-    );
-  }
-
-  const silverPricePerGramToman =
-    Math.round(
-      (
-        silverOunceUsd *
-        usdPriceToman
-      ) /
-        TROY_OUNCE_GRAMS,
-    );
-
-  const silverRateTimestamp =
-    getOldestRequiredSourceTimestamp(
-      silverOunce,
-      usd,
-    );
-
-  return [
+  const rates: FetchedMetalRate[] = [
     {
       material:
         "GOLD",
@@ -582,8 +466,142 @@ export async function fetchBrsMetalRates(): Promise<
           gold18,
       },
     },
+  ];
 
-    {
+  /**
+   * خرابی یا محدودیت API کامودیتی نباید Sync طلا را متوقف کند.
+   * در این حالت نرخ قبلی نقره در دیتابیس حفظ می‌شود و سیاست
+   * بازار بسته درباره قابل‌فروش‌بودن آن تصمیم می‌گیرد.
+   */
+  let commodityResponse: Record<string, unknown> | null = null;
+
+  try {
+    const commodityUrl =
+      buildApiUrl(
+        commodityApiUrl,
+      );
+
+    commodityResponse =
+      await fetchJson(
+        commodityUrl,
+        "API نقره",
+      );
+  } catch (error) {
+    console.warn(
+      `هشدار: Sync نقره انجام نشد و نرخ قبلی حفظ شد. ${
+        error instanceof Error
+          ? error.message
+          : String(error)
+      }`,
+    );
+
+    return rates;
+  }
+
+  try {
+    const currencyItems =
+      marketResponse
+        ?.currency
+        ?.free;
+
+    if (
+      !Array.isArray(
+        currencyItems,
+      )
+    ) {
+      throw new Error(
+        "فهرست نرخ ارز در پاسخ API پیدا نشد.",
+      );
+    }
+
+    const usd =
+      currencyItems.find(
+        (
+          item: Record<
+            string,
+            unknown
+          >,
+        ) =>
+          item.symbol ===
+          usdSymbol,
+      );
+
+    if (!usd) {
+      throw new Error(
+        `نماد ${usdSymbol} در پاسخ ارز پیدا نشد.`,
+      );
+    }
+
+    const preciousMetals =
+      commodityResponse
+        ?.metal_precious;
+
+    if (
+      !Array.isArray(
+        preciousMetals,
+      )
+    ) {
+      throw new Error(
+        "فهرست فلزات گران‌بها در پاسخ API پیدا نشد.",
+      );
+    }
+
+    const silverOunce =
+      preciousMetals.find(
+        (
+          item: Record<
+            string,
+            unknown
+          >,
+        ) =>
+          item.symbol ===
+          silverSymbol,
+      );
+
+    if (!silverOunce) {
+      throw new Error(
+        `نماد ${silverSymbol} در پاسخ نقره پیدا نشد.`,
+      );
+    }
+
+    const usdPriceToman =
+      convertIranianPriceToToman(
+        usd.price,
+        usd.unit,
+      );
+
+    const silverOunceUsd =
+      Number(
+        silverOunce.price,
+      );
+
+    if (
+      !Number.isFinite(
+        silverOunceUsd,
+      ) ||
+      silverOunceUsd <= 0
+    ) {
+      throw new Error(
+        "قیمت انس نقره معتبر نیست.",
+      );
+    }
+
+    const silverPricePerGramToman =
+      Math.round(
+        (
+          silverOunceUsd *
+          usdPriceToman
+        ) /
+          TROY_OUNCE_GRAMS,
+      );
+
+    const silverRateTimestamp =
+      getOldestRequiredSourceTimestamp(
+        silverOunce,
+        usd,
+      );
+
+    rates.push({
       material:
         "SILVER",
 
@@ -628,6 +646,16 @@ export async function fetchBrsMetalRates(): Promise<
           silverRateTimestamp
             .sourceTimeUnix,
       },
-    },
-  ];
+    });
+  } catch (error) {
+    console.warn(
+      `هشدار: پاسخ نقره قابل استفاده نبود و نرخ قبلی حفظ شد. ${
+        error instanceof Error
+          ? error.message
+          : String(error)
+      }`,
+    );
+  }
+
+  return rates;
 }

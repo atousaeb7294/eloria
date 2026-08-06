@@ -1,5 +1,8 @@
 import { Prisma } from "@/generated/prisma/client";
-import { prisma } from "@/lib/prisma";
+import {
+  prisma,
+  withDatabaseRetry,
+} from "@/lib/prisma";
 import { restoreReservedInventory } from "@/lib/inventory";
 
 export type AdminOrderTransition = "CANCELLED" | "PROCESSING" | "SHIPPED" | "COMPLETED" | "REFUNDED";
@@ -33,7 +36,7 @@ export async function transitionOrderByAdmin({
   target: AdminOrderTransition;
   note: string | null;
 }) {
-  return prisma.$transaction(async transaction => {
+  return withDatabaseRetry(() => prisma.$transaction(async transaction => {
     const order = await transaction.order.findUnique({
       where: { id: orderId },
       select: {
@@ -105,7 +108,9 @@ export async function transitionOrderByAdmin({
     });
 
     return { orderNumber: order.orderNumber, from: order.status, to: target };
-  }, { isolationLevel: Prisma.TransactionIsolationLevel.Serializable });
+  }, {
+      maxWait: 5_000,
+      timeout: 20_000, isolationLevel: Prisma.TransactionIsolationLevel.Serializable }), { attempts: 2, delayMilliseconds: 250 });
 }
 
 
@@ -118,7 +123,7 @@ export async function markReviewedPaymentRefunded({
   paymentAttemptId: string;
   note: string | null;
 }) {
-  return prisma.$transaction(async transaction => {
+  return withDatabaseRetry(() => prisma.$transaction(async transaction => {
     await transaction.$queryRaw`SELECT id FROM payment_attempts WHERE id = ${paymentAttemptId}::uuid FOR UPDATE`;
 
     const attempt = await transaction.paymentAttempt.findFirst({
@@ -163,7 +168,9 @@ export async function markReviewedPaymentRefunded({
     });
 
     return { paymentAttemptId: attempt.id };
-  }, { isolationLevel: Prisma.TransactionIsolationLevel.Serializable });
+  }, {
+      maxWait: 5_000,
+      timeout: 20_000, isolationLevel: Prisma.TransactionIsolationLevel.Serializable }), { attempts: 2, delayMilliseconds: 250 });
 }
 
 export async function saveShipmentDetails({
@@ -177,19 +184,19 @@ export async function saveShipmentDetails({
   trackingCode: string;
   note: string | null;
 }) {
-  const order = await prisma.order.findUnique({ where: { id: orderId }, select: { id: true, status: true } });
+  const order = await withDatabaseRetry(() => prisma.order.findUnique({ where: { id: orderId }, select: { id: true, status: true } }), { attempts: 2, delayMilliseconds: 250 });
   if (!order) throw new OrderOperationError("سفارش پیدا نشد.");
   if (!["PROCESSING", "SHIPPED"].includes(order.status)) {
     throw new OrderOperationError("اطلاعات ارسال فقط برای سفارش در حال پردازش یا ارسال‌شده ثبت می‌شود.");
   }
-  await prisma.orderAuditEvent.create({
+  await withDatabaseRetry(() => prisma.orderAuditEvent.create({
     data: {
       orderId,
       actorType: "ADMIN",
       eventType: "SHIPMENT_DETAILS_UPDATED",
       payload: json({ carrier, trackingCode, note }),
     },
-  });
+  }), { attempts: 2, delayMilliseconds: 250 });
 }
 
 export function availableAdminTransitions(status: string): AdminOrderTransition[] {

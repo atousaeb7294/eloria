@@ -18,6 +18,7 @@ import {
 
 import {
   prisma,
+  withDatabaseRetry,
 } from "@/lib/prisma";
 
 export type ProductPricingErrorCode =
@@ -121,6 +122,12 @@ export type ProductPriceResult = {
 
     isPurchasable:
       boolean;
+
+    primaryImage: {
+      url: string;
+      altFa: string | null;
+      altEn: string | null;
+    } | null;
   };
 
   variant: {
@@ -351,6 +358,188 @@ function getUnavailableRateMessage(
   return "نرخ فلز برای فروش معتبر نیست. پرداخت تا دریافت نرخ جدید متوقف شده است.";
 }
 
+
+async function loadProductRecord(normalizedSlug: string) {
+  return prisma.product.findFirst({
+    where: {
+      slug: normalizedSlug,
+      status: { in: ["ACTIVE", "OUT_OF_STOCK"] },
+    },
+    include: {
+      variants: {
+        where: { isActive: true },
+        orderBy: { displayOrder: "asc" },
+        select: {
+          id: true,
+          sku: true,
+          titleFa: true,
+          titleEn: true,
+          price: true,
+          stock: true,
+          metalWeight: true,
+          purity: true,
+          purityFineness: true,
+          makingChargeFixed: true,
+          makingChargePerGram: true,
+          makingChargePercent: true,
+          artisticFee: true,
+        },
+      },
+      images: {
+        orderBy: [{ isPrimary: "desc" }, { displayOrder: "asc" }],
+        take: 1,
+        select: { imageUrl: true, altFa: true, altEn: true },
+      },
+    },
+  });
+}
+
+type ProductRecord = Awaited<ReturnType<typeof loadProductRecord>>;
+
+type ProductRecordCacheEntry = {
+  value: ProductRecord;
+  freshUntil: number;
+  staleUntil: number;
+};
+
+type ProductPricingGlobal = typeof globalThis & {
+  __eloriaProductPricingCache?: Map<string, ProductRecordCacheEntry>;
+  __eloriaProductPricingInflight?: Map<string, Promise<ProductRecord>>;
+  __eloriaPricingReferenceCache?: Map<
+    MaterialType,
+    { value: PricingReferenceRecord; freshUntil: number; staleUntil: number }
+  >;
+  __eloriaPricingReferenceInflight?: Map<
+    MaterialType,
+    Promise<PricingReferenceRecord>
+  >;
+};
+
+async function loadPricingReference(material: MaterialType) {
+  const policy = await prisma.pricingPolicy.findFirst({
+    where: { material, isActive: true },
+  });
+
+  const metalPrice = await prisma.metalPrice.findUnique({
+    where: { material },
+  });
+
+  return { policy, metalPrice };
+}
+
+type PricingReferenceRecord = Awaited<ReturnType<typeof loadPricingReference>>;
+
+const productPricingGlobal = globalThis as ProductPricingGlobal;
+const productCache =
+  productPricingGlobal.__eloriaProductPricingCache ??
+  new Map<string, ProductRecordCacheEntry>();
+const productInflight =
+  productPricingGlobal.__eloriaProductPricingInflight ??
+  new Map<string, Promise<ProductRecord>>();
+const referenceCache =
+  productPricingGlobal.__eloriaPricingReferenceCache ??
+  new Map<MaterialType, { value: PricingReferenceRecord; freshUntil: number; staleUntil: number }>();
+const referenceInflight =
+  productPricingGlobal.__eloriaPricingReferenceInflight ??
+  new Map<MaterialType, Promise<PricingReferenceRecord>>();
+
+productPricingGlobal.__eloriaProductPricingCache = productCache;
+productPricingGlobal.__eloriaProductPricingInflight = productInflight;
+productPricingGlobal.__eloriaPricingReferenceCache = referenceCache;
+productPricingGlobal.__eloriaPricingReferenceInflight = referenceInflight;
+
+function refreshProductRecord(normalizedSlug: string): Promise<ProductRecord> {
+  const existing = productInflight.get(normalizedSlug);
+  if (existing) {
+    return existing;
+  }
+
+  const request = withDatabaseRetry(() => loadProductRecord(normalizedSlug))
+    .then((value) => {
+      const storedAt = Date.now();
+      productCache.set(normalizedSlug, {
+        value,
+        freshUntil: storedAt + 30_000,
+        staleUntil: storedAt + 5 * 60_000,
+      });
+      return value;
+    })
+    .finally(() => {
+      productInflight.delete(normalizedSlug);
+    });
+
+  productInflight.set(normalizedSlug, request);
+  return request;
+}
+
+async function getProductRecord(normalizedSlug: string): Promise<ProductRecord> {
+  const now = Date.now();
+  const cached = productCache.get(normalizedSlug);
+
+  if (cached && cached.freshUntil > now) {
+    return cached.value;
+  }
+
+  if (cached && cached.staleUntil > now) {
+    void refreshProductRecord(normalizedSlug).catch((error) => {
+      console.warn(
+        `[Eloria Pricing] Unable to refresh product ${normalizedSlug}; serving stale display data.`,
+        error,
+      );
+    });
+    return cached.value;
+  }
+
+  return refreshProductRecord(normalizedSlug);
+}
+
+function refreshPricingReference(
+  material: MaterialType,
+): Promise<PricingReferenceRecord> {
+  const existing = referenceInflight.get(material);
+  if (existing) {
+    return existing;
+  }
+
+  const request = withDatabaseRetry(() => loadPricingReference(material))
+    .then((value) => {
+      const storedAt = Date.now();
+      referenceCache.set(material, {
+        value,
+        freshUntil: storedAt + 30_000,
+        staleUntil: storedAt + 10 * 60_000,
+      });
+      return value;
+    })
+    .finally(() => {
+      referenceInflight.delete(material);
+    });
+
+  referenceInflight.set(material, request);
+  return request;
+}
+
+async function getPricingReference(material: MaterialType): Promise<PricingReferenceRecord> {
+  const now = Date.now();
+  const cached = referenceCache.get(material);
+
+  if (cached && cached.freshUntil > now) {
+    return cached.value;
+  }
+
+  if (cached && cached.staleUntil > now) {
+    void refreshPricingReference(material).catch((error) => {
+      console.warn(
+        "[Eloria Pricing] Unable to refresh pricing reference; serving stale rate record.",
+        error,
+      );
+    });
+    return cached.value;
+  }
+
+  return refreshPricingReference(material);
+}
+
 export async function getProductLivePrice({
   slug,
   variantId,
@@ -362,74 +551,9 @@ export async function getProductLivePrice({
     );
 
   const product =
-    await prisma.product.findFirst({
-      where: {
-        slug:
-          normalizedSlug,
-
-        status: {
-          in: [
-            "ACTIVE",
-            "OUT_OF_STOCK",
-          ],
-        },
-      },
-
-      include: {
-        variants: {
-          where: {
-            isActive:
-              true,
-          },
-
-          orderBy: {
-            displayOrder:
-              "asc",
-          },
-
-          select: {
-            id:
-              true,
-
-            sku:
-              true,
-
-            titleFa:
-              true,
-
-            titleEn:
-              true,
-
-            price:
-              true,
-
-            stock:
-              true,
-
-            metalWeight:
-              true,
-
-            purity:
-              true,
-
-            purityFineness:
-              true,
-
-            makingChargeFixed:
-              true,
-
-            makingChargePerGram:
-              true,
-
-            makingChargePercent:
-              true,
-
-            artisticFee:
-              true,
-          },
-        },
-      },
-    });
+    await getProductRecord(
+      normalizedSlug,
+    );
 
   if (!product) {
     throw new ProductPricingError(
@@ -459,16 +583,13 @@ export async function getProductLivePrice({
     );
   }
 
-  const policy =
-    await prisma.pricingPolicy.findFirst({
-      where: {
-        material:
-          product.material,
-
-        isActive:
-          true,
-      },
-    });
+  const {
+    policy,
+    metalPrice,
+  } =
+    await getPricingReference(
+      product.material as MaterialType,
+    );
 
   if (!policy) {
     throw new ProductPricingError(
@@ -544,6 +665,15 @@ export async function getProductLivePrice({
     stock,
 
     isPurchasable,
+
+    primaryImage:
+      product.images[0]
+        ? {
+            url: product.images[0].imageUrl,
+            altFa: product.images[0].altFa,
+            altEn: product.images[0].altEn,
+          }
+        : null,
   };
 
   const variantOutput =
@@ -703,13 +833,7 @@ export async function getProductLivePrice({
     );
   }
 
-  const metalPrice =
-    await prisma.metalPrice.findUnique({
-      where: {
-        material:
-          product.material,
-      },
-    });
+
 
   if (!metalPrice) {
     throw new ProductPricingError(
@@ -736,6 +860,9 @@ export async function getProductLivePrice({
 
   const saleDecision =
     getMetalRateSaleDecision({
+      material:
+        product.material as MaterialType,
+
       referencePricePerGramToman:
         metalPrice.pricePerGram.toString(),
 

@@ -8,6 +8,7 @@ import {
 
 import {
   prisma,
+  withDatabaseRetry,
 } from "@/lib/prisma";
 
 type MetalPriceRecord =
@@ -163,20 +164,34 @@ function getFallbackCacheMilliseconds(): number {
 async function loadMetalPriceRecords():
   Promise<MetalPriceRecords> {
   const prices =
-    await prisma.metalPrice.findMany({
+    await withDatabaseRetry(
+      () =>
+        prisma.metalPrice.findMany({
       orderBy: {
         material:
           "asc",
       },
-    });
+    }),
+      {
+        attempts: 2,
+        delayMilliseconds: 200,
+      },
+    );
 
   const policies =
-    await prisma.pricingPolicy.findMany({
+    await withDatabaseRetry(
+      () =>
+        prisma.pricingPolicy.findMany({
       where: {
         isActive:
           true,
       },
-    });
+    }),
+      {
+        attempts: 2,
+        delayMilliseconds: 200,
+      },
+    );
 
   return {
     prices,
@@ -315,6 +330,9 @@ export async function getMetalPriceSnapshot() {
 
           const saleDecision =
             getMetalRateSaleDecision({
+              material:
+                price.material,
+
               referencePricePerGramToman:
                 price.pricePerGram.toString(),
 

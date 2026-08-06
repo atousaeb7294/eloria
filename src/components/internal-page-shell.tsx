@@ -221,10 +221,11 @@ export function InternalPageShell({
     >
       <SectionBackground
         sectionKey="internal-page-shell"
+        priority
         tone={
           profile.tone
         }
-        quality={88}
+        quality={84}
         objectPosition={
           profile.objectPosition
         }
@@ -249,7 +250,7 @@ export function InternalPageShell({
 
       <AmbientEffects />
 
-      <SiteHeader />
+      <SiteHeader locale={locale} />
 
       <div id="main-content" className="relative z-10" tabIndex={-1}>
         {children}

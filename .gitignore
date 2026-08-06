@@ -1,47 +1,55 @@
-# dependencies
-/node_modules
+# Dependencies
+/node_modules/
 /.pnp
 .pnp.*
 
-# testing
-/coverage
-
-# next.js
+# Next.js and build output
 /.next/
 /out/
+/build/
+/dist/
 
-# production
-/build
-/dist
+# Generated clients and caches
+/src/generated/prisma/
+*.tsbuildinfo
+next-env.d.ts
+.cache/
 
-# environment variables
+# Tests and reports
+/coverage/
+/playwright-report/
+/test-results/
+/blob-report/
+
+# Environment and secrets
 .env
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
+.env.*
+!.env.example
 
-# deployment
-.vercel
+# Deployment
+.vercel/
 
-# logs
+# Repository-local backups and imported tool snapshots
+.eloria-backups/
+.github/.github/
+docs/archive/
+*.bak
+*.backup
+
+# Logs
+*.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 
-# operating system
+# Operating system
 .DS_Store
 Thumbs.db
 
-# editors
+# Editors
 .vscode/*
 !.vscode/extensions.json
-.idea
+.idea/
 
-# typescript
-*.tsbuildinfo
-next-env.d.ts
-/src/generated/prisma
-
-.env
+public/videos/Aiarty.Video.Enhancer.3.7.x64.rar

@@ -1,9 +1,20 @@
-import type { NextConfig } from "next";
+import path from "node:path";
+
+import type {
+  NextConfig,
+} from "next";
+
 import createNextIntlPlugin from "next-intl/plugin";
 
-const withNextIntl = createNextIntlPlugin("./src/i18n/request.ts");
+const withNextIntl =
+  createNextIntlPlugin(
+    "./src/i18n/request.ts",
+  );
 
-const isProduction = process.env.NODE_ENV === "production";
+const isProduction =
+  process.env.NODE_ENV ===
+  "production";
+
 const contentSecurityPolicy = [
   "default-src 'self'",
   `script-src 'self' 'unsafe-inline' https://challenges.cloudflare.com${isProduction ? "" : " 'unsafe-eval'"}`,
@@ -17,33 +28,120 @@ const contentSecurityPolicy = [
   "base-uri 'self'",
   "form-action 'self' https://payment.zarinpal.com",
   "frame-ancestors 'none'",
-  ...(isProduction ? ["upgrade-insecure-requests"] : []),
+  ...(isProduction
+    ? [
+        "upgrade-insecure-requests",
+      ]
+    : []),
 ].join("; ");
 
-const nextConfig: NextConfig = {
-  output: "standalone",
-  deploymentId: process.env.ELORIA_DEPLOYMENT_ID || process.env.GITHUB_SHA || undefined,
-  reactStrictMode: true,
+const nextConfig:
+  NextConfig = {
+  output:
+    "standalone",
+
+  deploymentId:
+    process.env
+      .ELORIA_DEPLOYMENT_ID ||
+    process.env.GITHUB_SHA ||
+    undefined,
+
+  reactStrictMode:
+    true,
+
+  /**
+   * مسیر ریشه صریح، از تشخیص اشتباه src/app به‌عنوان Workspace
+   * و خرابی Cache مربوط به آن جلوگیری می‌کند.
+   */
+  turbopack: {
+    root:
+      path.resolve(
+        process.cwd(),
+      ),
+  },
+
   experimental: {
-    serverActions: { bodySizeLimit: "10mb" },
+    serverActions: {
+      bodySizeLimit:
+        "10mb",
+    },
   },
+
   images: {
-    qualities: [75, 88, 92],
+    qualities: [
+      75,
+      84,
+      88,
+      92,
+    ],
   },
+
   async headers() {
     return [
       {
-        source: "/:path*",
+        source:
+          "/:path*",
+
         headers: [
-          { key: "Content-Security-Policy", value: contentSecurityPolicy },
-          { key: "X-Content-Type-Options", value: "nosniff" },
-          { key: "X-Frame-Options", value: "DENY" },
-          { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
-          { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=(), payment=(self)" },
-          { key: "Cross-Origin-Opener-Policy", value: "same-origin" },
-          { key: "Cross-Origin-Resource-Policy", value: "same-origin" },
+          {
+            key:
+              "Content-Security-Policy",
+
+            value:
+              contentSecurityPolicy,
+          },
+          {
+            key:
+              "X-Content-Type-Options",
+
+            value:
+              "nosniff",
+          },
+          {
+            key:
+              "X-Frame-Options",
+
+            value:
+              "DENY",
+          },
+          {
+            key:
+              "Referrer-Policy",
+
+            value:
+              "strict-origin-when-cross-origin",
+          },
+          {
+            key:
+              "Permissions-Policy",
+
+            value:
+              "camera=(), microphone=(), geolocation=(), payment=(self)",
+          },
+          {
+            key:
+              "Cross-Origin-Opener-Policy",
+
+            value:
+              "same-origin",
+          },
+          {
+            key:
+              "Cross-Origin-Resource-Policy",
+
+            value:
+              "same-origin",
+          },
           ...(isProduction
-            ? [{ key: "Strict-Transport-Security", value: "max-age=31536000; includeSubDomains" }]
+            ? [
+                {
+                  key:
+                    "Strict-Transport-Security",
+
+                  value:
+                    "max-age=31536000; includeSubDomains",
+                },
+              ]
             : []),
         ],
       },
@@ -51,4 +149,6 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default withNextIntl(nextConfig);
+export default withNextIntl(
+  nextConfig,
+);

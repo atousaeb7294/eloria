@@ -1,17 +1,34 @@
+import { isIP } from "node:net";
 import { headers } from "next/headers";
 import type { NextRequest } from "next/server";
 
-function trustProxy(): boolean {
-  return process.env.ELORIA_TRUST_PROXY === "true" || process.env.ELORIA_TRUST_PROXY === "1";
+type ProxyProvider = "none" | "cloudflare" | "generic";
+
+function proxyProvider(): ProxyProvider {
+  if (process.env.ELORIA_TRUST_PROXY !== "true" && process.env.ELORIA_TRUST_PROXY !== "1") {
+    return "none";
+  }
+
+  const provider = process.env.ELORIA_PROXY_PROVIDER?.trim().toLowerCase();
+  return provider === "cloudflare" ? "cloudflare" : "generic";
+}
+
+function validIp(value: string | null | undefined): string | null {
+  const normalized = value?.trim().replace(/^\[|\]$/g, "") ?? "";
+  return isIP(normalized) ? normalized : null;
 }
 
 function forwardedIp(values: Headers): string | null {
-  if (!trustProxy()) return null;
+  const provider = proxyProvider();
+  if (provider === "none") return null;
+
+  if (provider === "cloudflare") {
+    return validIp(values.get("cf-connecting-ip"));
+  }
+
   return (
-    values.get("cf-connecting-ip")?.trim() ||
-    values.get("x-real-ip")?.trim() ||
-    values.get("x-forwarded-for")?.split(",")[0]?.trim() ||
-    null
+    validIp(values.get("x-real-ip")) ||
+    validIp(values.get("x-forwarded-for")?.split(",")[0])
   );
 }
 
@@ -27,7 +44,9 @@ export async function serverActionIp(): Promise<string> {
 export function hasTrustedOrigin(request: NextRequest): boolean {
   const origin = request.headers.get("origin")?.replace(/\/$/, "");
   const configured = process.env.NEXT_PUBLIC_SITE_URL?.trim().replace(/\/$/, "");
-  const allowed = new Set([request.nextUrl.origin.replace(/\/$/, ""), configured].filter(Boolean));
+  const allowed = new Set(
+    [request.nextUrl.origin.replace(/\/$/, ""), configured].filter(Boolean),
+  );
 
   if (origin) return allowed.has(origin);
   if (process.env.NODE_ENV !== "production") return true;

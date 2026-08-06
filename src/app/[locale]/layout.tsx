@@ -1,10 +1,5 @@
-import type {
-  Metadata,
-} from "next";
-
-import type {
-  ReactNode,
-} from "react";
+import type { Metadata } from "next";
+import type { ReactNode } from "react";
 
 import "../globals.css";
 
@@ -16,37 +11,30 @@ import {
 import {
   getTranslations,
   setRequestLocale,
+  getMessages,
 } from "next-intl/server";
 
-import {
-  notFound,
-} from "next/navigation";
+import { notFound } from "next/navigation";
 
 import {
   PageBackgroundProvider,
 } from "@/components/page-background-provider";
 
-import {
-  routing,
-} from "@/i18n/routing";
+import { routing } from "@/i18n/routing";
 
-type LocaleParams =
-  Promise<{
-    locale: string;
-  }>;
+type LocaleParams = Promise<{
+  locale: string;
+}>;
 
-type LocaleLayoutProps =
-  Readonly<{
-    children: ReactNode;
-    params: LocaleParams;
-  }>;
+type LocaleLayoutProps = Readonly<{
+  children: ReactNode;
+  params: LocaleParams;
+}>;
 
 export function generateStaticParams() {
-  return routing.locales.map(
-    (locale) => ({
-      locale,
-    }),
-  );
+  return routing.locales.map((locale) => ({
+    locale,
+  }));
 }
 
 export async function generateMetadata({
@@ -54,32 +42,70 @@ export async function generateMetadata({
 }: {
   params: LocaleParams;
 }): Promise<Metadata> {
-  const {
-    locale,
-  } = await params;
+  const { locale } = await params;
 
-  if (
-    !hasLocale(
-      routing.locales,
-      locale,
-    )
-  ) {
+  if (!hasLocale(routing.locales, locale)) {
     return {};
   }
 
-  const t =
-    await getTranslations({
-      locale,
-      namespace:
-        "Metadata",
-    });
+  const t = await getTranslations({
+    locale,
+    namespace: "Metadata",
+  });
+
+  const baseUrl = new URL(
+    process.env.NEXT_PUBLIC_SITE_URL?.trim() ||
+      "https://eloria.example",
+  );
+
+  const title = t("title");
+  const description = t("description");
 
   return {
-    title:
-      t("title"),
+    metadataBase: baseUrl,
+    title,
+    description,
 
-    description:
-      t("description"),
+    alternates: {
+      canonical: `/${locale}`,
+      languages: {
+        fa: "/fa",
+        en: "/en",
+      },
+    },
+
+    openGraph: {
+      type: "website",
+      siteName: "ELORIA",
+      locale:
+        locale === "fa"
+          ? "fa_IR"
+          : "en_US",
+      alternateLocale:
+        locale === "fa"
+          ? ["en_US"]
+          : ["fa_IR"],
+      title,
+      description,
+      url: `/${locale}`,
+      images: [
+        {
+          url: "/images/hero/eloria-hero.jpeg",
+          width: 1600,
+          height: 900,
+          alt: title,
+        },
+      ],
+    },
+
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: [
+        "/images/hero/eloria-hero.jpeg",
+      ],
+    },
   };
 }
 
@@ -87,25 +113,20 @@ export default async function LocaleLayout({
   children,
   params,
 }: LocaleLayoutProps) {
-  const {
-    locale,
-  } = await params;
+  const { locale } = await params;
 
-  if (
-    !hasLocale(
-      routing.locales,
-      locale,
-    )
-  ) {
+  if (!hasLocale(routing.locales, locale)) {
     notFound();
   }
 
-  setRequestLocale(
-    locale,
-  );
+  setRequestLocale(locale);
+
+  const messages =
+    await getMessages();
 
   return (
     <html
+      data-scroll-behavior="smooth"
       lang={locale}
       dir={
         locale === "fa"
@@ -114,25 +135,11 @@ export default async function LocaleLayout({
       }
       suppressHydrationWarning
     >
-      <head>
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-              (() => {
-                const syncEloriaIntroState = () => {
-                  document.documentElement.dataset.eloriaSkipIntro =
-                    window.location.hash === "#hero" ? "true" : "false";
-                };
-
-                syncEloriaIntroState();
-                window.addEventListener("hashchange", syncEloriaIntroState);
-              })();
-            `,
-          }}
-        />
-      </head>
       <body className="min-h-screen">
-        <NextIntlClientProvider>
+        <NextIntlClientProvider
+          locale={locale}
+          messages={messages}
+        >
           <PageBackgroundProvider>
             {children}
           </PageBackgroundProvider>
@@ -141,3 +148,4 @@ export default async function LocaleLayout({
     </html>
   );
 }
+

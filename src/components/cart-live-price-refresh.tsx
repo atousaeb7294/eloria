@@ -7,7 +7,6 @@ import {
 } from "react";
 
 import {
-  CART_UPDATED_EVENT,
   readCartItems,
 } from "@/lib/cart-storage";
 
@@ -34,11 +33,14 @@ export type CartLivePriceEventDetail = {
 };
 
 /*
- * قیمت و موجودی سبد در زمان نمایش صفحه
- * هر ۳۰ ثانیه از سرور بررسی می‌شوند.
+ * وضعیت نرخ بازار با فاصله زمانی کنترل‌شده بررسی می‌شود.
+ * Quote صفحه قیمت و موجودی را مستقل و دقیق بررسی می‌کند.
  */
 const VISIBLE_REFRESH_INTERVAL_MS =
-  30_000;
+  120_000;
+
+const INITIAL_REFRESH_DELAY_MS =
+  45_000;
 
 const REQUEST_TIMEOUT_MS =
   20_000;
@@ -346,22 +348,9 @@ export function CartLivePriceRefresh() {
         });
 
         /*
-         * پس از تأیید نرخ معتبر، قیمت و موجودی سبد
-         * دوباره مستقیماً از سرور دریافت می‌شود.
+         * Quote صفحه خودش قیمت و موجودی را بررسی می‌کند.
+         * اینجا فقط وضعیت نرخ بازار اعلام می‌شود تا یک Quote تکراری ساخته نشود.
          */
-        window.dispatchEvent(
-          new CustomEvent(
-            CART_UPDATED_EVENT,
-            {
-              detail: {
-                reason:
-                  "live-price-refresh",
-
-                refreshedAt,
-              },
-            },
-          ),
-        );
       } catch (error) {
         if (
           error instanceof
@@ -416,12 +405,15 @@ export function CartLivePriceRefresh() {
     mountedRef.current =
       true;
 
+    lastRefreshAtRef.current =
+      Date.now();
+
     const initialTimer =
       window.setTimeout(
         () => {
           void refreshLatestPrices();
         },
-        0,
+        INITIAL_REFRESH_DELAY_MS,
       );
 
     const shouldRefreshNow =

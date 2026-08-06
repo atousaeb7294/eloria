@@ -2,17 +2,19 @@ import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "ELORIA",
+    id: "/fa",
+    name: "ELORIA — دنیای جواهرات اصیل",
     short_name: "ELORIA",
-    description: "ELORIA luxury jewelry — روایت جواهرات الوریا",
+    description: "جواهرات لوکس الوریا با الهام از ایران باستان و روایت‌های شاهنامه‌ای",
     start_url: "/fa",
+    scope: "/",
     display: "standalone",
-    background_color: "#01110c",
-    theme_color: "#01110c",
+    orientation: "portrait-primary",
+    background_color: "#010b07",
+    theme_color: "#02140e",
     lang: "fa",
     dir: "rtl",
-    icons: [
-      { src: "/favicon.ico", sizes: "any", type: "image/x-icon" },
-    ],
+    categories: ["shopping", "lifestyle"],
+    icons: [{ src: "/favicon.ico", sizes: "any", type: "image/x-icon" }],
   };
 }

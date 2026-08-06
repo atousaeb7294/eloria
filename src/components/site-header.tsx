@@ -10,11 +10,6 @@ import {
 } from "motion/react";
 
 import {
-  useLocale,
-  useTranslations,
-} from "next-intl";
-
-import {
   type ComponentType,
   type FocusEvent,
   type ReactNode,
@@ -137,23 +132,60 @@ function MagicIconFrame({
   );
 }
 
-export function SiteHeader() {
-  const locale =
-    useLocale();
+type SiteHeaderProps = {
+  locale?: string;
+};
 
+const NAVIGATION_LABELS = {
+  fa: {
+    tagline: "جواهری از دل افسانه",
+    menuLabel: "منوی اصلی",
+    home: "خانه",
+    world: "دنیای الوریا",
+    necklaces: "گردنبندها",
+    bracelets: "دستبندها",
+    earrings: "گوشواره‌ها",
+    contact: "تماس",
+  },
+  en: {
+    tagline: "A jewel born from legend",
+    menuLabel: "Main navigation",
+    home: "Home",
+    world: "Eloria World",
+    necklaces: "Necklaces",
+    bracelets: "Bracelets",
+    earrings: "Earrings",
+    contact: "Contact",
+  },
+} as const;
+
+export function SiteHeader({
+  locale,
+}: SiteHeaderProps) {
   const pathname =
-    usePathname() ?? `/${locale}`;
+    usePathname() ?? "/";
 
-  const t =
-    useTranslations(
-      "Navigation",
-    );
+  const pathnameLocale =
+    pathname.match(
+      /^\/(fa|en)(?=\/|$)/,
+    )?.[1];
+
+  const resolvedLocale =
+    locale === "en" ||
+    locale === "fa"
+      ? locale
+      : pathnameLocale === "en"
+        ? "en"
+        : "fa";
+
+  const labels =
+    NAVIGATION_LABELS[resolvedLocale];
 
   const reducedMotion =
     useReducedMotion();
 
   const isPersian =
-    locale === "fa";
+    resolvedLocale === "fa";
 
   const [
     worldOpen,
@@ -168,24 +200,24 @@ export function SiteHeader() {
     >(null);
 
   const homeHref =
-    `/${locale}#hero`;
+    `/${resolvedLocale}#hero`;
 
   const collectionsHref =
-    `/${locale}/collections`;
+    `/${resolvedLocale}/collections`;
 
   const isHomeActive =
-    pathname === `/${locale}` ||
-    pathname === `/${locale}/`;
+    pathname === `/${resolvedLocale}` ||
+    pathname === `/${resolvedLocale}/`;
 
   const isWorldActive =
-    pathname.startsWith(`/${locale}/collections`) ||
-    pathname.startsWith(`/${locale}/products`);
+    pathname.startsWith(`/${resolvedLocale}/collections`) ||
+    pathname.startsWith(`/${resolvedLocale}/products`);
 
   const collectionItems:
     CollectionMenuItem[] = [
       {
         label:
-          t("necklaces"),
+          labels.necklaces,
 
         slug:
           "necklaces",
@@ -196,7 +228,7 @@ export function SiteHeader() {
 
       {
         label:
-          t("bracelets"),
+          labels.bracelets,
 
         slug:
           "bracelets",
@@ -207,7 +239,7 @@ export function SiteHeader() {
 
       {
         label:
-          t("earrings"),
+          labels.earrings,
 
         slug:
           "earrings",
@@ -324,14 +356,14 @@ export function SiteHeader() {
                 </span>
 
                 <span className="mt-1 block text-[10px] tracking-[0.18em] text-[#e2c77f]/90">
-                  {t("tagline")}
+                  {labels.tagline}
                 </span>
               </span>
             </Link>
 
             <nav
               aria-label={
-                t("menuLabel")
+                labels.menuLabel
               }
               className="relative z-30 mx-2 hidden items-center justify-center gap-2 md:flex"
             >
@@ -340,7 +372,7 @@ export function SiteHeader() {
                   homeHref
                 }
                 title={
-                  t("home")
+                  labels.home
                 }
                 aria-label={
                   isPersian
@@ -364,7 +396,7 @@ export function SiteHeader() {
                 </MagicIconFrame>
 
                 <span className="relative z-10 hidden whitespace-nowrap text-xs font-medium lg:inline">
-                  {t("home")}
+                  {labels.home}
                 </span>
               </Link>
 
@@ -394,7 +426,7 @@ export function SiteHeader() {
                       collectionsHref
                     }
                     title={
-                      t("world")
+                      labels.world
                     }
                     aria-haspopup="menu"
                     aria-expanded={
@@ -410,7 +442,7 @@ export function SiteHeader() {
                     </MagicIconFrame>
 
                     <span className="hidden whitespace-nowrap text-xs font-medium lg:inline">
-                      {t("world")}
+                      {labels.world}
                     </span>
                   </Link>
 
@@ -577,7 +609,7 @@ export function SiteHeader() {
 
                                   <div className="grid grid-cols-2 gap-2">
                                     <Link
-                                      href={`/${locale}/collections/${item.slug}/gold`}
+                                      href={`/${resolvedLocale}/collections/${item.slug}/gold`}
                                       onClick={() =>
                                         setWorldOpen(
                                           false,
@@ -595,7 +627,7 @@ export function SiteHeader() {
                                     </Link>
 
                                     <Link
-                                      href={`/${locale}/collections/${item.slug}/silver`}
+                                      href={`/${resolvedLocale}/collections/${item.slug}/silver`}
                                       onClick={() =>
                                         setWorldOpen(
                                           false,
@@ -626,7 +658,7 @@ export function SiteHeader() {
               <Link
                 href="#contact"
                 title={
-                  t("contact")
+                  labels.contact
                 }
                 className={
                   normalButtonClass
@@ -637,19 +669,19 @@ export function SiteHeader() {
                 </MagicIconFrame>
 
                 <span className="relative z-10 hidden whitespace-nowrap text-xs font-medium lg:inline">
-                  {t("contact")}
+                  {labels.contact}
                 </span>
               </Link>
             </nav>
 
             <div className="relative z-10 flex shrink-0 items-center gap-1.5 sm:gap-2">
               <CartHeaderButton
-                locale={locale}
+                locale={resolvedLocale}
                 variant="compact"
               />
 
               <div className="hidden sm:block">
-                <LocaleSwitcher />
+                <LocaleSwitcher locale={resolvedLocale} />
               </div>
 
               <MobileSiteMenu />

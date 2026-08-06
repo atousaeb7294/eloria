@@ -770,6 +770,23 @@ export function CheckoutPageClient({
   ] =
     useState(false);
 
+  const submitInFlightRef =
+    useRef(false);
+
+  const [
+    paymentStarting,
+    setPaymentStarting,
+  ] =
+    useState(false);
+
+  const [
+    paymentStartError,
+    setPaymentStartError,
+  ] =
+    useState<string | null>(
+      null,
+    );
+
   const [
     submitError,
     setSubmitError,
@@ -1146,17 +1163,6 @@ export function CheckoutPageClient({
           setLivePriceFailed(
             false,
           );
-
-          void loadQuote(
-            storedItems,
-            {
-              background:
-                true,
-
-              notifyOnChange:
-                true,
-            },
-          );
         }
       };
 
@@ -1171,10 +1177,7 @@ export function CheckoutPageClient({
         handleLivePriceEvent,
       );
     };
-  }, [
-    loadQuote,
-    storedItems,
-  ]);
+  }, []);
 
   useEffect(() => {
     const fingerprint =
@@ -1251,6 +1254,7 @@ export function CheckoutPageClient({
       event.preventDefault();
 
       if (
+        submitInFlightRef.current ||
         submitting ||
         createdOrder
       ) {
@@ -1307,6 +1311,9 @@ export function CheckoutPageClient({
 
         return;
       }
+
+      submitInFlightRef.current =
+        true;
 
       setSubmitting(true);
 
@@ -1449,7 +1456,113 @@ export function CheckoutPageClient({
             : text.genericError,
         );
       } finally {
+        submitInFlightRef.current =
+          false;
+
         setSubmitting(false);
+      }
+    };
+
+  const handlePaymentStart =
+    async () => {
+      if (
+        !createdOrder ||
+        !createdOrder.paymentConfigured ||
+        paymentStarting
+      ) {
+        return;
+      }
+
+      setPaymentStarting(true);
+      setPaymentStartError(null);
+
+      try {
+        const response =
+          await fetch(
+            "/api/payments/zarinpal/start",
+            {
+              method:
+                "POST",
+
+              headers: {
+                "Content-Type":
+                  "application/json",
+
+                Accept:
+                  "application/json",
+              },
+
+              cache:
+                "no-store",
+
+              body:
+                JSON.stringify({
+                  orderId:
+                    createdOrder.id,
+
+                  mobile:
+                    form.mobile.trim(),
+                }),
+            },
+          );
+
+        const data: unknown =
+          await response
+            .json()
+            .catch(
+              () => null,
+            );
+
+        const candidate =
+          typeof data ===
+              "object" &&
+            data !== null
+            ? (
+                data as {
+                  successful?: unknown;
+                  message?: unknown;
+                  payment?: {
+                    redirectUrl?: unknown;
+                  };
+                }
+              )
+            : null;
+
+        const redirectUrl =
+          typeof candidate
+            ?.payment
+            ?.redirectUrl ===
+          "string"
+            ? candidate.payment
+                .redirectUrl
+            : null;
+
+        if (
+          !response.ok ||
+          candidate?.successful !==
+            true ||
+          !redirectUrl
+        ) {
+          throw new Error(
+            typeof candidate
+              ?.message ===
+            "string"
+              ? candidate.message
+              : text.genericError,
+          );
+        }
+
+        window.location.assign(
+          redirectUrl,
+        );
+      } catch (error) {
+        setPaymentStartError(
+          error instanceof Error
+            ? error.message
+            : text.genericError,
+        );
+      } finally {
+        setPaymentStarting(false);
       }
     };
 
@@ -2084,6 +2197,13 @@ export function CheckoutPageClient({
                         {createdOrder.paymentMessage || text.gatewayPending}
                       </p>
 
+                      {paymentStartError && (
+                        <div className="mt-4 flex items-start gap-3 rounded-xl border border-red-300/20 bg-red-300/[0.055] px-4 py-3 text-xs leading-6 text-red-100/75">
+                          <AlertTriangle className="mt-1 h-4 w-4 shrink-0" />
+                          <span>{paymentStartError}</span>
+                        </div>
+                      )}
+
                       {createdOrder.paymentUrl ? (
                         <a
                           href={createdOrder.paymentUrl}
@@ -2092,6 +2212,28 @@ export function CheckoutPageClient({
                           <WalletCards className="h-4 w-4" />
                           {locale === "fa" ? "ورود به درگاه پرداخت" : "Continue to payment"}
                         </a>
+                      ) : createdOrder.paymentConfigured ? (
+                        <button
+                          type="button"
+                          disabled={paymentStarting}
+                          onClick={() =>
+                            void handlePaymentStart()
+                          }
+                          className="mt-6 flex min-h-13 w-full items-center justify-center gap-3 rounded-full border border-[#e0c16d]/45 bg-[#d9b85f]/[0.11] px-6 text-sm text-[#f6e4af] transition hover:-translate-y-0.5 hover:border-[#f0d681]/80 disabled:cursor-wait disabled:opacity-60"
+                        >
+                          {paymentStarting ? (
+                            <LoaderCircle className="h-4 w-4 animate-spin" />
+                          ) : (
+                            <WalletCards className="h-4 w-4" />
+                          )}
+                          {paymentStarting
+                            ? locale === "fa"
+                              ? "در حال اتصال به درگاه..."
+                              : "Connecting to payment..."
+                            : locale === "fa"
+                              ? "ورود به درگاه پرداخت"
+                              : "Continue to payment"}
+                        </button>
                       ) : (
                         <button
                           type="button"

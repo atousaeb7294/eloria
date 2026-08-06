@@ -14,6 +14,7 @@ import {
 
 import {
   prisma,
+  withDatabaseRetry,
 } from "@/lib/prisma";
 
 export type AdminProductActionState = {
@@ -514,7 +515,7 @@ async function ensureUniqueIdentity({
   excludedProductId?: string;
 }): Promise<void> {
   const duplicate =
-    await prisma.product.findFirst({
+    await withDatabaseRetry(() => prisma.product.findFirst({
       where: {
         ...(excludedProductId
           ? {
@@ -541,7 +542,7 @@ async function ensureUniqueIdentity({
         slug: true,
         sku: true,
       },
-    });
+    }), { attempts: 2, delayMilliseconds: 250 });
 
   if (!duplicate) {
     return;
@@ -646,38 +647,27 @@ export async function createAdminProductAction(
         input.sku,
     });
 
-    await prisma.$transaction(
-      async (
-        transaction,
-      ) => {
-        const product =
-          await transaction.product.create({
-            data:
-              productData(input),
-            select: {
-              id: true,
-            },
-          });
-
-        if (
-          input.primaryImageUrl
-        ) {
-          await transaction.productImage.create({
-            data: {
-              productId:
-                product.id,
-              imageUrl:
-                input.primaryImageUrl,
-              altFa:
-                input.nameFa,
-              altEn:
-                input.nameEn,
-              isPrimary: true,
-              displayOrder: 0,
-            },
-          });
-        }
-      },
+    await withDatabaseRetry(() =>
+      prisma.product.create({
+        data: {
+          ...productData(input),
+          ...(input.primaryImageUrl
+            ? {
+                images: {
+                  create: {
+                    imageUrl: input.primaryImageUrl,
+                    altFa: input.nameFa,
+                    altEn: input.nameEn,
+                    isPrimary: true,
+                    displayOrder: 0,
+                  },
+                },
+              }
+            : {}),
+        },
+        select: { id: true },
+      }),
+      { attempts: 2, delayMilliseconds: 150 },
     );
   } catch (error) {
     return {
@@ -728,70 +718,55 @@ export async function updateAdminProductAction(
         productId,
     });
 
-    await prisma.$transaction(
-      async (
-        transaction,
-      ) => {
-        await transaction.product.update({
-          where: {
-            id:
-              productId,
-          },
-          data:
-            productData(input),
-        });
-
-        if (
-          input.primaryImageUrl
-        ) {
-          const primaryImage =
-            await transaction.productImage.findFirst({
-              where: {
-                productId,
-                isPrimary: true,
-              },
-              orderBy: {
-                displayOrder:
-                  "asc",
-              },
-              select: {
-                id: true,
-              },
-            });
-
-          if (primaryImage) {
-            await transaction.productImage.update({
-              where: {
-                id:
-                  primaryImage.id,
-              },
-              data: {
-                imageUrl:
-                  input.primaryImageUrl,
-                altFa:
-                  input.nameFa,
-                altEn:
-                  input.nameEn,
-              },
-            });
-          } else {
-            await transaction.productImage.create({
-              data: {
-                productId,
-                imageUrl:
-                  input.primaryImageUrl,
-                altFa:
-                  input.nameFa,
-                altEn:
-                  input.nameEn,
-                isPrimary: true,
-                displayOrder: 0,
-              },
-            });
-          }
-        }
-      },
+    await withDatabaseRetry(() =>
+      prisma.product.update({
+        where: { id: productId },
+        data: productData(input),
+      }),
+      { attempts: 2, delayMilliseconds: 150 },
     );
+
+    if (input.primaryImageUrl) {
+      const primaryImage = await withDatabaseRetry(() =>
+        prisma.productImage.findFirst({
+          where: {
+            productId,
+            isPrimary: true,
+          },
+          orderBy: { displayOrder: "asc" },
+          select: { id: true },
+        }),
+        { attempts: 2, delayMilliseconds: 150 },
+      );
+
+      if (primaryImage) {
+        await withDatabaseRetry(() =>
+          prisma.productImage.update({
+            where: { id: primaryImage.id },
+            data: {
+              imageUrl: input.primaryImageUrl!,
+              altFa: input.nameFa,
+              altEn: input.nameEn,
+            },
+          }),
+          { attempts: 2, delayMilliseconds: 150 },
+        );
+      } else {
+        await withDatabaseRetry(() =>
+          prisma.productImage.create({
+            data: {
+              productId,
+              imageUrl: input.primaryImageUrl!,
+              altFa: input.nameFa,
+              altEn: input.nameEn,
+              isPrimary: true,
+              displayOrder: 0,
+            },
+          }),
+          { attempts: 2, delayMilliseconds: 150 },
+        );
+      }
+    }
   } catch (error) {
     return {
       error:

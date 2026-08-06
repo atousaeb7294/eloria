@@ -1,6 +1,5 @@
-import Link from "next/link";
 import type { Metadata } from "next";
-
+import Link from "next/link";
 import {
   notFound,
 } from "next/navigation";
@@ -8,10 +7,6 @@ import {
 import {
   setRequestLocale,
 } from "next-intl/server";
-
-import type {
-  ReactNode,
-} from "react";
 
 import {
   Gem,
@@ -57,7 +52,10 @@ import {
 
 import {
   prisma,
+  withDatabaseRetry,
 } from "@/lib/prisma";
+
+import { PriceInformationItem, PurchaseAssuranceItem, SpecificationItem, collectionNames, fallbackImages, formatDecimal, formatToman } from "@/components/product-detail/product-detail-ui";
 
 export const dynamic =
   "force-dynamic";
@@ -75,248 +73,237 @@ type ProductPageProps = {
   }>;
 };
 
-export async function generateMetadata({
-  params,
-}: Pick<ProductPageProps, "params">): Promise<Metadata> {
-  const { locale, slug } = await params;
-  if (locale !== "fa" && locale !== "en") return {};
-  const product = await prisma.product.findUnique({
-    where: { slug },
+type ProductPageRecord = Awaited<
+  ReturnType<typeof loadProductPageRecord>
+>;
+
+type ProductPageCacheEntry = {
+  value: ProductPageRecord;
+  freshUntil: number;
+  staleUntil: number;
+};
+
+type ProductPageCacheGlobal = typeof globalThis & {
+  __eloriaProductPageCache?: Map<string, ProductPageCacheEntry>;
+  __eloriaProductPageInflight?: Map<string, Promise<ProductPageRecord>>;
+};
+
+const productPageCacheGlobal =
+  globalThis as ProductPageCacheGlobal;
+
+const productPageCache =
+  productPageCacheGlobal.__eloriaProductPageCache ??
+  new Map<string, ProductPageCacheEntry>();
+
+const productPageInflight =
+  productPageCacheGlobal.__eloriaProductPageInflight ??
+  new Map<string, Promise<ProductPageRecord>>();
+
+productPageCacheGlobal.__eloriaProductPageCache =
+  productPageCache;
+
+productPageCacheGlobal.__eloriaProductPageInflight =
+  productPageInflight;
+
+async function loadProductPageRecord(
+  slug: string,
+) {
+  return prisma.product.findUnique({
+    where: {
+      slug,
+    },
+
     select: {
+      id: true,
       nameFa: true,
       nameEn: true,
       descriptionFa: true,
       descriptionEn: true,
-      status: true,
-      updatedAt: true,
-      images: { orderBy: [{ isPrimary: "desc" }, { displayOrder: "asc" }], take: 1, select: { imageUrl: true, altFa: true, altEn: true } },
+      legendFa: true,
+      legendEn: true,
+
+      collection: {
+        select: {
+          slug: true,
+        },
+      },
+
+      images: {
+        orderBy: [
+          {
+            isPrimary: "desc",
+          },
+          {
+            displayOrder: "asc",
+          },
+        ],
+
+        select: {
+          imageUrl: true,
+          altFa: true,
+          altEn: true,
+        },
+      },
+
+      variants: {
+        where: {
+          isActive: true,
+        },
+
+        orderBy: [
+          {
+            displayOrder: "asc",
+          },
+          {
+            createdAt: "asc",
+          },
+        ],
+
+        select: {
+          id: true,
+          titleFa: true,
+          titleEn: true,
+          stock: true,
+          metalWeight: true,
+          purity: true,
+        },
+      },
     },
   });
-  if (!product) return { robots: { index: false, follow: false } };
-  const isPersian = locale === "fa";
-  const title = isPersian ? product.nameFa : product.nameEn;
-  const description = (isPersian ? product.descriptionFa : product.descriptionEn)?.slice(0, 160) || title;
-  const image = product.images[0];
-  const path = `/${locale}/products/${slug}`;
+}
+
+function refreshProductPageRecord(
+  slug: string,
+): Promise<ProductPageRecord> {
+  const current =
+    productPageInflight.get(slug);
+
+  if (current) {
+    return current;
+  }
+
+  const request = withDatabaseRetry(
+    () => loadProductPageRecord(slug),
+    {
+      attempts: 2,
+      delayMilliseconds: 150,
+    },
+  )
+    .then(value => {
+      const storedAt = Date.now();
+
+      productPageCache.set(slug, {
+        value,
+        freshUntil: storedAt + 30_000,
+        staleUntil: storedAt + 10 * 60_000,
+      });
+
+      return value;
+    })
+    .finally(() => {
+      productPageInflight.delete(slug);
+    });
+
+  productPageInflight.set(slug, request);
+  return request;
+}
+
+async function getProductPageRecord(
+  slug: string,
+): Promise<ProductPageRecord> {
+  const cached =
+    productPageCache.get(slug);
+
+  const now = Date.now();
+
+  if (cached && cached.freshUntil > now) {
+    return cached.value;
+  }
+
+  if (cached && cached.staleUntil > now) {
+    void refreshProductPageRecord(slug).catch(error => {
+      console.warn(
+        `[Eloria Product Page] Unable to refresh ${slug}; serving stale page data.`,
+        error,
+      );
+    });
+
+    return cached.value;
+  }
+
+  return refreshProductPageRecord(slug);
+}
+
+function fallbackProductMetadata(
+  locale: string,
+): Metadata {
   return {
-    title,
-    description,
-    alternates: {
-      canonical: path,
-      languages: { fa: `/fa/products/${slug}`, en: `/en/products/${slug}` },
-    },
-    robots: { index: product.status !== "ARCHIVED" && product.status !== "DRAFT", follow: true },
-    openGraph: {
-      type: "website",
-      title,
-      description,
-      url: path,
-      images: image ? [{ url: image.imageUrl, alt: (isPersian ? image.altFa : image.altEn) || title }] : undefined,
-    },
-    twitter: { card: "summary_large_image", title, description, images: image ? [image.imageUrl] : undefined },
+    title:
+      locale === "fa"
+        ? "جواهر الوریا"
+        : "Eloria Jewelry",
+    description:
+      locale === "fa"
+        ? "جواهری از دل افسانه"
+        : "A jewel born from legend",
   };
 }
 
-const collectionNames: Record<
-  string,
-  {
-    fa: string;
-    en: string;
+export async function generateMetadata({
+  params,
+}: Pick<ProductPageProps, "params">): Promise<Metadata> {
+  const { locale, slug } = await params;
+
+  if (locale !== "fa" && locale !== "en") {
+    return fallbackProductMetadata("fa");
   }
-> = {
-  necklaces: {
-    fa: "گردنبندها",
-    en: "Necklaces",
-  },
 
-  bracelets: {
-    fa: "دستبندها",
-    en: "Bracelets",
-  },
-
-  earrings: {
-    fa: "گوشواره‌ها",
-    en: "Earrings",
-  },
-};
-
-const fallbackImages: Record<
-  string,
-  string
-> = {
-  necklaces:
-    "/images/collections/necklaces.jfif",
-
-  bracelets:
-    "/images/collections/bracelet.jpg",
-
-  earrings:
-    "/images/collections/earring.jpg",
-};
-
-function formatToman(
-  value: string,
-  locale: string,
-): string {
   try {
-    return BigInt(
-      value,
-    ).toLocaleString(
+    const product =
+      await getProductPageRecord(slug);
+
+    if (!product) {
+      return fallbackProductMetadata(locale);
+    }
+
+    const title =
       locale === "fa"
-        ? "fa-IR"
-        : "en-US",
+        ? product.nameFa
+        : product.nameEn;
+
+    const description =
+      (locale === "fa"
+        ? product.descriptionFa
+        : product.descriptionEn
+      )?.trim() ||
+      (locale === "fa"
+        ? "جواهری از دل افسانه"
+        : "A jewel born from legend");
+
+    const image =
+      product.images[0]?.imageUrl;
+
+    return {
+      title,
+      description,
+      openGraph: {
+        title,
+        description,
+        ...(image
+          ? {
+              images: [image],
+            }
+          : {}),
+      },
+    };
+  } catch (error) {
+    console.warn(
+      `[Eloria Product Metadata] Database unavailable for ${slug}; using fallback metadata.`,
+      error,
     );
-  } catch {
-    return value;
+
+    return fallbackProductMetadata(locale);
   }
-}
-
-function formatDecimal(
-  value:
-    | string
-    | number
-    | null,
-  locale: string,
-): string {
-  if (
-    value === null ||
-    value === ""
-  ) {
-    return "—";
-  }
-
-  const numericValue =
-    Number(value);
-
-  if (
-    !Number.isFinite(
-      numericValue,
-    )
-  ) {
-    return String(
-      value,
-    );
-  }
-
-  return numericValue.toLocaleString(
-    locale === "fa"
-      ? "fa-IR"
-      : "en-US",
-    {
-      maximumFractionDigits:
-        3,
-    },
-  );
-}
-
-function SpecificationItem({
-  icon,
-  label,
-  value,
-}: {
-  icon: ReactNode;
-  label: string;
-  value: string;
-}) {
-  return (
-    <div className="group flex min-h-20 items-center gap-3 rounded-2xl border border-white/[0.065] bg-white/[0.025] px-4 py-3 transition duration-300 hover:border-[#d9b85f]/20 hover:bg-white/[0.04]">
-      <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-[#d9b85f]/22 bg-[#d9b85f]/[0.045] text-[#d9be72] transition duration-300 group-hover:scale-105 group-hover:border-[#e5c975]/35">
-        {icon}
-      </span>
-
-      <span className="min-w-0">
-        <span className="block text-[10px] text-white/48">
-          {label}
-        </span>
-
-        <strong className="mt-1 block truncate text-sm font-medium text-[#e8ddc8]">
-          {value}
-        </strong>
-      </span>
-    </div>
-  );
-}
-
-function PriceInformationItem({
-  icon,
-  label,
-  value,
-  isGold,
-}: {
-  icon: ReactNode;
-  label: string;
-  value: string;
-  isGold: boolean;
-}) {
-  return (
-    <div
-      className={[
-        "relative overflow-hidden rounded-2xl border px-4 py-4",
-
-        isGold
-          ? "border-[#d9b85f]/20 bg-[#d9b85f]/[0.035]"
-          : "border-[#dce6e9]/16 bg-[#dce6e9]/[0.025]",
-      ].join(" ")}
-    >
-      <div className="flex items-center gap-2">
-        <span
-          className={[
-            "flex h-8 w-8 items-center justify-center rounded-lg border",
-
-            isGold
-              ? "border-[#d9b85f]/25 bg-[#d9b85f]/[0.055] text-[#e4c46d]"
-              : "border-[#dce6e9]/20 bg-[#dce6e9]/[0.04] text-[#dfe8eb]",
-          ].join(" ")}
-        >
-          {icon}
-        </span>
-
-        <span className="text-[10px] text-white/48">
-          {label}
-        </span>
-      </div>
-
-      <strong
-        className={[
-          "mt-3 block text-sm font-medium",
-
-          isGold
-            ? "text-[#f0d78f]"
-            : "text-[#e3ecee]",
-        ].join(" ")}
-      >
-        {value}
-      </strong>
-    </div>
-  );
-}
-
-function PurchaseAssuranceItem({
-  icon,
-  title,
-  description,
-}: {
-  icon: ReactNode;
-  title: string;
-  description: string;
-}) {
-  return (
-    <div className="flex items-start gap-3 rounded-2xl border border-white/[0.065] bg-black/10 px-3.5 py-3.5">
-      <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-[#d9b85f]/22 bg-[#d9b85f]/[0.05] text-[#dfc16e]">
-        {icon}
-      </span>
-
-      <span className="min-w-0">
-        <strong className="block text-[11px] font-medium text-[#eadfc9]">
-          {title}
-        </strong>
-
-        <span className="mt-1 block text-[10px] leading-5 text-white/42">
-          {description}
-        </span>
-      </span>
-    </div>
-  );
 }
 
 export default async function ProductPage({
@@ -343,99 +330,7 @@ export default async function ProductPage({
     locale === "fa";
 
   const productRecord =
-    await prisma.product.findUnique({
-      where: {
-        slug,
-      },
-
-      select: {
-        id:
-          true,
-
-        descriptionFa:
-          true,
-
-        descriptionEn:
-          true,
-
-        legendFa:
-          true,
-
-        legendEn:
-          true,
-
-        collection: {
-          select: {
-            slug:
-              true,
-          },
-        },
-
-        images: {
-          orderBy: [
-            {
-              isPrimary:
-                "desc",
-            },
-
-            {
-              displayOrder:
-                "asc",
-            },
-          ],
-
-          select: {
-            imageUrl:
-              true,
-
-            altFa:
-              true,
-
-            altEn:
-              true,
-          },
-        },
-
-        variants: {
-          where: {
-            isActive:
-              true,
-          },
-
-          orderBy: [
-            {
-              displayOrder:
-                "asc",
-            },
-
-            {
-              createdAt:
-                "asc",
-            },
-          ],
-
-          select: {
-            id:
-              true,
-
-            titleFa:
-              true,
-
-            titleEn:
-              true,
-
-            stock:
-              true,
-
-            metalWeight:
-              true,
-
-            purity:
-              true,
-          },
-        },
-      },
-    });
+    await getProductPageRecord(slug);
 
   if (!productRecord) {
     notFound();

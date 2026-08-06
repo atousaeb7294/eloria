@@ -1,13 +1,20 @@
-name: ELORIA CI
+name: ELORIA Release Gate
+
 on:
   push:
-    branches: [main]
+    branches: [main, master]
   pull_request:
+    branches: [main, master]
+
+concurrency:
+  group: eloria-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
-  quality:
+  release-gate:
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 45
+
     services:
       postgres:
         image: postgres:16-alpine
@@ -18,13 +25,19 @@ jobs:
         ports:
           - 5432:5432
         options: >-
-          --health-cmd="pg_isready -U postgres"
+          --health-cmd="pg_isready -U postgres -d eloria"
           --health-interval=5s
           --health-timeout=5s
-          --health-retries=10
+          --health-retries=20
+
     env:
+      NODE_ENV: test
+      CI: "true"
       DATABASE_URL: postgresql://postgres:postgres@localhost:5432/eloria
       DIRECT_URL: postgresql://postgres:postgres@localhost:5432/eloria
+      DATABASE_SSL_MODE: disable
+      DATABASE_POOL_MAX: "5"
+      NEXT_PUBLIC_SITE_URL: http://127.0.0.1:3000
       ELORIA_ADMIN_USERNAME: admin
       ELORIA_ADMIN_PASSWORD: CI-only-password-1234
       ELORIA_ADMIN_SESSION_VERSION: "1"
@@ -32,30 +45,81 @@ jobs:
       CRON_SECRET: ci-cron-secret-ci-cron-secret-ci-cron-secret-ci
       ELORIA_TRACKING_SECRET: ci-tracking-secret-ci-tracking-secret-ci
       ELORIA_PAYMENT_RECEIPT_SECRET: ci-receipt-secret-ci-receipt-secret-ci
-      ELORIA_TRUST_PROXY: "true"
-      DATABASE_SSL_MODE: disable
+      ELORIA_TRUST_PROXY: "false"
+      ELORIA_RATE_LIMIT_FAILURE_MODE: closed
       NEXT_SERVER_ACTIONS_ENCRYPTION_KEY: AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=
-      ELORIA_DEPLOYMENT_ID: ci-build
-      NEXT_PUBLIC_SITE_URL: https://example.com
+      ELORIA_DEPLOYMENT_ID: ci-${{ github.run_id }}
       SUPABASE_URL: https://example.supabase.co
       SUPABASE_SERVICE_ROLE_KEY: ci-service-role-key-ci-service-role-key-ci-service-role-key
       ELORIA_STORAGE_BUCKET: product-images
+
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: npm
-      - run: npm ci
-      - run: npx prisma generate
-      - run: npx prisma db push
-      - run: npx prisma migrate resolve --applied 00000000000000_existing_schema_baseline
-      - run: npx prisma migrate deploy
-      - run: npx prisma migrate status
-      - run: npm run lint
-      - run: npm run build
-      - run: npm run audit:security
-      - run: npm run audit:dependencies
-      - run: npm run test:tokens
-      - run: npm run check:env
-      - run: docker build --target runner -t eloria-ci .
+
+      - name: Install dependencies from lockfile
+        run: npm ci --no-audit --no-fund
+
+      - name: Generate Prisma client
+        run: npx prisma generate
+
+      - name: Apply migrations to a fresh database
+        run: npx prisma migrate deploy
+
+      - name: Verify migration history
+        run: npx prisma migrate status
+
+      - name: Seed deterministic test data
+        run: npm run db:seed
+
+      - name: Type-check
+        run: npm run typecheck
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Test signed tokens
+        run: npm run test:tokens
+
+      - name: Test pricing engine
+        run: npm run test:pricing
+
+      - name: Test commerce database invariants
+        run: npm run test:commerce
+
+      - name: Re-seed storefront fixtures
+        run: npm run db:seed
+
+      - name: Validate production environment contract
+        run: npm run check:env
+
+      - name: Security audit
+        run: npm run audit:security
+
+      - name: Build production application
+        env:
+          NODE_ENV: production
+        run: npm run build
+
+      - name: Install Playwright Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Run browser tests
+        run: npm run test:e2e
+
+      - name: Build production container
+        run: docker build --target runner -t eloria-ci:${{ github.sha }} .
+
+      - name: Upload Playwright report
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 14

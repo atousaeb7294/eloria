@@ -1001,20 +1001,7 @@ export function CartPageClient({
           detail.message ?? null,
         );
 
-        if (
-          detail.status ===
-          "success"
-        ) {
-          scheduleQuote(
-            storedItems,
-            true,
-            {
-              background: true,
-              notifyOnPriceChange:
-                true,
-            },
-          );
-        }
+        // Quote صفحه مستقل از بررسی دوره‌ای نرخ است؛ درخواست تکراری اجرا نمی‌شود.
       };
 
     window.addEventListener(
@@ -1028,10 +1015,7 @@ export function CartPageClient({
         handleLivePriceEvent,
       );
     };
-  }, [
-    scheduleQuote,
-    storedItems,
-  ]);
+  }, []);
 
   useEffect(() => {
     return () => {

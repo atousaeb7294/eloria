@@ -1,0 +1,4 @@
+ELORIA COMPLETE REPAIR V2
+2026-08-06
+- Fixes CJS/top-level-await database preflight failure.
+- Makes silver commodity API failure non-fatal; gold sync continues and existing silver rate is preserved.

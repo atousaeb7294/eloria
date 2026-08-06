@@ -20,7 +20,8 @@ import {
 } from "@/lib/product-pricing";
 
 import {
-  prisma,
+  checkoutPrisma,
+  withCheckoutDatabaseRetry,
 } from "@/lib/prisma";
 
 import { syncProductInventory } from "@/lib/inventory";
@@ -35,7 +36,135 @@ const INVENTORY_RESERVATION_MINUTES =
   15;
 
 const TRANSACTION_RETRY_COUNT =
-  3;
+  1;
+
+const CHECKOUT_TRANSACTION_MAX_WAIT_MS =
+  3_000;
+
+const CHECKOUT_TRANSACTION_TIMEOUT_MS =
+  10_000;
+
+const CONCURRENT_ORDER_LOOKUP_ATTEMPTS =
+  2;
+
+const CONCURRENT_ORDER_LOOKUP_DELAY_MS =
+  150;
+
+function wait(
+  milliseconds: number,
+): Promise<void> {
+  return new Promise(
+    (resolve) => {
+      setTimeout(
+        resolve,
+        milliseconds,
+      );
+    },
+  );
+}
+
+function getDatabaseErrorText(
+  error: unknown,
+): string {
+  const parts: string[] = [];
+
+  let current: unknown =
+    error;
+
+  for (
+    let depth = 0;
+    depth < 4;
+    depth += 1
+  ) {
+    if (
+      typeof current !== "object" ||
+      current === null
+    ) {
+      if (current !== undefined) {
+        parts.push(
+          String(current),
+        );
+      }
+
+      break;
+    }
+
+    const candidate =
+      current as {
+        code?: unknown;
+        message?: unknown;
+        cause?: unknown;
+      };
+
+    if (
+      typeof candidate.code ===
+      "string"
+    ) {
+      parts.push(
+        candidate.code,
+      );
+    }
+
+    if (
+      typeof candidate.message ===
+      "string"
+    ) {
+      parts.push(
+        candidate.message,
+      );
+    }
+
+    if (!candidate.cause) {
+      break;
+    }
+
+    current =
+      candidate.cause;
+  }
+
+  return parts
+    .join(" ")
+    .toLowerCase();
+}
+
+function isTransientDatabaseError(
+  error: unknown,
+): boolean {
+  const text =
+    getDatabaseErrorText(
+      error,
+    );
+
+  return (
+    text.includes(
+      "econnreset",
+    ) ||
+    text.includes(
+      "etimedout",
+    ) ||
+    text.includes(
+      "connection terminated unexpectedly",
+    ) ||
+    text.includes(
+      "connection terminated due to connection timeout",
+    ) ||
+    text.includes(
+      "unable to start a transaction in the given time",
+    ) ||
+    text.includes(
+      "p2028",
+    ) ||
+    text.includes(
+      "57014",
+    ) ||
+    text.includes(
+      "canceling statement due to statement timeout",
+    ) ||
+    text.includes(
+      "p2010",
+    )
+  );
+}
 
 export type CheckoutOrderItemInput = {
   slug: string;
@@ -138,6 +267,7 @@ export type CheckoutOrderErrorCode =
   | "INSUFFICIENT_STOCK"
   | "PENDING_ORDER_LIMIT"
   | "PRICE_EXPIRED"
+  | "CHECKOUT_BUSY"
   | "PRICING_FAILED"
   | "TRANSACTION_FAILED";
 
@@ -739,19 +869,34 @@ async function mapWithConcurrency<
   return output;
 }
 
+async function loadCheckoutPriceWithRetry(
+  item:
+    CheckoutOrderItemInput,
+): Promise<ProductPriceResult> {
+  /*
+   * ensureDatabaseReady خودش اتصال تازه را با Retry کوتاه بررسی می‌کند و
+   * موتور قیمت‌گذاری نیز Queryهای موقتاً ناموفق را Retry می‌کند. Retry چندلایه
+   * قبلی باعث انتظارهای ۲۰ تا ۳۰ ثانیه‌ای در اتصال سرد می‌شد.
+   */
+  
+  return getProductLivePrice({
+    slug:
+      item.slug,
+
+    variantId:
+      item.variantId,
+  });
+}
+
 async function priceCheckoutItem(
   item:
     CheckoutOrderItemInput,
 ): Promise<PricedCheckoutItem> {
   try {
     const result =
-      await getProductLivePrice({
-        slug:
-          item.slug,
-
-        variantId:
-          item.variantId,
-      });
+      await loadCheckoutPriceWithRetry(
+        item,
+      );
 
     if (
       !result.product
@@ -865,8 +1010,9 @@ async function findExistingOrder(
   idempotencyKey:
     string,
 ): Promise<CheckoutOrderResult | null> {
+  
   const existingOrder =
-    await prisma.order.findUnique({
+    await withCheckoutDatabaseRetry(() => checkoutPrisma.order.findUnique({
       where: {
         idempotencyKey,
       },
@@ -905,7 +1051,7 @@ async function findExistingOrder(
           },
         },
       },
-    });
+    }), { attempts: 2, delayMilliseconds: 200 });
 
   if (
     !existingOrder
@@ -917,6 +1063,36 @@ async function findExistingOrder(
     existingOrder,
     true,
   );
+}
+
+async function waitForExistingOrder(
+  idempotencyKey: string,
+): Promise<CheckoutOrderResult | null> {
+  for (
+    let attempt = 1;
+    attempt <= CONCURRENT_ORDER_LOOKUP_ATTEMPTS;
+    attempt += 1
+  ) {
+    const existingOrder =
+      await findExistingOrder(
+        idempotencyKey,
+      );
+
+    if (existingOrder) {
+      return existingOrder;
+    }
+
+    if (
+      attempt <
+      CONCURRENT_ORDER_LOOKUP_ATTEMPTS
+    ) {
+      await wait(
+        CONCURRENT_ORDER_LOOKUP_DELAY_MS,
+      );
+    }
+  }
+
+  return null;
 }
 
 export async function createCheckoutOrder({
@@ -1001,7 +1177,7 @@ export async function createCheckoutOrder({
   const pricedItems =
     await mapWithConcurrency(
       normalizedItems,
-      2,
+      1,
       priceCheckoutItem,
     );
 
@@ -1191,8 +1367,9 @@ export async function createCheckoutOrder({
       1
   ) {
     try {
+      
       const transactionResult =
-        await prisma.$transaction(
+        await withCheckoutDatabaseRetry(() => checkoutPrisma.$transaction(
           async (
             transaction,
           ) => {
@@ -1251,7 +1428,33 @@ export async function createCheckoutOrder({
               };
             }
 
-            await transaction.$queryRaw`SELECT pg_advisory_xact_lock(hashtext(${normalizedCustomer.mobile}))`;
+            const lockRows =
+              await transaction.$queryRaw<
+                Array<{
+                  lockAcquired:
+                    boolean;
+                }>
+              >`
+                SELECT
+                  pg_try_advisory_xact_lock(
+                    hashtext(
+                      ${normalizedCustomer.mobile}
+                    )
+                  ) AS "lockAcquired"
+              `;
+
+            if (
+              !lockRows[0]
+                ?.lockAcquired
+            ) {
+              throw new CheckoutOrderError(
+                "CHECKOUT_BUSY",
+
+                "یک درخواست ثبت سفارش دیگر در حال پردازش است. چند لحظه بعد دوباره تلاش کنید.",
+
+                409,
+              );
+            }
 
             const activeReservationCount = await transaction.order.count({
               where: {
@@ -1815,12 +2018,12 @@ export async function createCheckoutOrder({
               "Serializable",
 
             maxWait:
-              15_000,
+              CHECKOUT_TRANSACTION_MAX_WAIT_MS,
 
             timeout:
-              45_000,
+              CHECKOUT_TRANSACTION_TIMEOUT_MS,
           },
-        );
+        ), { attempts: 2, delayMilliseconds: 200 });
 
       return serializeOrder(
         transactionResult.order,
@@ -1831,6 +2034,31 @@ export async function createCheckoutOrder({
         error instanceof
         CheckoutOrderError
       ) {
+        if (
+          error.code ===
+          "CHECKOUT_BUSY"
+        ) {
+          const concurrentOrder =
+            await waitForExistingOrder(
+              normalizedIdempotencyKey,
+            );
+
+          if (concurrentOrder) {
+            return concurrentOrder;
+          }
+
+          if (
+            attempt <
+            TRANSACTION_RETRY_COUNT
+          ) {
+            await wait(
+              attempt * 300,
+            );
+
+            continue;
+          }
+        }
+
         throw error;
       }
 
@@ -1844,7 +2072,7 @@ export async function createCheckoutOrder({
         "P2002"
       ) {
         const orderCreatedByConcurrentRequest =
-          await findExistingOrder(
+          await waitForExistingOrder(
             normalizedIdempotencyKey,
           );
 
@@ -1856,11 +2084,22 @@ export async function createCheckoutOrder({
       }
 
       if (
-        prismaErrorCode ===
-          "P2034" &&
+        (
+          prismaErrorCode ===
+            "P2034" ||
+          prismaErrorCode ===
+            "P2028" ||
+          isTransientDatabaseError(
+            error,
+          )
+        ) &&
         attempt <
           TRANSACTION_RETRY_COUNT
       ) {
+        await wait(
+          attempt * 750,
+        );
+
         continue;
       }
 

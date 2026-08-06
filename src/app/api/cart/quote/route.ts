@@ -9,10 +9,6 @@ import {
 } from "@/lib/product-pricing";
 
 import {
-  prisma,
-} from "@/lib/prisma";
-
-import {
   consumeRateLimit,
 } from "@/lib/security/rate-limit";
 
@@ -298,29 +294,7 @@ async function quoteCartItem(
       });
 
     const image =
-      await prisma.productImage.findFirst({
-        where: {
-          productId:
-            result.product.id,
-        },
-
-        orderBy: [
-          {
-            isPrimary:
-              "desc",
-          },
-          {
-            displayOrder:
-              "asc",
-          },
-        ],
-
-        select: {
-          imageUrl: true,
-          altFa: true,
-          altEn: true,
-        },
-      });
+      result.product.primaryImage;
 
     const selectedStock =
       result.variant
@@ -436,7 +410,7 @@ async function quoteCartItem(
           image
             ? {
                 url:
-                  image.imageUrl,
+                  image.url,
 
                 altFa:
                   image.altFa,

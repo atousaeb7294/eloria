@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 type ProductCardLivePriceProps = {
   slug: string;
   locale: string;
+  initialPriceToman?: string | null;
 };
 
 type PriceResponse = {
@@ -25,12 +26,17 @@ function formatPrice(value: string, locale: string) {
 export function ProductCardLivePrice({
   slug,
   locale,
+  initialPriceToman = null,
 }: ProductCardLivePriceProps) {
-  const [price, setPrice] = useState<string | null>(null);
+  const [price, setPrice] = useState<string | null>(initialPriceToman);
   const [failed, setFailed] = useState(false);
   const isPersian = locale === "fa";
 
   useEffect(() => {
+    if (initialPriceToman) {
+      return;
+    }
+
     const controller = new AbortController();
 
     async function loadPrice() {
@@ -39,7 +45,7 @@ export function ProductCardLivePrice({
           `/api/products/${encodeURIComponent(slug)}/price?display=1`,
           {
             signal: controller.signal,
-            cache: "no-store",
+            cache: "default",
           },
         );
 
@@ -67,7 +73,7 @@ export function ProductCardLivePrice({
     void loadPrice();
 
     return () => controller.abort();
-  }, [slug]);
+  }, [initialPriceToman, slug]);
 
   if (failed) {
     return (

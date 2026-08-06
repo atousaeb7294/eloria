@@ -1,36 +1,101 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# ELORIA / الوریا
 
-## Getting Started
+فروشگاه دو‌زبانه جواهرات با هویت بصری الهام‌گرفته از ایران باستان و شاهنامه.
 
-First, run the development server:
+## فناوری
+
+- Next.js 16، React 19 و TypeScript سخت‌گیرانه
+- Tailwind CSS 4 و Base UI
+- next-intl برای فارسی/انگلیسی و RTL/LTR
+- Prisma 7 با PostgreSQL/Supabase
+- Playwright برای آزمون مرورگر
+
+## شروع توسعه
 
 ```bash
+cp .env.example .env
+npm ci
+npx prisma generate
+npx prisma migrate deploy
+npm run db:seed
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+آدرس پیش‌فرض: `http://localhost:3000/fa`
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## کنترل کیفیت
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npm run typecheck
+npm run lint
+npm run test:tokens
+npm run test:pricing
+npm run test:commerce
+npm run build
+npm run test:e2e
+npm run audit:security
+```
 
-## Learn More
+CI همین زنجیره را روی PostgreSQL کاملاً خالی اجرا می‌کند. استفاده از `prisma db push` در Release و Production ممنوع است.
 
-To learn more about Next.js, take a look at the following resources:
+## دیتابیس
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- `DATABASE_URL`: اتصال Pooler برای Runtime
+- `DIRECT_URL`: اتصال مستقیم برای Migration
+- Migration اولیه واقعی در `prisma/migrations/00000000000000_existing_schema_baseline`
+- Seed قطعی در `prisma/seed.ts`
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+برای دیتابیس موجودی که baseline قبلاً با `db push` ساخته شده، پیش از اولین Deploy فقط یک بار baseline را applied علامت بزنید؛ این کار باید پس از تطبیق Schema و تهیه Backup انجام شود:
 
-## Deploy on Vercel
+```bash
+npx prisma migrate resolve --applied 00000000000000_existing_schema_baseline
+npx prisma migrate deploy
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+برای دیتابیس تازه فقط `npx prisma migrate deploy` اجرا می‌شود.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Cron
+
+Cron داخل Process وب اجرا نمی‌شود. Scheduler خارجی باید با هدر Bearer مسیرهای زیر را فراخوانی کند:
+
+- هر ۱ دقیقه: `/api/cron/expired-orders`
+- هر ۱۰ دقیقه: `/api/cron/metal-prices`
+
+نمونه:
+
+```bash
+node scripts/run-cron-once.mjs expired-orders
+node scripts/run-cron-once.mjs metal-prices
+```
+
+## Health Check
+
+- Liveness: `/api/health?mode=live`
+- Readiness: `/api/health?mode=ready`
+
+Readiness فقط زمانی ۲۰۰ برمی‌گرداند که دیتابیس و متغیرهای ضروری آماده باشند.
+
+## امنیت عملیاتی
+
+- در Production، Rate Limiter به‌طور پیش‌فرض fail-closed است.
+- برای Cloudflare مقدار `ELORIA_PROXY_PROVIDER=cloudflare` تنظیم شود.
+- Origin سرور باید در سطح شبکه فقط از CDN/Proxy مورد اعتماد قابل دسترسی باشد.
+- آپلود تصویر با Magic Bytes، ابعاد، تعداد پیکسل و حذف متادیتا اعتبارسنجی می‌شود.
+- Secretها هرگز وارد Git نمی‌شوند.
+
+## ساختار مرجع
+
+```text
+src/                 کد اصلی برنامه
+prisma/              Schema، Migration و Seed
+scripts/             ابزارهای عملیاتی و آزمون‌های مستقل
+tests/               آزمون‌های Playwright
+messages/            ترجمه‌های فارسی و انگلیسی
+.github/workflows/    Release Gate
+```
+
+پوشه‌های Backup، Test Result و کپی‌های ابزارها Source of Truth نیستند و نباید وارد TypeScript، ESLint، Docker یا Git شوند.
+
+## انتشار
+
+راهنمای مرحله‌به‌مرحله در `docs/PRODUCTION_RUNBOOK_FA.md` قرار دارد. انتشار فقط از Artifact همان اجرای سبز CI انجام شود.

@@ -29,13 +29,13 @@ async function main() {
         closedMarketPricingEnabled:
           true,
 
-        // حداکثر عمر نرخ قابل‌استفاده در این حالت: ۱۲ ساعت
+        // حداکثر عمر نرخ قابل‌استفاده در این حالت: ۱۰ روز
         closedMarketMaxAgeMinutes:
-          720,
+          14400,
 
-        // حاشیه امنیت نرخ فلز: ۲ درصد
+        // حداقل حاشیه امنیت طلا: ۳ درصد؛ مقدار نهایی پلکانی است
         closedMarketSafetyMarginPercent:
-          "2",
+          "3",
 
         // گردکردن قیمت نهایی به نزدیک‌ترین هزار تومان
         roundingStep: 1000,
@@ -62,10 +62,10 @@ async function main() {
           true,
 
         closedMarketMaxAgeMinutes:
-          720,
+          14400,
 
         closedMarketSafetyMarginPercent:
-          "2",
+          "3",
 
         roundingStep: 1000,
 
@@ -100,10 +100,10 @@ async function main() {
           true,
 
         closedMarketMaxAgeMinutes:
-          720,
+          14400,
 
         closedMarketSafetyMarginPercent:
-          "2",
+          "5",
 
         roundingStep: 1000,
 
@@ -129,10 +129,10 @@ async function main() {
           true,
 
         closedMarketMaxAgeMinutes:
-          720,
+          14400,
 
         closedMarketSafetyMarginPercent:
-          "2",
+          "5",
 
         roundingStep: 1000,
 

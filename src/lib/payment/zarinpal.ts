@@ -1,5 +1,22 @@
 const DEFAULT_API_BASE = "https://payment.zarinpal.com/pg/v4/payment";
 const DEFAULT_START_BASE = "https://payment.zarinpal.com/pg/StartPay";
+const DEFAULT_REQUEST_TIMEOUT_MS = 5_000;
+
+function requestTimeoutMilliseconds(): number {
+  const raw = Number.parseInt(
+    process.env.ZARINPAL_REQUEST_TIMEOUT_MS?.trim() ?? "",
+    10,
+  );
+
+  if (!Number.isFinite(raw)) {
+    return DEFAULT_REQUEST_TIMEOUT_MS;
+  }
+
+  return Math.min(
+    Math.max(raw, 3_000),
+    30_000,
+  );
+}
 
 export type ZarinpalRequestResult = { authority: string; code: number; message: string; fee?: number; feeType?: string };
 export type ZarinpalVerifyResult = { code: number; message: string; referenceId?: string; cardPan?: string; cardHash?: string; fee?: number; feeType?: string };
@@ -23,19 +40,43 @@ function amountRial(toman: string): number {
   return Number(value);
 }
 async function post(path: "request.json" | "verify.json", body: Record<string, unknown>) {
-  const response = await fetch(`${config().apiBase}/${path}`, {
-    method: "POST",
-    headers: { Accept: "application/json", "Content-Type": "application/json" },
-    body: JSON.stringify(body),
-    cache: "no-store",
-  });
-  const payload = await response.json().catch(() => null) as { data?: Record<string, unknown>; errors?: Record<string, unknown> } | null;
-  if (!response.ok || !payload?.data) {
-    const errorCode = Number(payload?.errors?.code ?? response.status);
-    const errorMessage = String(payload?.errors?.message ?? "پاسخ معتبر از درگاه دریافت نشد.");
-    throw new ZarinpalError(errorMessage, errorCode);
+  const controller = new AbortController();
+  const timeout = setTimeout(
+    () => controller.abort(),
+    requestTimeoutMilliseconds(),
+  );
+
+  try {
+    const response = await fetch(`${config().apiBase}/${path}`, {
+      method: "POST",
+      headers: { Accept: "application/json", "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+      cache: "no-store",
+      signal: controller.signal,
+    });
+
+    const payload = await response.json().catch(() => null) as { data?: Record<string, unknown>; errors?: Record<string, unknown> } | null;
+    if (!response.ok || !payload?.data) {
+      const errorCode = Number(payload?.errors?.code ?? response.status);
+      const errorMessage = String(payload?.errors?.message ?? "پاسخ معتبر از درگاه دریافت نشد.");
+      throw new ZarinpalError(errorMessage, errorCode);
+    }
+
+    return payload.data;
+  } catch (error) {
+    if (
+      error instanceof Error &&
+      error.name === "AbortError"
+    ) {
+      throw new ZarinpalError(
+        "پاسخ درگاه پرداخت بیش از حد طول کشید. سفارش ثبت شد؛ چند لحظه بعد دوباره پرداخت را آغاز کنید.",
+      );
+    }
+
+    throw error;
+  } finally {
+    clearTimeout(timeout);
   }
-  return payload.data;
 }
 
 export async function requestZarinpalPayment(input: { amountToman: string; description: string; callbackUrl: string; mobile?: string | null; email?: string | null }): Promise<ZarinpalRequestResult> {

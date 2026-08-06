@@ -17,81 +17,91 @@ type PowderStyle = CSSProperties & {
   "--blur": string;
 };
 
-const goldPowder: PowderStyle[] = Array.from(
-  { length: 110 },
-  (_, index) => {
-    const left = (index * 47 + (index % 7) * 11) % 100;
-    const top = (index * 67 + (index % 5) * 13) % 100;
+// جلوه ذرات حفظ شده، اما تعداد آن برای روان‌ترشدن رابط کاهش یافته است.
+const goldPowder: PowderStyle[] = Array.from({ length: 58 }, (_, index) => {
+  const left = (index * 47 + (index % 7) * 11) % 100;
+  const top = (index * 67 + (index % 5) * 13) % 100;
+  const width = 1.5 + ((index * 17) % 7);
+  const height = 0.8 + ((index * 11) % 4);
+  const opacity = 0.13 + (((index * 19) % 38) / 100);
+  const duration = 11 + ((index * 13) % 16);
+  const delay = -((index * 7) % 18);
+  const rotation = (index * 29) % 180;
+  const driftX = -27 + ((index * 23) % 72);
+  const driftY = -44 + ((index * 31) % 58);
+  const blur = index % 6 === 0 ? "0.9px" : index % 4 === 0 ? "0.35px" : "0px";
 
-    const width = 1.5 + ((index * 17) % 7);
-    const height = 0.8 + ((index * 11) % 4);
-
-    const opacity =
-      0.14 + (((index * 19) % 42) / 100);
-
-    const duration = 9 + ((index * 13) % 15);
-    const delay = -((index * 7) % 18);
-
-    const rotation = (index * 29) % 180;
-    const driftX = -30 + ((index * 23) % 85);
-    const driftY = -52 + ((index * 31) % 70);
-
-    const blur =
-      index % 5 === 0
-        ? "1.1px"
-        : index % 3 === 0
-          ? "0.45px"
-          : "0px";
-
-    return {
-      "--left": `${left}%`,
-      "--top": `${top}%`,
-      "--width": `${width}px`,
-      "--height": `${height}px`,
-      "--opacity": `${opacity}`,
-      "--duration": `${duration}s`,
-      "--delay": `${delay}s`,
-      "--rotation": `${rotation}deg`,
-      "--drift-x": `${driftX}px`,
-      "--drift-y": `${driftY}px`,
-      "--blur": blur,
-    };
-  },
-);
+  return {
+    "--left": `${left}%`,
+    "--top": `${top}%`,
+    "--width": `${width}px`,
+    "--height": `${height}px`,
+    "--opacity": `${opacity}`,
+    "--duration": `${duration}s`,
+    "--delay": `${delay}s`,
+    "--rotation": `${rotation}deg`,
+    "--drift-x": `${driftX}px`,
+    "--drift-y": `${driftY}px`,
+    "--blur": blur,
+  };
+});
 
 export function AmbientEffects() {
   const cursorGlowRef = useRef<HTMLDivElement>(null);
+  const frameRef = useRef<number | null>(null);
+  const targetRef = useRef({ x: 0, y: 0 });
+  const currentRef = useRef({ x: 0, y: 0 });
 
   useEffect(() => {
     const cursorGlow = cursorGlowRef.current;
-
-    if (!cursorGlow) {
-      return;
-    }
+    if (!cursorGlow) return;
 
     const finePointer = window.matchMedia("(pointer: fine)");
-    const reducedMotion = window.matchMedia(
-      "(prefers-reduced-motion: reduce)",
-    );
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
 
     if (!finePointer.matches || reducedMotion.matches) {
       cursorGlow.style.display = "none";
       return;
     }
 
-    let targetX = window.innerWidth / 2;
-    let targetY = window.innerHeight / 2;
+    const startX = window.innerWidth / 2;
+    const startY = window.innerHeight / 2;
+    targetRef.current = { x: startX, y: startY };
+    currentRef.current = { x: startX, y: startY };
 
-    let currentX = targetX;
-    let currentY = targetY;
+    const paint = () => {
+      const target = targetRef.current;
+      const current = currentRef.current;
+      const dx = target.x - current.x;
+      const dy = target.y - current.y;
 
-    let animationFrame = 0;
+      current.x += dx * 0.16;
+      current.y += dy * 0.16;
+
+      cursorGlow.style.transform =
+        `translate3d(${current.x}px, ${current.y}px, 0) translate(-50%, -50%)`;
+
+      if (Math.abs(dx) > 0.35 || Math.abs(dy) > 0.35) {
+        frameRef.current = window.requestAnimationFrame(paint);
+      } else {
+        current.x = target.x;
+        current.y = target.y;
+        cursorGlow.style.transform =
+          `translate3d(${target.x}px, ${target.y}px, 0) translate(-50%, -50%)`;
+        frameRef.current = null;
+      }
+    };
+
+    const requestPaint = () => {
+      if (frameRef.current === null) {
+        frameRef.current = window.requestAnimationFrame(paint);
+      }
+    };
 
     const handlePointerMove = (event: PointerEvent) => {
-      targetX = event.clientX;
-      targetY = event.clientY;
-
+      targetRef.current = { x: event.clientX, y: event.clientY };
       cursorGlow.style.opacity = "1";
+      requestPaint();
     };
 
     const handlePointerLeave = () => {
@@ -102,77 +112,29 @@ export function AmbientEffects() {
       cursorGlow.style.opacity = "1";
     };
 
-    const animate = () => {
-      currentX += (targetX - currentX) * 0.08;
-      currentY += (targetY - currentY) * 0.08;
-
-      cursorGlow.style.transform = `
-        translate3d(${currentX}px, ${currentY}px, 0)
-        translate(-50%, -50%)
-      `;
-
-      animationFrame = window.requestAnimationFrame(animate);
-    };
-
-    window.addEventListener(
-      "pointermove",
-      handlePointerMove,
-      {
-        passive: true,
-      },
-    );
-
-    document.documentElement.addEventListener(
-      "mouseleave",
-      handlePointerLeave,
-    );
-
-    document.documentElement.addEventListener(
-      "mouseenter",
-      handlePointerEnter,
-    );
-
-    animate();
+    window.addEventListener("pointermove", handlePointerMove, { passive: true });
+    document.documentElement.addEventListener("mouseleave", handlePointerLeave);
+    document.documentElement.addEventListener("mouseenter", handlePointerEnter);
 
     return () => {
-      window.cancelAnimationFrame(animationFrame);
-
-      window.removeEventListener(
-        "pointermove",
-        handlePointerMove,
-      );
-
-      document.documentElement.removeEventListener(
-        "mouseleave",
-        handlePointerLeave,
-      );
-
-      document.documentElement.removeEventListener(
-        "mouseenter",
-        handlePointerEnter,
-      );
+      if (frameRef.current !== null) {
+        window.cancelAnimationFrame(frameRef.current);
+      }
+      window.removeEventListener("pointermove", handlePointerMove);
+      document.documentElement.removeEventListener("mouseleave", handlePointerLeave);
+      document.documentElement.removeEventListener("mouseenter", handlePointerEnter);
     };
   }, []);
 
   return (
-    <div
-      aria-hidden="true"
-      className="ambient-effects"
-    >
+    <div aria-hidden="true" className="ambient-effects">
       <div className="gold-powder-field">
         {goldPowder.map((style, index) => (
-          <span
-            key={index}
-            className="gold-powder-grain"
-            style={style}
-          />
+          <span key={index} className="gold-powder-grain" style={style} />
         ))}
       </div>
 
-      <div
-        ref={cursorGlowRef}
-        className="cursor-glow"
-      />
+      <div ref={cursorGlowRef} className="cursor-glow" />
 
       <style jsx>{`
         .ambient-effects {
@@ -181,6 +143,7 @@ export function AmbientEffects() {
           z-index: 6;
           overflow: hidden;
           pointer-events: none;
+          contain: layout paint style;
         }
 
         .cursor-glow {
@@ -192,10 +155,9 @@ export function AmbientEffects() {
           border-radius: 9999px;
           opacity: 0;
           pointer-events: none;
-          will-change: transform;
-          transition: opacity 450ms ease;
+          will-change: transform, opacity;
+          transition: opacity 360ms ease;
           mix-blend-mode: screen;
-
           background:
             radial-gradient(
               circle at center,
@@ -205,7 +167,6 @@ export function AmbientEffects() {
               rgba(5, 64, 44, 0.035) 58%,
               transparent 74%
             );
-
           filter: blur(12px);
         }
 
@@ -213,7 +174,6 @@ export function AmbientEffects() {
           position: absolute;
           inset: 0;
           overflow: hidden;
-
           -webkit-mask-image:
             radial-gradient(
               ellipse at 50% 59%,
@@ -221,7 +181,6 @@ export function AmbientEffects() {
               rgba(0, 0, 0, 0.52) 35%,
               black 72%
             );
-
           mask-image:
             radial-gradient(
               ellipse at 50% 59%,
@@ -235,18 +194,12 @@ export function AmbientEffects() {
           position: absolute;
           left: var(--left);
           top: var(--top);
-
           width: var(--width);
           height: var(--height);
-
-          border-radius:
-            58% 42% 67% 33% /
-            38% 61% 39% 62%;
-
+          border-radius: 58% 42% 67% 33% / 38% 61% 39% 62%;
           opacity: var(--opacity);
           filter: blur(var(--blur));
           will-change: transform, opacity;
-
           background:
             linear-gradient(
               115deg,
@@ -255,11 +208,9 @@ export function AmbientEffects() {
               rgba(196, 143, 45, 0.76) 71%,
               rgba(255, 229, 153, 0.9) 100%
             );
-
           box-shadow:
             0 0 3px rgba(248, 218, 143, 0.55),
             0 0 8px rgba(207, 158, 57, 0.2);
-
           animation:
             powder-float
             var(--duration)
@@ -269,64 +220,33 @@ export function AmbientEffects() {
             alternate;
         }
 
-        .gold-powder-grain::after {
-          content: "";
-          position: absolute;
-          left: -80%;
-          top: 32%;
-
-          width: 260%;
-          height: 38%;
-
-          border-radius: 999px;
-
-          background:
-            linear-gradient(
-              90deg,
-              transparent,
-              rgba(232, 194, 105, 0.24),
-              rgba(255, 234, 174, 0.08),
-              transparent
-            );
-
-          filter: blur(1.5px);
-          opacity: 0.7;
-        }
-
         @keyframes powder-float {
           0% {
             transform:
               translate3d(0, 0, 0)
               rotate(var(--rotation))
-              scale(0.85);
-
-            opacity: calc(var(--opacity) * 0.62);
+              scale(0.86);
+            opacity: calc(var(--opacity) * 0.64);
           }
 
-          45% {
+          48% {
             transform:
-              translate3d(8px, -13px, 0)
-              rotate(calc(var(--rotation) + 8deg))
-              scale(1.08);
-
+              translate3d(7px, -12px, 0)
+              rotate(calc(var(--rotation) + 7deg))
+              scale(1.06);
             opacity: var(--opacity);
           }
 
           100% {
             transform:
-              translate3d(
-                var(--drift-x),
-                var(--drift-y),
-                0
-              )
-              rotate(calc(var(--rotation) + 19deg))
-              scale(0.92);
-
-            opacity: calc(var(--opacity) * 0.74);
+              translate3d(var(--drift-x), var(--drift-y), 0)
+              rotate(calc(var(--rotation) + 15deg))
+              scale(0.96);
+            opacity: calc(var(--opacity) * 0.78);
           }
         }
 
-        @media (max-width: 768px) {
+        @media (max-width: 768px), (update: slow) {
           .cursor-glow {
             display: none;
           }

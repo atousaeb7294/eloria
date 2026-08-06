@@ -4,236 +4,181 @@ import {
   getMetalRateSaleDecision,
 } from "../src/lib/metal-rate-sale-policy";
 
+function decide({
+  material,
+  ageHours,
+  configuredMinimumPercent,
+  maxAgeMinutes = 14400,
+}: {
+  material: "GOLD" | "SILVER";
+  ageHours: number;
+  configuredMinimumPercent: string;
+  maxAgeMinutes?: number;
+}) {
+  return getMetalRateSaleDecision({
+    material,
+    referencePricePerGramToman: "100000",
+    freshness: {
+      ageSeconds: ageHours * 60 * 60,
+      isStale: true,
+      reason: "STALE",
+    },
+    closedMarketPricingEnabled: true,
+    closedMarketMaxAgeMinutes: maxAgeMinutes,
+    closedMarketSafetyMarginPercent: configuredMinimumPercent,
+  });
+}
+
 const liveDecision =
   getMetalRateSaleDecision({
-    referencePricePerGramToman:
-      "18209300",
-
+    material: "GOLD",
+    referencePricePerGramToman: "18209300",
     freshness: {
-      ageSeconds:
-        5 * 60,
-
-      isStale:
-        false,
-
-      reason:
-        "FRESH",
+      ageSeconds: 5 * 60,
+      isStale: false,
+      reason: "FRESH",
     },
-
-    closedMarketPricingEnabled:
-      true,
-
-    closedMarketMaxAgeMinutes:
-      720,
-
-    closedMarketSafetyMarginPercent:
-      "2",
+    closedMarketPricingEnabled: true,
+    closedMarketMaxAgeMinutes: 14400,
+    closedMarketSafetyMarginPercent: "3",
   });
 
-assert.equal(
-  liveDecision.mode,
-  "LIVE",
-);
+assert.equal(liveDecision.mode, "LIVE");
+assert.equal(liveDecision.isUsableForSale, true);
+assert.equal(liveDecision.effectivePricePerGramToman, "18209300");
+assert.equal(liveDecision.appliedSafetyMarginPercent, "0");
 
-assert.equal(
-  liveDecision.isUsableForSale,
-  true,
-);
+const gold24 = decide({
+  material: "GOLD",
+  ageHours: 12,
+  configuredMinimumPercent: "3",
+});
+assert.equal(gold24.appliedSafetyMarginPercent, "3");
+assert.equal(gold24.effectivePricePerGramToman, "103000");
 
-assert.equal(
-  liveDecision.effectivePricePerGramToman,
-  "18209300",
-);
+const gold48 = decide({
+  material: "GOLD",
+  ageHours: 30,
+  configuredMinimumPercent: "3",
+});
+assert.equal(gold48.appliedSafetyMarginPercent, "5");
+assert.equal(gold48.effectivePricePerGramToman, "105000");
 
-assert.equal(
-  liveDecision.safetyMarginAmountToman,
-  "0",
-);
+const gold72 = decide({
+  material: "GOLD",
+  ageHours: 60,
+  configuredMinimumPercent: "3",
+});
+assert.equal(gold72.appliedSafetyMarginPercent, "8");
+assert.equal(gold72.effectivePricePerGramToman, "108000");
 
-const closedMarketDecision =
-  getMetalRateSaleDecision({
-    referencePricePerGramToman:
-      "18209300",
+const gold96 = decide({
+  material: "GOLD",
+  ageHours: 80,
+  configuredMinimumPercent: "3",
+});
+assert.equal(gold96.appliedSafetyMarginPercent, "12");
+assert.equal(gold96.effectivePricePerGramToman, "112000");
 
-    freshness: {
-      ageSeconds:
-        6 * 60 * 60,
+const silver24 = decide({
+  material: "SILVER",
+  ageHours: 12,
+  configuredMinimumPercent: "5",
+});
+assert.equal(silver24.appliedSafetyMarginPercent, "5");
+assert.equal(silver24.effectivePricePerGramToman, "105000");
 
-      isStale:
-        true,
+const silver48 = decide({
+  material: "SILVER",
+  ageHours: 30,
+  configuredMinimumPercent: "5",
+});
+assert.equal(silver48.appliedSafetyMarginPercent, "8");
+assert.equal(silver48.effectivePricePerGramToman, "108000");
 
-      reason:
-        "STALE",
-    },
+const silver72 = decide({
+  material: "SILVER",
+  ageHours: 60,
+  configuredMinimumPercent: "5",
+});
+assert.equal(silver72.appliedSafetyMarginPercent, "12");
+assert.equal(silver72.effectivePricePerGramToman, "112000");
 
-    closedMarketPricingEnabled:
-      true,
+const silver96 = decide({
+  material: "SILVER",
+  ageHours: 80,
+  configuredMinimumPercent: "5",
+});
+assert.equal(silver96.appliedSafetyMarginPercent, "18");
+assert.equal(silver96.effectivePricePerGramToman, "118000");
 
-    closedMarketMaxAgeMinutes:
-      720,
+const goldTenDays = decide({
+  material: "GOLD",
+  ageHours: 175,
+  configuredMinimumPercent: "3",
+});
+assert.equal(goldTenDays.appliedSafetyMarginPercent, "15");
+assert.equal(goldTenDays.effectivePricePerGramToman, "115000");
 
-    closedMarketSafetyMarginPercent:
-      "2",
-  });
+const silverTenDays = decide({
+  material: "SILVER",
+  ageHours: 175,
+  configuredMinimumPercent: "5",
+});
+assert.equal(silverTenDays.appliedSafetyMarginPercent, "25");
+assert.equal(silverTenDays.effectivePricePerGramToman, "125000");
 
-assert.equal(
-  closedMarketDecision.mode,
-  "CLOSED_MARKET",
-);
+const configuredMinimumWins = decide({
+  material: "GOLD",
+  ageHours: 12,
+  configuredMinimumPercent: "6.5",
+});
+assert.equal(configuredMinimumWins.appliedSafetyMarginPercent, "6.5");
+assert.equal(configuredMinimumWins.effectivePricePerGramToman, "106500");
 
-assert.equal(
-  closedMarketDecision.isUsableForSale,
-  true,
-);
-
-assert.equal(
-  closedMarketDecision.originalPricePerGramToman,
-  "18209300",
-);
-
-assert.equal(
-  closedMarketDecision.safetyMarginAmountToman,
-  "364186",
-);
-
-assert.equal(
-  closedMarketDecision.effectivePricePerGramToman,
-  "18573486",
-);
-
-assert.equal(
-  closedMarketDecision.appliedSafetyMarginPercent,
-  "2",
-);
-
-const tooOldDecision =
-  getMetalRateSaleDecision({
-    referencePricePerGramToman:
-      "18209300",
-
-    freshness: {
-      ageSeconds:
-        13 * 60 * 60,
-
-      isStale:
-        true,
-
-      reason:
-        "STALE",
-    },
-
-    closedMarketPricingEnabled:
-      true,
-
-    closedMarketMaxAgeMinutes:
-      720,
-
-    closedMarketSafetyMarginPercent:
-      "2",
-  });
-
-assert.equal(
-  tooOldDecision.mode,
-  "UNAVAILABLE",
-);
-
-assert.equal(
-  tooOldDecision.reason,
-  "RATE_TOO_OLD",
-);
-
-assert.equal(
-  tooOldDecision.isUsableForSale,
-  false,
-);
-
-assert.equal(
-  tooOldDecision.effectivePricePerGramToman,
-  null,
-);
+const tooOldDecision = decide({
+  material: "GOLD",
+  ageHours: 241,
+  configuredMinimumPercent: "3",
+});
+assert.equal(tooOldDecision.mode, "UNAVAILABLE");
+assert.equal(tooOldDecision.reason, "RATE_TOO_OLD");
+assert.equal(tooOldDecision.isUsableForSale, false);
+assert.equal(tooOldDecision.effectivePricePerGramToman, null);
 
 const invalidTimestampDecision =
   getMetalRateSaleDecision({
-    referencePricePerGramToman:
-      "18209300",
-
+    material: "GOLD",
+    referencePricePerGramToman: "18209300",
     freshness: {
-      ageSeconds:
-        null,
-
-      isStale:
-        true,
-
-      reason:
-        "SOURCE_TIME_MISSING",
+      ageSeconds: null,
+      isStale: true,
+      reason: "SOURCE_TIME_MISSING",
     },
-
-    closedMarketPricingEnabled:
-      true,
-
-    closedMarketMaxAgeMinutes:
-      720,
-
-    closedMarketSafetyMarginPercent:
-      "2",
+    closedMarketPricingEnabled: true,
+    closedMarketMaxAgeMinutes: 14400,
+    closedMarketSafetyMarginPercent: "3",
   });
+assert.equal(invalidTimestampDecision.mode, "UNAVAILABLE");
+assert.equal(invalidTimestampDecision.reason, "SOURCE_TIME_INVALID");
+assert.equal(invalidTimestampDecision.isUsableForSale, false);
 
-assert.equal(
-  invalidTimestampDecision.mode,
-  "UNAVAILABLE",
-);
-
-assert.equal(
-  invalidTimestampDecision.reason,
-  "SOURCE_TIME_INVALID",
-);
-
-assert.equal(
-  invalidTimestampDecision.isUsableForSale,
-  false,
-);
-
-/*
- * بررسی گردکردن رو به بالا:
- * ۲.۵ درصدِ ۱۰۱ تومان برابر ۲.۵۲۵ است
- * و حاشیه امنیت باید ۳ تومان محاسبه شود.
- */
 const roundUpDecision =
   getMetalRateSaleDecision({
-    referencePricePerGramToman:
-      "101",
-
+    material: "GOLD",
+    referencePricePerGramToman: "101",
     freshness: {
-      ageSeconds:
-        60 * 60,
-
-      isStale:
-        true,
-
-      reason:
-        "STALE",
+      ageSeconds: 60 * 60,
+      isStale: true,
+      reason: "STALE",
     },
-
-    closedMarketPricingEnabled:
-      true,
-
-    closedMarketMaxAgeMinutes:
-      720,
-
-    closedMarketSafetyMarginPercent:
-      "2.5",
+    closedMarketPricingEnabled: true,
+    closedMarketMaxAgeMinutes: 14400,
+    closedMarketSafetyMarginPercent: "3",
   });
-
-assert.equal(
-  roundUpDecision.safetyMarginAmountToman,
-  "3",
-);
-
-assert.equal(
-  roundUpDecision.effectivePricePerGramToman,
-  "104",
-);
+assert.equal(roundUpDecision.safetyMarginAmountToman, "4");
+assert.equal(roundUpDecision.effectivePricePerGramToman, "105");
 
 console.log(
-  "PASS: closed-market metal rates use the configured age limit and exact safety margin.",
+  "PASS: closed-market rates use 10-day material-specific safety tiers.",
 );

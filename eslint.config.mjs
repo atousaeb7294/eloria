@@ -2,17 +2,22 @@ import { defineConfig, globalIgnores } from "eslint/config";
 import nextVitals from "eslint-config-next/core-web-vitals";
 import nextTs from "eslint-config-next/typescript";
 
-const eslintConfig = defineConfig([
-  ...nextVitals,
-  ...nextTs,
-  // Override default ignores of eslint-config-next.
+export default defineConfig([
   globalIgnores([
-    // Default ignores of eslint-config-next:
     ".next/**",
     "out/**",
     "build/**",
+    "dist/**",
+    "coverage/**",
+    "playwright-report/**",
+    "test-results/**",
+    ".eloria-backups/**",
+    ".github/.github/**",
+    "docs/archive/**",
+    "src/generated/prisma/**",
     "next-env.d.ts",
+    "**/*.tsbuildinfo",
   ]),
+  ...nextVitals,
+  ...nextTs,
 ]);
-
-export default eslintConfig;

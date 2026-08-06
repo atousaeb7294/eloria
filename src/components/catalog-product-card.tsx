@@ -204,6 +204,7 @@ export function CatalogProductCard({
           <ProductCardLivePrice
             slug={product.slug}
             locale={locale}
+            initialPriceToman={product.displayPriceToman}
           />
         </div>
 
