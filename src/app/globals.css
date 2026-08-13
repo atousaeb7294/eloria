@@ -1,4 +1,4 @@
-﻿@import "@fontsource-variable/vazirmatn";
+@import "@fontsource-variable/vazirmatn";
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
@@ -333,4 +333,3 @@ html[lang="fa"] .font-persian-calligraphy {
   text-rendering: optimizeLegibility;
 }
 /* ELORIA IRAN NASTALIQ SELF HOST END */
-

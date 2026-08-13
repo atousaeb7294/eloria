@@ -1,7 +1,6 @@
 "use client";
 
 import { AnimatePresence, motion } from "motion/react";
-import { EloriaSigilEntryButton } from "@/components/intro/eloria-sigil-entry-button";
 import { FLASH_IN_DURATION_MS, HERO_REVEAL_DURATION_MS, INTRO_VIDEO_ONE_SRC, INTRO_VIDEO_TWO_SRC, type EloriaIntroExperienceProps } from "@/components/intro/eloria-intro-config";
 import type { EloriaIntroController } from "@/components/intro/use-eloria-intro-controller";
 
@@ -522,29 +521,19 @@ export function EloriaIntroView({
           )}
 
         {/* قاب جادویی ورود؛ بدون حلقه یا چرخش دائمی */}
-        <AnimatePresence>
-          {phase === "awaiting-entry" && (
-            <motion.div
-              initial={{
-                opacity: 0,
-              }}
-              animate={{
-                opacity: 1,
-              }}
-              exit={{
-                opacity: 0,
-              }}
-              transition={{
-                duration: 0.32,
-              }}
-            >
-              <EloriaSigilEntryButton
-                isPersian={isPersian}
-                onActivate={handleEnterEloria}
-              />
-            </motion.div>
-          )}
-        </AnimatePresence>
+                {phase === "awaiting-entry" && (
+          <button
+            type="button"
+            data-eloria-video-hotspot="true"
+            onClick={handleEnterEloria}
+            aria-label={isPersian ? "ورود به دنیای الوریا" : "Enter the world of Eloria"}
+            className="absolute left-1/2 bottom-[8%] z-[150] h-[18%] w-[62%] -translate-x-1/2 cursor-pointer border-0 bg-transparent p-0 outline-none"
+          >
+            <span className="sr-only">
+              {isPersian ? "ورود به دنیای الوریا" : "Enter the world of Eloria"}
+            </span>
+          </button>
+        )}
 
         {/* Buffer ویدیوی دوم */}
         <AnimatePresence>
