@@ -1,0 +1,50 @@
+
+export type EloriaIntroExperienceProps = {
+  locale: string;
+};
+
+export type IntroPhase =
+  | "checking"
+  | "video-one"
+  | "awaiting-entry"
+  | "video-two"
+  | "flash-in"
+  | "hero-reveal"
+  | "complete";
+
+/**
+ * Ø§Ø¨ØªØ¯Ø§ Ù†ÙˆØ± Ø·Ù„Ø§ÛŒÛŒ Ø±ÙˆÛŒ ÙˆÛŒØ¯ÛŒÙˆÛŒ Ø¯ÙˆÙ… Ø§ÙØ²Ø§ÛŒØ´ Ù…ÛŒâ€ŒÛŒØ§Ø¨Ø¯.
+ */
+export const FLASH_IN_DURATION_MS =
+  700;
+
+/**
+ * Ù¾Ø³ Ø§Ø² ØªØ¹ÙˆÛŒØ¶ ÙˆÛŒØ¯ÛŒÙˆ Ø¨Ø§ HeroØŒ
+ * Ù†ÙˆØ± Ùˆ Blur Ø¨Ù‡â€ŒØ¢Ø±Ø§Ù…ÛŒ Ù…Ø­Ùˆ Ù…ÛŒâ€ŒØ´ÙˆÙ†Ø¯.
+ */
+export const HERO_REVEAL_DURATION_MS =
+  1500;
+
+export const TOTAL_TRANSITION_DURATION_MS =
+  FLASH_IN_DURATION_MS +
+  HERO_REVEAL_DURATION_MS;
+
+export const INTRO_SESSION_KEY = "eloria_intro_seen_v5";
+export const INTRO_MAX_FIRST_VIDEO_SECONDS = 5;
+
+export type NetworkInformationLike = {
+  saveData?: boolean;
+  effectiveType?: string;
+};
+
+/**
+ * Ø¨Ø§ ØªØºÛŒÛŒØ± Ø§ÛŒÙ† Ù…Ù‚Ø¯Ø§Ø±ØŒ Ù…Ø±ÙˆØ±Ú¯Ø± Ù†Ø³Ø®Ù‡ Ø¬Ø¯ÛŒØ¯ ÙˆÛŒØ¯Ø¦ÙˆÙ‡Ø§ÛŒ Intro Ø±Ø§
+ * Ø¨Ù‡â€ŒØ¬Ø§ÛŒ ÙØ§ÛŒÙ„ Cacheâ€ŒØ´Ø¯Ù‡ Ù‚Ø¨Ù„ÛŒ Ø¯Ø±ÛŒØ§ÙØª Ù…ÛŒâ€ŒÚ©Ù†Ø¯.
+ */
+export const INTRO_ASSET_VERSION = "2026-08-12-intro-v8";
+
+export const INTRO_VIDEO_ONE_SRC =
+  `/videos/eloria-opening-v3.mp4?v=${INTRO_ASSET_VERSION}`;
+
+export const INTRO_VIDEO_TWO_SRC =
+  `/videos/eloria-entry-v3.mp4?v=${INTRO_ASSET_VERSION}`;
