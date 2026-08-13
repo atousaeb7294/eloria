@@ -57,6 +57,8 @@ import {
 
 import { PriceInformationItem, PurchaseAssuranceItem, SpecificationItem, collectionNames, fallbackImages, formatDecimal, formatToman } from "@/components/product-detail/product-detail-ui";
 
+import { TreasuryButton } from "@/components/treasury/treasury-button";
+
 export const dynamic =
   "force-dynamic";
 
@@ -903,6 +905,11 @@ export default async function ProductPage({
                     ) <= 0
                   }
                 />
+              <div className="mt-3">
+                <TreasuryButton
+                  locale={locale}
+                />
+              </div>
               </div>
 
               <div className="mt-4 grid gap-2 sm:grid-cols-3">
