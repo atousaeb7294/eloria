@@ -17,6 +17,8 @@ import { consumeRateLimit } from "@/lib/security/rate-limit";
 import { hasTrustedOrigin, requestIp } from "@/lib/security/request";
 import { verifyTurnstileToken } from "@/lib/security/turnstile";
 import { isZarinpalConfigured } from "@/lib/payment/zarinpal";
+import { getCustomerFromRequest } from "@/lib/customer-auth";
+import { prisma } from "@/lib/prisma";
 
 import {
   CheckoutOrderError,
@@ -350,6 +352,15 @@ export async function POST(
       );
     }
 
+    // ELORIA_V3_CUSTOMER_CHECKOUT
+    const authenticatedCustomer = await getCustomerFromRequest(request);
+    if (authenticatedCustomer && authenticatedCustomer.customer.mobile !== canonicalCustomer.mobile) {
+      return NextResponse.json(
+        { successful: false, code: "ACCOUNT_MOBILE_MISMATCH", message: "شماره موبایل سفارش باید با حساب واردشده یکسان باشد.", requestId },
+        { status: 409, headers: noStoreHeaders() },
+      );
+    }
+
     const clientIp = requestIp(request);
     const challenge = await verifyTurnstileToken({
       token: typeof body.turnstileToken === "string" ? body.turnstileToken : null,
@@ -480,6 +491,35 @@ export async function POST(
 
         requestId,
       });
+
+    if (authenticatedCustomer) {
+      try {
+        await prisma.$transaction([
+          prisma.order.updateMany({ where: { id: result.order.id, customerId: null }, data: { customerId: authenticatedCustomer.customer.id } }),
+          prisma.customer.update({
+            where: { id: authenticatedCustomer.customer.id },
+            data: { fullName: canonicalCustomer.fullName, email: canonicalCustomer.email },
+          }),
+        ]);
+        if (!result.reused) {
+          await prisma.customerNotification.create({
+            data: {
+              customerId: authenticatedCustomer.customer.id,
+              type: "ORDER_CREATED",
+              titleFa: "سفارش ثبت شد",
+              titleEn: "Order created",
+              bodyFa: `سفارش ${result.order.orderNumber} با موفقیت ثبت شد و در انتظار پرداخت است.`,
+              bodyEn: `Order ${result.order.orderNumber} was created and is awaiting payment.`,
+              orderId: result.order.id,
+            },
+          });
+        }
+      } catch (customerLinkError) {
+        // Checkout itself already succeeded. Do not return a false checkout failure
+        // because account enrichment or its notification failed.
+        console.error("[Eloria Customer] order account enrichment failed", customerLinkError);
+      }
+    }
 
     const paymentConfigured =
       isZarinpalConfigured();

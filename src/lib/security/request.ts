@@ -5,12 +5,20 @@ import type { NextRequest } from "next/server";
 type ProxyProvider = "none" | "cloudflare" | "generic";
 
 function proxyProvider(): ProxyProvider {
-  if (process.env.ELORIA_TRUST_PROXY !== "true" && process.env.ELORIA_TRUST_PROXY !== "1") {
+  if (
+    process.env.ELORIA_TRUST_PROXY !== "true" &&
+    process.env.ELORIA_TRUST_PROXY !== "1"
+  ) {
     return "none";
   }
 
   const provider = process.env.ELORIA_PROXY_PROVIDER?.trim().toLowerCase();
-  return provider === "cloudflare" ? "cloudflare" : "generic";
+
+  if (provider === "cloudflare") return "cloudflare";
+  if (provider === "generic") return "generic";
+
+  // Never silently trust forwarded headers when the provider is missing/misspelled.
+  return "none";
 }
 
 function validIp(value: string | null | undefined): string | null {
@@ -44,6 +52,7 @@ export async function serverActionIp(): Promise<string> {
 export function hasTrustedOrigin(request: NextRequest): boolean {
   const origin = request.headers.get("origin")?.replace(/\/$/, "");
   const configured = process.env.NEXT_PUBLIC_SITE_URL?.trim().replace(/\/$/, "");
+
   const allowed = new Set(
     [request.nextUrl.origin.replace(/\/$/, ""), configured].filter(Boolean),
   );

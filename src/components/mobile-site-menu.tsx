@@ -17,6 +17,7 @@ import {
 import {
   BookOpenText,
   Menu,
+  UserRound,
   X,
 } from "lucide-react";
 
@@ -133,6 +134,9 @@ export function MobileSiteMenu() {
   const contactHref =
     `/${locale}#contact`;
 
+  const profileHref =
+    `/${locale}/profile`;
+
   const isHomeActive =
     pathname === `/${locale}` ||
     pathname === `/${locale}/`;
@@ -151,6 +155,11 @@ export function MobileSiteMenu() {
     pathname.startsWith(
       `/${locale}/about`,
     );
+
+  const isProfileActive =
+    pathname.startsWith(
+      `/${locale}/profile`,
+    ) || pathname.startsWith(`/${locale}/login`);
 
   const primaryLinks = [
     {
@@ -198,6 +207,13 @@ export function MobileSiteMenu() {
       href: aboutHref,
       active: isAboutActive,
       icon: BookOpenText,
+    },
+    {
+      label: isPersian ? "حساب من" : "My account",
+      description: isPersian ? "سفارش‌ها، آدرس‌ها و علاقه‌مندی‌ها" : "Orders, addresses and favorites",
+      href: profileHref,
+      active: isProfileActive,
+      icon: UserRound,
     },
   ];
 

@@ -1,7 +1,13 @@
 import type { MetadataRoute } from "next";
 
 export default function robots(): MetadataRoute.Robots {
-  const base = process.env.NEXT_PUBLIC_SITE_URL?.trim().replace(/\/$/, "") || "https://eloria.example";
+  const configured = process.env.NEXT_PUBLIC_SITE_URL?.trim().replace(/\/$/, "");
+  const base =
+    configured ||
+    (process.env.NODE_ENV === "production"
+      ? "https://eloria.invalid"
+      : "http://localhost:3000");
+
   return {
     rules: [
       {
@@ -11,8 +17,12 @@ export default function robots(): MetadataRoute.Robots {
           "/api/",
           "/fa/admin/",
           "/en/admin/",
+          "/fa/cart",
+          "/en/cart",
           "/fa/checkout",
           "/en/checkout",
+          "/fa/profile",
+          "/en/profile",
           "/fa/order-tracking",
           "/en/order-tracking",
           "/fa/order/",

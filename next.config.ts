@@ -15,6 +15,43 @@ const isProduction =
   process.env.NODE_ENV ===
   "production";
 
+function supabaseImageRemotePattern() {
+  const configured =
+    process.env.SUPABASE_URL?.trim();
+
+  if (!configured) {
+    return null;
+  }
+
+  try {
+    const url =
+      new URL(configured);
+
+    if (
+      url.protocol !==
+      "https:"
+    ) {
+      return null;
+    }
+
+    return {
+      protocol:
+        "https" as const,
+      hostname:
+        url.hostname,
+      port:
+        url.port,
+      pathname:
+        "/storage/v1/object/public/**",
+    };
+  } catch {
+    return null;
+  }
+}
+
+const storageImagePattern =
+  supabaseImageRemotePattern();
+
 const contentSecurityPolicy = [
   "default-src 'self'",
   `script-src 'self' 'unsafe-inline' https://challenges.cloudflare.com${isProduction ? "" : " 'unsafe-eval'"}`,
@@ -49,10 +86,6 @@ const nextConfig:
   reactStrictMode:
     true,
 
-  /**
-   * مسیر ریشه صریح، از تشخیص اشتباه src/app به‌عنوان Workspace
-   * و خرابی Cache مربوط به آن جلوگیری می‌کند.
-   */
   turbopack: {
     root:
       path.resolve(
@@ -74,6 +107,13 @@ const nextConfig:
       88,
       92,
     ],
+    ...(storageImagePattern
+      ? {
+          remotePatterns: [
+            storageImagePattern,
+          ],
+        }
+      : {}),
   },
 
   async headers() {

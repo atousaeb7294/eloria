@@ -41,7 +41,11 @@
     "metal:diagnose": "tsx scripts/diagnose-metal-prices.ts",
     "metal:diagnose-sync": "tsx scripts/diagnose-metal-prices.ts --sync",
     "metal:set-manual": "tsx scripts/set-manual-metal-prices.ts",
-    "metal:install-windows-task": "powershell -ExecutionPolicy Bypass -File scripts/install-windows-metal-sync-task.ps1"
+    "metal:install-windows-task": "powershell -ExecutionPolicy Bypass -File scripts/install-windows-metal-sync-task.ps1",
+    "test:customer": "tsx scripts/test-customer-account.ts",
+    "check:customer-env": "tsx scripts/check-customer-production-env.ts",
+    "test:shipping": "tsx scripts/test-shipping.ts",
+    "check:storefront-env": "tsx scripts/check-storefront-production-env.ts"
   },
   "dependencies": {
     "@base-ui/react": "^1.6.0",

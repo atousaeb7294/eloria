@@ -101,6 +101,9 @@ type CartQuoteResponse = {
     uniqueItems: number;
     totalQuantity: number;
     subtotalToman: string;
+    shippingToman: string;
+    freeShippingApplied: boolean;
+    payableToman: string;
     canCheckout: boolean;
   };
 
@@ -826,6 +829,29 @@ export function CheckoutPageClient({
       postalCode: "",
       address: "",
     });
+
+  // ELORIA_V3_CHECKOUT_PREFILL
+  useEffect(() => {
+    let active = true;
+    void fetch("/api/customer/me", { cache: "no-store" })
+      .then(async response => response.ok ? response.json() : null)
+      .then((data: unknown) => {
+        if (!active || typeof data !== "object" || data === null || !("checkout" in data)) return;
+        const checkout = (data as { checkout?: Partial<CustomerForm> }).checkout;
+        if (!checkout) return;
+        setForm(current => ({
+          fullName: current.fullName || checkout.fullName || "",
+          mobile: current.mobile || checkout.mobile || "",
+          email: current.email || checkout.email || "",
+          province: current.province || checkout.province || "",
+          city: current.city || checkout.city || "",
+          postalCode: current.postalCode || checkout.postalCode || "",
+          address: current.address || checkout.address || "",
+        }));
+      })
+      .catch(() => undefined);
+    return () => { active = false; };
+  }, []);
 
   const quoteRef =
     useRef<CartQuoteResponse | null>(
@@ -2273,6 +2299,15 @@ export function CheckoutPageClient({
                           </span>
                         </div>
 
+                        <div className="flex items-center justify-between gap-4 text-sm">
+                          <span className="text-[#c9bb9a]/60">{isPersian ? "هزینه ارسال" : "Shipping"}</span>
+                          <span className="text-[#eee1c7]">
+                            {quote.summary.shippingToman === "0"
+                              ? (isPersian ? "رایگان" : "Free")
+                              : `${formatPrice(quote.summary.shippingToman)} ${text.toman}`}
+                          </span>
+                        </div>
+
                         <div className="flex items-end justify-between gap-4">
                           <span className="text-sm text-[#c9bb9a]/60">
                             {
@@ -2284,7 +2319,7 @@ export function CheckoutPageClient({
                             <span className="text-xl font-semibold text-[#f0d477]">
                               {formatPrice(
                                 quote.summary
-                                  .subtotalToman,
+                                  .payableToman,
                               )}
                             </span>
 
@@ -2410,7 +2445,7 @@ export function CheckoutPageClient({
                       <p className="mt-0.5 truncate text-base font-semibold text-[#f0d477]">
                         {formatPrice(
                           quote.summary
-                            .subtotalToman,
+                                  .payableToman,
                         )}{" "}
                         <span className="text-[10px] font-normal text-[#c9bb9a]/55">
                           {text.toman}

@@ -122,6 +122,20 @@ export function isInTreasury(
   );
 }
 
+// ELORIA_V3_SERVER_FAVORITES
+async function syncServerFavorite(method: "POST" | "DELETE", slug: string) {
+  try {
+    await fetch("/api/customer/favorites", {
+      method,
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ slug }),
+      keepalive: true,
+    });
+  } catch {
+    // Guest/local mode remains functional; login sync reconciles later.
+  }
+}
+
 export function addToTreasury(
   slug: string,
 ) {
@@ -155,6 +169,8 @@ export function addToTreasury(
 
   writeTreasury(next);
 
+  void syncServerFavorite("POST", normalized);
+
   return next;
 }
 
@@ -171,6 +187,8 @@ export function removeFromTreasury(
     );
 
   writeTreasury(next);
+
+  void syncServerFavorite("DELETE", normalized);
 
   return next;
 }

@@ -57,6 +57,8 @@ import {
 
 import { PriceInformationItem, PurchaseAssuranceItem, SpecificationItem, collectionNames, fallbackImages, formatDecimal, formatToman } from "@/components/product-detail/product-detail-ui";
 
+import { ProductStructuredData } from "@/components/product-detail/product-structured-data";
+
 import { TreasuryButton } from "@/components/treasury/treasury-button";
 
 export const dynamic =
@@ -110,9 +112,12 @@ productPageCacheGlobal.__eloriaProductPageInflight =
 async function loadProductPageRecord(
   slug: string,
 ) {
-  return prisma.product.findUnique({
+  return prisma.product.findFirst({
     where: {
       slug,
+      status: {
+        in: ["ACTIVE", "OUT_OF_STOCK"],
+      },
     },
 
     select: {
@@ -127,6 +132,8 @@ async function loadProductPageRecord(
       collection: {
         select: {
           slug: true,
+          nameFa: true,
+          nameEn: true,
         },
       },
 
@@ -285,10 +292,49 @@ export async function generateMetadata({
     const image =
       product.images[0]?.imageUrl;
 
+    const encodedSlug =
+      encodeURIComponent(slug);
+
+    const canonical =
+      `/${locale}/products/${encodedSlug}`;
+
     return {
       title,
       description,
+      alternates: {
+        canonical,
+        languages: {
+          fa: `/fa/products/${encodedSlug}`,
+          en: `/en/products/${encodedSlug}`,
+        },
+      },
       openGraph: {
+        type: "website",
+        siteName: "ELORIA",
+        locale:
+          locale === "fa"
+            ? "fa_IR"
+            : "en_US",
+        alternateLocale:
+          locale === "fa"
+            ? ["en_US"]
+            : ["fa_IR"],
+        title,
+        description,
+        url: canonical,
+        ...(image
+          ? {
+              images: [
+                {
+                  url: image,
+                  alt: title,
+                },
+              ],
+            }
+          : {}),
+      },
+      twitter: {
+        card: "summary_large_image",
         title,
         description,
         ...(image
@@ -448,6 +494,9 @@ export default async function ProductPage({
     "necklaces";
 
   const collectionLabel =
+    (isPersian
+      ? collection?.nameFa
+      : collection?.nameEn) ??
     collectionNames[
       collectionSlug
     ]?.[
@@ -466,7 +515,7 @@ export default async function ProductPage({
     fallbackImages[
       collectionSlug
     ] ??
-    "/images/collections/necklaces.jfif";
+    "/images/hero/eloria-hero.jpeg";
 
   const galleryImages =
     productRecord.images.length > 0
@@ -595,6 +644,19 @@ export default async function ProductPage({
     <InternalPageShell
       locale={locale}
     >
+      <ProductStructuredData
+        locale={locale}
+        slug={result.product.slug}
+        name={productName}
+        description={productDescription}
+        images={galleryImages.map(image => image.imageUrl)}
+        sku={sku}
+        collectionSlug={collection?.slug ?? null}
+        collectionName={collectionLabel}
+        finalPriceToman={result.pricing.finalPriceToman}
+        stock={stock}
+        purchasable={result.product.isPurchasable && stock > 0}
+      />
       <section className="relative z-10 mx-auto w-full max-w-[1450px] px-4 pb-28 pt-[130px] sm:px-6 sm:pt-[142px] lg:px-10">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <Link

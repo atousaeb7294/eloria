@@ -25,6 +25,7 @@ import {
 } from "@/lib/prisma";
 
 import { syncProductInventory } from "@/lib/inventory";
+import { calculateShipping } from "@/lib/shipping";
 
 const MAX_CART_ITEMS =
   30;
@@ -1208,6 +1209,10 @@ export async function createCheckoutOrder({
     );
   }
 
+  // ELORIA_V3_SERVER_SHIPPING
+  const shippingQuote = calculateShipping(subtotalToman);
+  const payableToman = subtotalToman + BigInt(shippingQuote.shippingToman);
+
   const quoteExpirationTimes =
     pricedItems.map(
       (
@@ -1277,13 +1282,13 @@ export async function createCheckoutOrder({
         subtotalToman.toString(),
 
       shippingToman:
-        "0",
+        shippingQuote.shippingToman,
 
       discountToman:
         "0",
 
       payableToman:
-        subtotalToman.toString(),
+        payableToman.toString(),
 
       priceVerifiedAt:
         priceVerifiedAt.toISOString(),
@@ -1748,13 +1753,13 @@ export async function createCheckoutOrder({
                     subtotalToman.toString(),
 
                   shippingToman:
-                    "0",
+        shippingQuote.shippingToman,
 
                   discountToman:
                     "0",
 
                   payableToman:
-                    subtotalToman.toString(),
+        payableToman.toString(),
 
                   pricingSnapshot:
                     orderPricingSnapshot,
@@ -1957,7 +1962,7 @@ export async function createCheckoutOrder({
                             subtotalToman.toString(),
 
                           payableToman:
-                            subtotalToman.toString(),
+        payableToman.toString(),
 
                           priceExpiresAt:
                             priceExpiresAt.toISOString(),

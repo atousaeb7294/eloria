@@ -22,6 +22,8 @@ import {
   CartHeaderButton,
 } from "@/components/cart-header-button";
 
+import { CustomerAccountHeaderButton } from "@/components/customer-account-header-button";
+
 import {
   FloatingLogo,
 } from "@/components/floating-logo";
@@ -675,6 +677,8 @@ export function SiteHeader({
             </nav>
 
             <div className="relative z-10 flex shrink-0 items-center gap-1.5 sm:gap-2">
+              <CustomerAccountHeaderButton locale={resolvedLocale} />
+
               <CartHeaderButton
                 locale={resolvedLocale}
                 variant="compact"

@@ -485,6 +485,25 @@ export async function verifyOrderPayment(input: {
     throw new Error("پرداخت بانکی تأیید شد اما وضعیت نهایی سفارش ثبت نشد.");
   }
 
+  // ELORIA_V3_PAYMENT_NOTIFICATION
+  if (order.customerId) {
+    await prisma.customerNotification.create({
+      data: {
+        customerId: order.customerId,
+        type: finalState.requiresReview ? "PAYMENT_REVIEW" : "PAYMENT_CONFIRMED",
+        titleFa: finalState.requiresReview ? "پرداخت دریافت شد؛ نیازمند بررسی" : "پرداخت تأیید شد",
+        titleEn: finalState.requiresReview ? "Payment received; review required" : "Payment confirmed",
+        bodyFa: finalState.requiresReview
+          ? `پرداخت سفارش ${order.orderNumber} دریافت شد و برای بررسی نهایی در صف پشتیبانی قرار گرفت.`
+          : `پرداخت سفارش ${order.orderNumber} با موفقیت تأیید شد.`,
+        bodyEn: finalState.requiresReview
+          ? `Payment for order ${order.orderNumber} was received and queued for review.`
+          : `Payment for order ${order.orderNumber} was confirmed successfully.`,
+        orderId: order.id,
+      },
+    }).catch(error => console.error("[Eloria Customer Notification] payment notification failed", error));
+  }
+
   if (order.customerMobile) {
     const message = finalState.requiresReview
       ? `الوریا: پرداخت سفارش ${order.orderNumber} دریافت شد و برای بررسی موجودی در صف پشتیبانی قرار گرفت. کد پرداخت: ${verified.referenceId ?? "-"}`

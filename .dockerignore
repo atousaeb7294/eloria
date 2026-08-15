@@ -1,13 +1,13 @@
 node_modules
 .next
 .git
+.github
 .env
 .env.*
 test-results
 playwright-report
 coverage
 .eloria-backups
-.github/.github
 .agents
 .claude
 .codex

@@ -12,6 +12,8 @@ import {
   consumeRateLimit,
 } from "@/lib/security/rate-limit";
 
+import { calculateShipping } from "@/lib/shipping";
+
 import {
   hasTrustedOrigin,
   requestIp,
@@ -705,6 +707,10 @@ export async function POST(
         BigInt(0),
       );
 
+    // ELORIA_V3_SERVER_SHIPPING
+    const shippingQuote = calculateShipping(subtotalToman);
+    const payableToman = subtotalToman + BigInt(shippingQuote.shippingToman);
+
     const totalQuantity =
       quotedItems.reduce(
         (
@@ -746,6 +752,15 @@ export async function POST(
 
           subtotalToman:
             subtotalToman.toString(),
+
+          shippingToman:
+            shippingQuote.shippingToman,
+
+          freeShippingApplied:
+            shippingQuote.freeShippingApplied,
+
+          payableToman:
+            payableToman.toString(),
 
           canCheckout,
         },
