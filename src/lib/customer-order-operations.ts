@@ -4,7 +4,7 @@ import { prisma, withDatabaseRetry } from "@/lib/prisma";
 
 export async function cancelCustomerOrder(customerId: string, orderId: string) {
   return withDatabaseRetry(() => prisma.$transaction(async tx => {
-    await tx.$queryRaw`SELECT id FROM orders WHERE id = ${orderId}::uuid FOR UPDATE`;
+    await tx.$queryRaw`SELECT id FROM orders WHERE id = ${orderId}::uuid AND "customerId" = ${customerId}::uuid FOR UPDATE`;
     const order = await tx.order.findFirst({
       where: { id: orderId, customerId },
       select: {

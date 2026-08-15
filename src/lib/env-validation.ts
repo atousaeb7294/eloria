@@ -13,6 +13,13 @@ function isHttpsUrl(key: string): boolean {
     return false;
   }
 }
+function isNonNegativeInteger(key: string): boolean {
+  return /^\d+$/.test(value(key));
+}
+function isOptionalNonNegativeInteger(key: string): boolean {
+  const raw = value(key);
+  return !raw || /^\d+$/.test(raw);
+}
 function isThirtyTwoByteBase64(key: string): boolean {
   try {
     const raw = value(key);
@@ -41,6 +48,7 @@ export function productionEnvironmentChecks(): Check[] {
   const proxyProvider = value("ELORIA_PROXY_PROVIDER").toLowerCase();
   const secretKeys = [
     "ELORIA_ADMIN_SESSION_SECRET",
+    "ELORIA_CUSTOMER_AUTH_SECRET",
     "ELORIA_TRACKING_SECRET",
     "ELORIA_PAYMENT_RECEIPT_SECRET",
   ];
@@ -52,6 +60,7 @@ export function productionEnvironmentChecks(): Check[] {
     { key: "ELORIA_ADMIN_USERNAME", required: true, valid: present("ELORIA_ADMIN_USERNAME", 3), message: "نام کاربری مدیر" },
     { key: "ELORIA_ADMIN_PASSWORD", required: true, valid: present("ELORIA_ADMIN_PASSWORD", 14), message: "رمز قوی مدیر" },
     { key: "ELORIA_ADMIN_SESSION_SECRET", required: true, valid: present("ELORIA_ADMIN_SESSION_SECRET", 48), message: "کلید نشست مدیر" },
+    { key: "ELORIA_CUSTOMER_AUTH_SECRET", required: true, valid: present("ELORIA_CUSTOMER_AUTH_SECRET", 48), message: "کلید نشست و OTP مشتری" },
     { key: "ELORIA_ADMIN_SESSION_VERSION", required: true, valid: present("ELORIA_ADMIN_SESSION_VERSION", 1), message: "نسخه ابطال نشست" },
     { key: "ELORIA_ADMIN_TOTP_SECRET", required: totpEnabled, valid: !totpEnabled || /^[A-Z2-7]+=*$/i.test(value("ELORIA_ADMIN_TOTP_SECRET")), message: "کلید TOTP مدیر" },
     { key: "CRON_SECRET", required: true, valid: present("CRON_SECRET", 48), message: "کلید Cron" },
@@ -64,6 +73,9 @@ export function productionEnvironmentChecks(): Check[] {
     { key: "ELORIA_TRUST_PROXY", required: true, valid: trustProxy, message: "اعتماد به Proxy میزبان" },
     { key: "ELORIA_PROXY_PROVIDER", required: trustProxy, valid: !trustProxy || proxyProvider === "cloudflare" || proxyProvider === "generic", message: "Provider معتبر برای هدرهای IP" },
     { key: "ELORIA_RATE_LIMIT_FAILURE_MODE", required: true, valid: value("ELORIA_RATE_LIMIT_FAILURE_MODE").toLowerCase() === "closed", message: "Rate limit در Production باید fail-closed باشد" },
+    { key: "ELORIA_SHIPPING_FLAT_TOMAN", required: true, valid: isNonNegativeInteger("ELORIA_SHIPPING_FLAT_TOMAN"), message: "هزینه ارسال باید صریح و نامنفی باشد" },
+    { key: "ELORIA_FREE_SHIPPING_FROM_TOMAN", required: true, valid: isOptionalNonNegativeInteger("ELORIA_FREE_SHIPPING_FROM_TOMAN"), message: "آستانه ارسال رایگان باید خالی یا عدد صحیح نامنفی باشد" },
+    { key: "BRS_API_KEY", required: true, valid: present("BRS_API_KEY", 1), message: "کلید منبع نرخ فلز" },
     { key: "SUPABASE_URL", required: true, valid: isHttpsUrl("SUPABASE_URL"), message: "آدرس Storage" },
     { key: "SUPABASE_SERVICE_ROLE_KEY", required: true, valid: present("SUPABASE_SERVICE_ROLE_KEY", 40), message: "کلید Storage" },
     { key: "ELORIA_STORAGE_BUCKET", required: true, valid: present("ELORIA_STORAGE_BUCKET", 2), message: "نام Bucket تصاویر" },

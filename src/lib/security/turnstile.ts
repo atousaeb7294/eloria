@@ -25,7 +25,11 @@ export async function verifyTurnstileToken(input: {
   ip: string;
 }): Promise<{ successful: boolean; errors: string[] }> {
   const secret = process.env.TURNSTILE_SECRET_KEY?.trim();
-  if (!secret) return { successful: true, errors: [] };
+  if (!secret) {
+    return process.env.NODE_ENV === "production"
+      ? { successful: false, errors: ["turnstile-not-configured"] }
+      : { successful: true, errors: [] };
+  }
   if (!input.token) {
     return { successful: false, errors: ["missing-input-response"] };
   }

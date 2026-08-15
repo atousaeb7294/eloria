@@ -13,7 +13,10 @@ import {
   withDatabaseRetry,
 } from "@/lib/prisma";
 
-const ADMIN_COOKIE_NAME = "eloria_admin_session";
+const ADMIN_COOKIE_NAME =
+  process.env.NODE_ENV === "production"
+    ? "__Host-eloria_admin_session"
+    : "eloria_admin_session";
 const SESSION_LIFETIME_SECONDS = 8 * 60 * 60;
 
 type AdminSessionPayload = {

@@ -61,5 +61,5 @@ export function hasTrustedOrigin(request: NextRequest): boolean {
   if (process.env.NODE_ENV !== "production") return true;
 
   const fetchSite = request.headers.get("sec-fetch-site");
-  return fetchSite === "same-origin" || fetchSite === "same-site";
+  return fetchSite === "same-origin";
 }

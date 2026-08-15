@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { AlertTriangle, ArrowDownRight, ArrowLeft, ArrowRight, ArrowUpRight, LoaderCircle, Minus, Plus, RefreshCw, ShoppingBag, Trash2, X } from "lucide-react";
 import { PurchaseProgress } from "@/components/purchase-progress";
 import type { CartPageClientProps } from "@/components/cart/cart-page-model";
@@ -12,6 +13,8 @@ export function CartPageView({
   persianTitleClassName,
   controller,
 }: CartPageClientProps & { controller: CartPageController }) {
+  const router = useRouter();
+
   const {
     isPersian,
     storedItems,
@@ -646,9 +649,7 @@ export function CartPageView({
                   checkoutBlocked
                 }
                 onClick={() => {
-                  window.location.assign(
-                    `/${locale}/checkout`,
-                  );
+                  router.push(`/${locale}/checkout`);
                 }}
                 className="mt-6 flex min-h-13 w-full items-center justify-center gap-3 rounded-full border border-[#e0c16d]/55 bg-[linear-gradient(100deg,rgba(112,80,20,0.22),rgba(218,183,90,0.3),rgba(112,80,20,0.22))] px-6 text-sm font-medium text-[#f6e4af] transition hover:-translate-y-0.5 hover:border-[#f0d681]/85 hover:shadow-[0_0_30px_rgba(218,183,91,0.14)] disabled:cursor-not-allowed disabled:opacity-35 disabled:hover:translate-y-0"
               >
@@ -698,9 +699,7 @@ export function CartPageView({
                     checkoutBlocked
                   }
                   onClick={() => {
-                    window.location.assign(
-                      `/${locale}/checkout`,
-                    );
+                    router.push(`/${locale}/checkout`);
                   }}
                   className="flex min-h-12 shrink-0 items-center justify-center gap-2 rounded-full border border-[#e0c16d]/55 bg-[linear-gradient(100deg,rgba(112,80,20,0.22),rgba(218,183,90,0.3),rgba(112,80,20,0.22))] px-5 text-xs font-medium text-[#f6e4af] transition disabled:cursor-not-allowed disabled:opacity-35"
                 >

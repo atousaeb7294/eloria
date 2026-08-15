@@ -116,6 +116,14 @@ export async function consumeCustomerOtp(input: { challengeId: string; mobile: s
       throw new Error("کد تأیید صحیح نیست.");
     }
 
+    const existingCustomer = await tx.customer.findUnique({
+      where: { mobile },
+      select: { isActive: true },
+    });
+    if (existingCustomer && !existingCustomer.isActive) {
+      throw new Error("این حساب کاربری غیرفعال است.");
+    }
+
     await tx.customerOtpChallenge.update({
       where: { id: challenge.id },
       data: { attempts: { increment: 1 }, consumedAt: now },
@@ -124,7 +132,7 @@ export async function consumeCustomerOtp(input: { challengeId: string; mobile: s
     const customer = await tx.customer.upsert({
       where: { mobile },
       create: { mobile, mobileVerifiedAt: now, lastLoginAt: now, isActive: true },
-      update: { mobileVerifiedAt: now, lastLoginAt: now, isActive: true },
+      update: { mobileVerifiedAt: now, lastLoginAt: now },
     });
 
     await tx.order.updateMany({

@@ -24,11 +24,11 @@ export async function POST(request: NextRequest) {
   try { mobile = normalizeIranMobile(body.mobile); }
   catch (error) { return NextResponse.json({ successful: false, message: error instanceof Error ? error.message : "شماره موبایل معتبر نیست." }, { status: 400, headers: headers() }); }
 
-  const mobileRate = await consumeRateLimit({ key: `customer-otp-mobile:${mobile}`, limit: 3, windowMs: 10 * 60_000 });
-  if (!mobileRate.allowed) return NextResponse.json({ successful: false, message: "برای این شماره اخیراً چند کد ارسال شده است." }, { status: 429, headers: { ...headers(), "Retry-After": String(mobileRate.retryAfterSeconds) } });
-
   const challengeCheck = await verifyTurnstileToken({ token: typeof body.turnstileToken === "string" ? body.turnstileToken : null, ip });
   if (!challengeCheck.successful) return NextResponse.json({ successful: false, message: "تأیید امنیتی ناموفق بود." }, { status: 403, headers: headers() });
+
+  const mobileRate = await consumeRateLimit({ key: `customer-otp-mobile:${mobile}`, limit: 3, windowMs: 10 * 60_000 });
+  if (!mobileRate.allowed) return NextResponse.json({ successful: false, message: "برای این شماره اخیراً چند کد ارسال شده است." }, { status: 429, headers: { ...headers(), "Retry-After": String(mobileRate.retryAfterSeconds) } });
 
   try {
     const challenge = await createCustomerOtpChallenge({ mobile, ip });
