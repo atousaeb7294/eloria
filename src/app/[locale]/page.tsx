@@ -6,6 +6,9 @@ import {
   AmbientEffects,
 } from "@/components/ambient-effects";
 import {
+  HomePremiumEffects,
+} from "@/components/home-premium-effects";
+import {
   EloriaIntroExperience,
 } from "@/components/eloria-intro-experience";
 import {
@@ -41,6 +44,7 @@ export default async function HomePage({
   return (
     <main id="main-content" className="relative min-h-screen overflow-hidden bg-[#02140e] text-[#f8f0df]">
       <AmbientEffects />
+      <HomePremiumEffects />
 
       <HomeHeaderController
         locale={

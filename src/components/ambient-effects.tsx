@@ -18,7 +18,7 @@ type PowderStyle = CSSProperties & {
 };
 
 // جلوه ذرات حفظ شده، اما تعداد آن برای روان‌ترشدن رابط کاهش یافته است.
-const goldPowder: PowderStyle[] = Array.from({ length: 58 }, (_, index) => {
+const goldPowder: PowderStyle[] = Array.from({ length: 44 }, (_, index) => {
   const left = (index * 47 + (index % 7) * 11) % 100;
   const top = (index * 67 + (index % 5) * 13) % 100;
   const width = 1.5 + ((index * 17) % 7);
