@@ -40,6 +40,12 @@ function distinctSecrets(values: string[]): boolean {
 export function productionEnvironmentChecks(): Check[] {
   const paymentEnabled = present("ZARINPAL_MERCHANT_ID");
   const smsEnabled = present("KAVENEGAR_API_KEY");
+  const securityAlertMobile = value("ELORIA_SECURITY_ALERT_MOBILE");
+  const securityAlertWebhook = value("ELORIA_SECURITY_ALERT_WEBHOOK_URL");
+  const securityAlertSmsChannel = /^09\d{9}$/.test(securityAlertMobile) && smsEnabled;
+  const securityAlertWebhookChannel = Boolean(securityAlertWebhook) && isHttpsUrl("ELORIA_SECURITY_ALERT_WEBHOOK_URL");
+  const securityAlertSeverity = value("ELORIA_SECURITY_ALERT_MIN_SEVERITY").toUpperCase();
+  const securityAlertCooldown = Number.parseInt(value("ELORIA_SECURITY_ALERT_COOLDOWN_SECONDS"), 10);
   const turnstileEnabled =
     present("TURNSTILE_SECRET_KEY") ||
     present("NEXT_PUBLIC_TURNSTILE_SITE_KEY");
@@ -84,6 +90,11 @@ export function productionEnvironmentChecks(): Check[] {
     { key: "ELORIA_STORAGE_BUCKET", required: true, valid: present("ELORIA_STORAGE_BUCKET", 2), message: "نام Bucket تصاویر" },
     { key: "ZARINPAL_MERCHANT_ID", required: paymentEnabled, valid: !paymentEnabled || /^[0-9a-fA-F-]{36}$/.test(value("ZARINPAL_MERCHANT_ID")), message: "Merchant ID زرین‌پال" },
     { key: "KAVENEGAR_API_KEY", required: smsEnabled, valid: !smsEnabled || present("KAVENEGAR_API_KEY", 16), message: "کلید پیامک" },
+    { key: "ELORIA_SECURITY_ALERT_MOBILE", required: Boolean(securityAlertMobile), valid: !securityAlertMobile || /^09\d{9}$/.test(securityAlertMobile), message: "شماره موبایل هشدار امنیتی" },
+    { key: "ELORIA_SECURITY_ALERT_WEBHOOK_URL", required: Boolean(securityAlertWebhook), valid: !securityAlertWebhook || securityAlertWebhookChannel, message: "Webhook امن هشدار امنیتی" },
+    { key: "ELORIA_SECURITY_ALERT_MIN_SEVERITY", required: true, valid: ["INFO", "MEDIUM", "HIGH", "CRITICAL"].includes(securityAlertSeverity), message: "حداقل سطح هشدار خارجی" },
+    { key: "ELORIA_SECURITY_ALERT_COOLDOWN_SECONDS", required: true, valid: Number.isFinite(securityAlertCooldown) && securityAlertCooldown >= 30 && securityAlertCooldown <= 3600, message: "Cooldown هشدار امنیتی بین ۳۰ تا ۳۶۰۰ ثانیه" },
+    { key: "ELORIA_SECURITY_ALERT_CHANNEL", required: true, valid: securityAlertSmsChannel || securityAlertWebhookChannel, message: "حداقل یک کانال هشدار امنیتی SMS یا HTTPS webhook باید فعال باشد" },
     { key: "NEXT_PUBLIC_TURNSTILE_SITE_KEY", required: turnstileEnabled, valid: !turnstileEnabled || present("NEXT_PUBLIC_TURNSTILE_SITE_KEY", 10), message: "کلید عمومی Turnstile" },
     { key: "TURNSTILE_SECRET_KEY", required: turnstileEnabled, valid: !turnstileEnabled || present("TURNSTILE_SECRET_KEY", 10), message: "کلید خصوصی Turnstile" },
   ];

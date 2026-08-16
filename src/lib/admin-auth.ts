@@ -7,11 +7,11 @@ import {
 } from "node:crypto";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import { Prisma } from "@/generated/prisma/client";
 import {
   prisma,
   withDatabaseRetry,
 } from "@/lib/prisma";
+import { recordSecurityEvent } from "@/lib/security/security-events";
 
 const ADMIN_COOKIE_NAME =
   process.env.NODE_ENV === "production"
@@ -69,10 +69,6 @@ function signPayload(encodedPayload: string): string {
 
 function hash(value: string): string {
   return createHash("sha256").update(value).digest("hex");
-}
-
-function json(value: unknown): Prisma.InputJsonValue {
-  return JSON.parse(JSON.stringify(value)) as Prisma.InputJsonValue;
 }
 
 function parseSessionToken(token: string): AdminSessionPayload | null {
@@ -146,15 +142,24 @@ export async function recordAdminSecurityEvent(input: {
   userAgent?: string | null;
   payload?: unknown;
 }): Promise<void> {
-  await prisma.adminSecurityEvent.create({
-    data: {
-      eventType: input.eventType.slice(0, 100),
-      successful: input.successful,
-      ipHash: input.ip ? hash(input.ip) : null,
-      userAgent: input.userAgent?.slice(0, 500) || null,
-      payload: input.payload === undefined ? undefined : json(input.payload),
-    },
-  }).catch(error => console.error("[Eloria Admin Audit]", error));
+  const severity =
+    input.eventType === "LOGIN_RATE_LIMITED"
+      ? "HIGH"
+      : input.successful
+        ? "INFO"
+        : "MEDIUM";
+
+  await recordSecurityEvent({
+    eventType: input.eventType,
+    severity,
+    scope: "ADMIN_AUTH",
+    successful: input.successful,
+    ip: input.ip,
+    userAgent: input.userAgent,
+    details: input.payload,
+    external: input.eventType === "LOGIN_RATE_LIMITED",
+    dispatchKey: input.ip ?? input.eventType,
+  });
 }
 
 export async function createAdminSession(input: {

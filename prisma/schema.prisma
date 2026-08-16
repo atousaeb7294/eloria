@@ -93,6 +93,7 @@ model AdminSecurityEvent {
   userAgent  String?  @db.VarChar(500)
   payload    Json?
   createdAt  DateTime @default(now())
+  alerts     SecurityAlert[]
 
   @@index([eventType, createdAt])
   @@index([successful, createdAt])
@@ -709,4 +710,30 @@ model CustomerNotification {
   @@index([customerId, createdAt])
   @@index([customerId, readAt])
   @@map("customer_notifications")
+}
+
+model SecurityAlert {
+  id            String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  sourceEventId String   @db.Uuid
+  eventType     String   @db.VarChar(100)
+  severity      String   @db.VarChar(16)
+  scope         String   @db.VarChar(32)
+  channel       String   @db.VarChar(16)
+  status        String   @default("PENDING") @db.VarChar(16)
+  dedupeKey     String   @unique @db.VarChar(64)
+  payload       Json
+  attempts      Int      @default(0)
+  nextAttemptAt DateTime @default(now())
+  lastAttemptAt DateTime?
+  sentAt        DateTime?
+  lastError     String?  @db.VarChar(300)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @default(now()) @updatedAt
+
+  sourceEvent AdminSecurityEvent @relation(fields: [sourceEventId], references: [id], onDelete: Cascade)
+
+  @@index([status, nextAttemptAt])
+  @@index([severity, createdAt])
+  @@index([sourceEventId, createdAt])
+  @@map("security_alerts")
 }

@@ -34,6 +34,7 @@
     "verify:ci": "npm run typecheck && npm run lint && npm run test:tokens && npm run test:pricing && npm run test:commerce && npm run build && npm run test:e2e && npm run audit:security",
     "cron:expired-orders": "node scripts/run-cron-once.mjs expired-orders",
     "cron:metal-prices": "node scripts/run-cron-once.mjs metal-prices",
+    "cron:security-alerts": "node scripts/run-cron-once.mjs security-alerts",
     "db:repair-existing": "powershell -ExecutionPolicy Bypass -File scripts/repair-existing-database.ps1",
     "db:verify": "tsx scripts/verify-database-hardening.ts",
     "pricing:seed": "tsx scripts/seed-pricing-policies.ts",
@@ -45,7 +46,8 @@
     "test:customer": "tsx scripts/test-customer-account.ts",
     "check:customer-env": "tsx scripts/check-customer-production-env.ts",
     "test:shipping": "tsx scripts/test-shipping.ts",
-    "check:storefront-env": "tsx scripts/check-storefront-production-env.ts"
+    "check:storefront-env": "tsx scripts/check-storefront-production-env.ts",
+    "test:security-alerts": "tsx scripts/test-security-events.ts && tsx scripts/test-security-alert-outbox.ts"
   },
   "dependencies": {
     "@base-ui/react": "^1.6.0",

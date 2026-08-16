@@ -1,8 +1,8 @@
-const jobs = new Set(["expired-orders", "metal-prices"]);
+const jobs = new Set(["expired-orders", "metal-prices", "security-alerts"]);
 const job = process.argv[2];
 
 if (!jobs.has(job)) {
-  console.error("Usage: node scripts/run-cron-once.mjs <expired-orders|metal-prices>");
+  console.error("Usage: node scripts/run-cron-once.mjs <expired-orders|metal-prices|security-alerts>");
   process.exit(2);
 }
 

@@ -139,7 +139,9 @@ async function main(): Promise<void> {
         (await fileIncludes("src/app/api/checkout/orders/route.ts", "readJsonBody")) &&
         (await fileIncludes("src/app/api/payments/zarinpal/start/route.ts", "readJsonBody")) &&
         (await fileIncludes("src/app/api/support/contact/route.ts", "readJsonBody")) &&
-        (await fileIncludes("src/app/api/treasury/products/route.ts", "readJsonBody")),
+        (await fileIncludes("src/app/api/treasury/products/route.ts", "readJsonBody")) &&
+        (await fileIncludes("src/app/api/customer/auth/request-otp/route.ts", "readJsonBody")) &&
+        (await fileIncludes("src/app/api/customer/auth/verify-otp/route.ts", "readJsonBody")),
     ],
     [
       "Sanitized admin and provider-facing errors",
@@ -158,6 +160,71 @@ async function main(): Promise<void> {
         "ELORIA_CUSTOMER_AUTH_SECRET",
         "ELORIA_HEALTH_SECRET",
       ]),
+    ],
+    [
+      "Security alert outbox and retry worker",
+      (await fileIncludes("src/lib/security/security-events.ts", [
+        "securityAlert.createMany",
+        "sanitizeSecurityPayload",
+        "ELORIA_SECURITY_ALERT_COOLDOWN_SECONDS",
+      ])) &&
+        (await fileIncludes("src/lib/security/security-alert-worker.ts", [
+          "PROCESSING",
+          "securityAlertBackoffMs",
+          "MAX_ATTEMPTS",
+          "AbortSignal.timeout",
+        ])) &&
+        (await fileIncludes("src/app/api/cron/security-alerts/route.ts", [
+          "acquireCronLease",
+          "CRON_SECRET",
+        ])) &&
+        (await fileIncludes("src/app/[locale]/admin/(protected)/security/page.tsx", [
+          "امنیت و هشدارها",
+          "Delivery Outbox",
+        ])) &&
+        (await fileIncludes("src/components/admin/admin-shell.tsx", "/security")),
+    ],
+    [
+      "Customer authentication security telemetry",
+      (await fileIncludes("src/app/api/customer/auth/request-otp/route.ts", [
+        "CUSTOMER_OTP_IP_RATE_LIMITED",
+        "CUSTOMER_OTP_MOBILE_RATE_LIMITED",
+        "CUSTOMER_TURNSTILE_FAILED",
+      ])) &&
+        (await fileIncludes("src/app/api/customer/auth/verify-otp/route.ts", [
+          "CUSTOMER_OTP_VERIFY_RATE_LIMITED",
+          "CUSTOMER_OTP_VERIFY_FAILED",
+          "CUSTOMER_LOGIN_SUCCEEDED",
+        ])),
+    ],
+    [
+      "Payment anomaly security alerts",
+      await fileIncludes("src/lib/payment-service.ts", [
+        "PAYMENT_INITIALIZATION_FAILED",
+        "PAYMENT_STALE_CALLBACK_IGNORED",
+        "PAYMENT_VERIFICATION_RETRY_REQUIRED",
+        "PAYMENT_REQUIRES_REVIEW",
+        "recordSecurityEvent",
+      ]),
+    ],
+    [
+      "Production security alert channel requirement",
+      await fileIncludes("src/lib/env-validation.ts", [
+        "ELORIA_SECURITY_ALERT_CHANNEL",
+        "ELORIA_SECURITY_ALERT_MIN_SEVERITY",
+        "ELORIA_SECURITY_ALERT_COOLDOWN_SECONDS",
+      ]),
+    ],
+    [
+      "Security alert migration",
+      await fileIncludes(
+        "prisma/migrations/20260816133000_security_alert_outbox/migration.sql",
+        ["security_alerts", "dedupeKey", "PROCESSING"],
+      ),
+    ],
+    [
+      "Bounded SMS provider request",
+      await fileIncludes("src/lib/notifications/kavenegar.ts", "AbortSignal.timeout(8_000)"),
     ],
     [
       "Prisma production migrations",

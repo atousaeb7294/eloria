@@ -11,6 +11,7 @@ import {
   LogOut,
   PackageSearch,
   ShoppingBag,
+  ShieldAlert,
   Store,
 } from "lucide-react";
 
@@ -33,6 +34,11 @@ const navigation = [
     href: "/orders",
     label: "سفارش‌ها",
     icon: ShoppingBag,
+  },
+  {
+    href: "/security",
+    label: "امنیت و هشدارها",
+    icon: ShieldAlert,
   },
 ];
 
@@ -151,6 +157,13 @@ export function AdminShell({
                 className="grid h-10 w-10 place-items-center rounded-xl border border-[#d1b45c]/20 bg-[#08241a] text-[#ddc36f]"
               >
                 <ShoppingBag className="h-5 w-5" />
+              </Link>
+              <Link
+                href={`${basePath}/security`}
+                aria-label="امنیت و هشدارها"
+                className="grid h-10 w-10 place-items-center rounded-xl border border-[#d1b45c]/20 bg-[#08241a] text-[#ddc36f]"
+              >
+                <ShieldAlert className="h-5 w-5" />
               </Link>
               <form action={adminLogoutAction}>
                 <input type="hidden" name="locale" value={locale} />

@@ -7,6 +7,7 @@ import {
   zarinpalStartUrl,
 } from "@/lib/payment/zarinpal";
 import { prisma } from "@/lib/prisma";
+import { recordSecurityEvent } from "@/lib/security/security-events";
 
 const PROVIDER = "ZARINPAL";
 const VERIFICATION_LEASE_MS = 10 * 60_000;
@@ -173,6 +174,21 @@ export async function initiateOrderPayment(orderId: string) {
         errorMessage: error instanceof Error ? error.message : "Payment request failed",
       },
     });
+    await recordSecurityEvent({
+      eventType: "PAYMENT_INITIALIZATION_FAILED",
+      severity: "HIGH",
+      scope: "PAYMENT",
+      successful: false,
+      subject: order.id,
+      details: {
+        provider: PROVIDER,
+        orderNumber: order.orderNumber,
+        attemptId: attempt.id,
+        reason: "payment-initialization-failed",
+        errorType: error instanceof Error ? error.name : "unknown",
+      },
+      dispatchKey: "payment-init:" + order.id,
+    });
     throw error;
   }
 }
@@ -217,6 +233,20 @@ export async function verifyOrderPayment(input: {
           eventType: "STALE_PAYMENT_CALLBACK_IGNORED",
           payload: json({ authority: input.authority, gatewayStatus: input.gatewayStatus, orderStatus: order.status }),
         },
+      });
+      await recordSecurityEvent({
+        eventType: "PAYMENT_STALE_CALLBACK_IGNORED",
+        severity: "HIGH",
+        scope: "PAYMENT",
+        successful: false,
+        subject: order.id,
+        details: {
+          provider: PROVIDER,
+          orderNumber: order.orderNumber,
+          attemptId: attempt.id,
+          reason: "stale-or-replayed-callback",
+        },
+        dispatchKey: "stale-callback:" + order.id,
       });
       return {
         successful: false,
@@ -323,6 +353,21 @@ export async function verifyOrderPayment(input: {
           }),
         },
       });
+    });
+    await recordSecurityEvent({
+      eventType: "PAYMENT_VERIFICATION_RETRY_REQUIRED",
+      severity: "HIGH",
+      scope: "PAYMENT",
+      successful: false,
+      subject: order.id,
+      details: {
+        provider: PROVIDER,
+        orderNumber: order.orderNumber,
+        attemptId: attempt.id,
+        reason: "gateway-verification-retry",
+        errorType: error instanceof Error ? error.name : "unknown",
+      },
+      dispatchKey: "payment-verify:" + order.id,
     });
     throw error;
   }
@@ -505,6 +550,23 @@ export async function verifyOrderPayment(input: {
 
   if (!finalState) {
     throw new Error("پرداخت بانکی تأیید شد اما وضعیت نهایی سفارش ثبت نشد.");
+  }
+
+  if (finalState.requiresReview) {
+    await recordSecurityEvent({
+      eventType: "PAYMENT_REQUIRES_REVIEW",
+      severity: "CRITICAL",
+      scope: "PAYMENT",
+      successful: false,
+      subject: order.id,
+      details: {
+        provider: PROVIDER,
+        orderNumber: order.orderNumber,
+        attemptId: attempt.id,
+        reason: "manual-payment-review-required",
+      },
+      dispatchKey: "payment-review:" + order.id,
+    });
   }
 
   // ELORIA_V3_PAYMENT_NOTIFICATION

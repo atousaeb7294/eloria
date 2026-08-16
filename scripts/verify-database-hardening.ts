@@ -6,6 +6,7 @@ type RequiredObjectsRow = {
   rateLimitBuckets: string | null;
   cronLeases: string | null;
   adminSessions: string | null;
+  securityAlerts: string | null;
   migrationTable: string | null;
 };
 
@@ -21,6 +22,7 @@ async function main() {
       to_regclass('public.rate_limit_buckets')::text AS "rateLimitBuckets",
       to_regclass('public.cron_leases')::text AS "cronLeases",
       to_regclass('public.admin_sessions')::text AS "adminSessions",
+      to_regclass('public.security_alerts')::text AS "securityAlerts",
       to_regclass('public._prisma_migrations')::text AS "migrationTable"
   `;
 
@@ -28,6 +30,7 @@ async function main() {
     ["rate_limit_buckets", objects?.rateLimitBuckets],
     ["cron_leases", objects?.cronLeases],
     ["admin_sessions", objects?.adminSessions],
+    ["security_alerts", objects?.securityAlerts],
     ["_prisma_migrations", objects?.migrationTable],
   ].filter(([, value]) => !value);
 
@@ -61,6 +64,7 @@ async function main() {
     "20260806023000_closed_market_safety_tiers",
     "20260806030000_closed_market_10_day_safety",
     "20260806031000_runtime_support_repair",
+    "20260816133000_security_alert_outbox",
   ];
 
   const appliedMigrationNames = new Set(
@@ -86,6 +90,7 @@ async function main() {
     ["rate_limit_buckets", objects?.rateLimitBuckets],
     ["cron_leases", objects?.cronLeases],
     ["admin_sessions", objects?.adminSessions],
+    ["security_alerts", objects?.securityAlerts],
     ["_prisma_migrations", objects?.migrationTable],
   ]) {
     console.log(`${value ? "PASS" : "FAIL"}  ${name}`);
@@ -116,7 +121,7 @@ async function main() {
     return;
   }
 
-  console.log("\nPASS: database hardening and 10-day closed-market policy are active.");
+  console.log("\nPASS: database hardening, security alert outbox, and 10-day closed-market policy are active.");
 }
 
 main()

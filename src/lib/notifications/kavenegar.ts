@@ -9,7 +9,7 @@ export async function sendSms(receptor: string, message: string, localId?: strin
   if (localId && /^\d+$/.test(localId)) params.set("localid", localId);
   try {
     const response = await fetch(`https://api.kavenegar.com/v1/${encodeURIComponent(apiKey)}/sms/send.json`, {
-      method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded" }, body: params, cache: "no-store",
+      method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded" }, body: params, cache: "no-store", signal: AbortSignal.timeout(8_000),
     });
     const payload = await response.json().catch(() => null) as { return?: { status?: number; message?: string }; entries?: Array<{ messageid?: number | string }> } | null;
     const status = Number(payload?.return?.status ?? response.status);
