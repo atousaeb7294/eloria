@@ -46,9 +46,11 @@ export async function GET(request: NextRequest) {
     console.error("[Eloria Health] Database readiness check failed.", error);
   }
 
-  const requiredEnvironment = productionEnvironmentChecks()
-    .filter(item => item.required)
-    .every(item => item.valid);
+  const requiredEnvironment =
+    process.env.NODE_ENV !== "production" ||
+    productionEnvironmentChecks()
+      .filter(item => item.required)
+      .every(item => item.valid);
   const ready = database && requiredEnvironment;
   const base = {
     status: ready ? "ok" : "degraded",
