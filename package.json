@@ -14,7 +14,7 @@
     "audit:security": "tsx scripts/security-audit.ts",
     "verify": "npm run lint && npm run build && npm run test:visual && npm run audit:security",
     "postinstall": "prisma generate",
-    "test:pricing": "tsx scripts/test-pricing-engine.ts && tsx scripts/test-metal-rate-freshness.ts && tsx scripts/test-metal-rate-sale-policy.ts && tsx scripts/test-brs-derived-rate-timestamp.ts && tsx scripts/test-metal-price-write-decision.ts",
+    "test:pricing": "tsx scripts/test-pricing-engine.ts && tsx scripts/test-metal-rate-freshness.ts && tsx scripts/test-metal-rate-sale-policy.ts && tsx scripts/test-brs-derived-rate-timestamp.ts && tsx scripts/test-metal-price-write-decision.ts && tsx scripts/test-metal-rate-anomaly.ts",
     "stock:sync": "tsx scripts/sync-product-stock.ts",
     "check:inventory": "tsx scripts/check-inventory-consistency.ts",
     "db:migrate": "prisma migrate deploy",
@@ -31,7 +31,7 @@
     "typecheck": "tsc --noEmit",
     "db:seed": "prisma db seed",
     "test:e2e": "playwright test",
-    "verify:ci": "npm run typecheck && npm run lint && npm run test:tokens && npm run test:pricing && npm run test:commerce && npm run build && npm run test:e2e && npm run audit:security",
+    "verify:ci": "npm run typecheck && npm run lint && npm run test:tokens && npm run test:pricing && npm run test:commerce && npm run test:customer && npm run test:shipping && npm run test:security-alerts && npm run test:hardening && npm run audit:dependencies && npm run build && npm run test:e2e && npm run audit:security",
     "cron:expired-orders": "node scripts/run-cron-once.mjs expired-orders",
     "cron:metal-prices": "node scripts/run-cron-once.mjs metal-prices",
     "cron:security-alerts": "node scripts/run-cron-once.mjs security-alerts",
@@ -47,7 +47,11 @@
     "check:customer-env": "tsx scripts/check-customer-production-env.ts",
     "test:shipping": "tsx scripts/test-shipping.ts",
     "check:storefront-env": "tsx scripts/check-storefront-production-env.ts",
-    "test:security-alerts": "tsx scripts/test-security-events.ts && tsx scripts/test-security-alert-outbox.ts"
+    "test:security-alerts": "tsx scripts/test-security-events.ts && tsx scripts/test-security-alert-outbox.ts",
+    "test:hardening:contracts": "tsx scripts/test-hardening-contracts.ts",
+    "test:hardening:db": "tsx scripts/test-customer-order-ownership.ts && tsx scripts/test-professional-hardening-db.ts",
+    "test:hardening": "npm run test:hardening:contracts && npm run test:hardening:db",
+    "cron:data-retention": "node scripts/run-cron-once.mjs data-retention"
   },
   "dependencies": {
     "@base-ui/react": "^1.6.0",

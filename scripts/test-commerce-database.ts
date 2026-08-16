@@ -154,6 +154,7 @@ async function testDuplicatePaymentRefundDoesNotChangeOrder() {
     await markReviewedPaymentRefunded({
       orderId: fixture.order.id,
       paymentAttemptId: duplicate.id,
+      refundReference: "AUDIT-REFUND-123456",
       note: "Audit refund reference",
     });
 

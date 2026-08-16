@@ -12,6 +12,9 @@ import { acquireCronLease, releaseCronLease } from "@/lib/cron-lease";
 import {
   syncMetalPrices,
 } from "@/lib/metal-price-sync";
+import {
+  isDynamicPricingEnabled,
+} from "@/lib/runtime-features";
 
 export const dynamic =
   "force-dynamic";
@@ -191,6 +194,13 @@ export async function GET(
     )
   ) {
     return unauthorizedResponse();
+  }
+
+  if (!isDynamicPricingEnabled()) {
+    return NextResponse.json(
+      { successful: true, skipped: true, reason: "DYNAMIC_PRICING_DISABLED" },
+      { status: 202, headers: noStoreHeaders() },
+    );
   }
 
   const lease = await acquireCronLease({ key: "metal-prices", leaseMs: 540000 });

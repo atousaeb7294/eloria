@@ -26,7 +26,7 @@ export async function buildProductPageMetadata(locale: string, slug: string): Pr
       description,
       alternates: {
         canonical: path,
-        languages: { fa: `/fa/products/${slug}`, en: `/en/products/${slug}` },
+        languages: { fa: `/fa/products/${slug}`, en: `/en/products/${slug}`, "x-default": `/fa/products/${slug}` },
       },
       robots: { index: product.status !== "ARCHIVED" && product.status !== "DRAFT", follow: true },
       openGraph: {

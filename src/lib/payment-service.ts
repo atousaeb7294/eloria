@@ -5,6 +5,7 @@ import {
   requestZarinpalPayment,
   verifyZarinpalPayment,
   zarinpalStartUrl,
+  ZarinpalError,
 } from "@/lib/payment/zarinpal";
 import { prisma } from "@/lib/prisma";
 import { recordSecurityEvent } from "@/lib/security/security-events";
@@ -328,6 +329,88 @@ export async function verifyOrderPayment(input: {
       authority: input.authority,
     });
   } catch (error) {
+    /*
+     * اگر خود درگاه code موفق 100/101 داده ولی ref_id معتبر برنگرداند،
+     * این یک خطای شبکه‌ای قابل Retry نیست: از دید مالی احتمال دریافت وجه
+     * وجود دارد. Attempt و Order به بررسی دستی می‌روند و هرگز FAILED نمی‌شوند.
+     */
+    if (
+      error instanceof ZarinpalError &&
+      (error.code === 100 || error.code === 101)
+    ) {
+      const protocolReviewAt = new Date();
+
+      await prisma.$transaction(async tx => {
+        await tx.paymentAttempt.updateMany({
+          where: {
+            id: attempt.id,
+            status: "PENDING_VERIFICATION",
+          },
+          data: {
+            status: "REQUIRES_REVIEW",
+            activeKey: null,
+            verifiedAt: protocolReviewAt,
+            verificationLeaseExpiresAt: null,
+            verificationPayload: json({
+              code: error.code,
+              message: error.message,
+              reason: "SUCCESS_WITHOUT_VALID_REFERENCE",
+            }),
+            errorMessage: error.message,
+          },
+        });
+
+        await tx.order.updateMany({
+          where: {
+            id: order.id,
+            paidAt: null,
+          },
+          data: {
+            status: "PAYMENT_REVIEW",
+            paidAt: protocolReviewAt,
+          },
+        });
+
+        await tx.orderAuditEvent.create({
+          data: {
+            orderId: order.id,
+            actorType: "PAYMENT_GATEWAY",
+            eventType: "PAYMENT_SUCCESS_WITHOUT_VALID_REFERENCE",
+            payload: json({
+              authority: input.authority,
+              code: error.code,
+              attemptId: attempt.id,
+            }),
+          },
+        });
+      });
+
+      await recordSecurityEvent({
+        eventType: "PAYMENT_SUCCESS_WITHOUT_VALID_REFERENCE",
+        severity: "CRITICAL",
+        scope: "PAYMENT",
+        successful: false,
+        subject: order.id,
+        details: {
+          provider: PROVIDER,
+          orderNumber: order.orderNumber,
+          attemptId: attempt.id,
+          reason: "provider-success-missing-reference",
+          code: error.code,
+        },
+        dispatchKey: "payment-reference-review:" + order.id,
+      });
+
+      return {
+        successful: true,
+        orderNumber: order.orderNumber,
+        referenceId: "",
+        requiresReview: true,
+        orderId: order.id,
+        attemptId: attempt.id,
+      };
+    }
+
     /*
      * خطای ارتباط یا پاسخ Verify نباید Authority را غیرقابل استفاده کند.
      * تلاش روی REDIRECTED باقی می‌ماند تا Callback یا بررسی بعدی بتواند

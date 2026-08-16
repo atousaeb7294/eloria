@@ -1,30 +1,24 @@
-import {
-  NextResponse,
-} from "next/server";
+import { NextResponse } from "next/server";
 
 import {
-  prisma,
+  withDatabaseStatementTimeout,
 } from "@/lib/prisma";
 
-export const dynamic =
-  "force-dynamic";
+export const dynamic = "force-dynamic";
 
-const DATABASE_TIMEOUT_MS =
-  1600;
+const DATABASE_TIMEOUT_MS = 1_800;
+const FAILURE_COOLDOWN_MS = 60_000;
 
-const FAILURE_COOLDOWN_MS =
-  60_000;
-
-let retryAfterTimestamp =
-  0;
+let retryAfterTimestamp = 0;
 
 const configuredSlugs =
-  (process.env.HOME_FEATURED_PRODUCT_SLUGS ?? "")
+  (
+    process.env
+      .HOME_FEATURED_PRODUCT_SLUGS ??
+    ""
+  )
     .split(",")
-    .map(
-      (slug) =>
-        slug.trim(),
-    )
+    .map(slug => slug.trim())
     .filter(Boolean)
     .slice(0, 7);
 
@@ -46,9 +40,7 @@ function jsonResponse(
       : "public, max-age=10, s-maxage=20";
 
   return NextResponse.json(
-    {
-      items,
-    },
+    { items },
     {
       status: 200,
       headers: {
@@ -61,55 +53,13 @@ function jsonResponse(
   );
 }
 
-async function withTimeout<T>(
-  promise: Promise<T>,
-  timeoutMs: number,
-): Promise<T> {
-  let timer:
-    | ReturnType<
-        typeof setTimeout
-      >
-    | undefined;
-
-  try {
-    return await Promise.race([
-      promise,
-      new Promise<T>(
-        (
-          _resolve,
-          reject,
-        ) => {
-          timer =
-            setTimeout(
-              () => {
-                reject(
-                  new Error(
-                    "HOME_FEATURED_DATABASE_TIMEOUT",
-                  ),
-                );
-              },
-              timeoutMs,
-            );
-        },
-      ),
-    ]);
-  } finally {
-    if (timer) {
-      clearTimeout(timer);
-    }
-  }
-}
-
 export async function GET(
   request: Request,
 ) {
-  const url =
-    new URL(request.url);
-
+  const url = new URL(request.url);
   const locale =
-    url.searchParams.get(
-      "locale",
-    ) === "en"
+    url.searchParams.get("locale") ===
+    "en"
       ? "en"
       : "fa";
 
@@ -125,34 +75,39 @@ export async function GET(
 
   try {
     const products =
-      await withTimeout(
-        prisma.product.findMany(
-          {
+      await withDatabaseStatementTimeout(
+        DATABASE_TIMEOUT_MS,
+        transaction =>
+          transaction.product.findMany({
             take: 7,
-
-            where:
-              configuredSlugs.length
+            where: {
+              status: {
+                in: [
+                  "ACTIVE",
+                  "OUT_OF_STOCK",
+                ],
+              },
+              collection: {
+                isActive: true,
+              },
+              ...(configuredSlugs.length
                 ? {
                     slug: {
                       in:
                         configuredSlugs,
                     },
                   }
-                : undefined,
-
-            orderBy: {
-              createdAt:
-                "desc",
+                : {}),
             },
-
+            orderBy: {
+              createdAt: "desc",
+            },
             select: {
               slug: true,
               nameFa: true,
               nameEn: true,
-
               images: {
                 take: 1,
-
                 orderBy: [
                   {
                     isPrimary:
@@ -167,28 +122,21 @@ export async function GET(
                       "asc",
                   },
                 ],
-
                 select: {
                   imageUrl:
                     true,
                 },
               },
             },
-          },
-        ),
-        DATABASE_TIMEOUT_MS,
+          }),
       );
 
-    retryAfterTimestamp =
-      0;
+    retryAfterTimestamp = 0;
 
     const orderedProducts =
       configuredSlugs.length
         ? [...products].sort(
-            (
-              left,
-              right,
-            ) =>
+            (left, right) =>
               configuredSlugs.indexOf(
                 left.slug,
               ) -
@@ -200,40 +148,30 @@ export async function GET(
 
     const items =
       orderedProducts
-        .filter(
-          (product) =>
-            Boolean(
-              product
-                .images[0]
-                ?.imageUrl,
-            ),
+        .filter(product =>
+          Boolean(
+            product.images[0]
+              ?.imageUrl,
+          ),
         )
-        .map(
-          (product) => ({
-            slug:
-              product.slug,
-
-            name:
-              locale === "fa"
-                ? product.nameFa
-                : product.nameEn,
-
-            imageUrl:
-              product.images[0]
-                ?.imageUrl ??
-              "",
-
-            href: `/${locale}/products/${product.slug}`,
-          }),
-        );
+        .map(product => ({
+          slug: product.slug,
+          name:
+            locale === "fa"
+              ? product.nameFa
+              : product.nameEn,
+          imageUrl:
+            product.images[0]
+              ?.imageUrl ?? "",
+          href:
+            `/${locale}/products/${product.slug}`,
+        }));
 
     return jsonResponse(
       items,
       "database",
     );
-  } catch (
-    error
-  ) {
+  } catch (error) {
     retryAfterTimestamp =
       Date.now() +
       FAILURE_COOLDOWN_MS;

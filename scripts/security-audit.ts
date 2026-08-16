@@ -141,7 +141,11 @@ async function main(): Promise<void> {
         (await fileIncludes("src/app/api/support/contact/route.ts", "readJsonBody")) &&
         (await fileIncludes("src/app/api/treasury/products/route.ts", "readJsonBody")) &&
         (await fileIncludes("src/app/api/customer/auth/request-otp/route.ts", "readJsonBody")) &&
-        (await fileIncludes("src/app/api/customer/auth/verify-otp/route.ts", "readJsonBody")),
+        (await fileIncludes("src/app/api/customer/auth/verify-otp/route.ts", "readJsonBody")) &&
+        (await fileIncludes("src/app/api/customer/me/route.ts", "readJsonBody")) &&
+        (await fileIncludes("src/app/api/customer/addresses/route.ts", "readJsonBody")) &&
+        (await fileIncludes("src/app/api/customer/addresses/[id]/route.ts", "readJsonBody")) &&
+        (await fileIncludes("src/app/api/customer/favorites/route.ts", "readJsonBody")),
     ],
     [
       "Sanitized admin and provider-facing errors",
@@ -225,6 +229,45 @@ async function main(): Promise<void> {
     [
       "Bounded SMS provider request",
       await fileIncludes("src/lib/notifications/kavenegar.ts", "AbortSignal.timeout(8_000)"),
+    ],
+    [
+      "Metal-rate anomaly circuit breaker",
+      (await fileIncludes("src/lib/metal-rate-anomaly.ts", [
+        "DEVIATION_TOO_HIGH",
+        "OUTSIDE_ABSOLUTE_RANGE",
+      ])) &&
+        (await fileIncludes("src/lib/metal-price-sync.ts", [
+          "METAL_RATE_ANOMALY_REJECTED",
+          "ANOMALOUS_RATE_REJECTED",
+        ])),
+    ],
+    [
+      "Guest payment-start authorization",
+      (await fileIncludes("src/lib/payment-start-authorization.ts", [
+        "createPaymentStartAuthorization",
+        "timingSafeEqual",
+      ])) &&
+        (await fileIncludes("src/app/api/payments/zarinpal/start/route.ts", [
+          "verifyPaymentStartAuthorization",
+          "getCustomerFromRequest",
+        ])),
+    ],
+    [
+      "Historical guest order privacy",
+      !(await fileIncludes("src/lib/customer-auth.ts", "customerMobile: mobile")),
+    ],
+    [
+      "Structured refund reference",
+      (await fileIncludes("src/lib/order-operations.ts", [
+        "refundReference",
+        "شماره مرجع",
+      ])) &&
+        (await fileIncludes("prisma/schema.prisma", "refundReference")),
+    ],
+    [
+      "Data retention cron",
+      (await fileIncludes("src/lib/data-retention.ts", "runDataRetention")) &&
+        (await fileIncludes("src/app/api/cron/data-retention/route.ts", "CRON_SECRET")),
     ],
     [
       "Prisma production migrations",

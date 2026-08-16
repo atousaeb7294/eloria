@@ -20,6 +20,8 @@ import { verifyTurnstileToken } from "@/lib/security/turnstile";
 import { isZarinpalConfigured } from "@/lib/payment/zarinpal";
 import { getCustomerFromRequest } from "@/lib/customer-auth";
 import { prisma } from "@/lib/prisma";
+import { isCommerceEnabled } from "@/lib/runtime-features";
+import { setPaymentStartAuthorizationCookie } from "@/lib/payment-start-authorization";
 
 import {
   CheckoutOrderError,
@@ -245,6 +247,13 @@ export async function POST(
     return NextResponse.json({ successful: false, code: "INVALID_ORIGIN", message: "مبدأ درخواست معتبر نیست." }, { status: 403, headers: noStoreHeaders() });
   }
 
+  if (!isCommerceEnabled()) {
+    return NextResponse.json(
+      { successful: false, code: "COMMERCE_DISABLED", message: "ثبت سفارش در حال حاضر غیرفعال است." },
+      { status: 503, headers: noStoreHeaders() },
+    );
+  }
+
   const rate = await consumeRateLimit({ key: `checkout:${requestIp(request)}`, limit: 12, windowMs: 60_000 });
   if (!rate.allowed) {
     return NextResponse.json({ successful: false, code: "RATE_LIMITED", message: "تعداد درخواست‌ها بیش از حد مجاز است." }, { status: 429, headers: { ...noStoreHeaders(), "Retry-After": String(rate.retryAfterSeconds) } });
@@ -366,6 +375,7 @@ export async function POST(
     const challenge = await verifyTurnstileToken({
       token: typeof body.turnstileToken === "string" ? body.turnstileToken : null,
       ip: clientIp,
+      expectedAction: "checkout",
     });
     if (!challenge.successful) {
       return NextResponse.json(
@@ -542,7 +552,7 @@ export async function POST(
           : "درگاه پرداخت پیکربندی نشده است.",
     };
 
-    return NextResponse.json(
+    const response = NextResponse.json(
       {
         successful:
           true,
@@ -567,6 +577,19 @@ export async function POST(
           noStoreHeaders(),
       },
     );
+
+    if (paymentConfigured) {
+      setPaymentStartAuthorizationCookie(
+        response,
+        {
+          orderId: result.order.id,
+          amountToman: result.order.payableToman,
+          mobile: canonicalCustomer.mobile,
+        },
+      );
+    }
+
+    return response;
   } catch (error) {
     if (
       error instanceof

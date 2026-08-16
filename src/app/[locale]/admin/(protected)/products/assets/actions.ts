@@ -101,13 +101,49 @@ export async function uploadAdminProductImagesAction(productId: string, localeVa
   redirect(messageUrl(locale, productId, "mediaSaved"));
 }
 
+function allowedImageHosts(): Set<string> {
+  const hosts = new Set<string>();
+
+  const supabase = process.env.SUPABASE_URL?.trim();
+  if (supabase) {
+    try {
+      const url = new URL(supabase);
+      if (url.protocol === "https:") hosts.add(url.hostname.toLowerCase());
+    } catch {}
+  }
+
+  for (const raw of (process.env.ELORIA_ALLOWED_IMAGE_HOSTS ?? "").split(",")) {
+    const value = raw.trim();
+    if (!value) continue;
+    try {
+      const url = new URL(value.includes("://") ? value : `https://${value}`);
+      if (url.protocol === "https:") hosts.add(url.hostname.toLowerCase());
+    } catch {}
+  }
+
+  return hosts;
+}
+
+function isAllowedProductImageUrl(value: string): boolean {
+  if (value.startsWith("/")) return true;
+
+  try {
+    const url = new URL(value);
+    if (url.protocol !== "https:") return false;
+    if (process.env.NODE_ENV !== "production") return true;
+    return allowedImageHosts().has(url.hostname.toLowerCase());
+  } catch {
+    return false;
+  }
+}
+
 export async function addAdminProductImageUrlAction(productId: string, localeValue: string, form: FormData): Promise<void> {
   await session();
   const locale = localeOf(localeValue);
   const item = await product(productId);
   const imageUrl = text(form, "imageUrl", 1000, true)!;
-  if (!(imageUrl.startsWith("/") || imageUrl.startsWith("https://"))) {
-    redirect(messageUrl(locale, productId, "mediaError", "آدرس تصویر باید با / یا https:// شروع شود."));
+  if (!isAllowedProductImageUrl(imageUrl)) {
+    redirect(messageUrl(locale, productId, "mediaError", "آدرس تصویر خارج از میزبان‌های مجاز است."));
   }
   const count = await prisma.productImage.count({ where: { productId } });
   await prisma.productImage.create({ data: {
@@ -189,10 +225,39 @@ export async function updateAdminProductVariantAction(productId: string, variant
 }
 export async function deleteAdminProductVariantAction(productId: string, variantId: string, localeValue: string): Promise<void> {
   await session(); const locale = localeOf(localeValue); const item = await product(productId);
-  if (await prisma.orderItem.count({ where: { variantId } })) {
-    await prisma.$transaction(async transaction => { await transaction.productVariant.update({ where: { id: variantId }, data: { isActive: false } }); await syncProductInventory(transaction, productId); }); refresh(productId, item.slug); redirect(messageUrl(locale, productId, "variantArchived"));
+
+  const ownedVariant = await prisma.productVariant.findFirst({
+    where: { id: variantId, productId },
+    select: { id: true },
+  });
+
+  if (!ownedVariant) {
+    redirect(messageUrl(locale, productId, "variantError", "تنوع متعلق به این محصول نیست یا پیدا نشد."));
   }
-  await prisma.$transaction(async transaction => { await transaction.productVariant.deleteMany({ where: { id: variantId, productId } }); await syncProductInventory(transaction, productId); }); refresh(productId, item.slug); redirect(messageUrl(locale, productId, "variantSaved"));
+
+  if (await prisma.orderItem.count({ where: { variantId, productId } })) {
+    await prisma.$transaction(async transaction => {
+      const archived = await transaction.productVariant.updateMany({
+        where: { id: variantId, productId },
+        data: { isActive: false },
+      });
+      if (archived.count !== 1) throw new AdminProductAssetError("آرشیو تنوع انجام نشد.");
+      await syncProductInventory(transaction, productId);
+    });
+    refresh(productId, item.slug);
+    redirect(messageUrl(locale, productId, "variantArchived"));
+  }
+
+  await prisma.$transaction(async transaction => {
+    const removed = await transaction.productVariant.deleteMany({
+      where: { id: variantId, productId },
+    });
+    if (removed.count !== 1) throw new AdminProductAssetError("حذف تنوع انجام نشد.");
+    await syncProductInventory(transaction, productId);
+  });
+
+  refresh(productId, item.slug);
+  redirect(messageUrl(locale, productId, "variantSaved"));
 }
 export async function deleteAdminProductAction(productId: string, localeValue: string): Promise<void> {
   await session(); const locale = localeOf(localeValue);

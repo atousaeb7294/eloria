@@ -44,16 +44,28 @@ function totpSecret(): string {
   return env("ELORIA_ADMIN_TOTP_SECRET").replace(/\s+/g, "").toUpperCase();
 }
 
+function hasValidTotpSecret(): boolean {
+  const secret = totpSecret();
+  return secret.length >= 16 && /^[A-Z2-7]+=*$/.test(secret);
+}
+
 export function isAdminTotpRequired(): boolean {
-  return totpSecret().length > 0;
+  return (
+    process.env.NODE_ENV === "production" ||
+    totpSecret().length > 0
+  );
 }
 
 export function isAdminConfigured(): boolean {
+  const minimumPasswordLength =
+    process.env.NODE_ENV === "production" ? 20 : 14;
+
   return (
     adminUsername().length >= 3 &&
-    adminPassword().length >= 14 &&
+    adminPassword().length >= minimumPasswordLength &&
     sessionSecret().length >= 48 &&
-    sessionVersion().length >= 1
+    sessionVersion().length >= 1 &&
+    (!isAdminTotpRequired() || hasValidTotpSecret())
   );
 }
 

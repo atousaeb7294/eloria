@@ -21,6 +21,7 @@ import {
 } from "@/components/page-background-provider";
 
 import { routing } from "@/i18n/routing";
+import { siteBaseUrl } from "@/lib/site-url";
 
 type LocaleParams = Promise<{
   locale: string;
@@ -53,10 +54,7 @@ export async function generateMetadata({
     namespace: "Metadata",
   });
 
-  const baseUrl = new URL(
-    process.env.NEXT_PUBLIC_SITE_URL?.trim() ||
-      "https://eloria.example",
-  );
+  const baseUrl = siteBaseUrl();
 
   const title = t("title");
   const description = t("description");
@@ -71,6 +69,7 @@ export async function generateMetadata({
       languages: {
         fa: "/fa",
         en: "/en",
+        "x-default": "/fa",
       },
     },
 

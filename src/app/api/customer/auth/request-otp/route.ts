@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createCustomerOtpChallenge, normalizeIranMobile } from "@/lib/customer-auth";
 import { sendSms } from "@/lib/notifications/kavenegar";
 import { prisma } from "@/lib/prisma";
+import { isCustomerAuthEnabled } from "@/lib/runtime-features";
 import { JsonRequestBodyError, readJsonBody } from "@/lib/security/json-body";
 import { consumeRateLimit } from "@/lib/security/rate-limit";
 import { hasTrustedOrigin, requestIp } from "@/lib/security/request";
@@ -19,6 +20,13 @@ type OtpRequestBody = {
 };
 
 export async function POST(request: NextRequest) {
+  if (!isCustomerAuthEnabled()) {
+    return NextResponse.json(
+      { successful: false, message: "ورود مشتری در حال حاضر غیرفعال است." },
+      { status: 503, headers: headers() },
+    );
+  }
+
   const ip = requestIp(request);
   const userAgent = request.headers.get("user-agent");
 
@@ -64,7 +72,11 @@ export async function POST(request: NextRequest) {
   try { mobile = normalizeIranMobile(body.mobile); }
   catch (error) { return NextResponse.json({ successful: false, message: error instanceof Error ? error.message : "شماره موبایل معتبر نیست." }, { status: 400, headers: headers() }); }
 
-  const challengeCheck = await verifyTurnstileToken({ token: typeof body.turnstileToken === "string" ? body.turnstileToken : null, ip });
+  const challengeCheck = await verifyTurnstileToken({
+    token: typeof body.turnstileToken === "string" ? body.turnstileToken : null,
+    ip,
+    expectedAction: "customer-login",
+  });
   if (!challengeCheck.successful) {
     await recordSecurityEvent({
       eventType: "CUSTOMER_TURNSTILE_FAILED",

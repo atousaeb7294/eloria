@@ -106,6 +106,7 @@ export async function consumeCustomerOtp(input: { challengeId: string; mobile: s
     await tx.$queryRaw`SELECT id FROM customer_otp_challenges WHERE id = ${input.challengeId}::uuid FOR UPDATE`;
     const challenge = await tx.customerOtpChallenge.findUnique({ where: { id: input.challengeId } });
     if (!challenge || challenge.mobile !== mobile) throw new Error("درخواست کد تأیید معتبر نیست.");
+    if (challenge.purpose !== "LOGIN") throw new Error("هدف کد تأیید معتبر نیست.");
     if (challenge.consumedAt) throw new Error("این کد قبلاً استفاده شده است.");
     if (challenge.expiresAt.getTime() <= now.getTime()) throw new Error("مهلت کد تأیید پایان یافته است.");
     if (challenge.attempts >= challenge.maxAttempts) throw new Error("تعداد تلاش‌های کد تأیید بیش از حد مجاز است.");
@@ -133,11 +134,6 @@ export async function consumeCustomerOtp(input: { challengeId: string; mobile: s
       where: { mobile },
       create: { mobile, mobileVerifiedAt: now, lastLoginAt: now, isActive: true },
       update: { mobileVerifiedAt: now, lastLoginAt: now },
-    });
-
-    await tx.order.updateMany({
-      where: { customerId: null, customerMobile: mobile },
-      data: { customerId: customer.id },
     });
 
     return customer;

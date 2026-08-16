@@ -4,61 +4,27 @@ import {
 } from "next/server";
 
 import {
-  prisma,
+  withDatabaseStatementTimeout,
 } from "@/lib/prisma";
-
-import { consumeRateLimit } from "@/lib/security/rate-limit";
-import { requestIp } from "@/lib/security/request";
-import { readJsonBody } from "@/lib/security/json-body";
+import {
+  consumeRateLimit,
+} from "@/lib/security/rate-limit";
+import {
+  requestIp,
+} from "@/lib/security/request";
+import {
+  readJsonBody,
+} from "@/lib/security/json-body";
 
 export const dynamic =
   "force-dynamic";
 
-const DATABASE_TIMEOUT_MS =
-  1800;
+const DATABASE_TIMEOUT_MS = 2_000;
 
 type RequestBody = {
   slugs?: unknown;
   locale?: unknown;
 };
-
-function withTimeout<T>(
-  promise: Promise<T>,
-  timeoutMs: number,
-): Promise<T> {
-  let timer:
-    | ReturnType<
-        typeof setTimeout
-      >
-    | undefined;
-
-  return Promise.race([
-    promise.finally(() => {
-      if (timer) {
-        clearTimeout(timer);
-      }
-    }),
-
-    new Promise<T>(
-      (
-        _resolve,
-        reject,
-      ) => {
-        timer =
-          setTimeout(
-            () => {
-              reject(
-                new Error(
-                  "TREASURY_DATABASE_TIMEOUT",
-                ),
-              );
-            },
-            timeoutMs,
-          );
-      },
-    ),
-  ]);
-}
 
 function parseSlugs(
   value: unknown,
@@ -77,13 +43,15 @@ function parseSlugs(
             typeof item ===
             "string",
         )
-        .map((item) =>
+        .map(item =>
           item.trim(),
         )
         .filter(
-          (item) =>
+          item =>
             item.length <= 160 &&
-            /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(item),
+            /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(
+              item,
+            ),
         ),
     ),
   ].slice(0, 50);
@@ -92,42 +60,51 @@ function parseSlugs(
 export async function POST(
   request: NextRequest,
 ) {
-  const rate = await consumeRateLimit({
-    key: `treasury-products:${requestIp(request)}`,
-    limit: 60,
-    windowMs: 60_000,
-  });
+  const rate =
+    await consumeRateLimit({
+      key:
+        `treasury-products:${requestIp(
+          request,
+        )}`,
+      limit: 60,
+      windowMs: 60_000,
+    });
 
   if (!rate.allowed) {
     return NextResponse.json(
-      { items: [], source: "rate-limited" },
+      {
+        items: [],
+        source:
+          "rate-limited",
+      },
       {
         status: 200,
         headers: {
-          "Cache-Control": "no-store",
-          "Retry-After": String(rate.retryAfterSeconds),
+          "Cache-Control":
+            "no-store",
+          "Retry-After": String(
+            rate.retryAfterSeconds,
+          ),
         },
       },
     );
   }
 
   const body =
-    await readJsonBody<RequestBody>(request, 16 * 1024)
-      .catch(() => null);
+    await readJsonBody<RequestBody>(
+      request,
+      16 * 1024,
+    ).catch(() => null);
 
   const slugs =
-    parseSlugs(
-      body?.slugs,
-    );
+    parseSlugs(body?.slugs);
 
   const locale =
     body?.locale === "en"
       ? "en"
       : "fa";
 
-  if (
-    slugs.length === 0
-  ) {
+  if (!slugs.length) {
     return NextResponse.json(
       {
         items: [],
@@ -144,23 +121,30 @@ export async function POST(
 
   try {
     const products =
-      await withTimeout(
-        prisma.product.findMany(
-          {
+      await withDatabaseStatementTimeout(
+        DATABASE_TIMEOUT_MS,
+        transaction =>
+          transaction.product.findMany({
             where: {
               slug: {
                 in: slugs,
               },
+              status: {
+                in: [
+                  "ACTIVE",
+                  "OUT_OF_STOCK",
+                ],
+              },
+              collection: {
+                isActive: true,
+              },
             },
-
             select: {
               slug: true,
               nameFa: true,
               nameEn: true,
-
               images: {
                 take: 1,
-
                 orderBy: [
                   {
                     isPrimary:
@@ -175,16 +159,13 @@ export async function POST(
                       "asc",
                   },
                 ],
-
                 select: {
                   imageUrl:
                     true,
                 },
               },
             },
-          },
-        ),
-        DATABASE_TIMEOUT_MS,
+          }),
       );
 
     const order =
@@ -202,28 +183,18 @@ export async function POST(
 
     const items =
       products
-        .map(
-          (product) => ({
-            slug:
-              product.slug,
-
-            name:
-              locale === "fa"
-                ? product.nameFa
-                : product.nameEn,
-
-            imageUrl:
-              product
-                .images[0]
-                ?.imageUrl ??
-              "",
-          }),
-        )
+        .map(product => ({
+          slug: product.slug,
+          name:
+            locale === "fa"
+              ? product.nameFa
+              : product.nameEn,
+          imageUrl:
+            product.images[0]
+              ?.imageUrl ?? "",
+        }))
         .sort(
-          (
-            left,
-            right,
-          ) =>
+          (left, right) =>
             (order.get(
               left.slug,
             ) ?? 999) -
@@ -235,8 +206,7 @@ export async function POST(
     return NextResponse.json(
       {
         items,
-        source:
-          "database",
+        source: "database",
       },
       {
         headers: {
@@ -245,9 +215,7 @@ export async function POST(
         },
       },
     );
-  } catch (
-    error
-  ) {
+  } catch (error) {
     console.warn(
       "[Eloria Treasury] Product enrichment unavailable; local treasury remains active.",
       error,
@@ -256,12 +224,10 @@ export async function POST(
     return NextResponse.json(
       {
         items: [],
-        source:
-          "fallback",
+        source: "fallback",
       },
       {
         status: 200,
-
         headers: {
           "Cache-Control":
             "no-store",

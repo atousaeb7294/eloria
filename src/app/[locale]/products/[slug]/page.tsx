@@ -306,6 +306,7 @@ export async function generateMetadata({
         languages: {
           fa: `/fa/products/${encodedSlug}`,
           en: `/en/products/${encodedSlug}`,
+          "x-default": `/fa/products/${encodedSlug}`,
         },
       },
       openGraph: {

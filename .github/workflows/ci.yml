@@ -6,6 +6,9 @@ on:
   pull_request:
     branches: [main, master]
 
+permissions:
+  contents: read
+
 concurrency:
   group: eloria-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
@@ -13,7 +16,7 @@ concurrency:
 jobs:
   release-gate:
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 50
 
     services:
       postgres:
@@ -33,25 +36,67 @@ jobs:
     env:
       NODE_ENV: test
       CI: "true"
+
       DATABASE_URL: postgresql://postgres:postgres@localhost:5432/eloria
       DIRECT_URL: postgresql://postgres:postgres@localhost:5432/eloria
       DATABASE_SSL_MODE: disable
       DATABASE_POOL_MAX: "5"
+      DATABASE_STATEMENT_TIMEOUT_MS: "15000"
+
       NEXT_PUBLIC_SITE_URL: http://127.0.0.1:3000
+
+      ELORIA_COMMERCE_ENABLED: "false"
+      ELORIA_CUSTOMER_AUTH_ENABLED: "false"
+      ELORIA_DYNAMIC_PRICING_ENABLED: "false"
+      ELORIA_PAYMENT_ENABLED: "false"
+      ELORIA_SUPPORT_ENABLED: "false"
+      ELORIA_LEGAL_PAGES_INDEX: "false"
+      ELORIA_SUPPORT_TURNSTILE_REQUIRED: "false"
+
       ELORIA_ADMIN_USERNAME: admin
-      ELORIA_ADMIN_PASSWORD: CI-only-password-1234
+      ELORIA_ADMIN_PASSWORD: CI-only-password-123456789
       ELORIA_ADMIN_SESSION_VERSION: "1"
-      ELORIA_ADMIN_SESSION_SECRET: ci-session-secret-ci-session-secret-ci-session-secret
-      CRON_SECRET: ci-cron-secret-ci-cron-secret-ci-cron-secret-ci
-      ELORIA_TRACKING_SECRET: ci-tracking-secret-ci-tracking-secret-ci
-      ELORIA_PAYMENT_RECEIPT_SECRET: ci-receipt-secret-ci-receipt-secret-ci
+      ELORIA_ADMIN_SESSION_SECRET: ci-admin-session-secret-ci-admin-session-secret-ci-0001
+      ELORIA_ADMIN_TOTP_SECRET: JBSWY3DPEHPK3PXP
+
+      ELORIA_CUSTOMER_AUTH_SECRET: ci-customer-auth-secret-ci-customer-auth-secret-0002
+      ELORIA_PAYMENT_START_SECRET: ci-payment-start-secret-ci-payment-start-secret-0003
+      ELORIA_TRACKING_SECRET: ci-tracking-secret-ci-tracking-secret-ci-0004
+      ELORIA_PAYMENT_RECEIPT_SECRET: ci-receipt-secret-ci-receipt-secret-ci-0005
+      CRON_SECRET: ci-cron-secret-ci-cron-secret-ci-cron-secret-0006
+      ELORIA_HEALTH_SECRET: ci-health-secret-ci-health-secret-ci-health-0007
+
       ELORIA_TRUST_PROXY: "false"
+      ELORIA_PROXY_PROVIDER: "none"
       ELORIA_RATE_LIMIT_FAILURE_MODE: closed
+
       NEXT_SERVER_ACTIONS_ENCRYPTION_KEY: AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=
       ELORIA_DEPLOYMENT_ID: ci-${{ github.run_id }}
+
+      ELORIA_SHIPPING_FLAT_TOMAN: "0"
+      ELORIA_FREE_SHIPPING_FROM_TOMAN: "0"
+
+      BRS_API_KEY: ci-brs-api-key
+      ELORIA_GOLD_RATE_MIN_TOMAN: "1000000"
+      ELORIA_GOLD_RATE_MAX_TOMAN: "1000000000"
+      ELORIA_SILVER_RATE_MIN_TOMAN: "1000"
+      ELORIA_SILVER_RATE_MAX_TOMAN: "10000000"
+      ELORIA_GOLD_RATE_MAX_DEVIATION_PERCENT: "12"
+      ELORIA_SILVER_RATE_MAX_DEVIATION_PERCENT: "20"
+
       SUPABASE_URL: https://example.supabase.co
       SUPABASE_SERVICE_ROLE_KEY: ci-service-role-key-ci-service-role-key-ci-service-role-key
       ELORIA_STORAGE_BUCKET: product-images
+
+      ELORIA_SECURITY_ALERT_WEBHOOK_URL: https://alerts.invalid/eloria-ci
+      ELORIA_SUPPORT_WEBHOOK_URL: https://support.invalid/eloria-ci
+      ELORIA_SECURITY_ALERT_MIN_SEVERITY: HIGH
+      ELORIA_SECURITY_ALERT_COOLDOWN_SECONDS: "300"
+
+      ELORIA_OTP_RETENTION_DAYS: "7"
+      ELORIA_SESSION_RETENTION_DAYS: "30"
+      ELORIA_SECURITY_ALERT_RETENTION_DAYS: "90"
+      ELORIA_SECURITY_EVENT_RETENTION_DAYS: "180"
 
     steps:
       - name: Checkout
@@ -87,28 +132,61 @@ jobs:
       - name: Test signed tokens
         run: npm run test:tokens
 
-      - name: Test pricing engine
+      - name: Test pricing engine and anomaly circuit breaker
         run: npm run test:pricing
 
       - name: Test commerce database invariants
         run: npm run test:commerce
 
+      - name: Test customer account behavior
+        run: npm run test:customer
+
+      - name: Test shipping rules
+        run: npm run test:shipping
+
+      - name: Test security alert outbox
+        run: npm run test:security-alerts
+
+      - name: Test hardening regression contracts
+        run: npm run test:hardening
+
       - name: Re-seed storefront fixtures
         run: npm run db:seed
 
-      - name: Validate production environment contract
-        run: npm run check:env
-
-      - name: Security audit
-        run: npm run audit:security
-
-      - name: Build production application
+      - name: Validate full production environment contract
         env:
           NODE_ENV: production
+          NEXT_PUBLIC_SITE_URL: https://ci.eloria.invalid
+          DATABASE_SSL_MODE: verify-full
+          ELORIA_COMMERCE_ENABLED: "true"
+          ELORIA_CUSTOMER_AUTH_ENABLED: "true"
+          ELORIA_DYNAMIC_PRICING_ENABLED: "true"
+          ELORIA_PAYMENT_ENABLED: "true"
+          ELORIA_SUPPORT_ENABLED: "true"
+          ELORIA_SUPPORT_TURNSTILE_REQUIRED: "true"
+          ELORIA_TRUST_PROXY: "true"
+          ELORIA_PROXY_PROVIDER: generic
+          NEXT_PUBLIC_TURNSTILE_SITE_KEY: 1x00000000000000000000AA
+          TURNSTILE_SECRET_KEY: 1x0000000000000000000000000000000AA
+          KAVENEGAR_API_KEY: ci-kavenegar-api-key-1234567890
+          ZARINPAL_MERCHANT_ID: 00000000-0000-0000-0000-000000000000
+        run: npm run check:env
+
+      - name: Static security audit
+        run: npm run audit:security
+
+      - name: Dependency security audit
+        run: npm run audit:dependencies
+
+      - name: Build production application against CI database
+        env:
+          NODE_ENV: production
+          NEXT_PUBLIC_SITE_URL: https://ci.eloria.invalid
+          ELORIA_CI_BUILD_ENV_ASSERTED: "true"
         run: npm run build
 
-      - name: Install Playwright Chromium
-        run: npx playwright install --with-deps chromium
+      - name: Install Playwright Chromium and WebKit
+        run: npx playwright install --with-deps chromium webkit
 
       - name: Run browser tests
         run: npm run test:e2e

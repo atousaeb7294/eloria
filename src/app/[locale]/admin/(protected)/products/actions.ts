@@ -735,55 +735,50 @@ export async function updateAdminProductAction(
         productId,
     });
 
-    await withDatabaseRetry(() =>
-      prisma.product.update({
-        where: { id: productId },
-        data: productData(input),
-      }),
+    await withDatabaseRetry(
+      () =>
+        prisma.$transaction(async transaction => {
+          await transaction.product.update({
+            where: { id: productId },
+            data: productData(input),
+          });
+
+          if (!input.primaryImageUrl) return;
+
+          const primaryImage =
+            await transaction.productImage.findFirst({
+              where: {
+                productId,
+                isPrimary: true,
+              },
+              orderBy: { displayOrder: "asc" },
+              select: { id: true },
+            });
+
+          if (primaryImage) {
+            await transaction.productImage.update({
+              where: { id: primaryImage.id },
+              data: {
+                imageUrl: input.primaryImageUrl!,
+                altFa: input.nameFa,
+                altEn: input.nameEn,
+              },
+            });
+          } else {
+            await transaction.productImage.create({
+              data: {
+                productId,
+                imageUrl: input.primaryImageUrl!,
+                altFa: input.nameFa,
+                altEn: input.nameEn,
+                isPrimary: true,
+                displayOrder: 0,
+              },
+            });
+          }
+        }),
       { attempts: 2, delayMilliseconds: 150 },
     );
-
-    if (input.primaryImageUrl) {
-      const primaryImage = await withDatabaseRetry(() =>
-        prisma.productImage.findFirst({
-          where: {
-            productId,
-            isPrimary: true,
-          },
-          orderBy: { displayOrder: "asc" },
-          select: { id: true },
-        }),
-        { attempts: 2, delayMilliseconds: 150 },
-      );
-
-      if (primaryImage) {
-        await withDatabaseRetry(() =>
-          prisma.productImage.update({
-            where: { id: primaryImage.id },
-            data: {
-              imageUrl: input.primaryImageUrl!,
-              altFa: input.nameFa,
-              altEn: input.nameEn,
-            },
-          }),
-          { attempts: 2, delayMilliseconds: 150 },
-        );
-      } else {
-        await withDatabaseRetry(() =>
-          prisma.productImage.create({
-            data: {
-              productId,
-              imageUrl: input.primaryImageUrl!,
-              altFa: input.nameFa,
-              altEn: input.nameEn,
-              isPrimary: true,
-              displayOrder: 0,
-            },
-          }),
-          { attempts: 2, delayMilliseconds: 150 },
-        );
-      }
-    }
   } catch (error) {
     return {
       error:

@@ -84,7 +84,7 @@ export function CustomerLoginClient({ locale, nextPath }: { locale: "fa" | "en";
               <Phone className="absolute start-4 top-1/2 h-4 w-4 -translate-y-1/2 text-[#d7bd72]/50" />
               <input value={mobile} onChange={e => setMobile(e.target.value)} inputMode="tel" autoComplete="tel" placeholder="09121234567" className="h-13 w-full rounded-2xl border border-[#d8b967]/14 bg-black/20 ps-11 pe-4 text-sm text-[#f1e5c9] outline-none focus:border-[#e2c779]/40" />
             </div>
-            <TurnstileWidget locale={locale} onTokenChange={onTokenChange} />
+            <TurnstileWidget locale={locale} action="customer-login" onTokenChange={onTokenChange} />
             <button disabled={loading} className="flex h-13 w-full items-center justify-center gap-2 rounded-2xl border border-[#e3c873]/30 bg-[#143c2d] text-sm text-[#efd991] disabled:opacity-50">
               {loading ? <LoaderCircle className="h-4 w-4 animate-spin" /> : <KeyRound className="h-4 w-4" />}
               {fa ? "دریافت کد ورود" : "Send login code"}

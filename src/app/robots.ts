@@ -1,12 +1,17 @@
-import type { MetadataRoute } from "next";
+import type {
+  MetadataRoute,
+} from "next";
 
-export default function robots(): MetadataRoute.Robots {
-  const configured = process.env.NEXT_PUBLIC_SITE_URL?.trim().replace(/\/$/, "");
+import {
+  siteBaseUrl,
+} from "@/lib/site-url";
+
+export default function robots():
+  MetadataRoute.Robots {
   const base =
-    configured ||
-    (process.env.NODE_ENV === "production"
-      ? "https://eloria.invalid"
-      : "http://localhost:3000");
+    siteBaseUrl()
+      .toString()
+      .replace(/\/$/, "");
 
   return {
     rules: [
@@ -30,7 +35,8 @@ export default function robots(): MetadataRoute.Robots {
         ],
       },
     ],
-    sitemap: `${base}/sitemap.xml`,
+    sitemap:
+      `${base}/sitemap.xml`,
     host: base,
   };
 }

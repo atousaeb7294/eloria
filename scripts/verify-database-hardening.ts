@@ -7,6 +7,7 @@ type RequiredObjectsRow = {
   cronLeases: string | null;
   adminSessions: string | null;
   securityAlerts: string | null;
+  shipments: string | null;
   migrationTable: string | null;
 };
 
@@ -23,6 +24,7 @@ async function main() {
       to_regclass('public.cron_leases')::text AS "cronLeases",
       to_regclass('public.admin_sessions')::text AS "adminSessions",
       to_regclass('public.security_alerts')::text AS "securityAlerts",
+      to_regclass('public.shipments')::text AS "shipments",
       to_regclass('public._prisma_migrations')::text AS "migrationTable"
   `;
 
@@ -31,6 +33,7 @@ async function main() {
     ["cron_leases", objects?.cronLeases],
     ["admin_sessions", objects?.adminSessions],
     ["security_alerts", objects?.securityAlerts],
+    ["shipments", objects?.shipments],
     ["_prisma_migrations", objects?.migrationTable],
   ].filter(([, value]) => !value);
 
@@ -64,7 +67,12 @@ async function main() {
     "20260806023000_closed_market_safety_tiers",
     "20260806030000_closed_market_10_day_safety",
     "20260806031000_runtime_support_repair",
+    "20260815033000_customer_accounts",
+    "20260815034500_customer_db_defaults_hotfix",
+    "20260815035500_customer_legacy_schema_compat",
+    "20260815040500_customer_address_legacy_compat",
     "20260816133000_security_alert_outbox",
+    "20260816190000_professional_hardening",
   ];
 
   const appliedMigrationNames = new Set(
@@ -91,6 +99,7 @@ async function main() {
     ["cron_leases", objects?.cronLeases],
     ["admin_sessions", objects?.adminSessions],
     ["security_alerts", objects?.securityAlerts],
+    ["shipments", objects?.shipments],
     ["_prisma_migrations", objects?.migrationTable],
   ]) {
     console.log(`${value ? "PASS" : "FAIL"}  ${name}`);
@@ -121,7 +130,7 @@ async function main() {
     return;
   }
 
-  console.log("\nPASS: database hardening, security alert outbox, and 10-day closed-market policy are active.");
+  console.log("\nPASS: database hardening, customer schema, security alert outbox, structured shipments, professional hardening, and 10-day closed-market policy are active.");
 }
 
 main()

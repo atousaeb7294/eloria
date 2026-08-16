@@ -5,6 +5,7 @@ import {
 } from "@prisma/adapter-pg";
 
 import {
+  Prisma,
   PrismaClient,
 } from "@/generated/prisma/client";
 
@@ -564,6 +565,41 @@ export async function withCheckoutDatabaseRetry<T>(
     delayMilliseconds:
       options.delayMilliseconds ?? 150,
   });
+}
+
+export async function withDatabaseStatementTimeout<T>(
+  timeoutMilliseconds: number,
+  operation: (transaction: Prisma.TransactionClient) => Promise<T>,
+): Promise<T> {
+  const boundedTimeout = Math.min(
+    Math.max(Math.trunc(timeoutMilliseconds), 250),
+    30_000,
+  );
+
+  return withDatabaseRetry(
+    () =>
+      prisma.$transaction(
+        async transaction => {
+          await transaction.$queryRaw`
+            SELECT set_config(
+              'statement_timeout',
+              ${String(boundedTimeout)},
+              true
+            )
+          `;
+
+          return operation(transaction);
+        },
+        {
+          maxWait: Math.min(5_000, boundedTimeout),
+          timeout: boundedTimeout + 2_000,
+        },
+      ),
+    {
+      attempts: 1,
+      delayMilliseconds: 0,
+    },
+  );
 }
 
 export async function ensureDatabaseReady(): Promise<void> {

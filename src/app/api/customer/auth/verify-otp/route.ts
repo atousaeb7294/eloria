@@ -4,6 +4,7 @@ import { JsonRequestBodyError, readJsonBody } from "@/lib/security/json-body";
 import { consumeRateLimit } from "@/lib/security/rate-limit";
 import { hasTrustedOrigin, requestIp } from "@/lib/security/request";
 import { recordSecurityEvent } from "@/lib/security/security-events";
+import { isCustomerAuthEnabled } from "@/lib/runtime-features";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -15,6 +16,13 @@ type VerifyOtpBody = {
 };
 
 export async function POST(request: NextRequest) {
+  if (!isCustomerAuthEnabled()) {
+    return NextResponse.json(
+      { successful: false, message: "ورود مشتری در حال حاضر غیرفعال است." },
+      { status: 503 },
+    );
+  }
+
   const ip = requestIp(request);
   const userAgent = request.headers.get("user-agent");
 

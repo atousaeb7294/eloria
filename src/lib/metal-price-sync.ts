@@ -14,6 +14,12 @@ import {
 import {
   prisma,
 } from "@/lib/prisma";
+import {
+  assessMetalRateAnomaly,
+} from "@/lib/metal-rate-anomaly";
+import {
+  recordSecurityEvent,
+} from "@/lib/security/security-events";
 
 type SavedMetalRate = {
   material:
@@ -55,7 +61,8 @@ export type CurrentRateWriteReason =
   | "BOTH_TIMESTAMPS_MISSING"
   | "INCOMING_TIMESTAMP_MISSING"
   | "INCOMING_IS_OLDER"
-  | "INCOMING_IS_NEWER_OR_EQUAL";
+  | "INCOMING_IS_NEWER_OR_EQUAL"
+  | "ANOMALOUS_RATE_REJECTED";
 
 export type CurrentRateWriteDecision = {
   applyIncoming:
@@ -426,10 +433,105 @@ async function saveCurrentRate(
             sourceTimeUnix:
               true,
 
+            pricePerGram:
+              true,
+
             updatedAt:
               true,
           },
         });
+
+    const anomaly =
+      assessMetalRateAnomaly({
+        material: rate.material,
+        incomingPricePerGramToman:
+          rate.pricePerGramToman,
+        currentPricePerGramToman:
+          currentRate
+            ? Number(
+                currentRate.pricePerGram.toString(),
+              )
+            : null,
+      });
+
+    if (!anomaly.safe) {
+      const anomalyMessage =
+        `ANOMALOUS_RATE:${anomaly.reason}:deviation=${anomaly.deviationPercent ?? "n/a"}`;
+
+      await recordSecurityEvent({
+        eventType:
+          "METAL_RATE_ANOMALY_REJECTED",
+        severity:
+          "CRITICAL",
+        scope:
+          "SYSTEM",
+        successful:
+          false,
+        subject:
+          rate.material,
+        details: {
+          material:
+            rate.material,
+          incomingPricePerGramToman:
+            rate.pricePerGramToman,
+          currentPricePerGramToman:
+            currentRate
+              ? currentRate.pricePerGram.toString()
+              : null,
+          source:
+            rate.source,
+          sourceSymbol:
+            rate.sourceSymbol,
+          reason:
+            anomaly.reason,
+          deviationPercent:
+            anomaly.deviationPercent,
+          maximumDeviationPercent:
+            anomaly.maximumDeviationPercent,
+        },
+        dispatchKey:
+          `metal-rate-anomaly:${rate.material}`,
+      });
+
+      if (!currentRate) {
+        throw new Error(
+          `نرخ اولیه ${rate.material} از محدوده مالی امن خارج است و ذخیره نشد.`,
+        );
+      }
+
+      const anomalyMetadataUpdate =
+        await prisma.metalPrice.updateMany({
+          where: {
+            id:
+              currentRate.id,
+            updatedAt:
+              currentRate.updatedAt,
+          },
+          data: {
+            lastSuccessAt:
+              fetchedAt,
+            lastError:
+              anomalyMessage.slice(0, 1000),
+          },
+        });
+
+      if (
+        anomalyMetadataUpdate.count === 0
+      ) {
+        continue;
+      }
+
+      return {
+        metalPriceId:
+          currentRate.id,
+        decision: {
+          applyIncoming:
+            false,
+          reason:
+            "ANOMALOUS_RATE_REJECTED",
+        },
+      };
+    }
 
     /**
      * هنوز هیچ رکوردی برای این فلز وجود ندارد.

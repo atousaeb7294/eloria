@@ -107,6 +107,13 @@ export default async function AdminOrderDetailPage({
               "desc",
           },
         },
+        shipments: {
+          orderBy: {
+            updatedAt:
+              "desc",
+          },
+          take: 1,
+        },
         auditEvents: {
           orderBy: {
             createdAt:
@@ -129,9 +136,12 @@ export default async function AdminOrderDetailPage({
     if (!raw) return undefined;
     try { return decodeURIComponent(raw); } catch { return raw; }
   };
-  const shipmentEvent = order.auditEvents.find((event) => event.eventType === "SHIPMENT_DETAILS_UPDATED");
-  const latestShipment = shipmentEvent?.payload && typeof shipmentEvent.payload === "object" && !Array.isArray(shipmentEvent.payload)
-    ? shipmentEvent.payload as { carrier?: string; trackingCode?: string; note?: string }
+  const latestShipment = order.shipments[0]
+    ? {
+        carrier: order.shipments[0].carrier,
+        trackingCode: order.shipments[0].trackingCode,
+        note: order.shipments[0].note ?? undefined,
+      }
     : undefined;
 
   return (
@@ -316,18 +326,26 @@ export default async function AdminOrderDetailPage({
                         {payment.errorCode ? `${payment.errorCode}: ` : ""}{payment.errorMessage}
                       </p>
                     ) : null}
-                    {payment.status === "REQUIRES_REVIEW" ? (
+                    {["PAID", "REQUIRES_REVIEW"].includes(payment.status) ? (
                       <form
                         action={markAdminPaymentRefundedAction.bind(null, payment.id, order.id, safeLocale)}
                         className="mt-4 rounded-xl border border-amber-300/15 bg-amber-950/10 p-3"
                       >
                         <p className="text-xs leading-6 text-amber-100/80">
-                          ابتدا مبلغ را از مسیر بانکی/زرین‌پال بازگردانید؛ سپس ثبت سیستمی را انجام دهید.
+                          ابتدا وجه را واقعاً از مسیر بانکی/زرین‌پال بازگردانید؛ سپس شماره مرجع قطعی را ثبت کنید. ثبت سیستمی بدون مرجع پذیرفته نمی‌شود.
                         </p>
+                        <input
+                          name="refundReference"
+                          required
+                          minLength={6}
+                          maxLength={160}
+                          placeholder="شماره مرجع بانکی/زرین‌پال بازپرداخت"
+                          className="mt-3 h-10 w-full rounded-lg border border-[#d0b359]/15 bg-black/20 px-3 text-xs text-[#dfcfac] outline-none"
+                        />
                         <input
                           name="note"
                           maxLength={1000}
-                          placeholder="یادداشت یا شماره پیگیری بازپرداخت"
+                          placeholder="یادداشت داخلی بازپرداخت (اختیاری)"
                           className="mt-3 h-10 w-full rounded-lg border border-[#d0b359]/15 bg-black/20 px-3 text-xs text-[#dfcfac] outline-none"
                         />
                         <button className="mt-3 rounded-lg border border-amber-300/30 px-3 py-2 text-xs text-amber-100 hover:bg-amber-300/10">

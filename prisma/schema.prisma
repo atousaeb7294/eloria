@@ -445,9 +445,11 @@ model Order {
 
   refundedAt DateTime?
 
-  items       OrderItem[]
-  payments    PaymentAttempt[]
-  auditEvents OrderAuditEvent[]
+  items                 OrderItem[]
+  payments              PaymentAttempt[]
+  auditEvents           OrderAuditEvent[]
+  customerNotifications CustomerNotification[]
+  shipments             Shipment[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -579,6 +581,10 @@ model PaymentAttempt {
 
   refundedAt DateTime?
 
+  refundReference String?  @db.VarChar(160)
+  refundAmountToman Decimal? @db.Decimal(18, 0)
+  refundNote      String?  @db.Text
+
   order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
 
   createdAt DateTime @default(now())
@@ -588,6 +594,7 @@ model PaymentAttempt {
   @@index([status, createdAt])
   @@index([provider, createdAt])
   @@index([verificationLeaseExpiresAt])
+  @@index([refundReference])
   @@map("payment_attempts")
 }
 
@@ -706,10 +713,29 @@ model CustomerNotification {
   orderId    String?   @db.Uuid
   readAt     DateTime?
   customer   Customer  @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  order      Order?    @relation(fields: [orderId], references: [id], onDelete: SetNull)
   createdAt  DateTime  @default(now())
   @@index([customerId, createdAt])
   @@index([customerId, readAt])
+  @@index([orderId])
   @@map("customer_notifications")
+}
+
+model Shipment {
+  id           String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  orderId      String   @db.Uuid
+  carrier      String   @db.VarChar(120)
+  trackingCode String   @db.VarChar(160)
+  status       String   @default("PROCESSING") @db.VarChar(40)
+  note         String?  @db.Text
+  shippedAt    DateTime?
+  order        Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @default(now()) @updatedAt
+
+  @@unique([orderId, carrier, trackingCode])
+  @@index([orderId, createdAt])
+  @@map("shipments")
 }
 
 model SecurityAlert {

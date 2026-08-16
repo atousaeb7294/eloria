@@ -1,34 +1,143 @@
-import { NextRequest, NextResponse } from "next/server";
-import { getCustomerFromRequest } from "@/lib/customer-auth";
-import { customerCheckoutPrefill, updateCustomerProfile } from "@/lib/customer-data";
-import { hasTrustedOrigin } from "@/lib/security/request";
+import {
+  NextRequest,
+  NextResponse,
+} from "next/server";
+
+import {
+  getCustomerFromRequest,
+} from "@/lib/customer-auth";
+import {
+  customerCheckoutPrefill,
+  updateCustomerProfile,
+} from "@/lib/customer-data";
+import {
+  readJsonBody,
+} from "@/lib/security/json-body";
+import {
+  hasTrustedOrigin,
+} from "@/lib/security/request";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-export async function GET(request: NextRequest) {
-  const auth = await getCustomerFromRequest(request);
-  if (!auth) return NextResponse.json({ successful: false }, { status: 401 });
-  const checkout = await customerCheckoutPrefill(auth.customer.id);
-  return NextResponse.json({ successful: true, customer: { id: auth.customer.id, mobile: auth.customer.mobile, fullName: auth.customer.fullName, email: auth.customer.email }, checkout }, { headers: { "Cache-Control": "no-store" } });
+export async function GET(
+  request: NextRequest,
+) {
+  const auth =
+    await getCustomerFromRequest(
+      request,
+    );
+
+  if (!auth) {
+    return NextResponse.json(
+      { successful: false },
+      { status: 401 },
+    );
+  }
+
+  const checkout =
+    await customerCheckoutPrefill(
+      auth.customer.id,
+    );
+
+  return NextResponse.json(
+    {
+      successful: true,
+      customer: {
+        id: auth.customer.id,
+        mobile:
+          auth.customer.mobile,
+        fullName:
+          auth.customer.fullName,
+        email:
+          auth.customer.email,
+      },
+      checkout,
+    },
+    {
+      headers: {
+        "Cache-Control":
+          "no-store",
+      },
+    },
+  );
 }
 
-export async function PATCH(request: NextRequest) {
-  if (!hasTrustedOrigin(request)) return NextResponse.json({ successful: false, message: "مبدأ درخواست معتبر نیست." }, { status: 403 });
-  const auth = await getCustomerFromRequest(request);
-  if (!auth) return NextResponse.json({ successful: false, message: "ابتدا وارد حساب شوید." }, { status: 401 });
-  const body = await request.json().catch(() => null) as { fullName?: unknown; email?: unknown } | null;
-  if (!body) return NextResponse.json({ successful: false, message: "اطلاعات معتبر نیست." }, { status: 400 });
-  try {
-    const customer = await updateCustomerProfile(
-      auth.customer.id,
+export async function PATCH(
+  request: NextRequest,
+) {
+  if (!hasTrustedOrigin(request)) {
+    return NextResponse.json(
       {
-        fullName: body.fullName,
-        email: body.email,
+        successful: false,
+        message:
+          "مبدأ درخواست معتبر نیست.",
       },
+      { status: 403 },
     );
-    return NextResponse.json({ successful: true, customer });
+  }
+
+  const auth =
+    await getCustomerFromRequest(
+      request,
+    );
+
+  if (!auth) {
+    return NextResponse.json(
+      {
+        successful: false,
+        message:
+          "ابتدا وارد حساب شوید.",
+      },
+      { status: 401 },
+    );
+  }
+
+  const body =
+    await readJsonBody<{
+      fullName?: unknown;
+      email?: unknown;
+    }>(
+      request,
+      8 * 1024,
+    ).catch(() => null);
+
+  if (!body) {
+    return NextResponse.json(
+      {
+        successful: false,
+        message:
+          "اطلاعات معتبر نیست.",
+      },
+      { status: 400 },
+    );
+  }
+
+  try {
+    const customer =
+      await updateCustomerProfile(
+        auth.customer.id,
+        {
+          fullName:
+            body.fullName,
+          email: body.email,
+        },
+      );
+
+    return NextResponse.json({
+      successful: true,
+      customer,
+    });
   } catch (error) {
-    return NextResponse.json({ successful: false, message: error instanceof Error ? error.message : "ذخیره اطلاعات ناموفق بود." }, { status: 400 });
+    return NextResponse.json(
+      {
+        successful: false,
+        message:
+          error instanceof Error
+            ? error.message
+            : "ذخیره اطلاعات ناموفق بود.",
+      },
+      { status: 400 },
+    );
   }
 }

@@ -322,20 +322,41 @@ export function getOldestRequiredSourceTimestamp(
   };
 }
 
+function productionProviderUrl(
+  environmentKey: "BRS_GOLD_API_URL" | "BRS_COMMODITY_API_URL",
+  fallback: string,
+): string {
+  const selected = process.env[environmentKey]?.trim() || fallback;
+  const url = new URL(selected);
+
+  if (url.protocol !== "https:") {
+    throw new Error(`${environmentKey}: فقط HTTPS مجاز است.`);
+  }
+
+  if (
+    process.env.NODE_ENV === "production" &&
+    url.hostname.toLowerCase() !== "api.brsapi.ir"
+  ) {
+    throw new Error(`${environmentKey}: در Production فقط Api.BrsApi.ir مجاز است.`);
+  }
+
+  return url.toString();
+}
+
 export async function fetchBrsMetalRates(): Promise<
   FetchedMetalRate[]
 > {
   const goldApiUrl =
-    process.env
-      .BRS_GOLD_API_URL
-      ?.trim() ||
-    "https://Api.BrsApi.ir/Market/Gold_Currency_Pro.php";
+    productionProviderUrl(
+      "BRS_GOLD_API_URL",
+      "https://Api.BrsApi.ir/Market/Gold_Currency_Pro.php",
+    );
 
   const commodityApiUrl =
-    process.env
-      .BRS_COMMODITY_API_URL
-      ?.trim() ||
-    "https://Api.BrsApi.ir/Market/Commodity.php";
+    productionProviderUrl(
+      "BRS_COMMODITY_API_URL",
+      "https://Api.BrsApi.ir/Market/Commodity.php",
+    );
 
   const goldSymbol =
     process.env
