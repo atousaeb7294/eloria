@@ -25,6 +25,7 @@ async function main(): Promise<void> {
       await fileIncludes("next.config.ts", [
         "Content-Security-Policy",
         "Strict-Transport-Security",
+        "poweredByHeader: false",
       ]),
     ],
     [
@@ -122,6 +123,40 @@ async function main(): Promise<void> {
         "ELORIA_PROXY_PROVIDER",
         "ELORIA_RATE_LIMIT_FAILURE_MODE",
         "ELORIA_SECRET_SEPARATION",
+      ]),
+    ],
+    [
+      "Dedicated health secret separation",
+      (await fileIncludes("src/app/api/health/route.ts", "ELORIA_HEALTH_SECRET")) &&
+        (await fileIncludes("src/lib/env-validation.ts", [
+          "ELORIA_HEALTH_SECRET",
+          "CRON_SECRET",
+        ])),
+    ],
+    [
+      "Bounded public JSON request bodies",
+      (await fileIncludes("src/lib/security/json-body.ts", "ELORIA_FINAL_JSON_BODY_LIMIT_V1")) &&
+        (await fileIncludes("src/app/api/checkout/orders/route.ts", "readJsonBody")) &&
+        (await fileIncludes("src/app/api/payments/zarinpal/start/route.ts", "readJsonBody")) &&
+        (await fileIncludes("src/app/api/support/contact/route.ts", "readJsonBody")) &&
+        (await fileIncludes("src/app/api/treasury/products/route.ts", "readJsonBody")),
+    ],
+    [
+      "Sanitized admin and provider-facing errors",
+      (await fileIncludes("src/app/[locale]/admin/(protected)/orders/actions.ts", "publicOrderActionError")) &&
+        (await fileIncludes("src/app/[locale]/admin/(protected)/products/actions.ts", "publicAdminProductError")) &&
+        (await fileIncludes("src/app/[locale]/admin/(protected)/products/assets/actions.ts", "publicAssetError")) &&
+        (await fileIncludes("src/lib/product-media-storage.ts", "Supabase upload failed")),
+    ],
+    [
+      "Payment verification payload minimization",
+      await fileIncludes("src/lib/payment-service.ts", "paymentVerificationSnapshot"),
+    ],
+    [
+      "Production secret generator completeness",
+      await fileIncludes("scripts/generate-production-secrets.mjs", [
+        "ELORIA_CUSTOMER_AUTH_SECRET",
+        "ELORIA_HEALTH_SECRET",
       ]),
     ],
     [

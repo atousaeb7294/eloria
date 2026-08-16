@@ -1,10 +1,15 @@
 import {
+  NextRequest,
   NextResponse,
 } from "next/server";
 
 import {
   prisma,
 } from "@/lib/prisma";
+
+import { consumeRateLimit } from "@/lib/security/rate-limit";
+import { requestIp } from "@/lib/security/request";
+import { readJsonBody } from "@/lib/security/json-body";
 
 export const dynamic =
   "force-dynamic";
@@ -75,20 +80,40 @@ function parseSlugs(
         .map((item) =>
           item.trim(),
         )
-        .filter(Boolean),
+        .filter(
+          (item) =>
+            item.length <= 160 &&
+            /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(item),
+        ),
     ),
   ].slice(0, 50);
 }
 
 export async function POST(
-  request: Request,
+  request: NextRequest,
 ) {
+  const rate = await consumeRateLimit({
+    key: `treasury-products:${requestIp(request)}`,
+    limit: 60,
+    windowMs: 60_000,
+  });
+
+  if (!rate.allowed) {
+    return NextResponse.json(
+      { items: [], source: "rate-limited" },
+      {
+        status: 200,
+        headers: {
+          "Cache-Control": "no-store",
+          "Retry-After": String(rate.retryAfterSeconds),
+        },
+      },
+    );
+  }
+
   const body =
-    (await request
-      .json()
-      .catch(
-        () => null,
-      )) as RequestBody | null;
+    await readJsonBody<RequestBody>(request, 16 * 1024)
+      .catch(() => null);
 
   const slugs =
     parseSlugs(

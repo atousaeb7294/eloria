@@ -18,8 +18,30 @@ const TERMINAL_ORDER_STATUSES = new Set([
   "REFUNDED",
 ]);
 
+export class PaymentServiceError extends Error {
+  readonly status: number;
+
+  constructor(message: string, status = 409) {
+    super(message);
+    this.name = "PaymentServiceError";
+    this.status = status;
+  }
+}
+
 function json(value: unknown): Prisma.InputJsonValue {
   return JSON.parse(JSON.stringify(value)) as Prisma.InputJsonValue;
+}
+
+function paymentVerificationSnapshot(
+  verified: Awaited<ReturnType<typeof verifyZarinpalPayment>>,
+): Prisma.InputJsonValue {
+  return json({
+    code: verified.code,
+    message: verified.message,
+    referenceId: verified.referenceId,
+    fee: verified.fee,
+    feeType: verified.feeType,
+  });
 }
 
 function callbackBase(): string {
@@ -57,15 +79,15 @@ export async function initiateOrderPayment(orderId: string) {
   }
 
   const order = await prisma.order.findUnique({ where: { id: orderId } });
-  if (!order) throw new Error("سفارش پیدا نشد.");
+  if (!order) throw new PaymentServiceError("سفارش پیدا نشد.", 404);
   if (!["PENDING_PAYMENT", "PAYMENT_FAILED"].includes(order.status)) {
-    throw new Error("این سفارش در وضعیت قابل پرداخت نیست.");
+    throw new PaymentServiceError("این سفارش در وضعیت قابل پرداخت نیست.");
   }
   if (order.paidAt || order.inventoryCommittedAt) {
-    throw new Error("این سفارش قبلاً پرداخت یا قطعی شده است.");
+    throw new PaymentServiceError("این سفارش قبلاً پرداخت یا قطعی شده است.");
   }
   if (order.inventoryReleasedAt || order.inventoryExpiresAt.getTime() <= Date.now()) {
-    throw new Error("مهلت رزرو موجودی این سفارش پایان یافته است. سفارش را دوباره ثبت کنید.");
+    throw new PaymentServiceError("مهلت رزرو موجودی این سفارش پایان یافته است. سفارش را دوباره ثبت کنید.");
   }
 
   let existing = await existingActiveAttempt(orderId);
@@ -106,7 +128,7 @@ export async function initiateOrderPayment(orderId: string) {
         message: "درخواست پرداخت هم‌زمان بازیابی شد.",
       };
     }
-    throw new Error("یک درخواست پرداخت دیگر در حال ساخته‌شدن است. چند ثانیه بعد دوباره تلاش کنید.");
+    throw new PaymentServiceError("یک درخواست پرداخت دیگر در حال ساخته‌شدن است. چند ثانیه بعد دوباره تلاش کنید.");
   }
 
   try {
@@ -354,7 +376,7 @@ export async function verifyOrderPayment(input: {
             status: targetAttemptStatus,
             activeKey: null,
             gatewayReference: verified.referenceId,
-            verificationPayload: json(verified),
+            verificationPayload: paymentVerificationSnapshot(verified),
             verifiedAt,
             verificationLeaseExpiresAt: null,
             errorMessage: null,
@@ -433,7 +455,7 @@ export async function verifyOrderPayment(input: {
             status: "PAID",
             activeKey: null,
             gatewayReference: verified.referenceId,
-            verificationPayload: json(verified),
+            verificationPayload: paymentVerificationSnapshot(verified),
             verifiedAt,
             verificationLeaseExpiresAt: null,
             errorMessage: null,
@@ -449,7 +471,7 @@ export async function verifyOrderPayment(input: {
           status: "REQUIRES_REVIEW",
           activeKey: null,
           gatewayReference: verified.referenceId,
-          verificationPayload: json(verified),
+          verificationPayload: paymentVerificationSnapshot(verified),
           verifiedAt,
           verificationLeaseExpiresAt: null,
           errorMessage: failureMessage,

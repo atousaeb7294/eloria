@@ -15,6 +15,7 @@ import {
 
 import { consumeRateLimit } from "@/lib/security/rate-limit";
 import { hasTrustedOrigin, requestIp } from "@/lib/security/request";
+import { readJsonBody } from "@/lib/security/json-body";
 import { verifyTurnstileToken } from "@/lib/security/turnstile";
 import { isZarinpalConfigured } from "@/lib/payment/zarinpal";
 import { getCustomerFromRequest } from "@/lib/customer-auth";
@@ -261,7 +262,7 @@ export async function POST(
     try {
       const parsed:
         unknown =
-          await request.json();
+          await readJsonBody(request, 64 * 1024);
 
       if (
         typeof parsed !==

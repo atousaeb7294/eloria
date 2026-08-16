@@ -4,12 +4,27 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { Prisma } from "@/generated/prisma/client";
 import { hasValidAdminSession } from "@/lib/admin-auth";
-import { removeStoredProductImage, storeProductImage } from "@/lib/product-media-storage";
+import { ProductMediaStorageError, removeStoredProductImage, storeProductImage } from "@/lib/product-media-storage";
 import { prisma } from "@/lib/prisma";
 import { syncProductInventory } from "@/lib/inventory";
 
 type Locale = "fa" | "en";
 const MAX_UPLOAD_COUNT = 8;
+
+class AdminProductAssetError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "AdminProductAssetError";
+  }
+}
+
+function publicAssetError(error: unknown, fallback: string): string {
+  if (error instanceof AdminProductAssetError || error instanceof ProductMediaStorageError) {
+    return error.message;
+  }
+  console.error("[Eloria Admin Product Asset] Unexpected error.", error);
+  return fallback;
+}
 
 function localeOf(value: string): Locale { return value === "en" ? "en" : "fa"; }
 function digits(value: string): string {
@@ -20,30 +35,30 @@ function digits(value: string): string {
 function text(form: FormData, key: string, max: number, required = false): string | null {
   const raw = form.get(key);
   const value = typeof raw === "string" ? raw.trim() : "";
-  if (required && !value) throw new Error("فیلدهای الزامی را تکمیل کنید.");
-  if (value.length > max) throw new Error("طول یکی از فیلدها بیش از حد مجاز است.");
+  if (required && !value) throw new AdminProductAssetError("فیلدهای الزامی را تکمیل کنید.");
+  if (value.length > max) throw new AdminProductAssetError("طول یکی از فیلدها بیش از حد مجاز است.");
   return value || null;
 }
 function integer(form: FormData, key: string, fallback = 0, min = 0, max = 1_000_000): number {
   const raw = text(form, key, 30);
   if (!raw) return fallback;
   const value = Number.parseInt(digits(raw), 10);
-  if (!Number.isInteger(value) || value < min || value > max) throw new Error("مقدار عددی معتبر نیست.");
+  if (!Number.isInteger(value) || value < min || value > max) throw new AdminProductAssetError("مقدار عددی معتبر نیست.");
   return value;
 }
 function decimal(form: FormData, key: string): string | null {
   const raw = text(form, key, 40);
   if (!raw) return null;
   const value = digits(raw);
-  if (!/^\d+(\.\d+)?$/.test(value)) throw new Error("مقدار اعشاری معتبر نیست.");
+  if (!/^\d+(\.\d+)?$/.test(value)) throw new AdminProductAssetError("مقدار اعشاری معتبر نیست.");
   return value;
 }
 async function session() {
-  if (!(await hasValidAdminSession())) throw new Error("نشست مدیریت منقضی شده است.");
+  if (!(await hasValidAdminSession())) throw new AdminProductAssetError("نشست مدیریت منقضی شده است.");
 }
 async function product(productId: string) {
   const item = await prisma.product.findUnique({ where: { id: productId }, select: { id: true, slug: true, nameFa: true, nameEn: true } });
-  if (!item) throw new Error("محصول پیدا نشد.");
+  if (!item) throw new AdminProductAssetError("محصول پیدا نشد.");
   return item;
 }
 function refresh(productId: string, slug: string) {
@@ -80,7 +95,7 @@ export async function uploadAdminProductImagesAction(productId: string, localeVa
     }})));
   } catch (error) {
     await Promise.all(urls.map(removeStoredProductImage));
-    redirect(messageUrl(locale, productId, "mediaError", error instanceof Error ? error.message : "آپلود ناموفق بود."));
+    redirect(messageUrl(locale, productId, "mediaError", publicAssetError(error, "آپلود ناموفق بود.")));
   }
   refresh(productId, item.slug);
   redirect(messageUrl(locale, productId, "mediaSaved"));
@@ -156,20 +171,20 @@ function variantData(form: FormData) {
 async function uniqueSku(sku: string | null, excluded?: string) {
   if (!sku) return;
   if (await prisma.productVariant.findFirst({ where: { sku, ...(excluded ? { id: { not: excluded } } : {}) }, select: { id: true } })) {
-    throw new Error("این SKU قبلاً استفاده شده است.");
+    throw new AdminProductAssetError("این SKU قبلاً استفاده شده است.");
   }
 }
 export async function createAdminProductVariantAction(productId: string, localeValue: string, form: FormData): Promise<void> {
   await session(); const locale = localeOf(localeValue); const item = await product(productId);
   try { const data = variantData(form); await uniqueSku(data.sku); await prisma.$transaction(async transaction => { await transaction.productVariant.create({ data: { productId, ...data } }); await syncProductInventory(transaction, productId); }); }
-  catch (error) { redirect(messageUrl(locale, productId, "variantError", error instanceof Error ? error.message : "ساخت تنوع ناموفق بود.")); }
+  catch (error) { redirect(messageUrl(locale, productId, "variantError", publicAssetError(error, "ساخت تنوع ناموفق بود."))); }
   refresh(productId, item.slug); redirect(messageUrl(locale, productId, "variantSaved"));
 }
 export async function updateAdminProductVariantAction(productId: string, variantId: string, localeValue: string, form: FormData): Promise<void> {
   await session(); const locale = localeOf(localeValue); const item = await product(productId);
   if (!(await prisma.productVariant.findFirst({ where: { id: variantId, productId }, select: { id: true } }))) redirect(messageUrl(locale, productId, "variantError", "تنوع پیدا نشد."));
   try { const data = variantData(form); await uniqueSku(data.sku, variantId); await prisma.$transaction(async transaction => { await transaction.productVariant.update({ where: { id: variantId }, data }); await syncProductInventory(transaction, productId); }); }
-  catch (error) { redirect(messageUrl(locale, productId, "variantError", error instanceof Error ? error.message : "ویرایش تنوع ناموفق بود.")); }
+  catch (error) { redirect(messageUrl(locale, productId, "variantError", publicAssetError(error, "ویرایش تنوع ناموفق بود."))); }
   refresh(productId, item.slug); redirect(messageUrl(locale, productId, "variantSaved"));
 }
 export async function deleteAdminProductVariantAction(productId: string, variantId: string, localeValue: string): Promise<void> {

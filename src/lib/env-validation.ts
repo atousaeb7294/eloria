@@ -47,6 +47,8 @@ export function productionEnvironmentChecks(): Check[] {
   const trustProxy = ["true", "1"].includes(value("ELORIA_TRUST_PROXY"));
   const proxyProvider = value("ELORIA_PROXY_PROVIDER").toLowerCase();
   const secretKeys = [
+    "CRON_SECRET",
+    "ELORIA_HEALTH_SECRET",
     "ELORIA_ADMIN_SESSION_SECRET",
     "ELORIA_CUSTOMER_AUTH_SECRET",
     "ELORIA_TRACKING_SECRET",
@@ -64,6 +66,7 @@ export function productionEnvironmentChecks(): Check[] {
     { key: "ELORIA_ADMIN_SESSION_VERSION", required: true, valid: present("ELORIA_ADMIN_SESSION_VERSION", 1), message: "نسخه ابطال نشست" },
     { key: "ELORIA_ADMIN_TOTP_SECRET", required: totpEnabled, valid: !totpEnabled || /^[A-Z2-7]+=*$/i.test(value("ELORIA_ADMIN_TOTP_SECRET")), message: "کلید TOTP مدیر" },
     { key: "CRON_SECRET", required: true, valid: present("CRON_SECRET", 48), message: "کلید Cron" },
+    { key: "ELORIA_HEALTH_SECRET", required: true, valid: present("ELORIA_HEALTH_SECRET", 48), message: "کلید مستقل Health" },
     { key: "ELORIA_TRACKING_SECRET", required: true, valid: present("ELORIA_TRACKING_SECRET", 32), message: "کلید لینک امن پیگیری سفارش" },
     { key: "ELORIA_PAYMENT_RECEIPT_SECRET", required: true, valid: present("ELORIA_PAYMENT_RECEIPT_SECRET", 32), message: "کلید رسید امن پرداخت" },
     { key: "ELORIA_SECRET_SEPARATION", required: true, valid: distinctSecrets(secretKeys.map(key => value(key))), message: "کلیدهای نشست، پیگیری و رسید باید مستقل باشند" },

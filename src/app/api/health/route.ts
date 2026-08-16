@@ -17,9 +17,9 @@ function safeEqual(left: string, right: string): boolean {
 }
 
 function canSeeDetails(request: NextRequest): boolean {
-  const configured = process.env.CRON_SECRET?.trim() ?? "";
+  const configured = process.env.ELORIA_HEALTH_SECRET?.trim() ?? "";
   const supplied = request.headers.get("x-eloria-health-secret")?.trim() ?? "";
-  return configured.length >= 32 && supplied.length > 0 && safeEqual(supplied, configured);
+  return configured.length >= 48 && supplied.length > 0 && safeEqual(supplied, configured);
 }
 
 export async function GET(request: NextRequest) {

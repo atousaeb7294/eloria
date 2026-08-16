@@ -21,6 +21,25 @@ export type AdminProductActionState = {
   error: string | null;
 };
 
+class AdminProductActionError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "AdminProductActionError";
+  }
+}
+
+function publicAdminProductError(
+  error: unknown,
+  fallback: string,
+  operation: "create" | "update",
+): string {
+  if (error instanceof AdminProductActionError) {
+    return error.message;
+  }
+  console.error(`[Eloria Admin Product] Unexpected ${operation} error.`, error);
+  return fallback;
+}
+
 type ParsedProductInput = {
   locale: "fa" | "en";
   collectionId: string;
@@ -76,7 +95,7 @@ function readText(
     "string"
   ) {
     if (required) {
-      throw new Error(
+      throw new AdminProductActionError(
         `فیلد ${key} الزامی است.`,
       );
     }
@@ -91,7 +110,7 @@ function readText(
     required &&
     !normalized
   ) {
-    throw new Error(
+    throw new AdminProductActionError(
       "لطفاً تمام فیلدهای الزامی را تکمیل کنید.",
     );
   }
@@ -100,7 +119,7 @@ function readText(
     normalized.length >
     maximumLength
   ) {
-    throw new Error(
+    throw new AdminProductActionError(
       "طول یکی از فیلدها بیش از حد مجاز است.",
     );
   }
@@ -164,7 +183,7 @@ function readDecimal(
       normalized,
     )
   ) {
-    throw new Error(
+    throw new AdminProductActionError(
       "مقادیر عددی معتبر نیستند.",
     );
   }
@@ -172,7 +191,7 @@ function readDecimal(
   if (
     Number(normalized) < 0
   ) {
-    throw new Error(
+    throw new AdminProductActionError(
       "مقادیر عددی نمی‌توانند منفی باشند.",
     );
   }
@@ -209,7 +228,7 @@ function readInteger(
     value < minimum ||
     value > maximum
   ) {
-    throw new Error(
+    throw new AdminProductActionError(
       "یکی از مقادیر صحیح خارج از محدوده مجاز است.",
     );
   }
@@ -260,7 +279,7 @@ function parseProductInput(
       slug,
     )
   ) {
-    throw new Error(
+    throw new AdminProductActionError(
       "شناسه URL باید فقط شامل حروف انگلیسی کوچک، عدد و خط تیره باشد.",
     );
   }
@@ -279,7 +298,7 @@ function parseProductInput(
       primaryImageUrl.startsWith("https://")
     )
   ) {
-    throw new Error(
+    throw new AdminProductActionError(
       "آدرس تصویر باید با / یا https:// آغاز شود.",
     );
   }
@@ -306,7 +325,7 @@ function parseProductInput(
     pricingMode === "MANUAL" &&
     (!price || Number(price) <= 0)
   ) {
-    throw new Error(
+    throw new AdminProductActionError(
       "برای قیمت‌گذاری دستی، قیمت نهایی محصول الزامی است.",
     );
   }
@@ -551,12 +570,12 @@ async function ensureUniqueIdentity({
   if (
     duplicate.slug === slug
   ) {
-    throw new Error(
+    throw new AdminProductActionError(
       "این شناسه URL قبلاً برای محصول دیگری استفاده شده است.",
     );
   }
 
-  throw new Error(
+  throw new AdminProductActionError(
     "این کد SKU قبلاً برای محصول دیگری استفاده شده است.",
   );
 }
@@ -672,9 +691,7 @@ export async function createAdminProductAction(
   } catch (error) {
     return {
       error:
-        error instanceof Error
-          ? error.message
-          : "ساخت محصول انجام نشد.",
+        publicAdminProductError(error, "ساخت محصول انجام نشد.", "create"),
     };
   }
 
@@ -770,9 +787,7 @@ export async function updateAdminProductAction(
   } catch (error) {
     return {
       error:
-        error instanceof Error
-          ? error.message
-          : "ذخیره تغییرات محصول انجام نشد.",
+        publicAdminProductError(error, "ذخیره تغییرات محصول انجام نشد.", "update"),
     };
   }
 

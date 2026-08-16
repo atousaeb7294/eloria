@@ -86,6 +86,8 @@ const nextConfig:
   reactStrictMode:
     true,
 
+  poweredByHeader: false,
+
   turbopack: {
     root:
       path.resolve(

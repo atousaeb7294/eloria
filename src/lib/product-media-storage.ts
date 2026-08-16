@@ -154,8 +154,12 @@ async function uploadToSupabase(objectPath: string, image: ValidatedImage): Prom
 
   if (!response.ok) {
     const detail = await response.text().catch(() => "");
+    console.error("[Eloria Media] Supabase upload failed.", {
+      status: response.status,
+      detail: detail.slice(0, 500),
+    });
     throw new ProductMediaStorageError(
-      `آپلود تصویر انجام نشد${detail ? `: ${detail.slice(0, 150)}` : "."}`,
+      "آپلود تصویر در فضای ذخیره‌سازی انجام نشد.",
     );
   }
   return `${config.url}/storage/v1/object/public/${encodeURIComponent(config.bucket)}/${objectPath}`;

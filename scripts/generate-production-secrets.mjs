@@ -1,6 +1,8 @@
 import { randomBytes } from "node:crypto";
 
 const values = {
+  ELORIA_CUSTOMER_AUTH_SECRET: randomBytes(48).toString("hex"),
+  ELORIA_HEALTH_SECRET: randomBytes(48).toString("hex"),
   ELORIA_ADMIN_SESSION_SECRET: randomBytes(48).toString("hex"),
   CRON_SECRET: randomBytes(48).toString("hex"),
   ELORIA_TRACKING_SECRET: randomBytes(48).toString("hex"),
