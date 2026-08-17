@@ -135,6 +135,20 @@ async function validateImage(file: File): Promise<ValidatedImage> {
   }
 }
 
+function supabaseHeaders(key: string): Record<string, string> {
+  const headers: Record<string, string> = {
+    apikey: key,
+  };
+
+  // Legacy service_role keys are JWTs.
+  // New sb_secret_* keys must not be sent as Bearer JWTs.
+  if (!key.startsWith("sb_secret_")) {
+    headers.Authorization = `Bearer ${key}`;
+  }
+
+  return headers;
+}
+
 async function uploadToSupabase(objectPath: string, image: ValidatedImage): Promise<string> {
   const config = storageConfig();
   const response = await fetch(
@@ -142,8 +156,7 @@ async function uploadToSupabase(objectPath: string, image: ValidatedImage): Prom
     {
       method: "POST",
       headers: {
-        apikey: config.key,
-        Authorization: `Bearer ${config.key}`,
+        ...supabaseHeaders(config.key),
         "Content-Type": image.contentType,
         "x-upsert": "false",
       },
@@ -207,7 +220,7 @@ export async function removeStoredProductImage(imageUrl: string): Promise<void> 
         `${config.url}/storage/v1/object/${encodeURIComponent(config.bucket)}/${objectPath}`,
         {
           method: "DELETE",
-          headers: { apikey: config.key, Authorization: `Bearer ${config.key}` },
+          headers: supabaseHeaders(config.key),
           signal: AbortSignal.timeout(STORAGE_TIMEOUT_MS),
         },
       );
