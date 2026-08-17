@@ -1,6 +1,7 @@
 import type {
   Metadata,
 } from "next";
+import { hasCompleteLegalIdentity } from "@/lib/legal-business";
 import type {
   ReactNode,
 } from "react";
@@ -25,7 +26,9 @@ function legalPagesMayIndex():
       .ELORIA_LEGAL_PAGES_INDEX
       ?.trim()
       .toLowerCase() ===
-      "true"
+      "true" &&
+    hasCompleteLegalIdentity() &&
+    hasCompleteLegalIdentity()
   );
 }
 

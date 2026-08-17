@@ -19,6 +19,14 @@ function isHttpsUrl(key: string): boolean {
     return false;
   }
 }
+function isLegalContactPhone(key: string): boolean {
+  const raw = value(key);
+  return /^\+?[0-9][0-9\s()\-]{4,30}$/.test(raw);
+}
+function isLegalContactEmail(key: string): boolean {
+  const raw = value(key);
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(raw);
+}
 function isPublicHttpsUrl(key: string): boolean {
   try {
     const url = new URL(value(key));
@@ -113,6 +121,13 @@ export function productionEnvironmentChecks(): Check[] {
   const dynamicPricingEnabled = boolFlag("ELORIA_DYNAMIC_PRICING_ENABLED");
   const paymentEnabled = boolFlag("ELORIA_PAYMENT_ENABLED");
   const supportEnabled = boolFlag("ELORIA_SUPPORT_ENABLED");
+  const legalPagesIndex = boolFlag("ELORIA_LEGAL_PAGES_INDEX");
+  const legalIdentityRequired = commerceEnabled || legalPagesIndex;
+  const legalPhone = value("ELORIA_LEGAL_SUPPORT_PHONE");
+  const legalEmail = value("ELORIA_LEGAL_SUPPORT_EMAIL");
+  const legalContactValid =
+    isLegalContactPhone("ELORIA_LEGAL_SUPPORT_PHONE") ||
+    isLegalContactEmail("ELORIA_LEGAL_SUPPORT_EMAIL");
 
   const smsEnabled = present("KAVENEGAR_API_KEY");
   const securityAlertMobile = value("ELORIA_SECURITY_ALERT_MOBILE");
@@ -224,6 +239,12 @@ export function productionEnvironmentChecks(): Check[] {
     { key: "ELORIA_SECURITY_ALERT_MIN_SEVERITY", required: true, valid: ["INFO", "MEDIUM", "HIGH", "CRITICAL"].includes(securityAlertSeverity), message: "حداقل سطح هشدار خارجی" },
     { key: "ELORIA_SECURITY_ALERT_COOLDOWN_SECONDS", required: true, valid: Number.isFinite(securityAlertCooldown) && securityAlertCooldown >= 30 && securityAlertCooldown <= 3600, message: "Cooldown هشدار امنیتی بین ۳۰ تا ۳۶۰۰ ثانیه" },
     { key: "ELORIA_SECURITY_ALERT_CHANNEL", required: true, valid: securityAlertSmsChannel || securityAlertWebhookChannel, message: "حداقل یک کانال هشدار امنیتی SMS یا HTTPS webhook باید فعال باشد" },
+
+    { key: "ELORIA_LEGAL_SELLER_NAME", required: legalIdentityRequired, valid: !legalIdentityRequired || present("ELORIA_LEGAL_SELLER_NAME", 2), message: "نام قانونی/صنفی فروشنده برای فروش یا Index حقوقی" },
+    { key: "ELORIA_LEGAL_BUSINESS_ADDRESS", required: legalIdentityRequired, valid: !legalIdentityRequired || present("ELORIA_LEGAL_BUSINESS_ADDRESS", 10), message: "نشانی محل تجاری/کاری فروشنده برای شکایت و مکاتبه" },
+    { key: "ELORIA_LEGAL_SUPPORT_PHONE", required: Boolean(legalPhone), valid: !legalPhone || isLegalContactPhone("ELORIA_LEGAL_SUPPORT_PHONE"), message: "شماره تماس حقوقی فروشگاه در صورت تنظیم" },
+    { key: "ELORIA_LEGAL_SUPPORT_EMAIL", required: Boolean(legalEmail), valid: !legalEmail || isLegalContactEmail("ELORIA_LEGAL_SUPPORT_EMAIL"), message: "ایمیل تماس حقوقی فروشگاه در صورت تنظیم" },
+    { key: "ELORIA_LEGAL_CONTACT", required: legalIdentityRequired, valid: !legalIdentityRequired || legalContactValid, message: "برای فروش یا Index حقوقی حداقل یک تلفن یا ایمیل معتبر لازم است" },
 
     { key: "ELORIA_LEGAL_PAGES_INDEX", required: true, valid: isExplicitBoolean("ELORIA_LEGAL_PAGES_INDEX"), message: "Index شدن صفحات حقوقی باید صریح باشد" },
   ];

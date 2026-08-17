@@ -92,6 +92,17 @@ async function main(): Promise<void> {
       ),
     ],
     [
+      "Payment callback uses configured site origin",
+      (await fileIncludes("src/app/api/payments/zarinpal/callback/route.ts", [
+        "siteBaseUrl",
+        'from "@/lib/site-url"',
+      ])) &&
+        !(await fileIncludes(
+          "src/app/api/payments/zarinpal/callback/route.ts",
+          ", request.url)",
+        )),
+    ],
+    [
       "Signed payment receipt",
       await fileIncludes("src/lib/payment-receipt-token.ts", "createHmac"),
     ],
@@ -210,6 +221,23 @@ async function main(): Promise<void> {
         "PAYMENT_REQUIRES_REVIEW",
         "recordSecurityEvent",
       ]),
+    ],
+    [
+      "Legal seller identity and policy gate",
+      (await fileIncludes("src/lib/env-validation.ts", [
+        "ELORIA_LEGAL_SELLER_NAME",
+        "ELORIA_LEGAL_BUSINESS_ADDRESS",
+        "ELORIA_LEGAL_CONTACT",
+      ])) &&
+        (await fileIncludes("src/app/[locale]/policies/[policy]/layout.tsx", [
+          "hasCompleteLegalIdentity",
+          "ELORIA_LEGAL_PAGES_INDEX",
+        ])) &&
+        (await fileIncludes("src/app/[locale]/policies/[policy]/page.tsx", [
+          "legalBusinessIdentity",
+          "حداقل هفت روز کاری",
+          "مشخصات فردی مشتری",
+        ])),
     ],
     [
       "Production security alert channel requirement",
