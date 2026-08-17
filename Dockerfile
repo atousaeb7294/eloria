@@ -3,15 +3,26 @@ FROM node:22-alpine AS deps
 WORKDIR /app
 RUN apk add --no-cache libc6-compat
 COPY package.json package-lock.json ./
-RUN npm ci
+COPY prisma.config.ts ./
+COPY prisma ./prisma
+RUN DIRECT_URL=postgresql://build:build@127.0.0.1:5432/build npm ci
 
 FROM node:22-alpine AS builder
 WORKDIR /app
 ENV NEXT_TELEMETRY_DISABLED=1
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
-RUN npx prisma generate
-RUN npm run build
+
+ARG NEXT_PUBLIC_SITE_URL
+ARG DATABASE_SSL_MODE=verify-full
+
+RUN --mount=type=secret,id=DATABASE_URL,required=true \
+    --mount=type=secret,id=DIRECT_URL,required=true \
+    DATABASE_URL="$(cat /run/secrets/DATABASE_URL)" \
+    DIRECT_URL="$(cat /run/secrets/DIRECT_URL)" \
+    NEXT_PUBLIC_SITE_URL="${NEXT_PUBLIC_SITE_URL}" \
+    DATABASE_SSL_MODE="${DATABASE_SSL_MODE}" \
+    npm run build
 
 # Run this target as a one-off release job before switching traffic:
 # docker build --target migrator -t eloria-migrator .
