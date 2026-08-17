@@ -115,7 +115,6 @@ export function CatalogProductCard({
           src={imageUrl}
           alt={imageAlt}
           fill
-          unoptimized={/^https?:\/\//.test(imageUrl)}
           loading={eager ? "eager" : "lazy"}
           fetchPriority={eager ? "high" : "auto"}
           sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"

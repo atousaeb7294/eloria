@@ -330,6 +330,7 @@ export default async function AdminProductsPage({
                             aria-label="مشاهده محصول"
                             href={`/${locale}/products/${product.slug}`}
                             target="_blank"
+                            rel="noopener noreferrer"
                             className="grid h-9 w-9 place-items-center rounded-lg border border-[#d0b359]/14 bg-white/[0.025] text-[#b8aa8e] hover:text-[#ecd17c]"
                           >
                             <Eye className="h-4 w-4" />

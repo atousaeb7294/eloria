@@ -102,6 +102,7 @@ export function AdminShell({
             <Link
               href={`/${locale}/products`}
               target="_blank"
+                            rel="noopener noreferrer"
               className="flex items-center gap-3 rounded-xl px-4 py-3 text-sm text-[#a99d82] transition hover:bg-white/5 hover:text-[#ead07e]"
             >
               <Store className="h-5 w-5" />

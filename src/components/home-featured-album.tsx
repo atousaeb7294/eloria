@@ -11,7 +11,12 @@ import {
   useState,
 } from "react";
 
+import Image from "next/image";
 import Link from "next/link";
+
+import {
+  useIntroComplete,
+} from "@/components/intro/use-intro-complete";
 
 type FeaturedAlbumItem = {
   slug: string;
@@ -147,6 +152,9 @@ export function HomeFeaturedAlbum({
   const [paused, setPaused] =
     useState(false);
 
+  const introComplete =
+    useIntroComplete();
+
   const [
     prefersReducedMotion,
     setPrefersReducedMotion,
@@ -182,6 +190,10 @@ export function HomeFeaturedAlbum({
   }, []);
 
   useEffect(() => {
+    if (!introComplete) {
+      return;
+    }
+
     const controller =
       new AbortController();
 
@@ -249,10 +261,14 @@ export function HomeFeaturedAlbum({
         timeout,
       );
     };
-  }, [locale]);
+  }, [
+    introComplete,
+    locale,
+  ]);
 
   useEffect(() => {
     if (
+      !introComplete ||
       paused ||
       prefersReducedMotion ||
       items.length < 2
@@ -273,6 +289,7 @@ export function HomeFeaturedAlbum({
       window.clearInterval(timer);
     };
   }, [
+    introComplete,
     items.length,
     paused,
     prefersReducedMotion,
@@ -544,30 +561,22 @@ export function HomeFeaturedAlbum({
                       }
                       className={
                         isActive
-                          ? "group block h-full w-full"
-                          : "pointer-events-none block h-full w-full"
+                          ? "group relative block h-full w-full"
+                          : "pointer-events-none relative block h-full w-full"
                       }
                     >
-                      {/* eslint-disable-next-line @next/next/no-img-element -- URLs may be local or admin-provided */}
-                      <img
+                      <Image
                         src={item.imageUrl}
                         alt={item.name}
+                        fill
+                        sizes="(max-width: 640px) 64vw, (max-width: 1024px) 49vw, 39vw"
                         draggable={false}
-                        loading={
-                          isActive
-                            ? "eager"
-                            : "lazy"
-                        }
-                        decoding="async"
-                        fetchPriority={
-                          isActive
-                            ? "high"
-                            : "auto"
-                        }
+                        loading="lazy"
+                        fetchPriority="auto"
                         className={
                           isActive
-                            ? "h-full w-full object-cover transition-transform duration-[4000ms] ease-out group-hover:scale-[1.018] motion-reduce:transition-none"
-                            : "h-full w-full object-cover"
+                            ? "object-cover transition-transform duration-[4000ms] ease-out group-hover:scale-[1.018] motion-reduce:transition-none"
+                            : "object-cover"
                         }
                       />
 

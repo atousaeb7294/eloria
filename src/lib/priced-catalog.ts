@@ -203,18 +203,21 @@ async function loadPricedProductsCatalog(
   }
 
   const priceFilterActive = minPrice !== null || maxPrice !== null;
-  const catalog = await (priceFilterActive
-      ? getCatalogPricingCandidates(filters)
-      : getCatalogPricingPage(filters));
-  const policies = await withDatabaseRetry(() =>
-    prisma.pricingPolicy.findMany({
-      where: { isActive: true },
-    }),
-  );
+  const catalogPromise = priceFilterActive
+    ? getCatalogPricingCandidates(filters)
+    : getCatalogPricingPage(filters);
 
-  const metalPrices = await withDatabaseRetry(() =>
-    prisma.metalPrice.findMany(),
-  );
+  const [catalog, policies, metalPrices] = await Promise.all([
+    catalogPromise,
+    withDatabaseRetry(() =>
+      prisma.pricingPolicy.findMany({
+        where: { isActive: true },
+      }),
+    ),
+    withDatabaseRetry(() =>
+      prisma.metalPrice.findMany(),
+    ),
+  ]);
 
   const policiesByMaterial = new Map(
     policies.map(policy => [policy.material, policy]),

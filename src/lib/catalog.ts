@@ -335,14 +335,16 @@ export async function getProductsCatalog(
   const { page: requestedPage, pageSize } = normalizePagination(filters);
   const requestedSkip = (requestedPage - 1) * pageSize;
 
-  const total = await withDatabaseRetry(() => prisma.product.count({ where }));
-  const requestedProducts = await withDatabaseRetry(() => prisma.product.findMany({
+  const [total, requestedProducts] = await Promise.all([
+    withDatabaseRetry(() => prisma.product.count({ where })),
+    withDatabaseRetry(() => prisma.product.findMany({
       where,
       orderBy: [{ displayOrder: "asc" }, { createdAt: "desc" }],
       skip: requestedSkip,
       take: pageSize,
       select: catalogCardSelect,
-    }));
+    })),
+  ]);
 
   const pageCount = Math.max(1, Math.ceil(total / pageSize));
   const page = Math.min(requestedPage, pageCount);
@@ -412,15 +414,6 @@ export async function getCatalogPricingCandidates(
     prisma.product.count({ where }),
   );
 
-  const products = await withDatabaseRetry(() =>
-    prisma.product.findMany({
-      where,
-      orderBy: [{ displayOrder: "asc" }, { createdAt: "desc" }],
-      take: MAX_PRICE_FILTER_CANDIDATES + 1,
-      select: catalogPricingSelect,
-    }),
-  );
-
   if (total > MAX_PRICE_FILTER_CANDIDATES) {
     throw new CatalogError(
       "PRICE_FILTER_TOO_BROAD",
@@ -428,6 +421,15 @@ export async function getCatalogPricingCandidates(
       422,
     );
   }
+
+  const products = await withDatabaseRetry(() =>
+    prisma.product.findMany({
+      where,
+      orderBy: [{ displayOrder: "asc" }, { createdAt: "desc" }],
+      take: MAX_PRICE_FILTER_CANDIDATES,
+      select: catalogPricingSelect,
+    }),
+  );
 
   return {
     selectedCollection,
@@ -442,14 +444,16 @@ export async function getCatalogPricingPage(
   const { page: requestedPage, pageSize } = normalizePagination(filters);
   const requestedSkip = (requestedPage - 1) * pageSize;
 
-  const total = await withDatabaseRetry(() => prisma.product.count({ where }));
-  const requestedProducts = await withDatabaseRetry(() => prisma.product.findMany({
+  const [total, requestedProducts] = await Promise.all([
+    withDatabaseRetry(() => prisma.product.count({ where })),
+    withDatabaseRetry(() => prisma.product.findMany({
       where,
       orderBy: [{ displayOrder: "asc" }, { createdAt: "desc" }],
       skip: requestedSkip,
       take: pageSize,
       select: catalogPricingSelect,
-    }));
+    })),
+  ]);
 
   const pageCount = Math.max(1, Math.ceil(total / pageSize));
   const page = Math.min(requestedPage, pageCount);

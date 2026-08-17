@@ -416,13 +416,14 @@ type ProductPricingGlobal = typeof globalThis & {
 };
 
 async function loadPricingReference(material: MaterialType) {
-  const policy = await prisma.pricingPolicy.findFirst({
-    where: { material, isActive: true },
-  });
-
-  const metalPrice = await prisma.metalPrice.findUnique({
-    where: { material },
-  });
+  const [policy, metalPrice] = await Promise.all([
+    prisma.pricingPolicy.findFirst({
+      where: { material, isActive: true },
+    }),
+    prisma.metalPrice.findUnique({
+      where: { material },
+    }),
+  ]);
 
   return { policy, metalPrice };
 }

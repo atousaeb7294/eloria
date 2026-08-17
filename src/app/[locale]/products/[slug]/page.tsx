@@ -56,6 +56,7 @@ import {
 } from "@/lib/prisma";
 
 import { PriceInformationItem, PurchaseAssuranceItem, SpecificationItem, collectionNames, fallbackImages, formatDecimal, formatToman } from "@/components/product-detail/product-detail-ui";
+import { truncateMetaDescription } from "@/lib/seo";
 
 import { ProductStructuredData } from "@/components/product-detail/product-structured-data";
 
@@ -245,8 +246,9 @@ async function getProductPageRecord(
 
 function fallbackProductMetadata(
   locale: string,
+  noIndex = false,
 ): Metadata {
-  return {
+  const metadata: Metadata = {
     title:
       locale === "fa"
         ? "جواهر الوریا"
@@ -256,6 +258,16 @@ function fallbackProductMetadata(
         ? "جواهری از دل افسانه"
         : "A jewel born from legend",
   };
+
+  return noIndex
+    ? {
+        ...metadata,
+        robots: {
+          index: false,
+          follow: false,
+        },
+      }
+    : metadata;
 }
 
 export async function generateMetadata({
@@ -264,7 +276,7 @@ export async function generateMetadata({
   const { locale, slug } = await params;
 
   if (locale !== "fa" && locale !== "en") {
-    return fallbackProductMetadata("fa");
+    return fallbackProductMetadata("fa", true);
   }
 
   try {
@@ -272,7 +284,7 @@ export async function generateMetadata({
       await getProductPageRecord(slug);
 
     if (!product) {
-      return fallbackProductMetadata(locale);
+      return fallbackProductMetadata(locale, true);
     }
 
     const title =
@@ -280,7 +292,7 @@ export async function generateMetadata({
         ? product.nameFa
         : product.nameEn;
 
-    const description =
+    const rawDescription =
       (locale === "fa"
         ? product.descriptionFa
         : product.descriptionEn
@@ -289,8 +301,23 @@ export async function generateMetadata({
         ? "جواهری از دل افسانه"
         : "A jewel born from legend");
 
+    const description =
+      truncateMetaDescription(
+        rawDescription,
+        title,
+      );
+
     const image =
-      product.images[0]?.imageUrl;
+      product.images[0];
+
+    const imageAlt =
+      image
+        ? (
+            locale === "fa"
+              ? image.altFa
+              : image.altEn
+          )?.trim() || title
+        : title;
 
     const encodedSlug =
       encodeURIComponent(slug);
@@ -327,8 +354,8 @@ export async function generateMetadata({
           ? {
               images: [
                 {
-                  url: image,
-                  alt: title,
+                  url: image.imageUrl,
+                  alt: imageAlt,
                 },
               ],
             }
@@ -340,18 +367,18 @@ export async function generateMetadata({
         description,
         ...(image
           ? {
-              images: [image],
+              images: [image.imageUrl],
             }
           : {}),
       },
     };
   } catch (error) {
     console.warn(
-      `[Eloria Product Metadata] Database unavailable for ${slug}; using fallback metadata.`,
+      `[Eloria Product Metadata] Database unavailable for ${slug}; using non-indexable fallback metadata.`,
       error,
     );
 
-    return fallbackProductMetadata(locale);
+    return fallbackProductMetadata(locale, true);
   }
 }
 

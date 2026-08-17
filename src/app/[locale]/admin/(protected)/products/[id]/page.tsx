@@ -235,6 +235,7 @@ export default async function EditAdminProductPage({
         <Link
           href={`/${locale}/products/${product.slug}`}
           target="_blank"
+                            rel="noopener noreferrer"
           className="inline-flex h-11 items-center gap-2 rounded-xl border border-[#d1b45c]/20 bg-[#d0b258]/8 px-4 text-sm text-[#dfc46e]"
         >
           <ExternalLink className="size-4" />

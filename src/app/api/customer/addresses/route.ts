@@ -8,6 +8,7 @@ import {
 } from "@/lib/customer-auth";
 import {
   createCustomerAddress,
+  CustomerDataError,
 } from "@/lib/customer-data";
 import { prisma } from "@/lib/prisma";
 import {
@@ -124,15 +125,27 @@ export async function POST(
       { status: 201 },
     );
   } catch (error) {
+    if (error instanceof CustomerDataError) {
+      return NextResponse.json(
+        {
+          successful: false,
+          message: error.message,
+        },
+        { status: 400 },
+      );
+    }
+
+    console.error(
+      "[Eloria Customer Address] Unexpected create failure.",
+      error,
+    );
+
     return NextResponse.json(
       {
         successful: false,
-        message:
-          error instanceof Error
-            ? error.message
-            : "ذخیره آدرس ناموفق بود.",
+        message: "ذخیره آدرس ناموفق بود.",
       },
-      { status: 400 },
+      { status: 500 },
     );
   }
 }

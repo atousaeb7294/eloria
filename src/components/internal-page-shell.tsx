@@ -205,7 +205,7 @@ export function InternalPageShell({
     );
 
   return (
-    <main
+    <div
       dir={
         isPersian
           ? "rtl"
@@ -252,11 +252,17 @@ export function InternalPageShell({
 
       <SiteHeader locale={locale} />
 
-      <div id="main-content" className="relative z-10" tabIndex={-1}>
+      <main
+        id="main-content"
+        tabIndex={-1}
+        className="relative z-10 outline-none"
+      >
         {children}
+      </main>
 
+      <div className="relative z-10">
         <SiteFooter locale={locale} />
       </div>
-    </main>
+    </div>
   );
 }

@@ -8,6 +8,29 @@ function normalizePath(path: string): string {
   return withSlash.replace(/\/+$/, "");
 }
 
+export function truncateMetaDescription(
+  value: string,
+  fallback: string,
+  maxLength = 158,
+): string {
+  const normalized =
+    value.trim().replace(/\s+/g, " ") ||
+    fallback.trim().replace(/\s+/g, " ");
+
+  if (normalized.length <= maxLength) {
+    return normalized;
+  }
+
+  const clipped = normalized.slice(0, maxLength + 1);
+  const boundary = clipped.lastIndexOf(" ");
+  const safe =
+    boundary >= Math.floor(maxLength * 0.7)
+      ? clipped.slice(0, boundary)
+      : normalized.slice(0, maxLength);
+
+  return `${safe.trim().replace(/[،,;:.\-–—]+$/u, "")}…`;
+}
+
 export function localizedPageMetadata(input: {
   locale: EloriaLocale;
   path: string;
@@ -27,6 +50,7 @@ export function localizedPageMetadata(input: {
       languages: {
         fa: `/fa${normalizedPath}`,
         en: `/en${normalizedPath}`,
+        "x-default": `/fa${normalizedPath}`,
       },
     },
     openGraph: {

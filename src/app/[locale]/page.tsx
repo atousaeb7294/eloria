@@ -3,11 +3,8 @@ import {
 } from "next-intl/server";
 
 import {
-  AmbientEffects,
-} from "@/components/ambient-effects";
-import {
-  HomePremiumEffects,
-} from "@/components/home-premium-effects";
+  DeferredHomeEffects,
+} from "@/components/deferred-home-effects";
 import {
   EloriaIntroExperience,
 } from "@/components/eloria-intro-experience";
@@ -42,37 +39,44 @@ export default async function HomePage({
   );
 
   return (
-    <main id="main-content" className="relative min-h-screen overflow-hidden bg-[#02140e] text-[#f8f0df]">
-      <AmbientEffects />
-      <HomePremiumEffects />
+    <div className="relative min-h-screen overflow-hidden bg-[#02140e] text-[#f8f0df]">
+      <DeferredHomeEffects />
 
-      <HomeHeaderController
+<HomeHeaderController
         locale={
           locale
         }
       />
 
-      <HeroShowcase
-        locale={
-          locale
-        }
-        persianTitleClassName={
-          "font-persian-title"
-        }
-      />
+      <main
+        id="main-content"
+        tabIndex={-1}
+        className="relative z-10 outline-none"
+      >
+        <HeroShowcase
+          locale={
+            locale
+          }
+          persianTitleClassName={
+            "font-persian-title"
+          }
+        />
 
-      <HomeShowcaseSections
-        locale={locale}
-        persianTitleClassName="font-persian-title"
-      />
+        <HomeShowcaseSections
+          locale={locale}
+          persianTitleClassName="font-persian-title"
+        />
+      </main>
 
-      <SiteFooter locale={locale} />
+      <div className="relative z-10">
+        <SiteFooter locale={locale} />
+      </div>
 
       <EloriaIntroExperience
         locale={
           locale
         }
       />
-    </main>
+    </div>
   );
 }

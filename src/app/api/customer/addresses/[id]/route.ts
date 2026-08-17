@@ -9,6 +9,7 @@ import {
 import {
   deleteCustomerAddress,
   updateCustomerAddress,
+  CustomerDataError,
 } from "@/lib/customer-data";
 import {
   readJsonBody,
@@ -83,15 +84,27 @@ export async function PATCH(
         ),
     });
   } catch (error) {
+    if (error instanceof CustomerDataError) {
+      return NextResponse.json(
+        {
+          successful: false,
+          message: error.message,
+        },
+        { status: 400 },
+      );
+    }
+
+    console.error(
+      "[Eloria Customer Address] Unexpected mutation failure.",
+      error,
+    );
+
     return NextResponse.json(
       {
         successful: false,
-        message:
-          error instanceof Error
-            ? error.message
-            : "ویرایش آدرس ناموفق بود.",
+        message: "عملیات آدرس ناموفق بود.",
       },
-      { status: 400 },
+      { status: 500 },
     );
   }
 }
@@ -132,15 +145,27 @@ export async function DELETE(
       successful: true,
     });
   } catch (error) {
+    if (error instanceof CustomerDataError) {
+      return NextResponse.json(
+        {
+          successful: false,
+          message: error.message,
+        },
+        { status: 400 },
+      );
+    }
+
+    console.error(
+      "[Eloria Customer Address] Unexpected mutation failure.",
+      error,
+    );
+
     return NextResponse.json(
       {
         successful: false,
-        message:
-          error instanceof Error
-            ? error.message
-            : "حذف آدرس ناموفق بود.",
+        message: "عملیات آدرس ناموفق بود.",
       },
-      { status: 400 },
+      { status: 500 },
     );
   }
 }

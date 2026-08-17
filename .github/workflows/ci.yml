@@ -175,6 +175,9 @@ jobs:
       - name: Static security audit
         run: npm run audit:security
 
+      - name: Professional quality audit
+        run: npm run audit:quality
+
       - name: Dependency security audit
         run: npm run audit:dependencies
 

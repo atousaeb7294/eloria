@@ -13,6 +13,11 @@ import {
 
 const ENTRY_HOTSPOT_LEAD_SECONDS = 6;
 
+function forceNormalPlayback(video: HTMLVideoElement) {
+  video.defaultPlaybackRate = 1;
+  video.playbackRate = 1;
+}
+
 export function useEloriaIntroController({
   locale,
 }: EloriaIntroExperienceProps) {
@@ -214,6 +219,7 @@ export function useEloriaIntroController({
       }
 
       video.muted = true;
+      forceNormalPlayback(video);
 
       void video
         .play()
@@ -243,6 +249,7 @@ export function useEloriaIntroController({
 
       setAutoplayBlocked(false);
       video.muted = true;
+      forceNormalPlayback(video);
 
       void video
         .play()
@@ -309,7 +316,7 @@ export function useEloriaIntroController({
            * moment the visual button becomes visible.
            */
           setPhase("awaiting-entry");
-          prepareSecondVideo("auto");
+          prepareSecondVideo("metadata");
         }
       }
     }, [
@@ -334,8 +341,14 @@ export function useEloriaIntroController({
         !secondVideoReady,
       );
 
+      const firstVideo =
+        firstVideoRef.current;
+
+      firstVideo?.pause();
+
       setPhase("video-two");
       secondVideo.currentTime = 0;
+      forceNormalPlayback(secondVideo);
       secondVideo.muted = false;
 
       void secondVideo

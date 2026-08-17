@@ -1,0 +1,338 @@
+import { execFileSync } from "node:child_process";
+import { readdirSync, readFileSync, statSync } from "node:fs";
+import path from "node:path";
+
+type Check = {
+  name: string;
+  passed: boolean;
+  detail?: string;
+};
+
+const root = process.cwd();
+const checks: Check[] = [];
+const warnings: string[] = [];
+
+function read(relativePath: string): string {
+  return readFileSync(path.join(root, relativePath), "utf8").replace(/\r\n/g, "\n");
+}
+
+function check(name: string, passed: boolean, detail?: string) {
+  checks.push({ name, passed, detail });
+}
+
+function filesUnder(relativeRoot: string): string[] {
+  const absoluteRoot = path.join(root, relativeRoot);
+  const output: string[] = [];
+
+  function walk(current: string) {
+    for (const entry of readdirSync(current)) {
+      const absolute = path.join(current, entry);
+      const stat = statSync(absolute);
+
+      if (stat.isDirectory()) {
+        if (
+          entry === "node_modules" ||
+          entry === ".next" ||
+          entry === "generated"
+        ) {
+          continue;
+        }
+        walk(absolute);
+        continue;
+      }
+
+      if (/\.(?:ts|tsx|js|jsx|mjs|mts)$/.test(entry)) {
+        output.push(path.relative(root, absolute).replaceAll("\\", "/"));
+      }
+    }
+  }
+
+  if (statSync(absoluteRoot).isDirectory()) {
+    walk(absoluteRoot);
+  }
+
+  return output;
+}
+
+const seo = read("src/lib/seo.ts");
+check(
+  "Localized SEO includes x-default",
+  seo.includes('"x-default": `/fa${normalizedPath}`'),
+);
+check(
+  "SEO description normalizer exists",
+  seo.includes("truncateMetaDescription"),
+);
+
+const productsPage = read("src/app/[locale]/products/page.tsx");
+check(
+  "Filtered catalog pages are noindex",
+  productsPage.includes("ELORIA_FILTERED_CATALOG_SEO_V1") &&
+    productsPage.includes("index: false") &&
+    productsPage.includes('canonical: `/${locale}/products`'),
+);
+
+const productPage = read("src/app/[locale]/products/[slug]/page.tsx");
+check(
+  "Product metadata truncates descriptions",
+  productPage.includes("truncateMetaDescription"),
+);
+check(
+  "Missing product metadata is noindex",
+  productPage.includes("fallbackProductMetadata(locale, true)"),
+);
+check(
+  "Product OG alt uses localized image alt",
+  productPage.includes("image.altFa") &&
+    productPage.includes("image.altEn"),
+);
+
+const internalShell = read("src/components/internal-page-shell.tsx");
+const internalMainMatch = internalShell.match(/<main\b[^>]*>/i);
+const internalMainTag = internalMainMatch?.[0] ?? "";
+check(
+  "Internal pages have a dedicated main landmark",
+  internalMainTag.includes('id="main-content"') &&
+    internalMainTag.includes("tabIndex={-1}") &&
+    (internalMainMatch?.index ?? Number.POSITIVE_INFINITY) <
+      internalShell.indexOf("<SiteFooter locale={locale} />"),
+);
+
+const homePage = read("src/app/[locale]/page.tsx");
+const homeMainMatch = homePage.match(/<main\b[^>]*>/i);
+const homeMainTag = homeMainMatch?.[0] ?? "";
+check(
+  "Home has a focusable dedicated main landmark",
+  homeMainTag.includes('id="main-content"') &&
+    homeMainTag.includes("tabIndex={-1}") &&
+    (homeMainMatch?.index ?? Number.POSITIVE_INFINITY) <
+      homePage.indexOf("<SiteFooter"),
+);
+
+const catalogCard = read("src/components/catalog-product-card.tsx");
+check(
+  "Catalog images use Next image optimization",
+  !catalogCard.includes("unoptimized="),
+);
+
+const catalog = read("src/lib/catalog.ts");
+check(
+  "Catalog count and page query run concurrently",
+  (catalog.match(/Promise\.all\(\[/g) ?? []).length >= 2,
+);
+check(
+  "Broad price filters reject before product fetch",
+  catalog.indexOf("if (total > MAX_PRICE_FILTER_CANDIDATES)") <
+    catalog.indexOf(
+      "const products = await withDatabaseRetry",
+      catalog.indexOf("getCatalogPricingCandidates"),
+    ),
+);
+
+const pricedCatalog = read("src/lib/priced-catalog.ts");
+check(
+  "Catalog pricing dependencies run concurrently",
+  pricedCatalog.includes("const [catalog, policies, metalPrices] = await Promise.all"),
+);
+
+const pricingCore = read("src/lib/product-pricing-core.ts");
+check(
+  "Pricing reference queries run concurrently",
+  pricingCore.includes("const [policy, metalPrice] = await Promise.all"),
+);
+
+const customerData = read("src/lib/customer-data.ts");
+check(
+  "Customer domain errors have a public-safe type",
+  customerData.includes("export class CustomerDataError extends Error"),
+);
+
+for (const route of [
+  "src/app/api/customer/me/route.ts",
+  "src/app/api/customer/addresses/route.ts",
+  "src/app/api/customer/addresses/[id]/route.ts",
+]) {
+  const content = read(route);
+  check(
+    `${route} sanitizes internal errors`,
+    content.includes("CustomerDataError") &&
+      !content.includes("error instanceof Error"),
+  );
+}
+
+const introConfigPath = "src/components/intro/eloria-intro-config.ts";
+const textFiles = [
+  ...filesUnder("src"),
+  ...filesUnder("tests"),
+];
+const introKeyLeaks: string[] = [];
+
+for (const file of textFiles) {
+  if (file === introConfigPath) continue;
+  const content = read(file);
+  if (/eloria_intro_seen_v\d+/.test(content)) {
+    introKeyLeaks.push(file);
+  }
+}
+
+const localeLayout = read("src/app/[locale]/layout.tsx");
+check(
+  "Locale layout declares language and direction",
+  localeLayout.includes("lang={locale}") &&
+    localeLayout.includes('locale === "fa"') &&
+    localeLayout.includes('dir='),
+);
+
+const robots = read("src/app/robots.ts");
+check(
+  "Robots excludes private and API routes",
+  robots.includes('"/api/"') &&
+    robots.includes('"/fa/admin/"') &&
+    robots.includes('"/fa/checkout"') &&
+    robots.includes('"/fa/profile"'),
+);
+
+const sitemap = read("src/app/sitemap.ts");
+check(
+  "Sitemap covers localized dynamic catalog",
+  sitemap.includes("languageAlternates") &&
+    sitemap.includes("prisma.product.findMany") &&
+    sitemap.includes("prisma.collection.findMany"),
+);
+
+const nextConfig = read("next.config.ts");
+check(
+  "Security response headers remain configured",
+  nextConfig.includes("Content-Security-Policy") &&
+    nextConfig.includes("Strict-Transport-Security") &&
+    nextConfig.includes('value: "nosniff"') &&
+    nextConfig.includes('value: "DENY"'),
+);
+
+const tracked = execFileSync(
+  "git",
+  ["ls-files"],
+  { cwd: root, encoding: "utf8" },
+)
+  .split(/\r?\n/)
+  .filter(Boolean);
+
+const trackedSecrets = tracked.filter((file) => {
+  const name = path.basename(file);
+  return (
+    /^\.env(?:\.|$)/.test(name) &&
+    !/\.example$|\.sample$|\.template$/.test(name)
+  );
+});
+
+check(
+  "No real .env files are tracked",
+  trackedSecrets.length === 0,
+  trackedSecrets.join(", "),
+);
+
+const sourceFiles = filesUnder("src");
+const dangerousRuntime: string[] = [];
+const rawImages: string[] = [];
+const unsafeBlankTargets: string[] = [];
+
+const reviewedAdminRawImageFiles = new Set([
+  "src/app/[locale]/admin/(protected)/products/page.tsx",
+  "src/components/admin/admin-product-media-manager.tsx",
+]);
+
+for (const file of sourceFiles) {
+  const content = read(file);
+
+  if (
+    /(^|[^\w])eval\s*\(/m.test(content) ||
+    /\bnew\s+Function\s*\(/.test(content)
+  ) {
+    dangerousRuntime.push(file);
+  }
+
+  if (/<img\b/i.test(content)) {
+    rawImages.push(file);
+  }
+
+  const blankTags =
+    content.match(/<(?:a|Link)\b[^>]*target\s*=\s*["']_blank["'][^>]*>/gi) ?? [];
+
+  for (const tag of blankTags) {
+    if (
+      !/rel\s*=\s*["'][^"']*\bnoopener\b[^"']*["']/i.test(tag) ||
+      !/rel\s*=\s*["'][^"']*\bnoreferrer\b[^"']*["']/i.test(tag)
+    ) {
+      unsafeBlankTargets.push(file);
+      break;
+    }
+  }
+}
+
+check(
+  "No eval/new Function in application source",
+  dangerousRuntime.length === 0,
+  dangerousRuntime.join(", "),
+);
+
+const unexpectedRawImages = rawImages.filter(
+  (file) => !reviewedAdminRawImageFiles.has(file),
+);
+
+const unannotatedReviewedRawImages = rawImages.filter(
+  (file) =>
+    reviewedAdminRawImageFiles.has(file) &&
+    !read(file).includes("@next/next/no-img-element"),
+);
+
+check(
+  "Raw image usage is limited to reviewed admin preview surfaces",
+  unexpectedRawImages.length === 0 &&
+    unannotatedReviewedRawImages.length === 0,
+  [...unexpectedRawImages, ...unannotatedReviewedRawImages].join(", "),
+);
+
+check(
+  "Blank-target links declare noopener and noreferrer",
+  unsafeBlankTargets.length === 0,
+  unsafeBlankTargets.join(", "),
+);
+
+const packageJson = JSON.parse(read("package.json")) as {
+  scripts?: Record<string, string>;
+};
+check(
+  "Quality audit is part of package scripts",
+  packageJson.scripts?.["audit:quality"] ===
+    "tsx scripts/quality-audit.ts",
+);
+
+const ci = read(".github/workflows/ci.yml");
+check(
+  "CI runs professional quality audit",
+  ci.includes("Professional quality audit") &&
+    ci.includes("npm run audit:quality"),
+);
+
+for (const item of checks) {
+  console.log(
+    `${item.passed ? "PASS" : "FAIL"}  ${item.name}` +
+      (item.detail ? ` :: ${item.detail}` : ""),
+  );
+}
+
+for (const warning of warnings) {
+  console.warn(`WARN  ${warning}`);
+}
+
+const failed = checks.filter((item) => !item.passed);
+if (failed.length) {
+  console.error(
+    `\n${failed.length} professional quality gate(s) failed.`,
+  );
+  process.exitCode = 1;
+} else {
+  console.log(
+    "\nAll ELORIA pre-host professional quality gates passed.",
+  );
+}

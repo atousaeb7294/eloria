@@ -2,6 +2,7 @@ import {
   Prisma,
 } from "@/generated/prisma/client";
 import {
+  CheckoutCustomerError,
   normalizeCheckoutCustomer,
 } from "@/lib/checkout-customer";
 import {
@@ -11,6 +12,13 @@ import {
   prisma,
 } from "@/lib/prisma";
 
+export class CustomerDataError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "CustomerDataError";
+  }
+}
+
 export function normalizeCustomerName(
   value: unknown,
 ): string {
@@ -18,7 +26,7 @@ export function normalizeCustomerName(
     typeof value !==
     "string"
   ) {
-    throw new Error(
+    throw new CustomerDataError(
       "نام و نام خانوادگی معتبر نیست.",
     );
   }
@@ -35,7 +43,7 @@ export function normalizeCustomerName(
     name.length < 2 ||
     name.length > 120
   ) {
-    throw new Error(
+    throw new CustomerDataError(
       "نام و نام خانوادگی معتبر نیست.",
     );
   }
@@ -58,7 +66,7 @@ export function normalizeCustomerEmail(
     typeof value !==
     "string"
   ) {
-    throw new Error(
+    throw new CustomerDataError(
       "ایمیل معتبر نیست.",
     );
   }
@@ -74,7 +82,7 @@ export function normalizeCustomerEmail(
       email,
     )
   ) {
-    throw new Error(
+    throw new CustomerDataError(
       "ایمیل معتبر نیست.",
     );
   }
@@ -123,7 +131,7 @@ export function normalizeAddressInput(
       "object" ||
     value === null
   ) {
-    throw new Error(
+    throw new CustomerDataError(
       "اطلاعات آدرس معتبر نیست.",
     );
   }
@@ -142,36 +150,46 @@ export function normalizeAddressInput(
           .slice(0, 80)
       : "";
 
-  const customer =
-    normalizeCheckoutCustomer({
-      fullName:
-        String(
-          input.recipientName ??
-            "",
-        ),
-      mobile:
-        String(
-          input.mobile ?? "",
-        ),
-      email: null,
-      province:
-        String(
-          input.province ?? "",
-        ),
-      city:
-        String(
-          input.city ?? "",
-        ),
-      postalCode:
-        String(
-          input.postalCode ??
-            "",
-        ),
-      address:
-        String(
-          input.address ?? "",
-        ),
-    });
+  // ELORIA_CUSTOMER_ADDRESS_VALIDATION_WRAP_V1
+  const customer = (() => {
+    try {
+      return normalizeCheckoutCustomer({
+        fullName:
+          String(
+            input.recipientName ??
+              "",
+          ),
+        mobile:
+          String(
+            input.mobile ?? "",
+          ),
+        email: null,
+        province:
+          String(
+            input.province ?? "",
+          ),
+        city:
+          String(
+            input.city ?? "",
+          ),
+        postalCode:
+          String(
+            input.postalCode ??
+              "",
+          ),
+        address:
+          String(
+            input.address ?? "",
+          ),
+      });
+    } catch (error) {
+      if (error instanceof CheckoutCustomerError) {
+        throw new CustomerDataError(error.message);
+      }
+
+      throw error;
+    }
+  })();
 
   return {
     title:
@@ -281,7 +299,7 @@ export async function updateCustomerAddress(
         });
 
       if (!existing) {
-        throw new Error(
+        throw new CustomerDataError(
           "آدرس پیدا نشد.",
         );
       }
@@ -350,7 +368,7 @@ export async function deleteCustomerAddress(
         });
 
       if (!existing) {
-        throw new Error(
+        throw new CustomerDataError(
           "آدرس پیدا نشد.",
         );
       }

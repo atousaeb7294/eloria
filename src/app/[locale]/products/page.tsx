@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { setRequestLocale } from "next-intl/server";
@@ -44,6 +45,44 @@ function pageHref(
   if (page > 1) query.set("page", String(page));
   const encoded = query.toString();
   return `/${locale}/products${encoded ? `?${encoded}` : ""}`;
+}
+
+// ELORIA_FILTERED_CATALOG_SEO_V1
+export async function generateMetadata({
+  params,
+  searchParams,
+}: ProductsPageProps): Promise<Metadata> {
+  const { locale } = await params;
+
+  if (locale !== "fa" && locale !== "en") {
+    return {};
+  }
+
+  const raw = await searchParams;
+  const hasActiveQuery = Object.values(raw).some((value) =>
+    Array.isArray(value)
+      ? value.some((item) => item.trim().length > 0)
+      : typeof value === "string" && value.trim().length > 0,
+  );
+
+  if (!hasActiveQuery) {
+    return {};
+  }
+
+  return {
+    robots: {
+      index: false,
+      follow: true,
+    },
+    alternates: {
+      canonical: `/${locale}/products`,
+      languages: {
+        fa: "/fa/products",
+        en: "/en/products",
+        "x-default": "/fa/products",
+      },
+    },
+  };
 }
 
 export default async function ProductsPage({ params, searchParams }: ProductsPageProps) {
@@ -226,25 +265,41 @@ export default async function ProductsPage({ params, searchParams }: ProductsPag
 
         {catalog.pageCount > 1 && (
           <nav aria-label={isPersian ? "صفحه‌بندی آثار" : "Catalog pagination"} className="mt-12 flex items-center justify-center gap-3">
-            <Link
-              href={pageHref(locale, raw, Math.max(1, catalog.page - 1))}
-              aria-disabled={catalog.page === 1}
-              className={catalog.page === 1 ? "pointer-events-none min-h-11 rounded-full border border-white/10 px-5 py-3 text-xs text-white/25" : "min-h-11 rounded-full border border-[#d9b85f]/30 px-5 py-3 text-xs text-[#e9d596] transition hover:border-[#efd17d]/65"}
-            >
-              {isPersian ? "قبلی" : "Previous"}
-            </Link>
+            {catalog.page === 1 ? (
+              <span
+                aria-disabled="true"
+                className="min-h-11 rounded-full border border-white/10 px-5 py-3 text-xs text-white/25"
+              >
+                {isPersian ? "قبلی" : "Previous"}
+              </span>
+            ) : (
+              <Link
+                href={pageHref(locale, raw, catalog.page - 1)}
+                className="min-h-11 rounded-full border border-[#d9b85f]/30 px-5 py-3 text-xs text-[#e9d596] transition hover:border-[#efd17d]/65"
+              >
+                {isPersian ? "قبلی" : "Previous"}
+              </Link>
+            )}
             <span className="min-w-24 text-center text-xs text-[#d9c89f]/75">
               {isPersian
                 ? `صفحه ${catalog.page.toLocaleString("fa-IR")} از ${catalog.pageCount.toLocaleString("fa-IR")}`
                 : `Page ${catalog.page} of ${catalog.pageCount}`}
             </span>
-            <Link
-              href={pageHref(locale, raw, Math.min(catalog.pageCount, catalog.page + 1))}
-              aria-disabled={catalog.page === catalog.pageCount}
-              className={catalog.page === catalog.pageCount ? "pointer-events-none min-h-11 rounded-full border border-white/10 px-5 py-3 text-xs text-white/25" : "min-h-11 rounded-full border border-[#d9b85f]/30 px-5 py-3 text-xs text-[#e9d596] transition hover:border-[#efd17d]/65"}
-            >
-              {isPersian ? "بعدی" : "Next"}
-            </Link>
+            {catalog.page === catalog.pageCount ? (
+              <span
+                aria-disabled="true"
+                className="min-h-11 rounded-full border border-white/10 px-5 py-3 text-xs text-white/25"
+              >
+                {isPersian ? "بعدی" : "Next"}
+              </span>
+            ) : (
+              <Link
+                href={pageHref(locale, raw, catalog.page + 1)}
+                className="min-h-11 rounded-full border border-[#d9b85f]/30 px-5 py-3 text-xs text-[#e9d596] transition hover:border-[#efd17d]/65"
+              >
+                {isPersian ? "بعدی" : "Next"}
+              </Link>
+            )}
           </nav>
         )}
       </section>

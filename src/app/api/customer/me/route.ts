@@ -9,6 +9,7 @@ import {
 import {
   customerCheckoutPrefill,
   updateCustomerProfile,
+  CustomerDataError,
 } from "@/lib/customer-data";
 import {
   readJsonBody,
@@ -129,15 +130,27 @@ export async function PATCH(
       customer,
     });
   } catch (error) {
+    if (error instanceof CustomerDataError) {
+      return NextResponse.json(
+        {
+          successful: false,
+          message: error.message,
+        },
+        { status: 400 },
+      );
+    }
+
+    console.error(
+      "[Eloria Customer Profile] Unexpected update failure.",
+      error,
+    );
+
     return NextResponse.json(
       {
         successful: false,
-        message:
-          error instanceof Error
-            ? error.message
-            : "ذخیره اطلاعات ناموفق بود.",
+        message: "ذخیره اطلاعات ناموفق بود.",
       },
-      { status: 400 },
+      { status: 500 },
     );
   }
 }
