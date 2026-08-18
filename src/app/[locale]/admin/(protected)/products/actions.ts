@@ -13,6 +13,10 @@ import {
 } from "@/lib/admin-auth";
 
 import {
+  isAllowedProductImageUrl,
+} from "@/lib/product-media-storage";
+
+import {
   prisma,
   withDatabaseRetry,
 } from "@/lib/prisma";
@@ -291,15 +295,9 @@ function parseProductInput(
       1000,
     );
 
-  if (
-    primaryImageUrl &&
-    !(
-      primaryImageUrl.startsWith("/") ||
-      primaryImageUrl.startsWith("https://")
-    )
-  ) {
+  if (primaryImageUrl && !isAllowedProductImageUrl(primaryImageUrl)) {
     throw new AdminProductActionError(
-      "آدرس تصویر باید با / یا https:// آغاز شود.",
+      "آدرس تصویر خارج از مسیر یا میزبان‌های مجاز است.",
     );
   }
 

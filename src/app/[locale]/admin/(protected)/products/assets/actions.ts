@@ -4,7 +4,12 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { Prisma } from "@/generated/prisma/client";
 import { hasValidAdminSession } from "@/lib/admin-auth";
-import { ProductMediaStorageError, removeStoredProductImage, storeProductImage } from "@/lib/product-media-storage";
+import {
+  isAllowedProductImageUrl,
+  ProductMediaStorageError,
+  removeStoredProductImage,
+  storeProductImage,
+} from "@/lib/product-media-storage";
 import { prisma } from "@/lib/prisma";
 import { syncProductInventory } from "@/lib/inventory";
 
@@ -99,42 +104,6 @@ export async function uploadAdminProductImagesAction(productId: string, localeVa
   }
   refresh(productId, item.slug);
   redirect(messageUrl(locale, productId, "mediaSaved"));
-}
-
-function allowedImageHosts(): Set<string> {
-  const hosts = new Set<string>();
-
-  const supabase = process.env.SUPABASE_URL?.trim();
-  if (supabase) {
-    try {
-      const url = new URL(supabase);
-      if (url.protocol === "https:") hosts.add(url.hostname.toLowerCase());
-    } catch {}
-  }
-
-  for (const raw of (process.env.ELORIA_ALLOWED_IMAGE_HOSTS ?? "").split(",")) {
-    const value = raw.trim();
-    if (!value) continue;
-    try {
-      const url = new URL(value.includes("://") ? value : `https://${value}`);
-      if (url.protocol === "https:") hosts.add(url.hostname.toLowerCase());
-    } catch {}
-  }
-
-  return hosts;
-}
-
-function isAllowedProductImageUrl(value: string): boolean {
-  if (value.startsWith("/")) return true;
-
-  try {
-    const url = new URL(value);
-    if (url.protocol !== "https:") return false;
-    if (process.env.NODE_ENV !== "production") return true;
-    return allowedImageHosts().has(url.hostname.toLowerCase());
-  } catch {
-    return false;
-  }
 }
 
 export async function addAdminProductImageUrlAction(productId: string, localeValue: string, form: FormData): Promise<void> {

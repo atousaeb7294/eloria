@@ -78,19 +78,29 @@ export async function createCustomerOtpChallenge(input: { mobile: string; ip?: s
   const now = new Date();
   const expiresAt = new Date(now.getTime() + customerOtpMinutes() * 60_000);
 
-  await prisma.customerOtpChallenge.updateMany({
-    where: { mobile, consumedAt: null, expiresAt: { gt: now } },
-    data: { consumedAt: now },
-  });
+  await prisma.$transaction(async tx => {
+    // Serialize OTP issuance per mobile number so concurrent requests cannot
+    // leave more than one active challenge behind.
+    await tx.$executeRaw`
+      SELECT pg_advisory_xact_lock(
+        hashtext(${`customer-otp:${mobile}`})
+      )
+    `;
 
-  await prisma.customerOtpChallenge.create({
-    data: {
-      id,
-      mobile,
-      codeHash: hashOtp(id, code),
-      expiresAt,
-      requestIpHash: hashRequestIp(input.ip),
-    },
+    await tx.customerOtpChallenge.updateMany({
+      where: { mobile, consumedAt: null, expiresAt: { gt: now } },
+      data: { consumedAt: now },
+    });
+
+    await tx.customerOtpChallenge.create({
+      data: {
+        id,
+        mobile,
+        codeHash: hashOtp(id, code),
+        expiresAt,
+        requestIpHash: hashRequestIp(input.ip),
+      },
+    });
   });
 
   return { id, mobile, code, expiresAt };
@@ -102,7 +112,7 @@ export async function consumeCustomerOtp(input: { challengeId: string; mobile: s
   if (!/^\d{6}$/.test(code)) throw new Error("کد تأیید باید ۶ رقم باشد.");
   const now = new Date();
 
-  return prisma.$transaction(async tx => {
+  const result = await prisma.$transaction(async tx => {
     await tx.$queryRaw`SELECT id FROM customer_otp_challenges WHERE id = ${input.challengeId}::uuid FOR UPDATE`;
     const challenge = await tx.customerOtpChallenge.findUnique({ where: { id: input.challengeId } });
     if (!challenge || challenge.mobile !== mobile) throw new Error("درخواست کد تأیید معتبر نیست.");
@@ -114,21 +124,31 @@ export async function consumeCustomerOtp(input: { challengeId: string; mobile: s
     const valid = safeEqualHex(challenge.codeHash, hashOtp(challenge.id, code));
     if (!valid) {
       await tx.customerOtpChallenge.update({ where: { id: challenge.id }, data: { attempts: { increment: 1 } } });
-      throw new Error("کد تأیید صحیح نیست.");
+      // Do not throw inside the transaction after incrementing attempts:
+      // throwing would roll the increment back and defeat maxAttempts.
+      return {
+        successful: false as const,
+        message: "کد تأیید صحیح نیست.",
+      };
     }
 
     const existingCustomer = await tx.customer.findUnique({
       where: { mobile },
       select: { isActive: true },
     });
-    if (existingCustomer && !existingCustomer.isActive) {
-      throw new Error("این حساب کاربری غیرفعال است.");
-    }
 
+    // A valid OTP is one-time even when the account is disabled.
     await tx.customerOtpChallenge.update({
       where: { id: challenge.id },
       data: { attempts: { increment: 1 }, consumedAt: now },
     });
+
+    if (existingCustomer && !existingCustomer.isActive) {
+      return {
+        successful: false as const,
+        message: "این حساب کاربری غیرفعال است.",
+      };
+    }
 
     const customer = await tx.customer.upsert({
       where: { mobile },
@@ -136,8 +156,14 @@ export async function consumeCustomerOtp(input: { challengeId: string; mobile: s
       update: { mobileVerifiedAt: now, lastLoginAt: now },
     });
 
-    return customer;
+    return {
+      successful: true as const,
+      customer,
+    };
   });
+
+  if (!result.successful) throw new Error(result.message);
+  return result.customer;
 }
 
 export async function createCustomerSession(input: { customerId: string; ip?: string | null; userAgent?: string | null }) {
