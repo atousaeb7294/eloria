@@ -170,6 +170,9 @@ jobs:
           TURNSTILE_SECRET_KEY: 1x0000000000000000000000000000000AA
           KAVENEGAR_API_KEY: ci-kavenegar-api-key-1234567890
           ZARINPAL_MERCHANT_ID: 00000000-0000-0000-0000-000000000000
+          ELORIA_LEGAL_SELLER_NAME: "ELORIA CI Seller"
+          ELORIA_LEGAL_BUSINESS_ADDRESS: "CI-only automated test address"
+          ELORIA_LEGAL_SUPPORT_EMAIL: "ci@eloria.invalid"
         run: npm run check:env
 
       - name: Static security audit
