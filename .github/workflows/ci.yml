@@ -1,4 +1,4 @@
-name: ELORIA Release Gate
+﻿name: ELORIA Release Gate
 
 on:
   push:
@@ -203,7 +203,7 @@ jobs:
         run: npm run build
 
       - name: Install Playwright Chromium and WebKit
-        run: npx playwright install --with-deps chromium webkit
+        run: npx playwright install chromium webkit
 
       - name: Run browser tests
         run: npm run test:e2e
@@ -229,3 +229,4 @@ jobs:
           name: playwright-report
           path: playwright-report/
           retention-days: 14
+
