@@ -386,9 +386,31 @@ check(
     e2eCleanup.includes('"e2e:"'),
 );
 
+const paymentSimulation = read("scripts/test-zarinpal-simulation.ts");
+
+check(
+  "Zarinpal simulation covers success review retry cancellation and replay",
+  paymentSimulation.includes("testSuccess100AndReplay") &&
+    paymentSimulation.includes("testSuccess101") &&
+    paymentSimulation.includes("testCancelledCallback") &&
+    paymentSimulation.includes("testMissingReferenceRequiresReview") &&
+    paymentSimulation.includes("testTimeoutRemainsRetryable") &&
+    paymentSimulation.includes("testProviderVerifyFailureRemainsRetryable") &&
+    paymentSimulation.includes("testStaleCallbackCannotDowngradePaidOrder"),
+);
+
 const packageJson = JSON.parse(read("package.json")) as {
   scripts?: Record<string, string>;
 };
+check(
+  "Payment provider simulation is part of verification scripts",
+  packageJson.scripts?.["test:payments"] ===
+    "tsx scripts/test-zarinpal-simulation.ts" &&
+    packageJson.scripts?.["verify:ci"]?.includes(
+      "npm run test:payments",
+    ) === true,
+);
+
 check(
   "Quality audit is part of package scripts",
   packageJson.scripts?.["audit:quality"] ===
@@ -396,6 +418,12 @@ check(
 );
 
 const ci = read(".github/workflows/ci.yml");
+check(
+  "CI runs Zarinpal payment simulation",
+  ci.includes("Test Zarinpal payment simulation") &&
+    ci.includes("npm run test:payments"),
+);
+
 check(
   "CI runs professional quality audit",
   ci.includes("Professional quality audit") &&

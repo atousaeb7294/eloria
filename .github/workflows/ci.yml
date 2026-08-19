@@ -138,6 +138,9 @@ jobs:
       - name: Test commerce database invariants
         run: npm run test:commerce
 
+      - name: Test Zarinpal payment simulation
+        run: npm run test:payments
+
       - name: Test customer account behavior
         run: npm run test:customer
 
