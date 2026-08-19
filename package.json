@@ -30,7 +30,7 @@
     "db:preflight": "tsx scripts/preflight-hardening-data.ts",
     "typecheck": "tsc --noEmit",
     "db:seed": "prisma db seed",
-    "test:e2e": "playwright test",
+    "test:e2e": "node scripts/run-e2e.mjs",
     "verify:ci": "npm run typecheck && npm run lint && npm run test:tokens && npm run test:pricing && npm run test:commerce && npm run test:customer && npm run test:shipping && npm run test:security-alerts && npm run test:hardening && npm run audit:dependencies && npm run build && npm run test:e2e && npm run audit:security && npm run audit:quality",
     "cron:expired-orders": "node scripts/run-cron-once.mjs expired-orders",
     "cron:metal-prices": "node scripts/run-cron-once.mjs metal-prices",

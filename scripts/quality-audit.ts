@@ -324,6 +324,68 @@ check(
   unsafeBlankTargets.join(", "),
 );
 
+
+const playwrightConfig =
+  read("playwright.config.ts");
+
+check(
+  "Playwright covers desktop and mobile Chromium/WebKit",
+  playwrightConfig.includes('"chromium-desktop"') &&
+    playwrightConfig.includes('"webkit-desktop"') &&
+    playwrightConfig.includes('"chromium-mobile"') &&
+    playwrightConfig.includes('"webkit-mobile"') &&
+    playwrightConfig.includes('"Pixel 5"') &&
+    playwrightConfig.includes('"iPhone 13"'),
+);
+
+
+check(
+  "Local E2E uses system Chromium while CI retains WebKit matrix",
+  playwrightConfig.includes("ELORIA_E2E_CHANNEL") &&
+    playwrightConfig.includes("localChromiumChannel") &&
+    playwrightConfig.includes("runFullBrowserMatrix") &&
+    playwrightConfig.includes("process.env.CI") &&
+    playwrightConfig.includes('"webkit-desktop"') &&
+    playwrightConfig.includes('"webkit-mobile"'),
+);
+
+const criticalE2e =
+  read("tests/eloria-critical-flows.spec.ts");
+
+check(
+  "Critical E2E covers OTP checkout payment and admin",
+  criticalE2e.includes("/api/customer/auth/request-otp") &&
+    criticalE2e.includes("/api/customer/auth/verify-otp") &&
+    criticalE2e.includes("/api/checkout/orders") &&
+    criticalE2e.includes("/api/payments/zarinpal/start") &&
+    criticalE2e.includes("/api/payments/zarinpal/callback") &&
+    criticalE2e.includes("/fa/admin") &&
+    criticalE2e.includes("reusedOtp") &&
+    criticalE2e.includes("secondPayload.reused"),
+);
+
+
+check(
+  "Critical E2E stays isolated from application Prisma runtime",
+  !criticalE2e.includes("../src/lib/prisma") &&
+    !criticalE2e.includes("@/lib/prisma"),
+);
+
+const e2eRunner =
+  read("scripts/run-e2e.mjs");
+
+const e2eCleanup =
+  read("scripts/cleanup-e2e-data.ts");
+
+check(
+  "Critical E2E always performs isolated database cleanup",
+  e2eRunner.includes("E2E pre-cleanup") &&
+    e2eRunner.includes("E2E post-cleanup") &&
+    e2eRunner.includes("cleanup-e2e-data.ts") &&
+    e2eCleanup.includes('startsWith:') &&
+    e2eCleanup.includes('"e2e:"'),
+);
+
 const packageJson = JSON.parse(read("package.json")) as {
   scripts?: Record<string, string>;
 };

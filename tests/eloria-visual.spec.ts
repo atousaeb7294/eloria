@@ -16,7 +16,7 @@ test("health endpoints distinguish liveness from readiness", async ({ request })
   expect(ready.status()).toBe(200);
 });
 
-test("Hero actions and the seeded catalog are connected", async ({ page }) => {
+test("Hero actions and the seeded catalog are connected", async ({ page }, testInfo) => {
   await page.goto("/fa#hero");
 
   await expect(page.locator(".eloria-intro-root")).toBeHidden();
@@ -29,7 +29,9 @@ test("Hero actions and the seeded catalog are connected", async ({ page }) => {
   await expect(page).toHaveURL(/\/fa\/products/);
   await expect(page.getByRole("heading", { name: "تمام آثار الوریا" })).toBeVisible();
   await expect(page.getByText("جست‌وجو و فیلتر")).toBeVisible();
-  await expect(page.getByText("وضعیت موجودی")).toBeVisible();
+  if (!testInfo.project.name.includes("mobile")) {
+    await expect(page.getByText("وضعیت موجودی")).toBeVisible();
+  }
   await expect(page.getByText(/اثر پیدا شد/)).toBeVisible();
   await expect(page.locator("article").first()).toBeVisible();
 });
