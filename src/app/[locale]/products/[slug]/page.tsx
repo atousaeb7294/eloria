@@ -12,7 +12,8 @@ import {
   Gem,
   Hash,
   PackageCheck,
-  Percent,
+  Hammer,
+  TrendingUp,
   Scale,
   ScrollText,
   ShieldCheck,
@@ -501,11 +502,11 @@ export default async function ProductPage({
   const liveRateLabel =
     isGold
       ? isPersian
-        ? "نرخ لحظه‌ای طلا"
-        : "Live gold rate"
+        ? "نرخ خام لحظه‌ای طلا"
+        : "Live raw gold rate"
       : isPersian
-        ? "نرخ لحظه‌ای نقره"
-        : "Live silver rate";
+        ? "نرخ خام لحظه‌ای نقره"
+        : "Live raw silver rate";
 
   const productName =
     isPersian
@@ -596,12 +597,6 @@ export default async function ProductPage({
       ?.sku ??
     result.product.sku;
 
-  const taxPercent =
-    result.pricing.breakdown
-      ?.taxPercent ??
-    result.policy
-      .defaultTaxPercent;
-
   const finalPrice =
     `${formatToman(
       result.pricing
@@ -629,7 +624,7 @@ export default async function ProductPage({
     result.liveRate
       ? `${formatToman(
           result.liveRate
-            .pricePerGramToman,
+            .originalPricePerGramToman,
           locale,
         )} ${
           isPersian
@@ -640,11 +635,32 @@ export default async function ProductPage({
         ? "قیمت ثابت"
         : "Manual price";
 
-  const formattedTax =
-    `${formatDecimal(
-      taxPercent,
-      locale,
-    )}٪`;
+  const formattedMakingCharge =
+    result.pricing.breakdown
+      ? `${formatToman(
+          result.pricing.breakdown
+            .makingChargeTotalToman,
+          locale,
+        )} ${isPersian ? "تومان" : "Toman"}`
+      : "—";
+
+  const formattedProfit =
+    result.pricing.breakdown
+      ? `${formatToman(
+          result.pricing.breakdown
+            .profitToman,
+          locale,
+        )} ${isPersian ? "تومان" : "Toman"}`
+      : "—";
+
+  const formattedArtisticFee =
+    result.pricing.breakdown
+      ? `${formatToman(
+          result.pricing.breakdown
+            .artisticFeeToman,
+          locale,
+        )} ${isPersian ? "تومان" : "Toman"}`
+      : "—";
 
   const productDescription =
     (isPersian
@@ -916,7 +932,7 @@ export default async function ProductPage({
                   {finalPrice}
                 </strong>
 
-                <div className="mt-5 grid gap-2 sm:grid-cols-3">
+                <div className="mt-5 grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
                   <PriceInformationItem
                     icon={
                       <Scale className="h-4 w-4" />
@@ -949,15 +965,49 @@ export default async function ProductPage({
 
                   <PriceInformationItem
                     icon={
-                      <Percent className="h-4 w-4" />
+                      <Hammer className="h-4 w-4" />
                     }
                     label={
                       isPersian
-                        ? "درصد مالیات"
-                        : "Tax percentage"
+                        ? "اجرت ساخت"
+                        : "Making charge"
                     }
                     value={
-                      formattedTax
+                      formattedMakingCharge
+                    }
+                    isGold={
+                      isGold
+                    }
+                  />
+
+                  <PriceInformationItem
+                    icon={
+                      <TrendingUp className="h-4 w-4" />
+                    }
+                    label={
+                      isPersian
+                        ? "سود"
+                        : "Profit"
+                    }
+                    value={
+                      formattedProfit
+                    }
+                    isGold={
+                      isGold
+                    }
+                  />
+
+                  <PriceInformationItem
+                    icon={
+                      <Sparkles className="h-4 w-4" />
+                    }
+                    label={
+                      isPersian
+                        ? "هزینه هنری"
+                        : "Artistic fee"
+                    }
+                    value={
+                      formattedArtisticFee
                     }
                     isGold={
                       isGold
