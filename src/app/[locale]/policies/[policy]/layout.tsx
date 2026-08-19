@@ -27,7 +27,6 @@ function legalPagesMayIndex():
       ?.trim()
       .toLowerCase() ===
       "true" &&
-    hasCompleteLegalIdentity() &&
     hasCompleteLegalIdentity()
   );
 }
