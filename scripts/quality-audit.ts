@@ -87,6 +87,32 @@ check(
     productPage.includes("image.altEn"),
 );
 
+check(
+  "Product pricing UI hides customer tax percentage",
+  !productPage.includes("Tax percentage") &&
+    !productPage.includes("\u062f\u0631\u0635\u062f \u0645\u0627\u0644\u06cc\u0627\u062a") &&
+    !productPage.includes("formattedTax") &&
+    !productPage.includes("const taxPercent ="),
+);
+
+check(
+  "Product pricing UI displays raw market rate",
+  productPage.includes("originalPricePerGramToman") &&
+    productPage.includes("Live raw gold rate") &&
+    productPage.includes("Live raw silver rate") &&
+    !productPage.includes("            .pricePerGramToman,"),
+);
+
+check(
+  "Product pricing UI exposes customer price components",
+  productPage.includes("makingChargeTotalToman") &&
+    productPage.includes("profitToman") &&
+    productPage.includes("artisticFeeToman") &&
+    productPage.includes("formattedMakingCharge") &&
+    productPage.includes("formattedProfit") &&
+    productPage.includes("formattedArtisticFee"),
+);
+
 const internalShell = read("src/components/internal-page-shell.tsx");
 const internalMainMatch = internalShell.match(/<main\b[^>]*>/i);
 const internalMainTag = internalMainMatch?.[0] ?? "";
