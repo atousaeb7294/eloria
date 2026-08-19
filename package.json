@@ -23,7 +23,7 @@
     "admin:totp-secret": "node scripts/generate-totp-secret.mjs",
     "test:tokens": "tsx scripts/test-signed-tokens.ts",
     "test:commerce": "tsx scripts/test-commerce-database.ts",
-    "audit:dependencies": "npm audit --omit=dev --audit-level=high",
+    "audit:dependencies": "node scripts/audit-dependencies.mjs",
     "verify:full": "npm run lint && npm run build && npm run audit:security && npm run test:tokens && npm run test:pricing && npm run test:commerce && npm run test:payments && npm run test:admin-hardening && npm run test:supply-chain && npm run test:visual && npm run audit:quality",
     "start:next": "next start",
     "secrets:generate": "node scripts/generate-production-secrets.mjs",
