@@ -24,14 +24,14 @@
     "test:tokens": "tsx scripts/test-signed-tokens.ts",
     "test:commerce": "tsx scripts/test-commerce-database.ts",
     "audit:dependencies": "npm audit --omit=dev --audit-level=high",
-    "verify:full": "npm run lint && npm run build && npm run audit:security && npm run test:tokens && npm run test:pricing && npm run test:commerce && npm run test:payments && npm run test:visual && npm run audit:quality",
+    "verify:full": "npm run lint && npm run build && npm run audit:security && npm run test:tokens && npm run test:pricing && npm run test:commerce && npm run test:payments && npm run test:admin-hardening && npm run test:visual && npm run audit:quality",
     "start:next": "next start",
     "secrets:generate": "node scripts/generate-production-secrets.mjs",
     "db:preflight": "tsx scripts/preflight-hardening-data.ts",
     "typecheck": "tsc --noEmit",
     "db:seed": "prisma db seed",
     "test:e2e": "node scripts/run-e2e.mjs",
-    "verify:ci": "npm run typecheck && npm run lint && npm run test:tokens && npm run test:pricing && npm run test:commerce && npm run test:payments && npm run test:customer && npm run test:shipping && npm run test:security-alerts && npm run test:hardening && npm run audit:dependencies && npm run build && npm run test:e2e && npm run audit:security && npm run audit:quality",
+    "verify:ci": "npm run typecheck && npm run lint && npm run test:tokens && npm run test:pricing && npm run test:commerce && npm run test:payments && npm run test:admin-hardening && npm run test:customer && npm run test:shipping && npm run test:security-alerts && npm run test:hardening && npm run audit:dependencies && npm run build && npm run test:e2e && npm run audit:security && npm run audit:quality",
     "cron:expired-orders": "node scripts/run-cron-once.mjs expired-orders",
     "cron:metal-prices": "node scripts/run-cron-once.mjs metal-prices",
     "cron:security-alerts": "node scripts/run-cron-once.mjs security-alerts",
@@ -53,7 +53,8 @@
     "test:hardening": "npm run test:hardening:contracts && npm run test:hardening:db",
     "cron:data-retention": "node scripts/run-cron-once.mjs data-retention",
     "audit:quality": "tsx scripts/quality-audit.ts",
-    "test:payments": "tsx scripts/test-zarinpal-simulation.ts"
+    "test:payments": "tsx scripts/test-zarinpal-simulation.ts",
+    "test:admin-hardening": "tsx scripts/test-admin-hardening.ts"
   },
   "dependencies": {
     "@base-ui/react": "^1.6.0",

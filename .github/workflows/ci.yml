@@ -141,6 +141,9 @@ jobs:
       - name: Test Zarinpal payment simulation
         run: npm run test:payments
 
+      - name: Test admin production hardening
+        run: npm run test:admin-hardening
+
       - name: Test customer account behavior
         run: npm run test:customer
 
