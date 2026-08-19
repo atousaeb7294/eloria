@@ -40,6 +40,53 @@ function storageConfig() {
   };
 }
 
+function allowedImageHosts(): Set<string> {
+  const hosts = new Set<string>();
+
+  const supabase = process.env.SUPABASE_URL?.trim();
+  if (supabase) {
+    try {
+      const url = new URL(supabase);
+      if (url.protocol === "https:") hosts.add(url.hostname.toLowerCase());
+    } catch {}
+  }
+
+  for (const raw of (process.env.ELORIA_ALLOWED_IMAGE_HOSTS ?? "").split(",")) {
+    const value = raw.trim();
+    if (!value) continue;
+    try {
+      const url = new URL(value.includes("://") ? value : `https://${value}`);
+      if (url.protocol === "https:") hosts.add(url.hostname.toLowerCase());
+    } catch {}
+  }
+
+  return hosts;
+}
+
+export function isAllowedProductImageUrl(value: string): boolean {
+  const normalized = value.trim();
+  if (!normalized || normalized.length > 1000) return false;
+
+  if (normalized.startsWith("/")) {
+    // Reject protocol-relative URLs and path confusion using backslashes or
+    // control characters. A local asset must be an actual same-origin path.
+    return (
+      !normalized.startsWith("//") &&
+      !normalized.includes("\\") &&
+      !/[\u0000-\u001f\u007f]/.test(normalized)
+    );
+  }
+
+  try {
+    const url = new URL(normalized);
+    if (url.protocol !== "https:") return false;
+    if (process.env.NODE_ENV !== "production") return true;
+    return allowedImageHosts().has(url.hostname.toLowerCase());
+  } catch {
+    return false;
+  }
+}
+
 function detectKind(bytes: Buffer): ImageKind | null {
   if (bytes.length >= 3 && bytes[0] === 0xff && bytes[1] === 0xd8 && bytes[2] === 0xff) {
     return "jpeg";
@@ -206,6 +253,30 @@ export async function storeProductImage(productIdValue: string, file: File): Pro
   return uploadLocally(productId, filename, image);
 }
 
+function generatedProductObjectPath(rawPath: string): string | null {
+  let decoded: string;
+  try {
+    decoded = decodeURIComponent(rawPath);
+  } catch {
+    return null;
+  }
+
+  const parts = decoded.split("/");
+  if (parts.length !== 3 || parts[0] !== "products") return null;
+
+  const [, productId, filename] = parts;
+  if (!/^[a-zA-Z0-9_-]+$/.test(productId)) return null;
+  if (
+    !/^\d{10,}-[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\.(?:jpg|png|webp)$/i.test(
+      filename,
+    )
+  ) {
+    return null;
+  }
+
+  return decoded;
+}
+
 export async function removeStoredProductImage(imageUrl: string): Promise<void> {
   const config = storageConfig();
   const publicPrefix =
@@ -214,10 +285,18 @@ export async function removeStoredProductImage(imageUrl: string): Promise<void> 
       : "";
 
   if (publicPrefix && imageUrl.startsWith(publicPrefix)) {
-    const objectPath = imageUrl.slice(publicPrefix.length);
+    const objectPath = generatedProductObjectPath(
+      imageUrl.slice(publicPrefix.length),
+    );
+    if (!objectPath) return;
+
+    const encodedObjectPath = objectPath
+      .split("/")
+      .map(encodeURIComponent)
+      .join("/");
     try {
       const response = await fetch(
-        `${config.url}/storage/v1/object/${encodeURIComponent(config.bucket)}/${objectPath}`,
+        `${config.url}/storage/v1/object/${encodeURIComponent(config.bucket)}/${encodedObjectPath}`,
         {
           method: "DELETE",
           headers: supabaseHeaders(config.key),
