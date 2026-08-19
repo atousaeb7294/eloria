@@ -111,5 +111,8 @@
     "@swc/core@1.15.46": true,
     "prisma@7.9.1": true,
     "sharp@0.35.3": true
+  },
+  "overrides": {
+    "deepmerge-ts": "8.0.0"
   }
 }
