@@ -1,13 +1,13 @@
 import { spawn } from "node:child_process";
+import { createRequire } from "node:module";
 
 const port = process.env.PORT || "3000";
 const standalone = process.env.ELORIA_STANDALONE === "true";
-const command = standalone
-  ? process.execPath
-  : process.platform === "win32"
-    ? "npx.cmd"
-    : "npx";
-const args = standalone ? ["server.js"] : ["next", "start", "-p", port];
+const require = createRequire(import.meta.url);
+const command = process.execPath;
+const args = standalone
+  ? ["server.js"]
+  : [require.resolve("next/dist/bin/next"), "start", "-p", port];
 
 const child = spawn(command, args, {
   stdio: "inherit",
