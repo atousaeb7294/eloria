@@ -1,9 +1,17 @@
 import { prisma } from "@/lib/prisma";
-import type { CheckoutOrderResult } from "@/lib/checkout-order/contracts";
+import {
+  CheckoutOrderError,
+  type CheckoutOrderResult,
+} from "@/lib/checkout-order/contracts";
+import {
+  hasMatchingCheckoutIdempotencyOwner,
+} from "@/lib/checkout-idempotency";
 import { serializeOrder } from "@/lib/checkout-order/helpers";
 
 export async function findExistingOrder(
   idempotencyKey:
+    string,
+  customerMobile:
     string,
 ): Promise<CheckoutOrderResult | null> {
   const existingOrder =
@@ -52,6 +60,19 @@ export async function findExistingOrder(
     !existingOrder
   ) {
     return null;
+  }
+
+  if (
+    !hasMatchingCheckoutIdempotencyOwner(
+      existingOrder.customerMobile,
+      customerMobile,
+    )
+  ) {
+    throw new CheckoutOrderError(
+      "IDEMPOTENCY_KEY_CONFLICT",
+      "شناسه یکتای این درخواست قبلاً مصرف شده است. لطفاً دوباره تلاش کنید.",
+      409,
+    );
   }
 
   return serializeOrder(

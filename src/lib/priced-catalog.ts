@@ -6,6 +6,11 @@ import {
   type CatalogProduct,
   type ProductCatalogFilters,
 } from "@/lib/catalog";
+import { normalizeCatalogPage } from "@/lib/catalog-pagination";
+import {
+  getRecentlyUsedCacheEntry,
+  setBoundedExpiringCacheEntry,
+} from "@/lib/expiring-cache";
 import { getMetalRateFreshness } from "@/lib/metal-rate-freshness";
 import { getMetalRateSaleDecision } from "@/lib/metal-rate-sale-policy";
 import { calculateJewelryPrice } from "@/lib/pricing-engine";
@@ -78,6 +83,9 @@ const pricedCatalogInflight =
 pricedCatalogGlobal.__eloriaPricedCatalogCache = pricedCatalogCache;
 pricedCatalogGlobal.__eloriaPricedCatalogInflight = pricedCatalogInflight;
 
+const MAX_PRICED_CATALOG_CACHE_ENTRIES =
+  200;
+
 function normalizeDigits(value: string): string {
   const persianDigits = "۰۱۲۳۴۵۶۷۸۹";
   const arabicDigits = "٠١٢٣٤٥٦٧٨٩";
@@ -99,7 +107,9 @@ function parsePriceBoundary(value?: string): bigint | null {
 }
 
 function normalizePage(value: number | undefined): number {
-  return Number.isFinite(value) ? Math.max(1, Math.trunc(value as number)) : 1;
+  return normalizeCatalogPage(
+    value,
+  );
 }
 
 function normalizePageSize(value: number | undefined): number {
@@ -319,11 +329,17 @@ function refreshPricedCatalog(
   const request = loadPricedProductsCatalog(filters)
     .then(value => {
       const storedAt = Date.now();
-      pricedCatalogCache.set(key, {
-        value,
-        freshUntil: storedAt + 30_000,
-        staleUntil: storedAt + 10 * 60_000,
-      });
+      setBoundedExpiringCacheEntry(
+        pricedCatalogCache,
+        key,
+        {
+          value,
+          freshUntil: storedAt + 30_000,
+          staleUntil: storedAt + 10 * 60_000,
+        },
+        MAX_PRICED_CATALOG_CACHE_ENTRIES,
+        storedAt,
+      );
       return value;
     })
     .finally(() => {
@@ -338,7 +354,10 @@ export async function getPricedProductsCatalog(
   filters: PricedCatalogFilters,
 ): Promise<PricedProductsCatalogResult> {
   const key = getCatalogCacheKey(filters);
-  const cached = pricedCatalogCache.get(key);
+  const cached = getRecentlyUsedCacheEntry(
+    pricedCatalogCache,
+    key,
+  );
   const now = Date.now();
 
   if (cached?.freshUntil && cached.freshUntil > now) {

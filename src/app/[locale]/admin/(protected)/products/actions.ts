@@ -221,14 +221,24 @@ function readInteger(
     return fallback;
   }
 
-  const value =
-    Number.parseInt(
-      normalizeDigits(raw),
-      10,
-    );
+  const normalized =
+    normalizeDigits(raw);
 
   if (
-    !Number.isInteger(value) ||
+    !/^\d+$/.test(
+      normalized,
+    )
+  ) {
+    throw new AdminProductActionError(
+      "یکی از مقادیر صحیح خارج از محدوده مجاز است.",
+    );
+  }
+
+  const value =
+    Number(normalized);
+
+  if (
+    !Number.isSafeInteger(value) ||
     value < minimum ||
     value > maximum
   ) {

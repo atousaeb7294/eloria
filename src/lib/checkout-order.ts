@@ -26,6 +26,9 @@ import {
 
 import { syncProductInventory } from "@/lib/inventory";
 import { calculateShipping } from "@/lib/shipping";
+import {
+  hasMatchingCheckoutIdempotencyOwner,
+} from "@/lib/checkout-idempotency";
 
 const MAX_CART_ITEMS =
   30;
@@ -259,6 +262,7 @@ export type CheckoutOrderResult = {
 
 export type CheckoutOrderErrorCode =
   | "INVALID_IDEMPOTENCY_KEY"
+  | "IDEMPOTENCY_KEY_CONFLICT"
   | "INVALID_LOCALE"
   | "INVALID_CUSTOMER"
   | "INVALID_CART"
@@ -1007,8 +1011,30 @@ async function priceCheckoutItem(
   }
 }
 
+function ensureIdempotencyKeyOwnership(
+  existingCustomerMobile: string | null,
+  requestedCustomerMobile: string,
+): void {
+  if (
+    hasMatchingCheckoutIdempotencyOwner(
+      existingCustomerMobile,
+      requestedCustomerMobile,
+    )
+  ) {
+    return;
+  }
+
+  throw new CheckoutOrderError(
+    "IDEMPOTENCY_KEY_CONFLICT",
+    "شناسه یکتای این درخواست قبلاً مصرف شده است. لطفاً دوباره تلاش کنید.",
+    409,
+  );
+}
+
 async function findExistingOrder(
   idempotencyKey:
+    string,
+  customerMobile:
     string,
 ): Promise<CheckoutOrderResult | null> {
   
@@ -1060,6 +1086,11 @@ async function findExistingOrder(
     return null;
   }
 
+  ensureIdempotencyKeyOwnership(
+    existingOrder.customerMobile,
+    customerMobile,
+  );
+
   return serializeOrder(
     existingOrder,
     true,
@@ -1068,6 +1099,7 @@ async function findExistingOrder(
 
 async function waitForExistingOrder(
   idempotencyKey: string,
+  customerMobile: string,
 ): Promise<CheckoutOrderResult | null> {
   for (
     let attempt = 1;
@@ -1077,6 +1109,7 @@ async function waitForExistingOrder(
     const existingOrder =
       await findExistingOrder(
         idempotencyKey,
+        customerMobile,
       );
 
     if (existingOrder) {
@@ -1147,6 +1180,7 @@ export async function createCheckoutOrder({
   const existingOrder =
     await findExistingOrder(
       normalizedIdempotencyKey,
+      normalizedCustomer.mobile,
     );
 
   if (
@@ -1424,6 +1458,11 @@ export async function createCheckoutOrder({
             if (
               orderAlreadyCreated
             ) {
+              ensureIdempotencyKeyOwnership(
+                orderAlreadyCreated.customerMobile,
+                normalizedCustomer.mobile,
+              );
+
               return {
                 reused:
                   true,
@@ -2046,6 +2085,7 @@ export async function createCheckoutOrder({
           const concurrentOrder =
             await waitForExistingOrder(
               normalizedIdempotencyKey,
+              normalizedCustomer.mobile,
             );
 
           if (concurrentOrder) {
@@ -2079,6 +2119,7 @@ export async function createCheckoutOrder({
         const orderCreatedByConcurrentRequest =
           await waitForExistingOrder(
             normalizedIdempotencyKey,
+            normalizedCustomer.mobile,
           );
 
         if (

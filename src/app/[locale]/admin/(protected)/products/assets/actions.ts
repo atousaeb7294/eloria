@@ -47,8 +47,10 @@ function text(form: FormData, key: string, max: number, required = false): strin
 function integer(form: FormData, key: string, fallback = 0, min = 0, max = 1_000_000): number {
   const raw = text(form, key, 30);
   if (!raw) return fallback;
-  const value = Number.parseInt(digits(raw), 10);
-  if (!Number.isInteger(value) || value < min || value > max) throw new AdminProductAssetError("مقدار عددی معتبر نیست.");
+  const normalized = digits(raw);
+  if (!/^\d+$/.test(normalized)) throw new AdminProductAssetError("مقدار عددی معتبر نیست.");
+  const value = Number(normalized);
+  if (!Number.isSafeInteger(value) || value < min || value > max) throw new AdminProductAssetError("مقدار عددی معتبر نیست.");
   return value;
 }
 function decimal(form: FormData, key: string): string | null {
