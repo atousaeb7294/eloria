@@ -1,12 +1,11 @@
-import type {
-  ReactNode,
-} from "react";
+import type { ReactNode } from "react";
 
 import Link from "next/link";
 
 import {
   BarChart3,
   Boxes,
+  FileText,
   Gem,
   LayoutDashboard,
   LogOut,
@@ -16,9 +15,7 @@ import {
   Store,
 } from "lucide-react";
 
-import {
-  adminLogoutAction,
-} from "@/app/[locale]/admin/(protected)/actions";
+import { adminLogoutAction } from "@/app/[locale]/admin/(protected)/actions";
 
 const navigation = [
   {
@@ -42,6 +39,11 @@ const navigation = [
     icon: BarChart3,
   },
   {
+    href: "/content",
+    label: "محتوا و سئو",
+    icon: FileText,
+  },
+  {
     href: "/security",
     label: "امنیت و هشدارها",
     icon: ShieldAlert,
@@ -55,14 +57,10 @@ export function AdminShell({
   children: ReactNode;
   locale: "fa" | "en";
 }) {
-  const basePath =
-    `/${locale}/admin`;
+  const basePath = `/${locale}/admin`;
 
   return (
-    <main
-      dir="rtl"
-      className="min-h-screen bg-[#01110c] text-[#f6e8c6]"
-    >
+    <main dir="rtl" className="min-h-screen bg-[#01110c] text-[#f6e8c6]">
       <div className="pointer-events-none fixed inset-0 bg-[radial-gradient(circle_at_80%_0%,rgba(194,157,58,0.09),transparent_32%),radial-gradient(circle_at_10%_75%,rgba(8,101,69,0.18),transparent_34%)]" />
 
       <div className="relative mx-auto flex min-h-screen w-full max-w-[1800px]">
@@ -86,29 +84,23 @@ export function AdminShell({
           </Link>
 
           <nav className="mt-8 space-y-2">
-            {navigation.map(
-              ({
-                href,
-                label,
-                icon: Icon,
-              }) => (
-                <Link
-                  key={href}
-                  href={`${basePath}${href}`}
-                  className="flex items-center gap-3 rounded-xl border border-transparent px-4 py-3.5 text-sm text-[#cabd9f] transition hover:border-[#d2b55e]/20 hover:bg-[#d1b35b]/8 hover:text-[#f2d989]"
-                >
-                  <Icon className="h-5 w-5 text-[#c7aa55]" />
-                  {label}
-                </Link>
-              ),
-            )}
+            {navigation.map(({ href, label, icon: Icon }) => (
+              <Link
+                key={href}
+                href={`${basePath}${href}`}
+                className="flex items-center gap-3 rounded-xl border border-transparent px-4 py-3.5 text-sm text-[#cabd9f] transition hover:border-[#d2b55e]/20 hover:bg-[#d1b35b]/8 hover:text-[#f2d989]"
+              >
+                <Icon className="h-5 w-5 text-[#c7aa55]" />
+                {label}
+              </Link>
+            ))}
           </nav>
 
           <div className="mt-auto space-y-2 border-t border-[#d5b75f]/12 pt-5">
             <Link
               href={`/${locale}/products`}
               target="_blank"
-                            rel="noopener noreferrer"
+              rel="noopener noreferrer"
               className="flex items-center gap-3 rounded-xl px-4 py-3 text-sm text-[#a99d82] transition hover:bg-white/5 hover:text-[#ead07e]"
             >
               <Store className="h-5 w-5" />
@@ -116,11 +108,7 @@ export function AdminShell({
             </Link>
 
             <form action={adminLogoutAction}>
-              <input
-                type="hidden"
-                name="locale"
-                value={locale}
-              />
+              <input type="hidden" name="locale" value={locale} />
               <button
                 type="submit"
                 className="flex w-full items-center gap-3 rounded-xl px-4 py-3 text-sm text-red-200/75 transition hover:bg-red-950/20 hover:text-red-100"
@@ -173,6 +161,13 @@ export function AdminShell({
                 <BarChart3 className="h-5 w-5" />
               </Link>
               <Link
+                href={`${basePath}/content`}
+                aria-label="محتوا و سئو"
+                className="hidden h-10 w-10 place-items-center rounded-xl border border-[#d1b45c]/20 bg-[#08241a] text-[#ddc36f] sm:grid"
+              >
+                <FileText className="h-5 w-5" />
+              </Link>
+              <Link
                 href={`${basePath}/security`}
                 aria-label="امنیت و هشدارها"
                 className="hidden h-10 w-10 place-items-center rounded-xl border border-[#d1b45c]/20 bg-[#08241a] text-[#ddc36f] md:grid"
@@ -192,9 +187,7 @@ export function AdminShell({
             </div>
           </header>
 
-          <div className="px-4 py-7 sm:px-6 lg:px-9 lg:py-9">
-            {children}
-          </div>
+          <div className="px-4 py-7 sm:px-6 lg:px-9 lg:py-9">{children}</div>
         </section>
       </div>
     </main>

@@ -3,23 +3,11 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-import {
-  AnimatePresence,
-  motion,
-  useReducedMotion,
-} from "motion/react";
+import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 
-import {
-  useEffect,
-  useState,
-} from "react";
+import { useEffect, useState } from "react";
 
-import {
-  BookOpenText,
-  Menu,
-  UserRound,
-  X,
-} from "lucide-react";
+import { BookOpenText, Menu, UserRound, X } from "lucide-react";
 
 import {
   BraceletRuneIcon,
@@ -30,20 +18,13 @@ import {
   WorldRuneIcon,
 } from "@/components/luxury-icons";
 
-import {
-  LocaleSwitcher,
-} from "@/components/locale-switcher";
+import { LocaleSwitcher } from "@/components/locale-switcher";
 
 export function MobileSiteMenu() {
-  const pathname =
-    usePathname() ?? "/fa";
+  const pathname = usePathname() ?? "/fa";
 
   const locale =
-    pathname.match(
-      /^\/(fa|en)(?=\/|$)/,
-    )?.[1] === "en"
-      ? "en"
-      : "fa";
+    pathname.match(/^\/(fa|en)(?=\/|$)/)?.[1] === "en" ? "en" : "fa";
 
   const labels =
     locale === "fa"
@@ -53,6 +34,7 @@ export function MobileSiteMenu() {
           necklaces: "گردنبندها",
           bracelets: "دستبندها",
           earrings: "گوشواره‌ها",
+          journal: "مجلهٔ الوریا",
           contact: "تماس",
           menuLabel: "منوی اصلی",
         }
@@ -62,155 +44,124 @@ export function MobileSiteMenu() {
           necklaces: "Necklaces",
           bracelets: "Bracelets",
           earrings: "Earrings",
+          journal: "Eloria Journal",
           contact: "Contact",
           menuLabel: "Main navigation",
         };
 
-  const reducedMotion =
-    useReducedMotion();
+  const reducedMotion = useReducedMotion();
 
-  const isPersian =
-    locale === "fa";
+  const isPersian = locale === "fa";
 
-  const [
-    open,
-    setOpen,
-  ] = useState(false);
+  const [open, setOpen] = useState(false);
 
   useEffect(() => {
     if (!open) {
       return;
     }
 
-    const previousOverflow =
-      document.body.style.overflow;
+    const previousOverflow = document.body.style.overflow;
 
-    document.body.style.overflow =
-      "hidden";
+    document.body.style.overflow = "hidden";
 
-    const handleEscape =
-      (event: KeyboardEvent) => {
-        if (
-          event.key ===
-          "Escape"
-        ) {
-          setOpen(false);
-        }
-      };
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setOpen(false);
+      }
+    };
 
-    window.addEventListener(
-      "keydown",
-      handleEscape,
-    );
+    window.addEventListener("keydown", handleEscape);
 
     return () => {
-      document.body.style.overflow =
-        previousOverflow;
+      document.body.style.overflow = previousOverflow;
 
-      window.removeEventListener(
-        "keydown",
-        handleEscape,
-      );
+      window.removeEventListener("keydown", handleEscape);
     };
   }, [open]);
 
-  const closeMenu =
-    () => {
-      setOpen(false);
-    };
+  const closeMenu = () => {
+    setOpen(false);
+  };
 
-  const homeHref =
-    `/${locale}#hero`;
+  const homeHref = `/${locale}#hero`;
 
-  const collectionsHref =
-    `/${locale}/collections`;
+  const collectionsHref = `/${locale}/collections`;
 
-  const productsHref =
-    `/${locale}/products`;
+  const productsHref = `/${locale}/products`;
 
-  const aboutHref =
-    `/${locale}/about`;
+  const aboutHref = `/${locale}/about`;
 
-  const contactHref =
-    `/${locale}#contact`;
+  const journalHref = `/${locale}/journal`;
 
-  const profileHref =
-    `/${locale}/profile`;
+  const contactHref = `/${locale}#contact`;
 
-  const isHomeActive =
-    pathname === `/${locale}` ||
-    pathname === `/${locale}/`;
+  const profileHref = `/${locale}/profile`;
 
-  const isCollectionsActive =
-    pathname.startsWith(
-      `/${locale}/collections`,
-    );
+  const isHomeActive = pathname === `/${locale}` || pathname === `/${locale}/`;
 
-  const isProductsActive =
-    pathname.startsWith(
-      `/${locale}/products`,
-    );
+  const isCollectionsActive = pathname.startsWith(`/${locale}/collections`);
 
-  const isAboutActive =
-    pathname.startsWith(
-      `/${locale}/about`,
-    );
+  const isProductsActive = pathname.startsWith(`/${locale}/products`);
+
+  const isAboutActive = pathname.startsWith(`/${locale}/about`);
+
+  const isJournalActive = pathname.startsWith(`/${locale}/journal`);
 
   const isProfileActive =
-    pathname.startsWith(
-      `/${locale}/profile`,
-    ) || pathname.startsWith(`/${locale}/login`);
+    pathname.startsWith(`/${locale}/profile`) ||
+    pathname.startsWith(`/${locale}/login`);
 
   const primaryLinks = [
     {
       label: labels.home,
-      description:
-        isPersian
-          ? "بازگشت مستقیم به Hero"
-          : "Return directly to the Hero",
+      description: isPersian
+        ? "بازگشت مستقیم به Hero"
+        : "Return directly to the Hero",
       href: homeHref,
       active: isHomeActive,
       icon: HomeRuneIcon,
     },
     {
       label: labels.world,
-      description:
-        isPersian
-          ? "مرور دسته‌بندی‌های جواهرات"
-          : "Browse jewelry categories",
+      description: isPersian
+        ? "مرور دسته‌بندی‌های جواهرات"
+        : "Browse jewelry categories",
       href: collectionsHref,
       active: isCollectionsActive,
       icon: WorldRuneIcon,
     },
     {
-      label:
-        isPersian
-          ? "تمام آثار"
-          : "All creations",
-      description:
-        isPersian
-          ? "مشاهده آرشیو کامل آثار الوریا"
-          : "View the complete Eloria archive",
+      label: isPersian ? "تمام آثار" : "All creations",
+      description: isPersian
+        ? "مشاهده آرشیو کامل آثار الوریا"
+        : "View the complete Eloria archive",
       href: productsHref,
       active: isProductsActive,
       icon: NecklaceRuneIcon,
     },
     {
-      label:
-        isPersian
-          ? "داستان الوریا"
-          : "The Eloria story",
-      description:
-        isPersian
-          ? "آشنایی با هویت و ریشه برند"
-          : "Discover the identity behind the brand",
+      label: isPersian ? "داستان الوریا" : "The Eloria story",
+      description: isPersian
+        ? "آشنایی با هویت و ریشه برند"
+        : "Discover the identity behind the brand",
       href: aboutHref,
       active: isAboutActive,
       icon: BookOpenText,
     },
     {
+      label: labels.journal,
+      description: isPersian
+        ? "راهنماهای بازبینی‌شده برای انتخاب آگاهانه"
+        : "Reviewed guides for considered choices",
+      href: journalHref,
+      active: isJournalActive,
+      icon: BookOpenText,
+    },
+    {
       label: isPersian ? "حساب من" : "My account",
-      description: isPersian ? "سفارش‌ها، آدرس‌ها و علاقه‌مندی‌ها" : "Orders, addresses and favorites",
+      description: isPersian
+        ? "سفارش‌ها، آدرس‌ها و علاقه‌مندی‌ها"
+        : "Orders, addresses and favorites",
       href: profileHref,
       active: isProfileActive,
       icon: UserRound,
@@ -251,10 +202,7 @@ export function MobileSiteMenu() {
         aria-expanded={open}
         aria-controls="eloria-mobile-navigation"
         onClick={() => {
-          setOpen(
-            (current) =>
-              !current,
-          );
+          setOpen((current) => !current);
         }}
         className="relative grid size-10 place-items-center overflow-hidden rounded-xl border border-[#e1c16f]/22 bg-white/[0.045] text-[#efd58c] shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] transition hover:border-[#e8c96f]/52 hover:bg-[#168461]/14 sm:size-11 sm:rounded-2xl"
       >
@@ -265,11 +213,7 @@ export function MobileSiteMenu() {
 
         <AnimatePresence mode="wait" initial={false}>
           <motion.span
-            key={
-              open
-                ? "close"
-                : "menu"
-            }
+            key={open ? "close" : "menu"}
             initial={
               reducedMotion
                 ? false
@@ -294,11 +238,7 @@ export function MobileSiteMenu() {
             }}
             className="relative z-10"
           >
-            {open ? (
-              <X className="size-5" />
-            ) : (
-              <Menu className="size-5" />
-            )}
+            {open ? <X className="size-5" /> : <Menu className="size-5" />}
           </motion.span>
         </AnimatePresence>
       </button>
@@ -308,11 +248,7 @@ export function MobileSiteMenu() {
           <>
             <motion.button
               type="button"
-              aria-label={
-                isPersian
-                  ? "بستن منو"
-                  : "Close menu"
-              }
+              aria-label={isPersian ? "بستن منو" : "Close menu"}
               initial={{
                 opacity: 0,
               }}
@@ -330,16 +266,8 @@ export function MobileSiteMenu() {
               id="eloria-mobile-navigation"
               role="dialog"
               aria-modal="true"
-              aria-label={
-                isPersian
-                  ? "منوی اصلی الوریا"
-                  : "Eloria main menu"
-              }
-              dir={
-                isPersian
-                  ? "rtl"
-                  : "ltr"
-              }
+              aria-label={isPersian ? "منوی اصلی الوریا" : "Eloria main menu"}
+              dir={isPersian ? "rtl" : "ltr"}
               initial={
                 reducedMotion
                   ? {
@@ -363,12 +291,7 @@ export function MobileSiteMenu() {
               }}
               transition={{
                 duration: 0.3,
-                ease: [
-                  0.16,
-                  1,
-                  0.3,
-                  1,
-                ],
+                ease: [0.16, 1, 0.3, 1],
               }}
               className="fixed inset-x-3 top-[82px] z-[80] max-h-[calc(100dvh-96px)] overflow-y-auto overscroll-contain rounded-[1.8rem] border border-[#e4c570]/38 bg-[linear-gradient(155deg,rgba(4,58,41,0.995),rgba(1,24,17,0.995)_55%,rgba(1,13,9,0.998))] p-3 shadow-[0_34px_110px_rgba(0,0,0,0.76),0_0_46px_rgba(216,177,74,0.12)] sm:inset-x-5 sm:top-[96px]"
             >
@@ -388,106 +311,82 @@ export function MobileSiteMenu() {
                 </p>
               </div>
 
-              <nav
-                aria-label={labels.menuLabel}
-                className="mt-3 space-y-1.5"
-              >
-                {primaryLinks.map(
-                  (
-                    item,
-                    index,
-                  ) => {
-                    const Icon =
-                      item.icon;
+              <nav aria-label={labels.menuLabel} className="mt-3 space-y-1.5">
+                {primaryLinks.map((item, index) => {
+                  const Icon = item.icon;
 
-                    return (
-                      <motion.div
-                        key={item.href}
-                        initial={
-                          reducedMotion
-                            ? false
-                            : {
-                                opacity: 0,
-                                x: isPersian
-                                  ? 12
-                                  : -12,
-                              }
-                        }
-                        animate={{
-                          opacity: 1,
-                          x: 0,
-                        }}
-                        transition={{
-                          delay:
-                            index *
-                            0.045,
-                        }}
+                  return (
+                    <motion.div
+                      key={item.href}
+                      initial={
+                        reducedMotion
+                          ? false
+                          : {
+                              opacity: 0,
+                              x: isPersian ? 12 : -12,
+                            }
+                      }
+                      animate={{
+                        opacity: 1,
+                        x: 0,
+                      }}
+                      transition={{
+                        delay: index * 0.045,
+                      }}
+                    >
+                      <Link
+                        href={item.href}
+                        onClick={closeMenu}
+                        aria-current={item.active ? "page" : undefined}
+                        className={[
+                          "group flex min-h-[66px] items-center gap-3 rounded-[1.1rem] border px-3.5 transition duration-300",
+                          item.active
+                            ? "border-[#e4c46e]/38 bg-[#d6af4d]/[0.085]"
+                            : "border-transparent bg-white/[0.015] hover:border-[#d9bb68]/22 hover:bg-[#d5ad50]/[0.045]",
+                        ].join(" ")}
                       >
-                        <Link
-                          href={item.href}
-                          onClick={closeMenu}
-                          aria-current={
-                            item.active
-                              ? "page"
-                              : undefined
-                          }
-                          className={[
-                            "group flex min-h-[66px] items-center gap-3 rounded-[1.1rem] border px-3.5 transition duration-300",
-                            item.active
-                              ? "border-[#e4c46e]/38 bg-[#d6af4d]/[0.085]"
-                              : "border-transparent bg-white/[0.015] hover:border-[#d9bb68]/22 hover:bg-[#d5ad50]/[0.045]",
-                          ].join(" ")}
-                        >
-                          <span className="grid size-11 shrink-0 place-items-center rounded-[13px] border border-[#d8b85f]/20 bg-[#0c6648]/18 text-[#e2c777] transition group-hover:border-[#e0c16d]/40 group-hover:text-[#f1d78e]">
-                            <Icon className="size-6" />
-                          </span>
+                        <span className="grid size-11 shrink-0 place-items-center rounded-[13px] border border-[#d8b85f]/20 bg-[#0c6648]/18 text-[#e2c777] transition group-hover:border-[#e0c16d]/40 group-hover:text-[#f1d78e]">
+                          <Icon className="size-6" />
+                        </span>
 
-                          <span className="min-w-0 flex-1">
-                            <span className="block text-[13px] font-medium text-white/84">
-                              {item.label}
-                            </span>
-                            <span className="mt-1.5 block text-[10px] leading-5 text-white/46">
-                              {item.description}
-                            </span>
+                        <span className="min-w-0 flex-1">
+                          <span className="block text-[13px] font-medium text-white/84">
+                            {item.label}
                           </span>
-                        </Link>
-                      </motion.div>
-                    );
-                  },
-                )}
+                          <span className="mt-1.5 block text-[10px] leading-5 text-white/46">
+                            {item.description}
+                          </span>
+                        </span>
+                      </Link>
+                    </motion.div>
+                  );
+                })}
               </nav>
 
               <div className="mt-3 rounded-[1.2rem] border border-[#dfc16c]/15 bg-black/12 p-3">
                 <div className="mb-2 flex items-center justify-between px-1">
                   <p className="text-[10px] uppercase tracking-[0.18em] text-[#e5ca80]/58">
-                    {isPersian
-                      ? "دسته‌بندی‌ها"
-                      : "Categories"}
+                    {isPersian ? "دسته‌بندی‌ها" : "Categories"}
                   </p>
                   <WorldRuneIcon className="size-4 text-[#e1c573]/55" />
                 </div>
 
                 <div className="grid grid-cols-3 gap-2">
-                  {categories.map(
-                    (category) => {
-                      const Icon =
-                        category.icon;
+                  {categories.map((category) => {
+                    const Icon = category.icon;
 
-                      return (
-                        <Link
-                          key={category.slug}
-                          href={`/${locale}/collections/${category.slug}`}
-                          onClick={closeMenu}
-                          className="flex min-h-[76px] flex-col items-center justify-center gap-2 rounded-[0.95rem] border border-white/[0.07] bg-white/[0.025] px-2 text-center text-[10px] text-white/62 transition hover:border-[#dfc16f]/30 hover:bg-[#d6af4d]/[0.055] hover:text-[#f0d891]"
-                        >
-                          <Icon className="size-6" />
-                          <span>
-                            {category.label}
-                          </span>
-                        </Link>
-                      );
-                    },
-                  )}
+                    return (
+                      <Link
+                        key={category.slug}
+                        href={`/${locale}/collections/${category.slug}`}
+                        onClick={closeMenu}
+                        className="flex min-h-[76px] flex-col items-center justify-center gap-2 rounded-[0.95rem] border border-white/[0.07] bg-white/[0.025] px-2 text-center text-[10px] text-white/62 transition hover:border-[#dfc16f]/30 hover:bg-[#d6af4d]/[0.055] hover:text-[#f0d891]"
+                      >
+                        <Icon className="size-6" />
+                        <span>{category.label}</span>
+                      </Link>
+                    );
+                  })}
                 </div>
               </div>
 

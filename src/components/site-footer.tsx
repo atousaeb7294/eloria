@@ -41,6 +41,7 @@ export function SiteFooter({ locale }: SiteFooterProps) {
         collections: "مشاهده دسته‌بندی‌ها",
         cart: "سبد خرید",
         about: "داستان الوریا",
+        journal: "مجلهٔ الوریا",
         home: "خانه",
         contact: "تماس با ما",
         necklaces: "گردنبندها",
@@ -58,6 +59,7 @@ export function SiteFooter({ locale }: SiteFooterProps) {
         collections: "Browse categories",
         cart: "Shopping cart",
         about: "The Eloria story",
+        journal: "Eloria Journal",
         home: "Home",
         contact: "Contact us",
         necklaces: "Necklaces",
@@ -98,6 +100,11 @@ export function SiteFooter({ locale }: SiteFooterProps) {
         {
           label: copy.about,
           href: `/${locale}/about`,
+          icon: BookOpen,
+        },
+        {
+          label: copy.journal,
+          href: `/${locale}/journal`,
           icon: BookOpen,
         },
         {
@@ -150,7 +157,10 @@ export function SiteFooter({ locale }: SiteFooterProps) {
 
       <div className="relative mx-auto max-w-7xl">
         <div className="flex flex-col items-center text-center">
-          <div className="flex w-full max-w-xl items-center gap-4" aria-hidden="true">
+          <div
+            className="flex w-full max-w-xl items-center gap-4"
+            aria-hidden="true"
+          >
             <span className="h-px flex-1 bg-[linear-gradient(90deg,transparent,rgba(222,190,100,0.38))]" />
             <span className="relative grid size-11 place-items-center">
               <span className="absolute inset-1 rotate-45 border border-[#e2c36d]/28" />

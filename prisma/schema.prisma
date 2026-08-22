@@ -81,6 +81,21 @@ enum FinanceExpenseStatus {
   VOID
 }
 
+// Content is intentionally reviewed before it reaches the public journal.
+// The site may prepare a factual product-assisted draft, but it never
+// publishes generated copy without an explicit admin decision.
+enum ContentArticleStatus {
+  DRAFT
+  IN_REVIEW
+  PUBLISHED
+  ARCHIVED
+}
+
+enum ContentArticleOrigin {
+  MANUAL
+  PRODUCT_ASSISTED
+}
+
 enum AuditActorType {
   SYSTEM
   CUSTOMER
@@ -104,13 +119,13 @@ model AdminSession {
 }
 
 model AdminSecurityEvent {
-  id         String   @id @default(uuid()) @db.Uuid
-  eventType  String   @db.VarChar(100)
+  id         String          @id @default(uuid()) @db.Uuid
+  eventType  String          @db.VarChar(100)
   successful Boolean
-  ipHash     String?  @db.VarChar(64)
-  userAgent  String?  @db.VarChar(500)
+  ipHash     String?         @db.VarChar(64)
+  userAgent  String?         @db.VarChar(500)
   payload    Json?
-  createdAt  DateTime @default(now())
+  createdAt  DateTime        @default(now())
   alerts     SecurityAlert[]
 
   @@index([eventType, createdAt])
@@ -152,6 +167,7 @@ model Collection {
   isActive      Boolean @default(true)
 
   products Product[]
+  articles ContentArticle[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -217,9 +233,10 @@ model Product {
   variants   ProductVariant[]
   orderItems OrderItem[]
 
-  favorites  CustomerFavorite[]
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  favorites CustomerFavorite[]
+  articles  ContentArticle[]
+  createdAt DateTime           @default(now())
+  updatedAt DateTime           @updatedAt
 
   @@index([collectionId, status, displayOrder])
   @@index([material, status])
@@ -425,7 +442,7 @@ model Order {
   customerMobile   String? @db.VarChar(20)
   customerEmail    String?
 
-  customerId String? @db.Uuid
+  customerId String?   @db.Uuid
   customer   Customer? @relation(fields: [customerId], references: [id], onDelete: SetNull)
 
   province   String?
@@ -600,9 +617,9 @@ model PaymentAttempt {
 
   refundedAt DateTime?
 
-  refundReference String?  @db.VarChar(160)
+  refundReference   String?  @db.VarChar(160)
   refundAmountToman Decimal? @db.Decimal(18, 0)
-  refundNote      String?  @db.Text
+  refundNote        String?  @db.Text
 
   order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
 
@@ -646,17 +663,89 @@ model FinanceExpense {
 }
 
 model FinanceExpenseAuditEvent {
-  id        String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  expenseId String         @db.Uuid
-  eventType String         @db.VarChar(80)
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  expenseId String   @db.Uuid
+  eventType String   @db.VarChar(80)
   payload   Json
-  createdAt DateTime       @default(now())
+  createdAt DateTime @default(now())
 
   expense FinanceExpense @relation(fields: [expenseId], references: [id], onDelete: Restrict)
 
   @@index([expenseId, createdAt])
   @@index([eventType, createdAt])
   @@map("finance_expense_audit_events")
+}
+
+// SEO/content studio. Public pages only query PUBLISHED rows. The source
+// relations make assisted copy traceable to the product or collection it
+// describes, and immutable audit rows record every editorial state change.
+model ContentArticle {
+  id                 String               @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  slug               String               @unique @db.VarChar(140)
+  status             ContentArticleStatus @default(DRAFT)
+  origin             ContentArticleOrigin @default(MANUAL)
+  sourceProductId    String?              @db.Uuid
+  sourceCollectionId String?              @db.Uuid
+  titleFa            String               @db.VarChar(180)
+  titleEn            String               @db.VarChar(180)
+  excerptFa          String               @db.VarChar(360)
+  excerptEn          String               @db.VarChar(360)
+  contentFa          String               @db.Text
+  contentEn          String               @db.Text
+  seoTitleFa         String?              @db.VarChar(180)
+  seoTitleEn         String?              @db.VarChar(180)
+  seoDescriptionFa   String?              @db.VarChar(180)
+  seoDescriptionEn   String?              @db.VarChar(180)
+  focusKeywordFa     String?              @db.VarChar(120)
+  focusKeywordEn     String?              @db.VarChar(120)
+  coverImageUrl      String?              @db.Text
+  publishedAt        DateTime?
+  archivedAt         DateTime?
+  createdAt          DateTime             @default(now())
+  updatedAt          DateTime             @updatedAt
+
+  sourceProduct    Product?                   @relation(fields: [sourceProductId], references: [id], onDelete: SetNull)
+  sourceCollection Collection?                @relation(fields: [sourceCollectionId], references: [id], onDelete: SetNull)
+  auditEvents      ContentArticleAuditEvent[]
+
+  @@index([status, publishedAt])
+  @@index([updatedAt])
+  @@index([sourceProductId])
+  @@index([sourceCollectionId])
+  @@map("content_articles")
+}
+
+model ContentArticleAuditEvent {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  articleId String   @db.Uuid
+  eventType String   @db.VarChar(80)
+  payload   Json
+  createdAt DateTime @default(now())
+
+  article ContentArticle @relation(fields: [articleId], references: [id], onDelete: Restrict)
+
+  @@index([articleId, createdAt])
+  @@index([eventType, createdAt])
+  @@map("content_article_audit_events")
+}
+
+// One daily snapshot makes SEO regressions measurable over time rather than
+// relying on a decorative score in the dashboard.
+model ContentSeoSnapshot {
+  id                         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  recordedFor                DateTime @unique @db.Date
+  overallScore               Int
+  publishedArticleCount      Int
+  draftArticleCount          Int
+  activeProductCount         Int
+  productsMissingDescription Int
+  productsMissingImageAlt    Int
+  stalePublishedArticleCount Int
+  issues                     Json
+  createdAt                  DateTime @default(now())
+
+  @@index([createdAt])
+  @@map("content_seo_snapshots")
 }
 
 model OrderAuditEvent {
@@ -681,23 +770,23 @@ model OrderAuditEvent {
   @@map("order_audit_events")
 }
 
-
 // ELORIA_PRODUCTION_V3_CUSTOMER_ACCOUNTS
 model Customer {
-  id               String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  mobile           String   @unique @db.VarChar(20)
+  id               String                 @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  mobile           String                 @unique @db.VarChar(20)
   fullName         String?
   email            String?
   mobileVerifiedAt DateTime?
   lastLoginAt      DateTime?
-  isActive         Boolean  @default(true)
+  isActive         Boolean                @default(true)
   sessions         CustomerSession[]
   addresses        CustomerAddress[]
   favorites        CustomerFavorite[]
   notifications    CustomerNotification[]
   orders           Order[]
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @default(now()) @updatedAt
+  createdAt        DateTime               @default(now())
+  updatedAt        DateTime               @default(now()) @updatedAt
+
   @@index([isActive, createdAt])
   @@map("customers")
 }
@@ -713,6 +802,7 @@ model CustomerSession {
   lastSeenAt  DateTime  @default(now())
   createdAt   DateTime  @default(now())
   customer    Customer  @relation(fields: [customerId], references: [id], onDelete: Cascade)
+
   @@index([customerId, expiresAt])
   @@index([revokedAt])
   @@map("customer_sessions")
@@ -729,6 +819,7 @@ model CustomerOtpChallenge {
   consumedAt    DateTime?
   requestIpHash String?   @db.VarChar(64)
   createdAt     DateTime  @default(now())
+
   @@index([mobile, createdAt])
   @@index([expiresAt])
   @@map("customer_otp_challenges")
@@ -748,6 +839,7 @@ model CustomerAddress {
   customer      Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
   createdAt     DateTime @default(now())
   updatedAt     DateTime @default(now()) @updatedAt
+
   @@index([customerId, isDefault])
   @@map("customer_addresses")
 }
@@ -758,6 +850,7 @@ model CustomerFavorite {
   customer   Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
   product    Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
   createdAt  DateTime @default(now())
+
   @@id([customerId, productId])
   @@index([productId])
   @@map("customer_favorites")
@@ -776,6 +869,7 @@ model CustomerNotification {
   customer   Customer  @relation(fields: [customerId], references: [id], onDelete: Cascade)
   order      Order?    @relation(fields: [orderId], references: [id], onDelete: SetNull)
   createdAt  DateTime  @default(now())
+
   @@index([customerId, createdAt])
   @@index([customerId, readAt])
   @@index([orderId])
@@ -783,16 +877,16 @@ model CustomerNotification {
 }
 
 model Shipment {
-  id           String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  orderId      String   @db.Uuid
-  carrier      String   @db.VarChar(120)
-  trackingCode String   @db.VarChar(160)
-  status       String   @default("PROCESSING") @db.VarChar(40)
-  note         String?  @db.Text
+  id           String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  orderId      String    @db.Uuid
+  carrier      String    @db.VarChar(120)
+  trackingCode String    @db.VarChar(160)
+  status       String    @default("PROCESSING") @db.VarChar(40)
+  note         String?   @db.Text
   shippedAt    DateTime?
-  order        Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @default(now()) @updatedAt
+  order        Order     @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @default(now()) @updatedAt
 
   @@unique([orderId, carrier, trackingCode])
   @@index([orderId, createdAt])
@@ -800,22 +894,22 @@ model Shipment {
 }
 
 model SecurityAlert {
-  id            String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  sourceEventId String   @db.Uuid
-  eventType     String   @db.VarChar(100)
-  severity      String   @db.VarChar(16)
-  scope         String   @db.VarChar(32)
-  channel       String   @db.VarChar(16)
-  status        String   @default("PENDING") @db.VarChar(16)
-  dedupeKey     String   @unique @db.VarChar(64)
+  id            String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  sourceEventId String    @db.Uuid
+  eventType     String    @db.VarChar(100)
+  severity      String    @db.VarChar(16)
+  scope         String    @db.VarChar(32)
+  channel       String    @db.VarChar(16)
+  status        String    @default("PENDING") @db.VarChar(16)
+  dedupeKey     String    @unique @db.VarChar(64)
   payload       Json
-  attempts      Int      @default(0)
-  nextAttemptAt DateTime @default(now())
+  attempts      Int       @default(0)
+  nextAttemptAt DateTime  @default(now())
   lastAttemptAt DateTime?
   sentAt        DateTime?
-  lastError     String?  @db.VarChar(300)
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @default(now()) @updatedAt
+  lastError     String?   @db.VarChar(300)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @default(now()) @updatedAt
 
   sourceEvent AdminSecurityEvent @relation(fields: [sourceEventId], references: [id], onDelete: Cascade)
 
