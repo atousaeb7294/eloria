@@ -13,6 +13,7 @@ import {
   type CatalogAvailability,
   type CatalogMaterial,
 } from "@/lib/catalog";
+import { normalizeCatalogPage } from "@/lib/catalog-pagination";
 import { getPricedProductsCatalog } from "@/lib/priced-catalog";
 
 export const dynamic = "force-dynamic";
@@ -27,8 +28,20 @@ function single(value: string | string[] | undefined): string | undefined {
 }
 
 function positivePage(value: string | undefined): number {
-  const parsed = Number.parseInt(value ?? "1", 10);
-  return Number.isFinite(parsed) ? Math.max(1, parsed) : 1;
+  if (
+    !value ||
+    !/^\d+$/.test(
+      value,
+    )
+  ) {
+    return 1;
+  }
+
+  return normalizeCatalogPage(
+    Number(
+      value,
+    ),
+  );
 }
 
 function pageHref(

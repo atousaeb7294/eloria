@@ -1,4 +1,5 @@
 import type { Prisma } from "@/generated/prisma/client";
+import { normalizeCatalogPage } from "@/lib/catalog-pagination";
 import { prisma, withDatabaseRetry } from "@/lib/prisma";
 
 export type CatalogMaterial = "GOLD" | "SILVER";
@@ -133,7 +134,7 @@ function normalizePositiveInteger(value: number | undefined, fallback: number): 
 }
 
 function normalizePagination(filters: ProductCatalogFilters) {
-  const page = normalizePositiveInteger(filters.page, 1);
+  const page = normalizeCatalogPage(filters.page);
   const pageSize = Math.min(
     normalizePositiveInteger(filters.pageSize, DEFAULT_PAGE_SIZE),
     MAX_PAGE_SIZE,

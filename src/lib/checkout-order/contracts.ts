@@ -106,6 +106,7 @@ export type CheckoutOrderResult = {
 
 export type CheckoutOrderErrorCode =
   | "INVALID_IDEMPOTENCY_KEY"
+  | "IDEMPOTENCY_KEY_CONFLICT"
   | "INVALID_LOCALE"
   | "INVALID_CUSTOMER"
   | "INVALID_CART"

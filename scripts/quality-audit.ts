@@ -13,7 +13,10 @@ const checks: Check[] = [];
 const warnings: string[] = [];
 
 function read(relativePath: string): string {
-  return readFileSync(path.join(root, relativePath), "utf8").replace(/\r\n/g, "\n");
+  return readFileSync(path.join(root, relativePath), "utf8").replace(
+    /\r\n/g,
+    "\n",
+  );
 }
 
 function check(name: string, passed: boolean, detail?: string) {
@@ -69,7 +72,7 @@ check(
   "Filtered catalog pages are noindex",
   productsPage.includes("ELORIA_FILTERED_CATALOG_SEO_V1") &&
     productsPage.includes("index: false") &&
-    productsPage.includes('canonical: `/${locale}/products`'),
+    productsPage.includes("canonical: `/${locale}/products`"),
 );
 
 const productPage = read("src/app/[locale]/products/[slug]/page.tsx");
@@ -83,14 +86,15 @@ check(
 );
 check(
   "Product OG alt uses localized image alt",
-  productPage.includes("image.altFa") &&
-    productPage.includes("image.altEn"),
+  productPage.includes("image.altFa") && productPage.includes("image.altEn"),
 );
 
 check(
   "Product pricing UI hides customer tax percentage",
   !productPage.includes("Tax percentage") &&
-    !productPage.includes("\u062f\u0631\u0635\u062f \u0645\u0627\u0644\u06cc\u0627\u062a") &&
+    !productPage.includes(
+      "\u062f\u0631\u0635\u062f \u0645\u0627\u0644\u06cc\u0627\u062a",
+    ) &&
     !productPage.includes("formattedTax") &&
     !productPage.includes("const taxPercent ="),
 );
@@ -158,7 +162,9 @@ check(
 const pricedCatalog = read("src/lib/priced-catalog.ts");
 check(
   "Catalog pricing dependencies run concurrently",
-  pricedCatalog.includes("const [catalog, policies, metalPrices] = await Promise.all"),
+  pricedCatalog.includes(
+    "const [catalog, policies, metalPrices] = await Promise.all",
+  ),
 );
 
 const pricingCore = read("src/lib/product-pricing-core.ts");
@@ -187,10 +193,7 @@ for (const route of [
 }
 
 const introConfigPath = "src/components/intro/eloria-intro-config.ts";
-const textFiles = [
-  ...filesUnder("src"),
-  ...filesUnder("tests"),
-];
+const textFiles = [...filesUnder("src"), ...filesUnder("tests")];
 const introKeyLeaks: string[] = [];
 
 for (const file of textFiles) {
@@ -206,7 +209,7 @@ check(
   "Locale layout declares language and direction",
   localeLayout.includes("lang={locale}") &&
     localeLayout.includes('locale === "fa"') &&
-    localeLayout.includes('dir='),
+    localeLayout.includes("dir="),
 );
 
 const robots = read("src/app/robots.ts");
@@ -225,6 +228,82 @@ check(
     sitemap.includes("prisma.product.findMany") &&
     sitemap.includes("prisma.collection.findMany"),
 );
+check(
+  "Sitemap covers reviewed localized journal articles",
+  sitemap.includes('"/journal"') &&
+    sitemap.includes("prisma.contentArticle.findMany") &&
+    sitemap.includes('status: "PUBLISHED"'),
+);
+
+const journalPage = read("src/app/[locale]/journal/page.tsx");
+const journalArticlePage = read("src/app/[locale]/journal/[slug]/page.tsx");
+const articleMarkdown = read("src/components/article-markdown.tsx");
+const articleStructuredData = read(
+  "src/components/article-structured-data.tsx",
+);
+const siteStructuredData = read("src/components/site-structured-data.tsx");
+check(
+  "Public journal only uses published article reads",
+  journalPage.includes("getPublishedArticles") &&
+    journalArticlePage.includes("getPublishedArticleBySlug"),
+);
+check(
+  "Article body renderer does not execute raw HTML",
+  !articleMarkdown.includes("dangerouslySetInnerHTML") &&
+    articleMarkdown.includes("parseBlocks"),
+);
+check(
+  "Article and site JSON-LD escape HTML delimiters",
+  articleStructuredData.includes("replace(/</g") &&
+    siteStructuredData.includes("replace(/</g"),
+);
+
+const contentActions = read(
+  "src/app/[locale]/admin/(protected)/content/actions.ts",
+);
+const contentCron = read("src/app/api/cron/content-health/route.ts");
+const contentHealth = read("src/lib/content-seo-health.ts");
+const contentAutopilot = read("src/lib/content-autopilot.ts");
+const contentDraftCron = read("src/app/api/cron/content-drafts/route.ts");
+const dailyBriefingCron = read("src/app/api/cron/daily-briefing/route.ts");
+const cronRunner = read("scripts/run-cron-once.mjs");
+check(
+  "Content publication requires a valid admin session and explicit confirmation",
+  contentActions.includes("hasValidAdminSession") &&
+    contentActions.includes("confirmPublish") &&
+    contentActions.includes("ARTICLE_PUBLISHED"),
+);
+check(
+  "Content health cron is authenticated and lease-protected",
+  contentCron.includes("timingSafeEqual") &&
+    contentCron.includes("content-health") &&
+    contentCron.includes("recordContentSeoSnapshot"),
+);
+check(
+  "SEO health uses real catalog and article signals",
+  contentHealth.includes("productsMissingDescription") &&
+    contentHealth.includes("productsMissingImageAlt") &&
+    contentHealth.includes("stalePublishedArticleCount"),
+);
+check(
+  "Autopilot only creates factual reviewable product drafts",
+  contentAutopilot.includes("createProductAssistedArticleDraft") &&
+    contentAutopilot.includes("AUTO_PRODUCT_DRAFT_CREATED") &&
+    !contentAutopilot.includes('"PUBLISHED"'),
+);
+check(
+  "Autopilot cron endpoints are authenticated and lease-protected",
+  contentDraftCron.includes("timingSafeEqual") &&
+    contentDraftCron.includes("content-drafts") &&
+    dailyBriefingCron.includes("timingSafeEqual") &&
+    dailyBriefingCron.includes("daily-briefing"),
+);
+check(
+  "Local automation runner loads the environment and exposes only reviewed jobs",
+  cronRunner.includes('import "dotenv/config"') &&
+    cronRunner.includes('"content-drafts"') &&
+    cronRunner.includes('"daily-briefing"'),
+);
 
 const nextConfig = read("next.config.ts");
 check(
@@ -235,11 +314,10 @@ check(
     nextConfig.includes('value: "DENY"'),
 );
 
-const tracked = execFileSync(
-  "git",
-  ["ls-files"],
-  { cwd: root, encoding: "utf8" },
-)
+const tracked = execFileSync("git", ["ls-files"], {
+  cwd: root,
+  encoding: "utf8",
+})
   .split(/\r?\n/)
   .filter(Boolean);
 
@@ -282,7 +360,8 @@ for (const file of sourceFiles) {
   }
 
   const blankTags =
-    content.match(/<(?:a|Link)\b[^>]*target\s*=\s*["']_blank["'][^>]*>/gi) ?? [];
+    content.match(/<(?:a|Link)\b[^>]*target\s*=\s*["']_blank["'][^>]*>/gi) ??
+    [];
 
   for (const tag of blankTags) {
     if (
@@ -313,8 +392,7 @@ const unannotatedReviewedRawImages = rawImages.filter(
 
 check(
   "Raw image usage is limited to reviewed admin preview surfaces",
-  unexpectedRawImages.length === 0 &&
-    unannotatedReviewedRawImages.length === 0,
+  unexpectedRawImages.length === 0 && unannotatedReviewedRawImages.length === 0,
   [...unexpectedRawImages, ...unannotatedReviewedRawImages].join(", "),
 );
 
@@ -324,9 +402,7 @@ check(
   unsafeBlankTargets.join(", "),
 );
 
-
-const playwrightConfig =
-  read("playwright.config.ts");
+const playwrightConfig = read("playwright.config.ts");
 
 check(
   "Playwright covers desktop and mobile Chromium/WebKit",
@@ -338,7 +414,6 @@ check(
     playwrightConfig.includes('"iPhone 13"'),
 );
 
-
 check(
   "Local E2E uses system Chromium while CI retains WebKit matrix",
   playwrightConfig.includes("ELORIA_E2E_CHANNEL") &&
@@ -349,8 +424,7 @@ check(
     playwrightConfig.includes('"webkit-mobile"'),
 );
 
-const criticalE2e =
-  read("tests/eloria-critical-flows.spec.ts");
+const criticalE2e = read("tests/eloria-critical-flows.spec.ts");
 
 check(
   "Critical E2E covers OTP checkout payment and admin",
@@ -364,25 +438,22 @@ check(
     criticalE2e.includes("secondPayload.reused"),
 );
 
-
 check(
   "Critical E2E stays isolated from application Prisma runtime",
   !criticalE2e.includes("../src/lib/prisma") &&
     !criticalE2e.includes("@/lib/prisma"),
 );
 
-const e2eRunner =
-  read("scripts/run-e2e.mjs");
+const e2eRunner = read("scripts/run-e2e.mjs");
 
-const e2eCleanup =
-  read("scripts/cleanup-e2e-data.ts");
+const e2eCleanup = read("scripts/cleanup-e2e-data.ts");
 
 check(
   "Critical E2E always performs isolated database cleanup",
   e2eRunner.includes("E2E pre-cleanup") &&
     e2eRunner.includes("E2E post-cleanup") &&
     e2eRunner.includes("cleanup-e2e-data.ts") &&
-    e2eCleanup.includes('startsWith:') &&
+    e2eCleanup.includes("startsWith:") &&
     e2eCleanup.includes('"e2e:"'),
 );
 
@@ -406,15 +477,19 @@ check(
   "Payment provider simulation is part of verification scripts",
   packageJson.scripts?.["test:payments"] ===
     "tsx scripts/test-zarinpal-simulation.ts" &&
-    packageJson.scripts?.["verify:ci"]?.includes(
-      "npm run test:payments",
-    ) === true,
+    packageJson.scripts?.["verify:ci"]?.includes("npm run test:payments") ===
+      true,
 );
 
 check(
   "Quality audit is part of package scripts",
-  packageJson.scripts?.["audit:quality"] ===
-    "tsx scripts/quality-audit.ts",
+  packageJson.scripts?.["audit:quality"] === "tsx scripts/quality-audit.ts",
+);
+
+check(
+  "Autopilot contract test is available",
+  packageJson.scripts?.["test:autopilot"] ===
+    "node --import tsx scripts/test-autopilot.ts",
 );
 
 const ci = read(".github/workflows/ci.yml");
@@ -430,6 +505,12 @@ check(
     ci.includes("npm run audit:quality"),
 );
 
+check(
+  "CI runs autopilot contract checks",
+  ci.includes("Test autopilot contracts") &&
+    ci.includes("npm run test:autopilot"),
+);
+
 for (const item of checks) {
   console.log(
     `${item.passed ? "PASS" : "FAIL"}  ${item.name}` +
@@ -443,12 +524,8 @@ for (const warning of warnings) {
 
 const failed = checks.filter((item) => !item.passed);
 if (failed.length) {
-  console.error(
-    `\n${failed.length} professional quality gate(s) failed.`,
-  );
+  console.error(`\n${failed.length} professional quality gate(s) failed.`);
   process.exitCode = 1;
 } else {
-  console.log(
-    "\nAll ELORIA pre-host professional quality gates passed.",
-  );
+  console.log("\nAll ELORIA pre-host professional quality gates passed.");
 }

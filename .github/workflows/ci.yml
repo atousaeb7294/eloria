@@ -4,7 +4,7 @@ on:
   push:
     branches: [main, master]
   pull_request:
-    branches: [main, master]
+    branches: [main, master, fix/production-readiness]
 
 permissions:
   contents: read
@@ -52,6 +52,8 @@ jobs:
       ELORIA_SUPPORT_ENABLED: "false"
       ELORIA_LEGAL_PAGES_INDEX: "false"
       ELORIA_SUPPORT_TURNSTILE_REQUIRED: "false"
+      ELORIA_CONTENT_AUTOPILOT_ENABLED: "true"
+      ELORIA_CONTENT_AUTOPILOT_DAILY_LIMIT: "1"
 
       ELORIA_ADMIN_USERNAME: admin
       ELORIA_ADMIN_PASSWORD: CI-only-password-123456789
@@ -161,6 +163,9 @@ jobs:
       - name: Test hardening regression contracts
         run: npm run test:hardening
 
+      - name: Test autopilot contracts
+        run: npm run test:autopilot
+
       - name: Re-seed storefront fixtures
         run: npm run db:seed
 
@@ -174,6 +179,9 @@ jobs:
           ELORIA_DYNAMIC_PRICING_ENABLED: "true"
           ELORIA_PAYMENT_ENABLED: "true"
           ELORIA_SUPPORT_ENABLED: "true"
+          ELORIA_MEASUREMENT_ENABLED: "true"
+          ELORIA_CUSTOMER_WATCHES_ENABLED: "true"
+          ELORIA_MEASUREMENT_RETENTION_DAYS: 90
           ELORIA_SUPPORT_TURNSTILE_REQUIRED: "true"
           ELORIA_TRUST_PROXY: "true"
           ELORIA_PROXY_PROVIDER: generic

@@ -3,10 +3,7 @@ import type { ReactNode } from "react";
 
 import "../globals.css";
 
-import {
-  hasLocale,
-  NextIntlClientProvider,
-} from "next-intl";
+import { hasLocale, NextIntlClientProvider } from "next-intl";
 
 import {
   getTranslations,
@@ -16,12 +13,13 @@ import {
 
 import { notFound } from "next/navigation";
 
-import {
-  PageBackgroundProvider,
-} from "@/components/page-background-provider";
+import { PageBackgroundProvider } from "@/components/page-background-provider";
+import { SiteMeasurementTracker } from "@/components/site-measurement-tracker";
+import { SiteStructuredData } from "@/components/site-structured-data";
 
 import { routing } from "@/i18n/routing";
 import { siteBaseUrl } from "@/lib/site-url";
+import { isSiteMeasurementEnabled } from "@/lib/site-measurement";
 
 type LocaleParams = Promise<{
   locale: string;
@@ -76,14 +74,8 @@ export async function generateMetadata({
     openGraph: {
       type: "website",
       siteName: "ELORIA",
-      locale:
-        locale === "fa"
-          ? "fa_IR"
-          : "en_US",
-      alternateLocale:
-        locale === "fa"
-          ? ["en_US"]
-          : ["fa_IR"],
+      locale: locale === "fa" ? "fa_IR" : "en_US",
+      alternateLocale: locale === "fa" ? ["en_US"] : ["fa_IR"],
       title,
       description,
       url: `/${locale}`,
@@ -101,9 +93,7 @@ export async function generateMetadata({
       card: "summary_large_image",
       title,
       description,
-      images: [
-        "/images/hero/eloria-hero.jpeg",
-      ],
+      images: ["/images/hero/eloria-hero.jpeg"],
     },
   };
 }
@@ -120,26 +110,23 @@ export default async function LocaleLayout({
 
   setRequestLocale(locale);
 
-  const messages =
-    await getMessages();
+  const messages = await getMessages();
 
   return (
     <html
       data-scroll-behavior="smooth"
       lang={locale}
-      dir={
-        locale === "fa"
-          ? "rtl"
-          : "ltr"
-      }
+      dir={locale === "fa" ? "rtl" : "ltr"}
       suppressHydrationWarning
     >
       <body className="min-h-screen">
-        <NextIntlClientProvider
-          locale={locale}
-          messages={messages}
-        >
+        <NextIntlClientProvider locale={locale} messages={messages}>
           <PageBackgroundProvider>
+            <SiteStructuredData />
+            <SiteMeasurementTracker
+              locale={locale}
+              enabled={isSiteMeasurementEnabled()}
+            />
             {children}
           </PageBackgroundProvider>
         </NextIntlClientProvider>
@@ -147,4 +134,3 @@ export default async function LocaleLayout({
     </html>
   );
 }
-

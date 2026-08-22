@@ -4,6 +4,7 @@ import {
   Boxes,
   CircleDollarSign,
   Clock3,
+  Bot,
   PackageCheck,
   Plus,
   ShoppingBag,
@@ -65,6 +66,8 @@ export default async function AdminDashboardPage({
     todayOrders,
     recentOrders,
     metalPrices,
+    todaySales,
+    paymentReview,
   ] = await Promise.all([
     prisma.product.count({
       where: {
@@ -138,6 +141,29 @@ export default async function AdminDashboardPage({
         lastSuccessAt: true,
       },
     }),
+    prisma.order.aggregate({
+      where: {
+        status: {
+          in: [
+            "PAID",
+            "PROCESSING",
+            "SHIPPED",
+            "COMPLETED",
+          ],
+        },
+        paidAt: {
+          gte: startOfToday,
+        },
+      },
+      _sum: {
+        payableToman: true,
+      },
+    }),
+    prisma.paymentAttempt.count({
+      where: {
+        status: "REQUIRES_REVIEW",
+      },
+    }),
   ]);
 
   const stats = [
@@ -181,6 +207,18 @@ export default async function AdminDashboardPage({
       tone:
         "text-sky-200",
     },
+    {
+      label:
+        "فروش امروز",
+      value:
+        formatAdminMoney(
+          todaySales._sum.payableToman ?? 0,
+        ),
+      icon:
+        CircleDollarSign,
+      tone:
+        "text-[#efd37c]",
+    },
   ];
 
   return (
@@ -198,16 +236,25 @@ export default async function AdminDashboardPage({
           </p>
         </div>
 
-        <Link
-          href={`/${locale}/admin/products/new`}
-          className="flex h-12 items-center justify-center gap-2 rounded-xl bg-[linear-gradient(135deg,#b9973f,#eed079)] px-5 text-sm font-semibold text-[#10251c] transition hover:brightness-105"
-        >
-          <Plus className="h-5 w-5" />
-          محصول جدید
-        </Link>
+        <div className="flex flex-wrap gap-2">
+          <Link
+            href={`/${locale}/admin/automation`}
+            className="flex h-12 items-center justify-center gap-2 rounded-xl border border-[#d0b359]/22 bg-[#08251a] px-4 text-sm text-[#ecd17c] transition hover:bg-[#103525]"
+          >
+            <Bot className="h-5 w-5" />
+            خلبان خودکار
+          </Link>
+          <Link
+            href={`/${locale}/admin/products/new`}
+            className="flex h-12 items-center justify-center gap-2 rounded-xl bg-[linear-gradient(135deg,#b9973f,#eed079)] px-5 text-sm font-semibold text-[#10251c] transition hover:brightness-105"
+          >
+            <Plus className="h-5 w-5" />
+            محصول جدید
+          </Link>
+        </div>
       </header>
 
-      <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
         {stats.map(
           ({
             label,
@@ -225,7 +272,9 @@ export default async function AdminDashboardPage({
                     {label}
                   </p>
                   <p className="mt-3 text-3xl font-semibold text-[#f5e4bb]">
-                    {new Intl.NumberFormat("fa-IR").format(value)}
+                    {typeof value === "number"
+                      ? new Intl.NumberFormat("fa-IR").format(value)
+                      : value}
                   </p>
                 </div>
                 <span className={`grid h-11 w-11 place-items-center rounded-xl border border-white/8 bg-white/4 ${tone}`}>
@@ -236,6 +285,18 @@ export default async function AdminDashboardPage({
           ),
         )}
       </section>
+
+      {paymentReview > 0 ? (
+        <Link
+          href={`/${locale}/admin/orders`}
+          className="flex items-center justify-between gap-4 rounded-2xl border border-amber-300/18 bg-amber-950/12 px-5 py-4 text-sm text-amber-100 transition hover:bg-amber-950/20"
+        >
+          <span>
+            {new Intl.NumberFormat("fa-IR").format(paymentReview)} پرداخت نیازمند بررسی انسانی دارد؛ هیچ پرداختی خودکار تأیید نمی‌شود.
+          </span>
+          <span className="shrink-0 text-xs">بررسی سفارش‌ها</span>
+        </Link>
+      ) : null}
 
       <section className="grid gap-5 xl:grid-cols-[1.35fr_0.65fr]">
         <article className="overflow-hidden rounded-[24px] border border-[#d0b359]/15 bg-[#041d15]/82">
