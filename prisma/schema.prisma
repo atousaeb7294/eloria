@@ -749,6 +749,22 @@ model ContentSeoSnapshot {
   @@map("content_seo_snapshots")
 }
 
+// A compact, factual daily operating brief. It is created only by the
+// authenticated automation route and lets the admin panel distinguish a
+// genuinely running scheduler from a static dashboard.
+model DailyStoreBriefing {
+  id                String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  recordedFor       DateTime @unique @db.Date
+  actionCount       Int
+  highPriorityCount Int
+  summary           Json
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @default(now()) @updatedAt
+
+  @@index([createdAt])
+  @@map("daily_store_briefings")
+}
+
 model OrderAuditEvent {
   id String @id @default(uuid()) @db.Uuid
 

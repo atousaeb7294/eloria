@@ -47,7 +47,7 @@ export async function getSiteIntelligence() {
   const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60_000);
   const environment = productionEnvironmentChecks().filter((check) => check.required);
 
-  const [content, finance, prices, unavailableProducts, paymentReview, watchCount, eventGroups, vitalRows] = await Promise.all([
+  const [content, finance, prices, unavailableProducts, paymentReview, watchCount, eventGroups, vitalRows, latestBriefing] = await Promise.all([
     getContentSeoHealth(),
     getAdminFinanceReport(30),
     withDatabaseRetry(() =>
@@ -76,6 +76,10 @@ export async function getSiteIntelligence() {
       select: { metricName: true, metricValue: true },
       orderBy: { occurredAt: "desc" },
       take: 5_000,
+    }),
+    prisma.dailyStoreBriefing.findFirst({
+      orderBy: { updatedAt: "desc" },
+      select: { updatedAt: true },
     }),
   ]);
 
@@ -156,6 +160,20 @@ export async function getSiteIntelligence() {
       detail: `${watchCount} پیگیری محصول ثبت شده است. در هاست Production اجرای روزانهٔ endpoint مربوط را زمان‌بندی کنید تا اعلان داخل پنل مشتری واقعاً ساخته شود.`,
       href: "/fa/admin/security",
       hrefLabel: "چک‌لیست انتشار",
+    });
+  }
+
+  if (
+    !latestBriefing ||
+    minutesSince(latestBriefing.updatedAt, now) > 30 * 60
+  ) {
+    actions.push({
+      id: "automation-schedule",
+      priority: "medium",
+      title: "گزارش خودکار روزانه به زمان‌بند نیاز دارد",
+      detail: "تا وقتی چرخهٔ زمان‌بندی‌شده اجرا نشود، نرخ، محتوا و پیگیری‌های مشتری خودکار پایش نمی‌شوند. اجرای یک‌بارهٔ نصب زمان‌بند این مورد را فعال می‌کند.",
+      href: "/fa/admin/automation",
+      hrefLabel: "خلبان خودکار",
     });
   }
 

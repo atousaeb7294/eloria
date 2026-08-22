@@ -4,6 +4,7 @@ import Link from "next/link";
 
 import {
   BarChart3,
+  Bot,
   Boxes,
   FileText,
   Gem,
@@ -48,6 +49,11 @@ const navigation = [
     href: "/intelligence",
     label: "هوشمندی عملیات",
     icon: Radar,
+  },
+  {
+    href: "/automation",
+    label: "خلبان خودکار",
+    icon: Bot,
   },
   {
     href: "/security",
@@ -186,6 +192,13 @@ export function AdminShell({
                 className="hidden h-10 w-10 place-items-center rounded-xl border border-[#d1b45c]/20 bg-[#08241a] text-[#ddc36f] md:grid"
               >
                 <Radar className="h-5 w-5" />
+              </Link>
+              <Link
+                href={`${basePath}/automation`}
+                aria-label="خلبان خودکار"
+                className="hidden h-10 w-10 place-items-center rounded-xl border border-[#d1b45c]/20 bg-[#08241a] text-[#ddc36f] lg:grid"
+              >
+                <Bot className="h-5 w-5" />
               </Link>
               <form action={adminLogoutAction}>
                 <input type="hidden" name="locale" value={locale} />

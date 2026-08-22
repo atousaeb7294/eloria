@@ -52,6 +52,8 @@ jobs:
       ELORIA_SUPPORT_ENABLED: "false"
       ELORIA_LEGAL_PAGES_INDEX: "false"
       ELORIA_SUPPORT_TURNSTILE_REQUIRED: "false"
+      ELORIA_CONTENT_AUTOPILOT_ENABLED: "true"
+      ELORIA_CONTENT_AUTOPILOT_DAILY_LIMIT: "1"
 
       ELORIA_ADMIN_USERNAME: admin
       ELORIA_ADMIN_PASSWORD: CI-only-password-123456789
@@ -160,6 +162,9 @@ jobs:
 
       - name: Test hardening regression contracts
         run: npm run test:hardening
+
+      - name: Test autopilot contracts
+        run: npm run test:autopilot
 
       - name: Re-seed storefront fixtures
         run: npm run db:seed

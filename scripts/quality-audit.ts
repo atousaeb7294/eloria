@@ -263,6 +263,10 @@ const contentActions = read(
 );
 const contentCron = read("src/app/api/cron/content-health/route.ts");
 const contentHealth = read("src/lib/content-seo-health.ts");
+const contentAutopilot = read("src/lib/content-autopilot.ts");
+const contentDraftCron = read("src/app/api/cron/content-drafts/route.ts");
+const dailyBriefingCron = read("src/app/api/cron/daily-briefing/route.ts");
+const cronRunner = read("scripts/run-cron-once.mjs");
 check(
   "Content publication requires a valid admin session and explicit confirmation",
   contentActions.includes("hasValidAdminSession") &&
@@ -280,6 +284,25 @@ check(
   contentHealth.includes("productsMissingDescription") &&
     contentHealth.includes("productsMissingImageAlt") &&
     contentHealth.includes("stalePublishedArticleCount"),
+);
+check(
+  "Autopilot only creates factual reviewable product drafts",
+  contentAutopilot.includes("createProductAssistedArticleDraft") &&
+    contentAutopilot.includes("AUTO_PRODUCT_DRAFT_CREATED") &&
+    !contentAutopilot.includes('"PUBLISHED"'),
+);
+check(
+  "Autopilot cron endpoints are authenticated and lease-protected",
+  contentDraftCron.includes("timingSafeEqual") &&
+    contentDraftCron.includes("content-drafts") &&
+    dailyBriefingCron.includes("timingSafeEqual") &&
+    dailyBriefingCron.includes("daily-briefing"),
+);
+check(
+  "Local automation runner loads the environment and exposes only reviewed jobs",
+  cronRunner.includes('import "dotenv/config"') &&
+    cronRunner.includes('"content-drafts"') &&
+    cronRunner.includes('"daily-briefing"'),
 );
 
 const nextConfig = read("next.config.ts");
@@ -463,6 +486,12 @@ check(
   packageJson.scripts?.["audit:quality"] === "tsx scripts/quality-audit.ts",
 );
 
+check(
+  "Autopilot contract test is available",
+  packageJson.scripts?.["test:autopilot"] ===
+    "node --import tsx scripts/test-autopilot.ts",
+);
+
 const ci = read(".github/workflows/ci.yml");
 check(
   "CI runs Zarinpal payment simulation",
@@ -474,6 +503,12 @@ check(
   "CI runs professional quality audit",
   ci.includes("Professional quality audit") &&
     ci.includes("npm run audit:quality"),
+);
+
+check(
+  "CI runs autopilot contract checks",
+  ci.includes("Test autopilot contracts") &&
+    ci.includes("npm run test:autopilot"),
 );
 
 for (const item of checks) {

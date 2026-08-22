@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import type { FormEvent } from "react";
-import { Bell, Check, Heart, LogOut, MapPin, Package, Plus, Save, Trash2, UserRound } from "lucide-react";
+import { Bell, Check, CircleCheck, CreditCard, Heart, LogOut, MapPin, Package, PackageCheck, Plus, Save, Trash2, Truck, UserRound } from "lucide-react";
 
 type Order = {
   id: string; orderNumber: string; status: string; payableToman: string; createdAt: string; paidAt: string | null;
@@ -37,6 +37,18 @@ function statusLabel(status: string, fa: boolean) {
   return map[status]?.[fa ? 0 : 1] ?? status;
 }
 
+function orderJourney(status: string, fa: boolean) {
+  const copy: Record<string, { current: number; title: string; detail: string }> = {
+    PENDING_PAYMENT: { current: 0, title: fa ? "پرداخت این سفارش را تکمیل کنید" : "Complete payment", detail: fa ? "رزرو سفارش تا زمان معتبر بودن پرداخت حفظ می‌شود." : "Your reservation remains available while payment is valid." },
+    PAYMENT_FAILED: { current: 0, title: fa ? "پرداخت انجام نشده است" : "Payment was not completed", detail: fa ? "می‌توانید پرداخت را دوباره آغاز یا سفارش را لغو کنید." : "You can restart payment or cancel this order." },
+    PAID: { current: 1, title: fa ? "پرداخت ثبت شده است" : "Payment is recorded", detail: fa ? "سفارش برای آماده‌سازی در صف قرار دارد." : "Your order is queued for preparation." },
+    PAYMENT_REVIEW: { current: 1, title: fa ? "پرداخت در حال بررسی است" : "Payment is being reviewed", detail: fa ? "تا تأیید نهایی، هیچ پرداختی خودکار موفق فرض نمی‌شود." : "No payment is treated as successful until final verification." },
+    PROCESSING: { current: 2, title: fa ? "سفارش در حال آماده‌سازی است" : "Your order is being prepared", detail: fa ? "بعد از تحویل به ارسال‌کننده، کد پیگیری در همین حساب دیده می‌شود." : "Tracking appears here after handoff to the carrier." },
+    SHIPPED: { current: 3, title: fa ? "سفارش ارسال شده است" : "Your order has shipped", detail: fa ? "از مسیر پیگیری سفارش، وضعیت ارسال را ببینید." : "Use order tracking for the shipment status." },
+  };
+  return copy[status] ?? null;
+}
+
 export function CustomerProfileClient({ locale, initialData }: { locale: "fa" | "en"; initialData: Data }) {
   const fa = locale === "fa";
   const router = useRouter();
@@ -46,6 +58,8 @@ export function CustomerProfileClient({ locale, initialData }: { locale: "fa" | 
   const [busy, setBusy] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const unread = useMemo(() => initialData.notifications.filter(n => !n.readAt).length, [initialData.notifications]);
+  const activeOrder = initialData.orders.find(order => Boolean(orderJourney(order.status, fa)));
+  const activeJourney = activeOrder ? orderJourney(activeOrder.status, fa) : null;
 
   async function jsonAction(url: string, method: string, body?: unknown) {
     const response = await fetch(url, { method, headers: { "Content-Type": "application/json" }, body: body === undefined ? undefined : JSON.stringify(body) });
@@ -135,6 +149,17 @@ export function CustomerProfileClient({ locale, initialData }: { locale: "fa" | 
         </div>
       </header>
 
+      <nav aria-label={fa ? "دسترسی سریع حساب" : "Account shortcuts"} className="mt-4 flex gap-2 overflow-x-auto pb-1">
+        {[
+          ["#orders", fa ? "سفارش‌ها" : "Orders"],
+          ["#addresses", fa ? "آدرس‌ها" : "Addresses"],
+          ["#favorites", fa ? "علاقه‌مندی‌ها" : "Favorites"],
+          ["#notifications", fa ? "اعلان‌ها" : "Notifications"],
+          ["#account", fa ? "حساب" : "Account"],
+        ].map(([href, label]) => <a key={href} href={href} className="shrink-0 rounded-full border border-[#d8b967]/12 bg-black/10 px-4 py-2 text-xs text-[#d9ca9f]/68 transition hover:border-[#d8b967]/28 hover:text-[#ead58e]">{label}</a>)}
+        <Link href={`/${locale}/profile/watches`} className="shrink-0 rounded-full border border-[#d8b967]/12 bg-black/10 px-4 py-2 text-xs text-[#d9ca9f]/68 transition hover:border-[#d8b967]/28 hover:text-[#ead58e]">{fa ? "پیگیری قیمت" : "Price watches"}</Link>
+      </nav>
+
       {message ? <div className="mt-5 rounded-2xl border border-[#d8b967]/12 bg-[#071d15]/80 p-4 text-sm text-[#e4d4ae]/75">{message}</div> : null}
 
       <div className="mt-6 grid grid-cols-2 gap-3 lg:grid-cols-4">
@@ -149,7 +174,27 @@ export function CustomerProfileClient({ locale, initialData }: { locale: "fa" | 
         })}
       </div>
 
-      <section className={`${card} mt-6`}>
+      {activeOrder && activeJourney ? <section id="active-order" className={`${card} mt-6 border-[#d8b967]/20 bg-[linear-gradient(135deg,rgba(16,57,41,.9),rgba(3,22,15,.9))]`}>
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+          <div className="flex items-start gap-3"><span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl border border-[#d8b967]/20 bg-[#d8b967]/[.07] text-[#e3c978]"><PackageCheck className="h-5 w-5" /></span><div><p className="text-xs text-[#d9c277]/65">{fa ? "سفارش فعال شما" : "Your active order"}</p><h2 className={fa ? "font-persian-title mt-2 text-xl text-[#f2e6c9]" : "mt-2 text-xl font-semibold text-[#f2e6c9]"}>{activeJourney.title}</h2><p className="mt-2 text-xs leading-6 text-[#cbbd9a]/62">{activeJourney.detail}</p></div></div>
+          <div className="text-start sm:text-end"><p className="font-mono text-sm text-[#ead391]">{activeOrder.orderNumber}</p><p className="mt-2 text-xs text-[#d9bd72]/65">{statusLabel(activeOrder.status, fa)}</p></div>
+        </div>
+        <div className="mt-6 grid grid-cols-4 gap-2">
+          {[
+            [CreditCard, fa ? "پرداخت" : "Payment"],
+            [CircleCheck, fa ? "تأیید" : "Confirmed"],
+            [Package, fa ? "آماده‌سازی" : "Preparing"],
+            [Truck, fa ? "ارسال" : "Shipped"],
+          ].map(([Icon, label], index) => {
+            const StepIcon = Icon as typeof Package;
+            const passed = index <= activeJourney.current;
+            return <div key={String(label)} className={`rounded-2xl border p-3 text-center ${passed ? "border-[#d8b967]/26 bg-[#d8b967]/[.08] text-[#ecd482]" : "border-white/5 bg-black/10 text-[#bbaf8e]/50"}`}><StepIcon className="mx-auto h-4 w-4" /><p className="mt-2 text-[10px]">{String(label)}</p></div>;
+          })}
+        </div>
+        <div className="mt-5 flex flex-wrap items-center gap-3"><Link href={`/${locale}/order-tracking?code=${encodeURIComponent(activeOrder.orderNumber)}`} className="inline-flex h-10 items-center justify-center rounded-full border border-[#d8b967]/20 bg-[#123829] px-4 text-xs text-[#edd58b]">{fa ? "پیگیری دقیق سفارش" : "Track order"}</Link>{activeOrder.status === "PENDING_PAYMENT" || activeOrder.status === "PAYMENT_FAILED" ? <button type="button" disabled={busy === `pay-${activeOrder.id}`} onClick={() => void continuePayment(activeOrder.id)} className="inline-flex h-10 items-center justify-center rounded-full border border-[#d8b967]/20 px-4 text-xs text-[#edd58b] disabled:opacity-50">{fa ? "ادامه پرداخت" : "Continue payment"}</button> : null}</div>
+      </section> : null}
+
+      <section id="orders" className={`${card} mt-6`}>
         <div className="flex items-center gap-3"><Package className="h-5 w-5 text-[#dfc577]" /><h2 className={fa ? "font-persian-title text-xl" : "text-xl font-semibold"}>{fa ? "سفارش‌های من" : "My orders"}</h2></div>
         <div className="mt-5 space-y-3">
           {initialData.orders.length ? initialData.orders.map(order => (
@@ -177,7 +222,7 @@ export function CustomerProfileClient({ locale, initialData }: { locale: "fa" | 
         </div>
       </section>
 
-      <section className={`${card} mt-6`}>
+      <section id="addresses" className={`${card} mt-6`}>
         <div className="flex items-center justify-between gap-3"><div className="flex items-center gap-3"><MapPin className="h-5 w-5 text-[#dfc577]" /><h2 className={fa ? "font-persian-title text-xl" : "text-xl font-semibold"}>{fa ? "آدرس‌های من" : "My addresses"}</h2></div><Plus className="h-4 w-4 text-[#d8bd72]/60" /></div>
         <div className="mt-5 grid gap-3 md:grid-cols-2">
           {initialData.addresses.map(a => <article key={a.id} className="rounded-2xl border border-[#d8b967]/9 bg-black/12 p-4">
@@ -197,7 +242,7 @@ export function CustomerProfileClient({ locale, initialData }: { locale: "fa" | 
         </form>
       </section>
 
-      <section className={`${card} mt-6`}>
+      <section id="favorites" className={`${card} mt-6`}>
         <div className="flex items-center gap-3"><Heart className="h-5 w-5 text-[#dfc577]" /><h2 className={fa ? "font-persian-title text-xl" : "text-xl font-semibold"}>{fa ? "علاقه‌مندی‌ها" : "Favorites"}</h2></div>
         <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {initialData.favorites.map(item => <article key={item.slug} className="flex items-center gap-3 rounded-2xl border border-[#d8b967]/9 bg-black/12 p-3">
@@ -209,12 +254,12 @@ export function CustomerProfileClient({ locale, initialData }: { locale: "fa" | 
         </div>
       </section>
 
-      <section className={`${card} mt-6`}>
+      <section id="notifications" className={`${card} mt-6`}>
         <div className="flex items-center justify-between gap-3"><div className="flex items-center gap-3"><Bell className="h-5 w-5 text-[#dfc577]" /><h2 className={fa ? "font-persian-title text-xl" : "text-xl font-semibold"}>{fa ? "اعلان‌ها" : "Notifications"}</h2></div>{unread ? <button disabled={busy === "notifications"} onClick={() => void markAllRead()} className="inline-flex items-center gap-2 text-xs text-[#d8bd72]/70"><Check className="h-4 w-4" />{fa ? "خواندن همه" : "Mark all read"}</button> : null}</div>
         <div className="mt-5 space-y-2">{initialData.notifications.map(n => <article key={n.id} className={`rounded-2xl border p-4 ${n.readAt ? "border-[#d8b967]/7 bg-black/8" : "border-[#d8b967]/16 bg-[#0b2c20]/45"}`}><p className="text-sm text-[#e9d7ad]">{fa ? n.titleFa : n.titleEn}</p><p className="mt-2 text-xs leading-6 text-[#c4b696]/55">{fa ? n.bodyFa : n.bodyEn}</p></article>)}{!initialData.notifications.length ? <p className="text-sm text-[#c7b995]/55">{fa ? "اعلان جدیدی ندارید." : "No notifications yet."}</p> : null}</div>
       </section>
 
-      <section className={`${card} mt-6`}>
+      <section id="account" className={`${card} mt-6`}>
         <div className="flex items-center gap-3"><UserRound className="h-5 w-5 text-[#dfc577]" /><h2 className={fa ? "font-persian-title text-xl" : "text-xl font-semibold"}>{fa ? "اطلاعات حساب" : "Account details"}</h2></div>
         <form onSubmit={saveProfile} className="mt-5 grid gap-3 sm:grid-cols-2"><input className={input} value={profile.fullName} onChange={e => setProfile(v => ({ ...v, fullName: e.target.value }))} placeholder={fa ? "نام و نام خانوادگی" : "Full name"} /><input className={input} value={profile.email} onChange={e => setProfile(v => ({ ...v, email: e.target.value }))} placeholder={fa ? "ایمیل" : "Email"} /><input className={`${input} opacity-65`} value={initialData.customer.mobile} disabled /><button disabled={busy === "profile"} className="inline-flex h-12 items-center justify-center gap-2 rounded-2xl border border-[#d8b967]/20 bg-[#123829] text-xs text-[#e8d18b]"><Save className="h-4 w-4" />{fa ? "ذخیره اطلاعات" : "Save details"}</button></form>
       </section>
