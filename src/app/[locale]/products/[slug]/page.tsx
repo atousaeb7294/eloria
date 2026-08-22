@@ -62,6 +62,7 @@ import { truncateMetaDescription } from "@/lib/seo";
 import { ProductStructuredData } from "@/components/product-detail/product-structured-data";
 
 import { TreasuryButton } from "@/components/treasury/treasury-button";
+import { ProductWatchButton } from "@/components/product-watch-button";
 
 export const dynamic =
   "force-dynamic";
@@ -1044,6 +1045,10 @@ export default async function ProductPage({
                         .stock
                     ) <= 0
                   }
+                />
+                <ProductWatchButton
+                  locale={locale}
+                  slug={result.product.slug}
                 />
               <div className="mt-3">
                 <TreasuryButton

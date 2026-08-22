@@ -4,12 +4,13 @@ const jobs = new Set([
   "security-alerts",
   "data-retention",
   "content-health",
+  "customer-watches",
 ]);
 const job = process.argv[2];
 
 if (!jobs.has(job)) {
   console.error(
-    "Usage: node scripts/run-cron-once.mjs <expired-orders|metal-prices|security-alerts|data-retention|content-health>",
+    "Usage: node scripts/run-cron-once.mjs <expired-orders|metal-prices|security-alerts|data-retention|content-health|customer-watches>",
   );
   process.exit(2);
 }
@@ -22,7 +23,7 @@ const baseUrl = (
   .trim()
   .replace(/\/$/, "");
 const secret = process.env.CRON_SECRET?.trim() || "";
-const minimumSecretLength = job === "content-health" ? 48 : 32;
+const minimumSecretLength = job === "content-health" || job === "customer-watches" ? 48 : 32;
 
 if (!baseUrl || secret.length < minimumSecretLength) {
   console.error(

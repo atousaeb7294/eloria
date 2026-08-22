@@ -59,6 +59,16 @@ function isPositiveNumber(key: string): boolean {
   if (!/^\d+(?:\.\d+)?$/.test(raw)) return false;
   return Number(raw) > 0;
 }
+function isIntegerInRange(
+  key: string,
+  minimum: number,
+  maximum: number,
+): boolean {
+  const raw = value(key);
+  if (!/^\d+$/.test(raw)) return false;
+  const parsed = Number(raw);
+  return Number.isInteger(parsed) && parsed >= minimum && parsed <= maximum;
+}
 function isPercent(key: string): boolean {
   const raw = value(key);
   if (!/^\d+(?:\.\d+)?$/.test(raw)) return false;
@@ -179,6 +189,8 @@ export function productionEnvironmentChecks(): Check[] {
     { key: "ELORIA_DYNAMIC_PRICING_ENABLED", required: true, valid: isExplicitBoolean("ELORIA_DYNAMIC_PRICING_ENABLED"), message: "فعال/غیرفعال بودن قیمت‌گذاری پویا باید صریح باشد" },
     { key: "ELORIA_PAYMENT_ENABLED", required: true, valid: isExplicitBoolean("ELORIA_PAYMENT_ENABLED"), message: "فعال/غیرفعال بودن پرداخت باید صریح باشد" },
     { key: "ELORIA_SUPPORT_ENABLED", required: true, valid: isExplicitBoolean("ELORIA_SUPPORT_ENABLED"), message: "فعال/غیرفعال بودن پشتیبانی باید صریح باشد" },
+    { key: "ELORIA_MEASUREMENT_ENABLED", required: true, valid: isExplicitBoolean("ELORIA_MEASUREMENT_ENABLED"), message: "فعال/غیرفعال بودن سنجش ناشناس سایت باید صریح باشد" },
+    { key: "ELORIA_CUSTOMER_WATCHES_ENABLED", required: true, valid: isExplicitBoolean("ELORIA_CUSTOMER_WATCHES_ENABLED"), message: "فعال/غیرفعال بودن پیگیری قیمت و موجودی باید صریح باشد" },
 
     { key: "ELORIA_ADMIN_USERNAME", required: true, valid: present("ELORIA_ADMIN_USERNAME", 3), message: "نام کاربری مدیر" },
     { key: "ELORIA_ADMIN_PASSWORD", required: true, valid: present("ELORIA_ADMIN_PASSWORD", 20), message: "رمز قوی مدیر حداقل ۲۰ کاراکتر" },
@@ -247,6 +259,7 @@ export function productionEnvironmentChecks(): Check[] {
     { key: "ELORIA_LEGAL_CONTACT", required: legalIdentityRequired, valid: !legalIdentityRequired || legalContactValid, message: "برای فروش یا Index حقوقی حداقل یک تلفن یا ایمیل معتبر لازم است" },
 
     { key: "ELORIA_LEGAL_PAGES_INDEX", required: true, valid: isExplicitBoolean("ELORIA_LEGAL_PAGES_INDEX"), message: "Index شدن صفحات حقوقی باید صریح باشد" },
+    { key: "ELORIA_MEASUREMENT_RETENTION_DAYS", required: true, valid: isIntegerInRange("ELORIA_MEASUREMENT_RETENTION_DAYS", 30, 730), message: "بازه نگهداری سنجش رضایتی سایت" },
   ];
 }
 

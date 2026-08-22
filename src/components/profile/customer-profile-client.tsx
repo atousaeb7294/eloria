@@ -131,7 +131,7 @@ export function CustomerProfileClient({ locale, initialData }: { locale: "fa" | 
             <h1 className={fa ? "font-persian-title mt-3 text-3xl text-[#f2e6c9] sm:text-4xl" : "mt-3 text-3xl font-semibold text-[#f2e6c9] sm:text-4xl"}>{initialData.customer.fullName || (fa ? "عضو الوریا" : "Eloria member")}</h1>
             <p className="mt-3 text-sm text-[#cbbd9a]/60">{initialData.customer.mobile}</p>
           </div>
-          <button onClick={() => void logout()} disabled={busy === "logout"} className="inline-flex h-11 items-center justify-center gap-2 rounded-full border border-red-300/15 bg-red-300/[.04] px-5 text-xs text-red-100/70"><LogOut className="h-4 w-4" />{fa ? "خروج امن" : "Sign out"}</button>
+          <div className="flex flex-wrap items-center gap-2"><Link href={`/${locale}/profile/watches`} className="inline-flex h-11 items-center justify-center gap-2 rounded-full border border-[#d8b967]/16 bg-[#d8b967]/[.05] px-4 text-xs text-[#e8d08a]/78"><Bell className="h-4 w-4" />{fa ? "پیگیری‌ها" : "Watches"}</Link><button onClick={() => void logout()} disabled={busy === "logout"} className="inline-flex h-11 items-center justify-center gap-2 rounded-full border border-red-300/15 bg-red-300/[.04] px-5 text-xs text-red-100/70"><LogOut className="h-4 w-4" />{fa ? "خروج امن" : "Sign out"}</button></div>
         </div>
       </header>
 

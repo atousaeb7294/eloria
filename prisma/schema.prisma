@@ -234,6 +234,7 @@ model Product {
   orderItems OrderItem[]
 
   favorites CustomerFavorite[]
+  productWatches CustomerProductWatch[]
   articles  ContentArticle[]
   createdAt DateTime           @default(now())
   updatedAt DateTime           @updatedAt
@@ -782,6 +783,7 @@ model Customer {
   sessions         CustomerSession[]
   addresses        CustomerAddress[]
   favorites        CustomerFavorite[]
+  productWatches   CustomerProductWatch[]
   notifications    CustomerNotification[]
   orders           Order[]
   createdAt        DateTime               @default(now())
@@ -856,6 +858,30 @@ model CustomerFavorite {
   @@map("customer_favorites")
 }
 
+// Customers can opt in to price-drop and restock notifications for a product.
+// Notifications remain in-account; no mobile number or third-party marketing
+// channel is used by this feature.
+model CustomerProductWatch {
+  id                       String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  customerId               String   @db.Uuid
+  productId                String   @db.Uuid
+  notifyOnPriceDrop        Boolean  @default(true)
+  notifyOnRestock          Boolean  @default(true)
+  lastObservedPriceToman   Decimal? @db.Decimal(18, 0)
+  lastObservedInStock      Boolean?
+  lastNotifiedAt           DateTime?
+  createdAt                DateTime @default(now())
+  updatedAt                DateTime @default(now()) @updatedAt
+
+  customer Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  product  Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([customerId, productId])
+  @@index([productId, updatedAt])
+  @@index([customerId, createdAt])
+  @@map("customer_product_watches")
+}
+
 model CustomerNotification {
   id         String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   customerId String    @db.Uuid
@@ -874,6 +900,30 @@ model CustomerNotification {
   @@index([customerId, readAt])
   @@index([orderId])
   @@map("customer_notifications")
+}
+
+// Privacy-first, consented telemetry. The schema deliberately contains no
+// personal profile fields, IP address, user agent, query string, or referrer.
+model SiteMeasurementEvent {
+  id             String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  eventKey       String   @unique @db.VarChar(160)
+  eventType      String   @db.VarChar(40)
+  locale         String   @db.VarChar(10)
+  path           String   @db.VarChar(240)
+  sessionId      String   @db.VarChar(80)
+  productSlug    String?  @db.VarChar(140)
+  metricName     String?  @db.VarChar(32)
+  metricValue    Decimal? @db.Decimal(18, 4)
+  metricRating   String?  @db.VarChar(24)
+  navigationType String?  @db.VarChar(32)
+  occurredAt     DateTime
+  createdAt      DateTime @default(now())
+
+  @@index([eventType, occurredAt])
+  @@index([path, occurredAt])
+  @@index([productSlug, occurredAt])
+  @@index([metricName, occurredAt])
+  @@map("site_measurement_events")
 }
 
 model Shipment {

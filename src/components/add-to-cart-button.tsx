@@ -21,6 +21,9 @@ import {
   subscribeToCart,
   updateCartItemQuantity,
 } from "@/lib/cart-storage";
+import {
+  recordClientMeasurement,
+} from "@/lib/site-measurement-client";
 
 type AddToCartButtonProps = {
   locale: string;
@@ -88,6 +91,13 @@ export function AddToCartButton({
       slug,
       variantId,
       quantity: 1,
+    });
+
+    recordClientMeasurement({
+      event_type: "add_to_cart",
+      locale: isPersian ? "fa" : "en",
+      path: window.location.pathname,
+      product_slug: slug,
     });
 
     setRecentlyAdded(true);

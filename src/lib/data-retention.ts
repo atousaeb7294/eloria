@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { siteMeasurementRetentionDays } from "@/lib/site-measurement";
 
 function envDays(
   name: string,
@@ -29,6 +30,7 @@ export type DataRetentionResult = {
   rateLimitBucketsDeleted: number;
   securityAlertsDeleted: number;
   securityEventsDeleted: number;
+  measurementEventsDeleted: number;
 };
 
 export async function runDataRetention(
@@ -88,12 +90,20 @@ export async function runDataRetention(
       now.getTime() - day,
     );
 
+  const measurementCutoff =
+    new Date(
+      now.getTime() -
+        siteMeasurementRetentionDays() *
+          day,
+    );
+
   const [
     otp,
     customerSessions,
     adminSessions,
     rateLimitBuckets,
     securityAlerts,
+    measurementEvents,
   ] = await prisma.$transaction([
     prisma.customerOtpChallenge.deleteMany({
       where: {
@@ -176,6 +186,14 @@ export async function runDataRetention(
         },
       },
     }),
+
+    prisma.siteMeasurementEvent.deleteMany({
+      where: {
+        occurredAt: {
+          lt: measurementCutoff,
+        },
+      },
+    }),
   ]);
 
   /*
@@ -210,5 +228,7 @@ export async function runDataRetention(
       securityAlerts.count,
     securityEventsDeleted:
       securityEvents.count,
+    measurementEventsDeleted:
+      measurementEvents.count,
   };
 }

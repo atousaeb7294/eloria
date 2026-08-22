@@ -13,6 +13,8 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 
+import { MeasurementPreferencesButton } from "@/components/measurement-preferences-button";
+
 type SiteFooterProps = {
   locale: string;
 };
@@ -238,6 +240,7 @@ export function SiteFooter({ locale }: SiteFooterProps) {
           <p>{copy.rights}</p>
 
           <div className="flex flex-wrap items-center justify-center gap-5 sm:justify-end">
+            <MeasurementPreferencesButton locale={locale} />
             <Link
               href={`/${locale}#hero`}
               className="inline-flex min-h-9 items-center gap-2 text-[#d8c17c]/68 transition-colors duration-300 hover:text-[#f0d793] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#dfc16f]/38"
