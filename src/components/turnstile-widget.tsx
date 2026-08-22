@@ -39,7 +39,8 @@ export function TurnstileWidget({
   action?:
     | "checkout"
     | "customer-login"
-    | "support-contact";
+    | "support-contact"
+    | "support-chat";
 }) {
   const siteKey =
     process.env

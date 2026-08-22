@@ -14,6 +14,8 @@ import {
 import { notFound } from "next/navigation";
 
 import { PageBackgroundProvider } from "@/components/page-background-provider";
+import { CustomerSupportWidget } from "@/components/customer-support-widget";
+import { SmartSelectionAssistant } from "@/components/smart-selection-assistant";
 import { SiteMeasurementTracker } from "@/components/site-measurement-tracker";
 import { SiteStructuredData } from "@/components/site-structured-data";
 
@@ -128,6 +130,8 @@ export default async function LocaleLayout({
               enabled={isSiteMeasurementEnabled()}
             />
             {children}
+            <SmartSelectionAssistant locale={locale} />
+            <CustomerSupportWidget locale={locale} />
           </PageBackgroundProvider>
         </NextIntlClientProvider>
       </body>

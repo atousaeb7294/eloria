@@ -16,7 +16,7 @@ import {
 
 import { CartHeaderButton } from "@/components/cart-header-button";
 
-import { BookOpenText } from "lucide-react";
+import { BookOpenText, Sparkles } from "lucide-react";
 
 import { CustomerAccountHeaderButton } from "@/components/customer-account-header-button";
 
@@ -122,6 +122,7 @@ const NAVIGATION_LABELS = {
     bracelets: "دستبندها",
     earrings: "گوشواره‌ها",
     journal: "مجله",
+    selection: "راهنمای انتخاب",
     contact: "تماس",
   },
   en: {
@@ -133,6 +134,7 @@ const NAVIGATION_LABELS = {
     bracelets: "Bracelets",
     earrings: "Earrings",
     journal: "Journal",
+    selection: "Selection guide",
     contact: "Contact",
   },
 } as const;
@@ -512,6 +514,20 @@ export function SiteHeader({ locale }: SiteHeaderProps) {
                   {labels.journal}
                 </span>
               </Link>
+
+              <button
+                type="button"
+                onClick={() => window.dispatchEvent(new Event("eloria-open-selection"))}
+                title={labels.selection}
+                className={normalButtonClass}
+              >
+                <MagicIconFrame>
+                  <Sparkles className="size-[20px]" />
+                </MagicIconFrame>
+                <span className="relative z-10 hidden whitespace-nowrap text-xs font-medium xl:inline">
+                  {labels.selection}
+                </span>
+              </button>
 
               <Link
                 href="#contact"

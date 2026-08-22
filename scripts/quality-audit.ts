@@ -108,13 +108,20 @@ check(
 );
 
 check(
-  "Product pricing UI exposes customer price components",
-  productPage.includes("makingChargeTotalToman") &&
-    productPage.includes("profitToman") &&
-    productPage.includes("artisticFeeToman") &&
-    productPage.includes("formattedMakingCharge") &&
-    productPage.includes("formattedProfit") &&
-    productPage.includes("formattedArtisticFee"),
+  "Product pricing UI hides internal financial components",
+  !productPage.includes("makingChargeTotalToman") &&
+    !productPage.includes("profitToman") &&
+    !productPage.includes("artisticFeeToman") &&
+    !productPage.includes("formattedMakingCharge") &&
+    !productPage.includes("formattedProfit") &&
+    !productPage.includes("formattedArtisticFee"),
+);
+
+check(
+  "Product price explains server formula continuity",
+  productPage.includes("فرمول مالی ثبت‌شده") &&
+    productPage.includes("سبد و ثبت سفارش") &&
+    productPage.includes("getProductDisplayPrice"),
 );
 
 const internalShell = read("src/components/internal-page-shell.tsx");
@@ -303,6 +310,38 @@ check(
   cronRunner.includes('import "dotenv/config"') &&
     cronRunner.includes('"content-drafts"') &&
     cronRunner.includes('"daily-briefing"'),
+);
+
+const supportChatRoute = read("src/app/api/support/chat/route.ts");
+const adminSupportRoute = read("src/app/api/admin/support/route.ts");
+const supportChatData = read("src/lib/support-chat.ts");
+const supportWidget = read("src/components/customer-support-widget.tsx");
+const selectionAssistant = read("src/components/smart-selection-assistant.tsx");
+check(
+  "Support chat stores opaque visitor sessions and protects writes",
+  supportChatData.includes("accessTokenHash") &&
+    supportChatData.includes("randomBytes") &&
+    supportChatRoute.includes("hasTrustedOrigin") &&
+    supportChatRoute.includes("consumeRateLimit") &&
+    supportChatRoute.includes("verifyTurnstileToken"),
+);
+check(
+  "Admin support inbox requires a valid admin session",
+  adminSupportRoute.includes("hasValidAdminSession") &&
+    adminSupportRoute.includes("touchSupportAgentPresence") &&
+    adminSupportRoute.includes("replyToSupportConversation"),
+);
+check(
+  "Support widget has database chat and configured email fallback",
+  supportWidget.includes("/api/support/chat") &&
+    supportWidget.includes("mailto:") &&
+    !supportWidget.includes("dangerouslySetInnerHTML"),
+);
+check(
+  "Selection guide uses real catalog query parameters",
+  selectionAssistant.includes("availability: \"available\"") &&
+    selectionAssistant.includes("maxPrice") &&
+    selectionAssistant.includes("router.push"),
 );
 
 const nextConfig = read("next.config.ts");

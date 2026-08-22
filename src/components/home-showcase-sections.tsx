@@ -1,4 +1,5 @@
 import { HomeNarrativeShowcase } from "@/components/home-narrative-showcase";
+import { SmartSelectionTrigger } from "@/components/smart-selection-trigger";
 type HomeShowcaseSectionsProps = {
     locale: string;
     persianTitleClassName?: string;
@@ -115,6 +116,18 @@ export function HomeShowcaseSections({ locale }: HomeShowcaseSectionsProps) {
 
                   <div aria-hidden="true" className="pointer-events-none absolute -bottom-10 -end-10 h-24 w-24 rounded-full bg-[#d7b65e]/[0.025] blur-2xl"/>
                 </article>))}
+          </div>
+
+          <div className="mx-auto mt-8 max-w-3xl rounded-[1.8rem] border border-[#d7b65e]/16 bg-[linear-gradient(135deg,rgba(9,54,39,.72),rgba(2,19,14,.66))] px-5 py-6 text-center shadow-[0_18px_55px_rgba(0,0,0,.18)] sm:px-8">
+            <p className={locale === "fa" ? "font-persian-title text-lg text-[#efe1bf]" : "text-lg font-semibold text-[#efe1bf]"}>
+              {isPersian ? "نمی‌دانید از کجا شروع کنید؟" : "Not sure where to start?"}
+            </p>
+            <p className="mx-auto mt-3 max-w-xl text-xs leading-7 text-[#cdbf9f]/62">
+              {isPersian ? "راهنمای انتخاب، نتیجه را براساس نوع اثر، جنس و بودجهٔ شما با فیلترهای واقعی فروشگاه تنظیم می‌کند." : "The selection guide opens the real catalog with filters for your piece, material and budget."}
+            </p>
+            <div className="mt-5 flex justify-center">
+              <SmartSelectionTrigger locale={isPersian ? "fa" : "en"} />
+            </div>
           </div>
         </div>
       </section>

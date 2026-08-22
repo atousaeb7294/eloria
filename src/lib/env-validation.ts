@@ -131,6 +131,7 @@ export function productionEnvironmentChecks(): Check[] {
   const dynamicPricingEnabled = boolFlag("ELORIA_DYNAMIC_PRICING_ENABLED");
   const paymentEnabled = boolFlag("ELORIA_PAYMENT_ENABLED");
   const supportEnabled = boolFlag("ELORIA_SUPPORT_ENABLED");
+  const supportChatEnabled = boolFlag("ELORIA_SUPPORT_CHAT_ENABLED");
   const legalPagesIndex = boolFlag("ELORIA_LEGAL_PAGES_INDEX");
   const legalIdentityRequired = commerceEnabled || legalPagesIndex;
   const legalPhone = value("ELORIA_LEGAL_SUPPORT_PHONE");
@@ -177,6 +178,7 @@ export function productionEnvironmentChecks(): Check[] {
     "ELORIA_PAYMENT_RECEIPT_SECRET",
     ...(customerAuthEnabled ? ["ELORIA_CUSTOMER_AUTH_SECRET"] : []),
     ...(paymentEnabled ? ["ELORIA_PAYMENT_START_SECRET"] : []),
+    ...(supportChatEnabled ? ["ELORIA_SUPPORT_CHAT_SECRET"] : []),
   ];
 
   return [
@@ -189,6 +191,8 @@ export function productionEnvironmentChecks(): Check[] {
     { key: "ELORIA_DYNAMIC_PRICING_ENABLED", required: true, valid: isExplicitBoolean("ELORIA_DYNAMIC_PRICING_ENABLED"), message: "فعال/غیرفعال بودن قیمت‌گذاری پویا باید صریح باشد" },
     { key: "ELORIA_PAYMENT_ENABLED", required: true, valid: isExplicitBoolean("ELORIA_PAYMENT_ENABLED"), message: "فعال/غیرفعال بودن پرداخت باید صریح باشد" },
     { key: "ELORIA_SUPPORT_ENABLED", required: true, valid: isExplicitBoolean("ELORIA_SUPPORT_ENABLED"), message: "فعال/غیرفعال بودن پشتیبانی باید صریح باشد" },
+    { key: "ELORIA_SUPPORT_CHAT_ENABLED", required: false, valid: !value("ELORIA_SUPPORT_CHAT_ENABLED") || isExplicitBoolean("ELORIA_SUPPORT_CHAT_ENABLED"), message: "فعال/غیرفعال بودن گفت‌وگوی پشتیبانی در صورت تنظیم باید صریح باشد" },
+    { key: "ELORIA_SUPPORT_CHAT_RETENTION_DAYS", required: supportChatEnabled, valid: !supportChatEnabled || isIntegerInRange("ELORIA_SUPPORT_CHAT_RETENTION_DAYS", 30, 1_095), message: "نگهداری گفت‌وگوی پشتیبانی باید بین ۳۰ تا ۱۰۹۵ روز باشد" },
     { key: "ELORIA_MEASUREMENT_ENABLED", required: true, valid: isExplicitBoolean("ELORIA_MEASUREMENT_ENABLED"), message: "فعال/غیرفعال بودن سنجش ناشناس سایت باید صریح باشد" },
     { key: "ELORIA_CUSTOMER_WATCHES_ENABLED", required: true, valid: isExplicitBoolean("ELORIA_CUSTOMER_WATCHES_ENABLED"), message: "فعال/غیرفعال بودن پیگیری قیمت و موجودی باید صریح باشد" },
     { key: "ELORIA_CONTENT_AUTOPILOT_ENABLED", required: true, valid: isExplicitBoolean("ELORIA_CONTENT_AUTOPILOT_ENABLED"), message: "فعال/غیرفعال بودن پیش‌نویس خودکار محتوا باید صریح باشد" },
@@ -201,6 +205,7 @@ export function productionEnvironmentChecks(): Check[] {
     { key: "ELORIA_ADMIN_TOTP_SECRET", required: true, valid: isTotpSecret("ELORIA_ADMIN_TOTP_SECRET"), message: "TOTP مدیر در Production اجباری است" },
 
     { key: "ELORIA_CUSTOMER_AUTH_SECRET", required: customerAuthEnabled, valid: !customerAuthEnabled || present("ELORIA_CUSTOMER_AUTH_SECRET", 48), message: "کلید نشست و OTP مشتری" },
+    { key: "ELORIA_SUPPORT_CHAT_SECRET", required: supportChatEnabled, valid: !supportChatEnabled || present("ELORIA_SUPPORT_CHAT_SECRET", 48), message: "کلید مستقل نشست گفت‌وگوی پشتیبانی" },
     { key: "KAVENEGAR_API_KEY", required: customerAuthEnabled || Boolean(securityAlertMobile) || Boolean(supportMobile), valid: !(customerAuthEnabled || Boolean(securityAlertMobile) || Boolean(supportMobile)) || present("KAVENEGAR_API_KEY", 16), message: "کلید پیامک برای ورود/هشدار/پشتیبانی SMS" },
 
     { key: "ELORIA_SUPPORT_TURNSTILE_REQUIRED", required: true, valid: isExplicitBoolean("ELORIA_SUPPORT_TURNSTILE_REQUIRED"), message: "محافظت Turnstile فرم پشتیبانی باید صریح باشد" },
@@ -209,7 +214,7 @@ export function productionEnvironmentChecks(): Check[] {
 
     { key: "ELORIA_SUPPORT_MOBILE", required: Boolean(supportMobile), valid: !supportMobile || /^09\d{9}$/.test(supportMobile), message: "شماره پشتیبانی SMS" },
     { key: "ELORIA_SUPPORT_WEBHOOK_URL", required: Boolean(supportWebhook), valid: !supportWebhook || supportWebhookChannel, message: "Webhook پشتیبانی باید HTTPS عمومی و امن باشد" },
-    { key: "ELORIA_SUPPORT_CHANNEL", required: supportEnabled, valid: !supportEnabled || supportSmsChannel || supportWebhookChannel, message: "وقتی پشتیبانی فعال است حداقل یک کانال SMS یا HTTPS webhook لازم است" },
+    { key: "ELORIA_SUPPORT_CHANNEL", required: supportEnabled, valid: !supportEnabled || supportSmsChannel || supportWebhookChannel || supportChatEnabled, message: "وقتی پشتیبانی فعال است حداقل یک کانال گفت‌وگو، SMS یا HTTPS webhook لازم است" },
 
     { key: "ELORIA_SHIPPING_FLAT_TOMAN", required: commerceEnabled, valid: !commerceEnabled || isNonNegativeInteger("ELORIA_SHIPPING_FLAT_TOMAN"), message: "هزینه ارسال باید صریح و نامنفی باشد" },
     { key: "ELORIA_FREE_SHIPPING_FROM_TOMAN", required: commerceEnabled, valid: !commerceEnabled || isOptionalNonNegativeInteger("ELORIA_FREE_SHIPPING_FROM_TOMAN"), message: "آستانه ارسال رایگان باید خالی یا عدد صحیح نامنفی باشد" },

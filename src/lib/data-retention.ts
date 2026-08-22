@@ -31,6 +31,7 @@ export type DataRetentionResult = {
   securityAlertsDeleted: number;
   securityEventsDeleted: number;
   measurementEventsDeleted: number;
+  supportConversationsDeleted: number;
 };
 
 export async function runDataRetention(
@@ -90,6 +91,18 @@ export async function runDataRetention(
       now.getTime() - day,
     );
 
+  const supportConversationCutoff =
+    new Date(
+      now.getTime() -
+        envDays(
+          "ELORIA_SUPPORT_CHAT_RETENTION_DAYS",
+          365,
+          30,
+          1_095,
+        ) *
+          day,
+    );
+
   const measurementCutoff =
     new Date(
       now.getTime() -
@@ -104,6 +117,7 @@ export async function runDataRetention(
     rateLimitBuckets,
     securityAlerts,
     measurementEvents,
+    supportConversations,
   ] = await prisma.$transaction([
     prisma.customerOtpChallenge.deleteMany({
       where: {
@@ -194,6 +208,18 @@ export async function runDataRetention(
         },
       },
     }),
+
+    // Closed support conversations can contain voluntary contact details.
+    // Their messages cascade-delete with the conversation after the documented
+    // retention period. Open conversations are always retained for a reply.
+    prisma.supportConversation.deleteMany({
+      where: {
+        status: "CLOSED",
+        updatedAt: {
+          lt: supportConversationCutoff,
+        },
+      },
+    }),
   ]);
 
   /*
@@ -230,5 +256,7 @@ export async function runDataRetention(
       securityEvents.count,
     measurementEventsDeleted:
       measurementEvents.count,
+    supportConversationsDeleted:
+      supportConversations.count,
   };
 }

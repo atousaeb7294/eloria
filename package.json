@@ -63,6 +63,7 @@
     "cron:customer-watches": "node scripts/run-cron-once.mjs customer-watches",
     "audit:quality": "tsx scripts/quality-audit.ts",
     "test:autopilot": "node --import tsx scripts/test-autopilot.ts",
+    "test:luxury-support": "node --import tsx scripts/test-luxury-support.ts",
     "test:payments": "tsx scripts/test-zarinpal-simulation.ts",
     "test:admin-hardening": "tsx scripts/test-admin-hardening.ts",
     "test:supply-chain": "node scripts/check-supply-chain.mjs"

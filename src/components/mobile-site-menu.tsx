@@ -7,7 +7,7 @@ import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 
 import { useEffect, useState } from "react";
 
-import { BookOpenText, Menu, UserRound, X } from "lucide-react";
+import { BookOpenText, Menu, Sparkles, UserRound, X } from "lucide-react";
 
 import {
   BraceletRuneIcon,
@@ -36,6 +36,7 @@ export function MobileSiteMenu() {
           earrings: "گوشواره‌ها",
           journal: "مجلهٔ الوریا",
           contact: "تماس",
+          selection: "راهنمای انتخاب هوشمند",
           menuLabel: "منوی اصلی",
         }
       : {
@@ -46,6 +47,7 @@ export function MobileSiteMenu() {
           earrings: "Earrings",
           journal: "Eloria Journal",
           contact: "Contact",
+          selection: "Smart selection guide",
           menuLabel: "Main navigation",
         };
 
@@ -391,6 +393,17 @@ export function MobileSiteMenu() {
               </div>
 
               <div className="mt-3 grid gap-2 sm:grid-cols-[1fr_auto]">
+                <button
+                  type="button"
+                  onClick={() => {
+                    closeMenu();
+                    window.dispatchEvent(new Event("eloria-open-selection"));
+                  }}
+                  className="flex min-h-12 items-center justify-center gap-2 rounded-full border border-[#dfc16f]/24 bg-black/12 px-5 text-xs text-[#e8cf83] transition hover:border-[#efd27c]/52 hover:bg-[#d7b14f]/[.08] sm:col-span-2"
+                >
+                  <Sparkles className="size-4" />
+                  {labels.selection}
+                </button>
                 <Link
                   href={contactHref}
                   onClick={closeMenu}

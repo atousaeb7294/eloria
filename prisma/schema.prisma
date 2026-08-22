@@ -103,6 +103,18 @@ enum AuditActorType {
   PAYMENT_GATEWAY
 }
 
+// Support chat stays deliberately separate from orders and payment data.
+// A visitor receives only an opaque browser token; the token hash is stored.
+enum SupportConversationStatus {
+  OPEN
+  CLOSED
+}
+
+enum SupportMessageAuthor {
+  VISITOR
+  ADMIN
+}
+
 model AdminSession {
   id          String    @id @default(uuid()) @db.Uuid
   sessionHash String    @unique @db.VarChar(64)
@@ -801,6 +813,7 @@ model Customer {
   favorites        CustomerFavorite[]
   productWatches   CustomerProductWatch[]
   notifications    CustomerNotification[]
+  supportConversations SupportConversation[]
   orders           Order[]
   createdAt        DateTime               @default(now())
   updatedAt        DateTime               @default(now()) @updatedAt
@@ -983,4 +996,54 @@ model SecurityAlert {
   @@index([severity, createdAt])
   @@index([sourceEventId, createdAt])
   @@map("security_alerts")
+}
+
+// ELORIA_LUXURY_SUPPORT_CHAT_V1
+// Support records are not connected to payment data. Customer linking is
+// optional and is only made for an already authenticated customer.
+model SupportConversation {
+  id              String                    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  accessTokenHash String                    @unique @db.VarChar(64)
+  customerId      String?                   @db.Uuid
+  locale          String                    @default("fa") @db.VarChar(10)
+  visitorName     String?                   @db.VarChar(120)
+  visitorEmail    String?                   @db.VarChar(254)
+  visitorPhone    String?                   @db.VarChar(30)
+  status          SupportConversationStatus @default(OPEN)
+  lastMessageAt   DateTime                  @default(now())
+  closedAt        DateTime?
+  createdAt       DateTime                  @default(now())
+  updatedAt       DateTime                  @default(now()) @updatedAt
+
+  customer Customer?        @relation(fields: [customerId], references: [id], onDelete: SetNull)
+  messages SupportMessage[]
+
+  @@index([status, lastMessageAt])
+  @@index([customerId, createdAt])
+  @@map("support_conversations")
+}
+
+model SupportMessage {
+  id             String               @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  conversationId String               @db.Uuid
+  author         SupportMessageAuthor
+  body           String               @db.Text
+  readAt         DateTime?
+  createdAt      DateTime             @default(now())
+
+  conversation SupportConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  @@index([conversationId, createdAt])
+  @@index([author, readAt])
+  @@map("support_messages")
+}
+
+// The agent presence row is a heartbeat written only from an authenticated
+// admin inbox. It makes the public "online" indicator factual, not cosmetic.
+model SupportAgentPresence {
+  id         String   @id @default("primary") @db.VarChar(32)
+  lastSeenAt DateTime
+  updatedAt  DateTime @default(now()) @updatedAt
+
+  @@map("support_agent_presence")
 }

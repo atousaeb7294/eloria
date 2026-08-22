@@ -3,7 +3,8 @@ export type EloriaFeature =
   | "ELORIA_CUSTOMER_AUTH_ENABLED"
   | "ELORIA_DYNAMIC_PRICING_ENABLED"
   | "ELORIA_PAYMENT_ENABLED"
-  | "ELORIA_SUPPORT_ENABLED";
+  | "ELORIA_SUPPORT_ENABLED"
+  | "ELORIA_SUPPORT_CHAT_ENABLED";
 
 export function isFeatureEnabled(
   name: EloriaFeature,
@@ -37,4 +38,11 @@ export function isPaymentEnabled(): boolean {
 
 export function isSupportEnabled(): boolean {
   return isFeatureEnabled("ELORIA_SUPPORT_ENABLED");
+}
+
+export function isSupportChatEnabled(): boolean {
+  return (
+    isSupportEnabled() &&
+    isFeatureEnabled("ELORIA_SUPPORT_CHAT_ENABLED", true)
+  );
 }

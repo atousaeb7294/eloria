@@ -12,8 +12,6 @@ import {
   Gem,
   Hash,
   PackageCheck,
-  Hammer,
-  TrendingUp,
   Scale,
   ScrollText,
   ShieldCheck,
@@ -636,33 +634,6 @@ export default async function ProductPage({
         ? "قیمت ثابت"
         : "Manual price";
 
-  const formattedMakingCharge =
-    result.pricing.breakdown
-      ? `${formatToman(
-          result.pricing.breakdown
-            .makingChargeTotalToman,
-          locale,
-        )} ${isPersian ? "تومان" : "Toman"}`
-      : "—";
-
-  const formattedProfit =
-    result.pricing.breakdown
-      ? `${formatToman(
-          result.pricing.breakdown
-            .profitToman,
-          locale,
-        )} ${isPersian ? "تومان" : "Toman"}`
-      : "—";
-
-  const formattedArtisticFee =
-    result.pricing.breakdown
-      ? `${formatToman(
-          result.pricing.breakdown
-            .artisticFeeToman,
-          locale,
-        )} ${isPersian ? "تومان" : "Toman"}`
-      : "—";
-
   const productDescription =
     (isPersian
       ? productRecord.descriptionFa
@@ -889,8 +860,8 @@ export default async function ProductPage({
 
                     <span className="mt-1 block text-[9px] text-white/30">
                       {isPersian
-                        ? "محاسبه‌شده بر پایه مشخصات انتخابی"
-                        : "Calculated from the selected specifications"}
+                        ? "با فرمول مالی ثبت‌شده و نرخ معتبر بازار محاسبه می‌شود"
+                        : "Calculated by the recorded financial formula and a valid market rate"}
                     </span>
                   </div>
 
@@ -933,7 +904,7 @@ export default async function ProductPage({
                   {finalPrice}
                 </strong>
 
-                <div className="mt-5 grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
+                <div className="mt-5 grid gap-2 sm:grid-cols-2">
                   <PriceInformationItem
                     icon={
                       <Scale className="h-4 w-4" />
@@ -958,57 +929,6 @@ export default async function ProductPage({
                     }
                     value={
                       formattedLiveRate
-                    }
-                    isGold={
-                      isGold
-                    }
-                  />
-
-                  <PriceInformationItem
-                    icon={
-                      <Hammer className="h-4 w-4" />
-                    }
-                    label={
-                      isPersian
-                        ? "اجرت ساخت"
-                        : "Making charge"
-                    }
-                    value={
-                      formattedMakingCharge
-                    }
-                    isGold={
-                      isGold
-                    }
-                  />
-
-                  <PriceInformationItem
-                    icon={
-                      <TrendingUp className="h-4 w-4" />
-                    }
-                    label={
-                      isPersian
-                        ? "سود"
-                        : "Profit"
-                    }
-                    value={
-                      formattedProfit
-                    }
-                    isGold={
-                      isGold
-                    }
-                  />
-
-                  <PriceInformationItem
-                    icon={
-                      <Sparkles className="h-4 w-4" />
-                    }
-                    label={
-                      isPersian
-                        ? "هزینه هنری"
-                        : "Artistic fee"
-                    }
-                    value={
-                      formattedArtisticFee
                     }
                     isGold={
                       isGold
@@ -1057,7 +977,7 @@ export default async function ProductPage({
               </div>
               </div>
 
-              <div className="mt-4 grid gap-2 sm:grid-cols-3">
+              <div className="mt-4 grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
                 <PurchaseAssuranceItem
                   icon={<ShieldCheck className="h-4 w-4" />}
                   title={
@@ -1069,6 +989,20 @@ export default async function ProductPage({
                     isPersian
                       ? "مبلغ نهایی در سرور محاسبه می‌شود."
                       : "The final amount is calculated on the server."
+                  }
+                />
+
+                <PurchaseAssuranceItem
+                  icon={<ShieldCheck className="h-4 w-4" />}
+                  title={
+                    isPersian
+                      ? "اتصال تا پرداخت"
+                      : "Connected through payment"
+                  }
+                  description={
+                    isPersian
+                      ? "سبد و ثبت سفارش، مبلغ را از همان منبع مالیِ سرور دوباره تأیید می‌کنند."
+                      : "Cart and order creation reconfirm the amount from the same server financial source."
                   }
                 />
 
