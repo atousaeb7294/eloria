@@ -63,6 +63,24 @@ enum PaymentStatus {
   REFUNDED
 }
 
+enum FinanceExpenseCategory {
+  INVENTORY_PURCHASE
+  SHIPPING_COST
+  MARKETING
+  RENT
+  PAYROLL
+  GATEWAY_FEE
+  PACKAGING
+  TAX
+  SOFTWARE
+  OTHER
+}
+
+enum FinanceExpenseStatus {
+  POSTED
+  VOID
+}
+
 enum AuditActorType {
   SYSTEM
   CUSTOMER
@@ -455,6 +473,7 @@ model Order {
   updatedAt DateTime @updatedAt
 
   @@index([status, createdAt])
+  @@index([status, paidAt])
   @@index([customerMobile, createdAt])
   @@index([customerId, createdAt])
   @@index([priceExpiresAt])
@@ -592,10 +611,52 @@ model PaymentAttempt {
 
   @@index([orderId, status])
   @@index([status, createdAt])
+  @@index([status, verifiedAt])
+  @@index([status, refundedAt])
   @@index([provider, createdAt])
   @@index([verificationLeaseExpiresAt])
   @@index([refundReference])
   @@map("payment_attempts")
+}
+
+// External costs are recorded separately from orders so that cash flow,
+// operating margin, and audit evidence remain traceable.
+model FinanceExpense {
+  id             String                 @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  documentNumber String                 @unique @db.VarChar(32)
+  status         FinanceExpenseStatus   @default(POSTED)
+  category       FinanceExpenseCategory
+  amountToman    Decimal                @db.Decimal(18, 0)
+  taxToman       Decimal                @default(0) @db.Decimal(18, 0)
+  occurredAt     DateTime
+  supplier       String                 @db.VarChar(160)
+  reference      String                 @db.VarChar(160)
+  note           String?                @db.Text
+  voidedAt       DateTime?
+  voidReason     String?                @db.Text
+  createdAt      DateTime               @default(now())
+  updatedAt      DateTime               @updatedAt
+
+  auditEvents FinanceExpenseAuditEvent[]
+
+  @@index([status, occurredAt])
+  @@index([category, occurredAt])
+  @@index([reference])
+  @@map("finance_expenses")
+}
+
+model FinanceExpenseAuditEvent {
+  id        String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  expenseId String         @db.Uuid
+  eventType String         @db.VarChar(80)
+  payload   Json
+  createdAt DateTime       @default(now())
+
+  expense FinanceExpense @relation(fields: [expenseId], references: [id], onDelete: Restrict)
+
+  @@index([expenseId, createdAt])
+  @@index([eventType, createdAt])
+  @@map("finance_expense_audit_events")
 }
 
 model OrderAuditEvent {

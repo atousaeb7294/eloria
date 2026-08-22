@@ -5,6 +5,7 @@ import type {
 import Link from "next/link";
 
 import {
+  BarChart3,
   Boxes,
   Gem,
   LayoutDashboard,
@@ -34,6 +35,11 @@ const navigation = [
     href: "/orders",
     label: "سفارش‌ها",
     icon: ShoppingBag,
+  },
+  {
+    href: "/finance",
+    label: "حسابداری و تحلیل",
+    icon: BarChart3,
   },
   {
     href: "/security",
@@ -155,14 +161,21 @@ export function AdminShell({
               <Link
                 href={`${basePath}/orders`}
                 aria-label="سفارش‌ها"
-                className="grid h-10 w-10 place-items-center rounded-xl border border-[#d1b45c]/20 bg-[#08241a] text-[#ddc36f]"
+                className="hidden h-10 w-10 place-items-center rounded-xl border border-[#d1b45c]/20 bg-[#08241a] text-[#ddc36f] sm:grid"
               >
                 <ShoppingBag className="h-5 w-5" />
               </Link>
               <Link
+                href={`${basePath}/finance`}
+                aria-label="حسابداری و تحلیل"
+                className="grid h-10 w-10 place-items-center rounded-xl border border-[#d1b45c]/20 bg-[#08241a] text-[#ddc36f]"
+              >
+                <BarChart3 className="h-5 w-5" />
+              </Link>
+              <Link
                 href={`${basePath}/security`}
                 aria-label="امنیت و هشدارها"
-                className="grid h-10 w-10 place-items-center rounded-xl border border-[#d1b45c]/20 bg-[#08241a] text-[#ddc36f]"
+                className="hidden h-10 w-10 place-items-center rounded-xl border border-[#d1b45c]/20 bg-[#08241a] text-[#ddc36f] md:grid"
               >
                 <ShieldAlert className="h-5 w-5" />
               </Link>

@@ -48,6 +48,7 @@
     "test:shipping": "tsx scripts/test-shipping.ts",
     "test:catalog-guards": "node --import tsx scripts/test-catalog-guards.ts",
     "test:checkout-idempotency": "node --import tsx scripts/test-checkout-idempotency.ts",
+    "test:finance": "tsx scripts/test-finance-analytics.ts",
     "check:storefront-env": "tsx scripts/check-storefront-production-env.ts",
     "test:security-alerts": "tsx scripts/test-security-events.ts && tsx scripts/test-security-alert-outbox.ts",
     "test:hardening:contracts": "node --import tsx scripts/test-hardening-contracts.ts && npm run test:catalog-guards && npm run test:checkout-idempotency",
