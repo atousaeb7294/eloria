@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import Link from "next/link";
 import {
@@ -104,52 +104,33 @@ export function CartHeaderButton({
     "compact"
   ) {
     return (
-      <Link
+      <ink
         href={`/${locale}/cart`}
         aria-label={label}
         title={label}
         className={[
-          "group relative grid size-10 shrink-0 place-items-center rounded-xl sm:size-11 sm:rounded-[13px]",
+          "group relative inline-flex h-11 shrink-0 items-center justify-center gap-2 rounded-xl px-3",
           "border border-[#dabe6e]/28",
           "bg-[linear-gradient(145deg,rgba(8,65,46,0.5),rgba(2,29,20,0.72))]",
           "text-[#e9d493]",
           "shadow-[inset_0_1px_0_rgba(255,255,255,0.055),0_8px_24px_rgba(0,0,0,0.2)]",
-          "transition duration-300",
-          "hover:-translate-y-0.5",
-          "hover:border-[#edd387]/64",
-          "hover:bg-[linear-gradient(145deg,rgba(13,91,64,0.58),rgba(2,38,26,0.78))]",
+          "transition duration-300 hover:-translate-y-0.5",
           "hover:text-[#ffe8aa]",
-          "focus-visible:outline-none",
-          "focus-visible:ring-2",
-          "focus-visible:ring-[#e3c675]/55",
           className,
         ].join(" ")}
       >
-        {/* گوشه‌های تزئینی */}
-        <span
-          aria-hidden="true"
-          className="pointer-events-none absolute left-1.5 top-1.5 size-1.5 border-l border-t border-[#e9cd80]/42"
-        />
+        <EloriaBagIcon className="relative size-6 transition duration-300 group-hover:scale-110" />
 
-        <span
-          aria-hidden="true"
-          className="pointer-events-none absolute bottom-1.5 right-1.5 size-1.5 border-b border-r border-[#e9cd80]/42"
-        />
-
-        {/* نور داخلی */}
-        <span
-          aria-hidden="true"
-          className="pointer-events-none absolute inset-[5px] rounded-[9px] bg-[radial-gradient(circle_at_50%_35%,rgba(235,205,126,0.12),transparent_68%)] opacity-70 transition duration-300 group-hover:opacity-100"
-        />
-
-        <EloriaBagIcon className="relative size-[25px] transition duration-300 group-hover:scale-[1.06]" />
+        <span className="relative whitespace-nowrap text-[11px] font-medium">
+          {cartText}
+        </span>
 
         {quantity > 0 && (
-          <span className="absolute -end-1 -top-1 z-20 flex min-h-[18px] min-w-[18px] items-center justify-center rounded-full border border-[#f1d483]/75 bg-[#0b4934] px-1 text-[8px] font-semibold leading-none text-[#ffe6a2] shadow-[0_0_10px_rgba(239,207,121,0.32)]">
+          <span className="absolute -end-1 -top-1 z-20 flex min-h-[18px] min-w-[18px] items-center justify-center rounded-full border border-[#f1d483]/75 bg-[#0b4934] px-1 text-[8px] font-semibold leading-none text-[#ffe6a2]">
             {displayedQuantity}
           </span>
         )}
-      </Link>
+      </ink>
     );
   }
 
@@ -199,3 +180,26 @@ export function CartHeaderButton({
     </Link>
   );
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -16,7 +16,7 @@ import {
 
 import { CartHeaderButton } from "@/components/cart-header-button";
 
-import { BookOpenText, Sparkles } from "lucide-react";
+import { Sparkles } from "lucide-react";
 
 import { CustomerAccountHeaderButton } from "@/components/customer-account-header-button";
 
@@ -120,10 +120,7 @@ const NAVIGATION_LABELS = {
     world: "دنیای الوریا",
     necklaces: "گردنبندها",
     bracelets: "دستبندها",
-    earrings: "گوشواره‌ها",
-    journal: "مجله",
-    selection: "راهنمای انتخاب",
-    contact: "تماس",
+    earrings: "گوشواره‌ها",    contact: "تماس",
   },
   en: {
     tagline: "A jewel born from legend",
@@ -133,8 +130,6 @@ const NAVIGATION_LABELS = {
     necklaces: "Necklaces",
     bracelets: "Bracelets",
     earrings: "Earrings",
-    journal: "Journal",
-    selection: "Selection guide",
     contact: "Contact",
   },
 } as const;
@@ -165,16 +160,12 @@ export function SiteHeader({ locale }: SiteHeaderProps) {
 
   const collectionsHref = `/${resolvedLocale}/collections`;
 
-  const journalHref = `/${resolvedLocale}/journal`;
-
   const isHomeActive =
     pathname === `/${resolvedLocale}` || pathname === `/${resolvedLocale}/`;
 
   const isWorldActive =
     pathname.startsWith(`/${resolvedLocale}/collections`) ||
     pathname.startsWith(`/${resolvedLocale}/products`);
-
-  const isJournalActive = pathname.startsWith(`/${resolvedLocale}/journal`);
 
   const collectionItems: CollectionMenuItem[] = [
     {
@@ -496,40 +487,6 @@ export function SiteHeader({ locale }: SiteHeaderProps) {
               </div>
 
               <Link
-                href={journalHref}
-                title={labels.journal}
-                aria-current={isJournalActive ? "page" : undefined}
-                className={[
-                  normalButtonClass,
-                  isJournalActive
-                    ? "border-[#f0d080]/60 bg-[linear-gradient(135deg,rgba(219,181,88,0.23),rgba(21,111,80,0.25))] text-[#ffe9af] shadow-[inset_0_1px_0_rgba(255,255,255,0.3),0_8px_24px_rgba(0,0,0,0.32)]"
-                    : "",
-                ].join(" ")}
-              >
-                <MagicIconFrame active={isJournalActive}>
-                  <BookOpenText className="size-[20px]" />
-                </MagicIconFrame>
-
-                <span className="relative z-10 hidden whitespace-nowrap text-xs font-medium lg:inline">
-                  {labels.journal}
-                </span>
-              </Link>
-
-              <button
-                type="button"
-                onClick={() => window.dispatchEvent(new Event("eloria-open-selection"))}
-                title={labels.selection}
-                className={normalButtonClass}
-              >
-                <MagicIconFrame>
-                  <Sparkles className="size-[20px]" />
-                </MagicIconFrame>
-                <span className="relative z-10 hidden whitespace-nowrap text-xs font-medium xl:inline">
-                  {labels.selection}
-                </span>
-              </button>
-
-              <Link
                 href="#contact"
                 title={labels.contact}
                 className={normalButtonClass}
@@ -561,3 +518,10 @@ export function SiteHeader({ locale }: SiteHeaderProps) {
     </header>
   );
 }
+
+
+
+
+
+
+
