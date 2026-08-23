@@ -104,7 +104,7 @@ export function CartHeaderButton({
     "compact"
   ) {
     return (
-      <ink
+      <Link
         href={`/${locale}/cart`}
         aria-label={label}
         title={label}
@@ -130,7 +130,7 @@ export function CartHeaderButton({
             {displayedQuantity}
           </span>
         )}
-      </ink>
+      </Link>
     );
   }
 
@@ -180,6 +180,7 @@ export function CartHeaderButton({
     </Link>
   );
 }
+
 
 
 
