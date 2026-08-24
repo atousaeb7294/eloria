@@ -36,7 +36,18 @@ export default async function JournalIndexPage({
   setRequestLocale(locale);
 
   const isPersian = locale === "fa";
-  const articles = await getPublishedArticles();
+  let journalUnavailable = false;
+  let articles: Awaited<ReturnType<typeof getPublishedArticles>> = [];
+
+  try {
+    articles = await getPublishedArticles();
+  } catch (error) {
+    journalUnavailable = true;
+    console.error(
+      "[Eloria Journal] Published articles are temporarily unavailable.",
+      error,
+    );
+  }
 
   return (
     <InternalPageShell locale={locale}>
@@ -66,7 +77,30 @@ export default async function JournalIndexPage({
           </p>
         </header>
 
-        {articles.length === 0 ? (
+        {journalUnavailable ? (
+          <div
+            role="status"
+            className="mx-auto mt-14 max-w-3xl rounded-[2.2rem] border border-amber-200/20 bg-amber-100/[0.05] px-7 py-12 text-center shadow-[0_24px_65px_rgba(0,0,0,0.28)] backdrop-blur-xl"
+          >
+            <BookOpen className="mx-auto size-7 text-[#e2c777]" />
+            <h2 className="mt-4 text-xl text-[#f1dfb7]">
+              {isPersian
+                ? "مجله موقتاً در دسترس نیست"
+                : "The journal is temporarily unavailable"}
+            </h2>
+            <p className="mx-auto mt-3 max-w-xl text-sm leading-8 text-[#d4c5a7]/68">
+              {isPersian
+                ? "ارتباط با آرشیو مقاله‌ها موقتاً برقرار نیست. کمی بعد دوباره تلاش کنید؛ فروشگاه و گنجینه‌ها همچنان در دسترس‌اند."
+                : "The article archive cannot be reached right now. Please try again shortly; the shop and collections remain available."}
+            </p>
+            <Link
+              href={`/${locale}/products`}
+              className="mt-7 inline-flex rounded-full border border-[#d9b85f]/40 bg-[#d9b85f]/[0.07] px-5 py-3 text-xs text-[#ecd794] transition hover:-translate-y-0.5 hover:border-[#efd17d]/72 hover:bg-[#d9b85f]/[0.11]"
+            >
+              {isPersian ? "مشاهدهٔ جواهرها" : "Explore the jewellery"}
+            </Link>
+          </div>
+        ) : articles.length === 0 ? (
           <div className="mx-auto mt-14 max-w-3xl rounded-[2.2rem] border border-[#d9b85f]/22 bg-[#061c15]/80 px-7 py-12 text-center shadow-[0_24px_65px_rgba(0,0,0,0.28)] backdrop-blur-xl">
             <Sparkles className="mx-auto size-7 text-[#e2c777]" />
             <h2 className="mt-4 text-xl text-[#f1dfb7]">

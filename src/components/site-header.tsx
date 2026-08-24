@@ -16,8 +16,6 @@ import {
 
 import { CartHeaderButton } from "@/components/cart-header-button";
 
-import { Sparkles } from "lucide-react";
-
 import { CustomerAccountHeaderButton } from "@/components/customer-account-header-button";
 
 import { FloatingLogo } from "@/components/floating-logo";
@@ -120,7 +118,8 @@ const NAVIGATION_LABELS = {
     world: "دنیای الوریا",
     necklaces: "گردنبندها",
     bracelets: "دستبندها",
-    earrings: "گوشواره‌ها",    contact: "تماس",
+    earrings: "گوشواره‌ها",
+    contact: "تماس",
   },
   en: {
     tagline: "A jewel born from legend",
@@ -518,10 +517,3 @@ export function SiteHeader({ locale }: SiteHeaderProps) {
     </header>
   );
 }
-
-
-
-
-
-
-

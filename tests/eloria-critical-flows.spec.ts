@@ -672,7 +672,7 @@ test.describe(
     );
 
     test(
-      "product pricing breakdown exposes customer-safe components",
+      "product pricing keeps internal financial components private",
       async ({
         page,
       }) => {
@@ -690,7 +690,9 @@ test.describe(
           page.getByText(
             "Making charge",
           ),
-        ).toBeVisible();
+        ).toHaveCount(
+          0,
+        );
 
         await expect(
           page.getByText(
@@ -700,13 +702,17 @@ test.describe(
                 true,
             },
           ),
-        ).toBeVisible();
+        ).toHaveCount(
+          0,
+        );
 
         await expect(
           page.getByText(
             "Artistic fee",
           ),
-        ).toBeVisible();
+        ).toHaveCount(
+          0,
+        );
 
         await expect(
           page.getByText(

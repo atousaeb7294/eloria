@@ -1,11 +1,6 @@
-import {
-  NextRequest,
-  NextResponse,
-} from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
-import {
-  getCustomerFromRequest,
-} from "@/lib/customer-auth";
+import { getCustomerFromRequest } from "@/lib/customer-auth";
 import {
   initiateOrderPayment,
   PaymentServiceError,
@@ -15,16 +10,9 @@ import {
   verifyPaymentStartAuthorization,
 } from "@/lib/payment-start-authorization";
 import { prisma } from "@/lib/prisma";
-import {
-  consumeRateLimit,
-} from "@/lib/security/rate-limit";
-import {
-  hasTrustedOrigin,
-  requestIp,
-} from "@/lib/security/request";
-import {
-  readJsonBody,
-} from "@/lib/security/json-body";
+import { consumeRateLimit } from "@/lib/security/rate-limit";
+import { hasTrustedOrigin, requestIp } from "@/lib/security/request";
+import { JsonRequestBodyError, readJsonBody } from "@/lib/security/json-body";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -35,9 +23,7 @@ function noStore() {
   };
 }
 
-export async function POST(
-  request: NextRequest,
-) {
+export async function POST(request: NextRequest) {
   if (!hasTrustedOrigin(request)) {
     return NextResponse.json(
       {
@@ -74,19 +60,30 @@ export async function POST(
     );
   }
 
-  const body =
-    await readJsonBody<{
-      orderId?: unknown;
-    }>(
-      request,
-      8 * 1024,
-    ).catch(() => null);
+  let body: {
+    orderId?: unknown;
+  };
 
-  if (
-    !body ||
-    typeof body.orderId !== "string" ||
-    !body.orderId.trim()
-  ) {
+  try {
+    body = await readJsonBody<{
+      orderId?: unknown;
+    }>(request, 8 * 1024);
+  } catch (error) {
+    const bodyError = error instanceof JsonRequestBodyError ? error : null;
+
+    return NextResponse.json(
+      {
+        successful: false,
+        message: bodyError?.message ?? "اطلاعات پرداخت معتبر نیست.",
+      },
+      {
+        status: bodyError?.status ?? 400,
+        headers: noStore(),
+      },
+    );
+  }
+
+  if (typeof body.orderId !== "string" || !body.orderId.trim()) {
     return NextResponse.json(
       {
         successful: false,
@@ -117,9 +114,7 @@ export async function POST(
         status: 429,
         headers: {
           ...noStore(),
-          "Retry-After": String(
-            orderRate.retryAfterSeconds,
-          ),
+          "Retry-After": String(orderRate.retryAfterSeconds),
         },
       },
     );
@@ -150,34 +145,22 @@ export async function POST(
     );
   }
 
-  const customerAuth =
-    await getCustomerFromRequest(request);
+  const customerAuth = await getCustomerFromRequest(request);
 
   let authorized = false;
 
   if (order.customerId) {
-    authorized =
-      customerAuth?.customer.id ===
-      order.customerId;
+    authorized = customerAuth?.customer.id === order.customerId;
   } else if (order.customerMobile) {
-    const token =
-      readPaymentStartAuthorizationCookie(
-        request,
-        order.id,
-      );
+    const token = readPaymentStartAuthorizationCookie(request, order.id);
 
     authorized = Boolean(
       token &&
-        verifyPaymentStartAuthorization(
-          token,
-          {
-            orderId: order.id,
-            amountToman:
-              order.payableToman.toString(),
-            mobile:
-              order.customerMobile,
-          },
-        ),
+      verifyPaymentStartAuthorization(token, {
+        orderId: order.id,
+        amountToman: order.payableToman.toString(),
+        mobile: order.customerMobile,
+      }),
     );
   }
 
@@ -195,10 +178,7 @@ export async function POST(
   }
 
   try {
-    const payment =
-      await initiateOrderPayment(
-        order.id,
-      );
+    const payment = await initiateOrderPayment(order.id);
 
     return NextResponse.json(
       {
@@ -210,10 +190,7 @@ export async function POST(
       },
     );
   } catch (error) {
-    if (
-      error instanceof
-      PaymentServiceError
-    ) {
+    if (error instanceof PaymentServiceError) {
       return NextResponse.json(
         {
           successful: false,
@@ -234,8 +211,7 @@ export async function POST(
     return NextResponse.json(
       {
         successful: false,
-        message:
-          "ارتباط با درگاه پرداخت انجام نشد. لطفاً دوباره تلاش کنید.",
+        message: "ارتباط با درگاه پرداخت انجام نشد. لطفاً دوباره تلاش کنید.",
       },
       {
         status: 502,

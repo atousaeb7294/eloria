@@ -1,11 +1,6 @@
-import {
-  randomUUID,
-} from "node:crypto";
+import { randomUUID } from "node:crypto";
 
-import {
-  NextRequest,
-  NextResponse,
-} from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
 import {
   CheckoutCustomerError,
@@ -15,7 +10,7 @@ import {
 
 import { consumeRateLimit } from "@/lib/security/rate-limit";
 import { hasTrustedOrigin, requestIp } from "@/lib/security/request";
-import { readJsonBody } from "@/lib/security/json-body";
+import { JsonRequestBodyError, readJsonBody } from "@/lib/security/json-body";
 import { verifyTurnstileToken } from "@/lib/security/turnstile";
 import { isZarinpalConfigured } from "@/lib/payment/zarinpal";
 import { getCustomerFromRequest } from "@/lib/customer-auth";
@@ -29,14 +24,11 @@ import {
   type CheckoutOrderItemInput,
 } from "@/lib/checkout-order";
 
-export const dynamic =
-  "force-dynamic";
+export const dynamic = "force-dynamic";
 
-export const revalidate =
-  0;
+export const revalidate = 0;
 
-export const runtime =
-  "nodejs";
+export const runtime = "nodejs";
 
 type IncomingCheckoutBody = {
   idempotencyKey?: unknown;
@@ -54,177 +46,98 @@ type IncomingCheckoutItem = {
 
 function noStoreHeaders() {
   return {
-    "Cache-Control":
-      "no-store, no-cache, must-revalidate",
+    "Cache-Control": "no-store, no-cache, must-revalidate",
 
-    Pragma:
-      "no-cache",
+    Pragma: "no-cache",
 
-    Expires:
-      "0",
+    Expires: "0",
   };
 }
 
-function getRequestId(
-  request:
-    NextRequest,
-): string {
-  const suppliedRequestId =
-    request.headers
-      .get(
-        "x-request-id",
-      )
-      ?.trim();
+function getRequestId(request: NextRequest): string {
+  const suppliedRequestId = request.headers.get("x-request-id")?.trim();
 
-  if (
-    suppliedRequestId
-  ) {
-    return suppliedRequestId.slice(
-      0,
-      128,
-    );
+  if (suppliedRequestId) {
+    return suppliedRequestId.slice(0, 128);
   }
 
   return randomUUID();
 }
 
-function normalizeCustomerInput(
-  value:
-    unknown,
-): CheckoutCustomerInput | null {
-  if (
-    typeof value !==
-      "object" ||
-    value === null
-  ) {
+function normalizeCustomerInput(value: unknown): CheckoutCustomerInput | null {
+  if (typeof value !== "object" || value === null) {
     return null;
   }
 
-  const customer =
-    value as Record<
-      string,
-      unknown
-    >;
+  const customer = value as Record<string, unknown>;
 
   if (
-    typeof customer.fullName !==
-      "string" ||
-    typeof customer.mobile !==
-      "string" ||
-    typeof customer.province !==
-      "string" ||
-    typeof customer.city !==
-      "string" ||
-    typeof customer.postalCode !==
-      "string" ||
-    typeof customer.address !==
-      "string"
+    typeof customer.fullName !== "string" ||
+    typeof customer.mobile !== "string" ||
+    typeof customer.province !== "string" ||
+    typeof customer.city !== "string" ||
+    typeof customer.postalCode !== "string" ||
+    typeof customer.address !== "string"
   ) {
     return null;
   }
 
   if (
-    customer.email !==
-      undefined &&
-    customer.email !==
-      null &&
-    typeof customer.email !==
-      "string"
+    customer.email !== undefined &&
+    customer.email !== null &&
+    typeof customer.email !== "string"
   ) {
     return null;
   }
 
   return {
-    fullName:
-      customer.fullName,
+    fullName: customer.fullName,
 
-    mobile:
-      customer.mobile,
+    mobile: customer.mobile,
 
     email:
-      customer.email ===
-        undefined
-        ? null
-        : customer.email as
-            string | null,
+      customer.email === undefined ? null : (customer.email as string | null),
 
-    province:
-      customer.province,
+    province: customer.province,
 
-    city:
-      customer.city,
+    city: customer.city,
 
-    postalCode:
-      customer.postalCode,
+    postalCode: customer.postalCode,
 
-    address:
-      customer.address,
+    address: customer.address,
   };
 }
 
-function normalizeCheckoutItem(
-  value:
-    unknown,
-): CheckoutOrderItemInput | null {
-  if (
-    typeof value !==
-      "object" ||
-    value === null
-  ) {
+function normalizeCheckoutItem(value: unknown): CheckoutOrderItemInput | null {
+  if (typeof value !== "object" || value === null) {
     return null;
   }
 
-  const item =
-    value as IncomingCheckoutItem;
+  const item = value as IncomingCheckoutItem;
 
-  if (
-    typeof item.slug !==
-      "string"
-  ) {
+  if (typeof item.slug !== "string") {
     return null;
   }
 
-  const slug =
-    item.slug.trim();
+  const slug = item.slug.trim();
 
-  if (
-    !slug ||
-    slug.length >
-      160
-  ) {
+  if (!slug || slug.length > 160) {
     return null;
   }
 
-  let variantId:
-    string | null =
-      null;
+  let variantId: string | null = null;
 
-  if (
-    typeof item.variantId ===
-      "string"
-  ) {
-    variantId =
-      item.variantId.trim() ||
-      null;
-  } else if (
-    item.variantId !==
-      null &&
-    item.variantId !==
-      undefined
-  ) {
+  if (typeof item.variantId === "string") {
+    variantId = item.variantId.trim() || null;
+  } else if (item.variantId !== null && item.variantId !== undefined) {
     return null;
   }
 
   if (
-    typeof item.quantity !==
-      "number" ||
-    !Number.isInteger(
-      item.quantity,
-    ) ||
-    item.quantity <
-      1 ||
-    item.quantity >
-      99
+    typeof item.quantity !== "number" ||
+    !Number.isInteger(item.quantity) ||
+    item.quantity < 1 ||
+    item.quantity > 99
   ) {
     return null;
   }
@@ -234,115 +147,111 @@ function normalizeCheckoutItem(
 
     variantId,
 
-    quantity:
-      item.quantity,
+    quantity: item.quantity,
   };
 }
 
-export async function POST(
-  request:
-    NextRequest,
-) {
+export async function POST(request: NextRequest) {
   if (!hasTrustedOrigin(request)) {
-    return NextResponse.json({ successful: false, code: "INVALID_ORIGIN", message: "مبدأ درخواست معتبر نیست." }, { status: 403, headers: noStoreHeaders() });
+    return NextResponse.json(
+      {
+        successful: false,
+        code: "INVALID_ORIGIN",
+        message: "مبدأ درخواست معتبر نیست.",
+      },
+      { status: 403, headers: noStoreHeaders() },
+    );
   }
 
   if (!isCommerceEnabled()) {
     return NextResponse.json(
-      { successful: false, code: "COMMERCE_DISABLED", message: "ثبت سفارش در حال حاضر غیرفعال است." },
+      {
+        successful: false,
+        code: "COMMERCE_DISABLED",
+        message: "ثبت سفارش در حال حاضر غیرفعال است.",
+      },
       { status: 503, headers: noStoreHeaders() },
     );
   }
 
-  const rate = await consumeRateLimit({ key: `checkout:${requestIp(request)}`, limit: 12, windowMs: 60_000 });
+  const rate = await consumeRateLimit({
+    key: `checkout:${requestIp(request)}`,
+    limit: 12,
+    windowMs: 60_000,
+  });
   if (!rate.allowed) {
-    return NextResponse.json({ successful: false, code: "RATE_LIMITED", message: "تعداد درخواست‌ها بیش از حد مجاز است." }, { status: 429, headers: { ...noStoreHeaders(), "Retry-After": String(rate.retryAfterSeconds) } });
+    return NextResponse.json(
+      {
+        successful: false,
+        code: "RATE_LIMITED",
+        message: "تعداد درخواست‌ها بیش از حد مجاز است.",
+      },
+      {
+        status: 429,
+        headers: {
+          ...noStoreHeaders(),
+          "Retry-After": String(rate.retryAfterSeconds),
+        },
+      },
+    );
   }
 
-  const requestId =
-    getRequestId(
-      request,
-    );
+  const requestId = getRequestId(request);
 
   try {
-    let body:
-      IncomingCheckoutBody;
+    let body: IncomingCheckoutBody;
 
     try {
-      const parsed:
-        unknown =
-          await readJsonBody(request, 64 * 1024);
+      const parsed: unknown = await readJsonBody(request, 64 * 1024);
 
-      if (
-        typeof parsed !==
-          "object" ||
-        parsed === null
-      ) {
-        throw new Error(
-          "INVALID_BODY",
-        );
+      if (typeof parsed !== "object" || parsed === null) {
+        throw new Error("INVALID_BODY");
       }
 
-      body =
-        parsed as IncomingCheckoutBody;
-    } catch {
+      body = parsed as IncomingCheckoutBody;
+    } catch (error) {
+      const bodyError = error instanceof JsonRequestBodyError ? error : null;
+
       return NextResponse.json(
         {
-          successful:
-            false,
+          successful: false,
 
-          code:
-            "INVALID_JSON",
+          code: bodyError?.code ?? "INVALID_JSON",
 
-          message:
-            "ساختار اطلاعات سفارش معتبر نیست.",
+          message: bodyError?.message ?? "ساختار اطلاعات سفارش معتبر نیست.",
 
           requestId,
         },
         {
-          status:
-            400,
+          status: bodyError?.status ?? 400,
 
-          headers:
-            noStoreHeaders(),
+          headers: noStoreHeaders(),
         },
       );
     }
 
-    const normalizedCustomer =
-      normalizeCustomerInput(
-        body.customer,
-      );
+    const normalizedCustomer = normalizeCustomerInput(body.customer);
 
     if (
-      typeof body.idempotencyKey !==
-        "string" ||
-      typeof body.locale !==
-        "string" ||
+      typeof body.idempotencyKey !== "string" ||
+      typeof body.locale !== "string" ||
       !normalizedCustomer ||
-      !Array.isArray(
-        body.items,
-      )
+      !Array.isArray(body.items)
     ) {
       return NextResponse.json(
         {
-          successful:
-            false,
+          successful: false,
 
-          code:
-            "INVALID_CHECKOUT",
+          code: "INVALID_CHECKOUT",
 
-          message:
-            "اطلاعات ثبت سفارش کامل یا معتبر نیست.",
+          message: "اطلاعات ثبت سفارش کامل یا معتبر نیست.",
 
           requestId,
         },
         {
-          status:
-            400,
+          status: 400,
 
-          headers:
-            noStoreHeaders(),
+          headers: noStoreHeaders(),
         },
       );
     }
@@ -354,8 +263,14 @@ export async function POST(
       return NextResponse.json(
         {
           successful: false,
-          code: error instanceof CheckoutCustomerError ? error.code : "INVALID_CUSTOMER",
-          message: error instanceof Error ? error.message : "اطلاعات مشتری معتبر نیست.",
+          code:
+            error instanceof CheckoutCustomerError
+              ? error.code
+              : "INVALID_CUSTOMER",
+          message:
+            error instanceof Error
+              ? error.message
+              : "اطلاعات مشتری معتبر نیست.",
           requestId,
         },
         { status: 400, headers: noStoreHeaders() },
@@ -364,22 +279,36 @@ export async function POST(
 
     // ELORIA_V3_CUSTOMER_CHECKOUT
     const authenticatedCustomer = await getCustomerFromRequest(request);
-    if (authenticatedCustomer && authenticatedCustomer.customer.mobile !== canonicalCustomer.mobile) {
+    if (
+      authenticatedCustomer &&
+      authenticatedCustomer.customer.mobile !== canonicalCustomer.mobile
+    ) {
       return NextResponse.json(
-        { successful: false, code: "ACCOUNT_MOBILE_MISMATCH", message: "شماره موبایل سفارش باید با حساب واردشده یکسان باشد.", requestId },
+        {
+          successful: false,
+          code: "ACCOUNT_MOBILE_MISMATCH",
+          message: "شماره موبایل سفارش باید با حساب واردشده یکسان باشد.",
+          requestId,
+        },
         { status: 409, headers: noStoreHeaders() },
       );
     }
 
     const clientIp = requestIp(request);
     const challenge = await verifyTurnstileToken({
-      token: typeof body.turnstileToken === "string" ? body.turnstileToken : null,
+      token:
+        typeof body.turnstileToken === "string" ? body.turnstileToken : null,
       ip: clientIp,
       expectedAction: "checkout",
     });
     if (!challenge.successful) {
       return NextResponse.json(
-        { successful: false, code: "CHALLENGE_FAILED", message: "تأیید امنیتی سفارش ناموفق بود.", requestId },
+        {
+          successful: false,
+          code: "CHALLENGE_FAILED",
+          message: "تأیید امنیتی سفارش ناموفق بود.",
+          requestId,
+        },
         { status: 403, headers: noStoreHeaders() },
       );
     }
@@ -391,125 +320,106 @@ export async function POST(
     });
     if (!mobileRate.allowed) {
       return NextResponse.json(
-        { successful: false, code: "MOBILE_RATE_LIMITED", message: "برای این شماره موبایل سفارش‌های زیادی ثبت شده است.", requestId },
-        { status: 429, headers: { ...noStoreHeaders(), "Retry-After": String(mobileRate.retryAfterSeconds) } },
+        {
+          successful: false,
+          code: "MOBILE_RATE_LIMITED",
+          message: "برای این شماره موبایل سفارش‌های زیادی ثبت شده است.",
+          requestId,
+        },
+        {
+          status: 429,
+          headers: {
+            ...noStoreHeaders(),
+            "Retry-After": String(mobileRate.retryAfterSeconds),
+          },
+        },
       );
     }
 
-    if (
-      body.items.length ===
-      0
-    ) {
+    if (body.items.length === 0) {
       return NextResponse.json(
         {
-          successful:
-            false,
+          successful: false,
 
-          code:
-            "EMPTY_CART",
+          code: "EMPTY_CART",
 
-          message:
-            "سبد خرید خالی است.",
+          message: "سبد خرید خالی است.",
 
           requestId,
         },
         {
-          status:
-            400,
+          status: 400,
 
-          headers:
-            noStoreHeaders(),
+          headers: noStoreHeaders(),
         },
       );
     }
 
-    if (
-      body.items.length >
-      30
-    ) {
+    if (body.items.length > 30) {
       return NextResponse.json(
         {
-          successful:
-            false,
+          successful: false,
 
-          code:
-            "TOO_MANY_ITEMS",
+          code: "TOO_MANY_ITEMS",
 
-          message:
-            "تعداد اقلام سفارش بیش از حد مجاز است.",
+          message: "تعداد اقلام سفارش بیش از حد مجاز است.",
 
           requestId,
         },
         {
-          status:
-            400,
+          status: 400,
 
-          headers:
-            noStoreHeaders(),
+          headers: noStoreHeaders(),
         },
       );
     }
 
-    const normalizedItems =
-      body.items.map(
-        normalizeCheckoutItem,
-      );
+    const normalizedItems = body.items.map(normalizeCheckoutItem);
 
-    if (
-      normalizedItems.some(
-        (
-          item,
-        ) =>
-          item === null,
-      )
-    ) {
+    if (normalizedItems.some((item) => item === null)) {
       return NextResponse.json(
         {
-          successful:
-            false,
+          successful: false,
 
-          code:
-            "INVALID_CART_ITEM",
+          code: "INVALID_CART_ITEM",
 
-          message:
-            "حداقل یکی از اقلام سبد خرید معتبر نیست.",
+          message: "حداقل یکی از اقلام سبد خرید معتبر نیست.",
 
           requestId,
         },
         {
-          status:
-            400,
+          status: 400,
 
-          headers:
-            noStoreHeaders(),
+          headers: noStoreHeaders(),
         },
       );
     }
 
-    const result =
-      await createCheckoutOrder({
-        idempotencyKey:
-          body.idempotencyKey,
+    const result = await createCheckoutOrder({
+      idempotencyKey: body.idempotencyKey,
 
-        locale:
-          body.locale,
+      locale: body.locale,
 
-        customer:
-          canonicalCustomer,
+      customer: canonicalCustomer,
 
-        items:
-          normalizedItems as CheckoutOrderItemInput[],
+      items: normalizedItems as CheckoutOrderItemInput[],
 
-        requestId,
-      });
+      requestId,
+    });
 
     if (authenticatedCustomer) {
       try {
         await prisma.$transaction([
-          prisma.order.updateMany({ where: { id: result.order.id, customerId: null }, data: { customerId: authenticatedCustomer.customer.id } }),
+          prisma.order.updateMany({
+            where: { id: result.order.id, customerId: null },
+            data: { customerId: authenticatedCustomer.customer.id },
+          }),
           prisma.customer.update({
             where: { id: authenticatedCustomer.customer.id },
-            data: { fullName: canonicalCustomer.fullName, email: canonicalCustomer.email },
+            data: {
+              fullName: canonicalCustomer.fullName,
+              email: canonicalCustomer.email,
+            },
           }),
         ]);
         if (!result.reused) {
@@ -528,111 +438,87 @@ export async function POST(
       } catch (customerLinkError) {
         // Checkout itself already succeeded. Do not return a false checkout failure
         // because account enrichment or its notification failed.
-        console.error("[Eloria Customer] order account enrichment failed", customerLinkError);
+        console.error(
+          "[Eloria Customer] order account enrichment failed",
+          customerLinkError,
+        );
       }
     }
 
-    const paymentConfigured =
-      isZarinpalConfigured();
+    const paymentConfigured = isZarinpalConfigured();
 
     /*
      * ساخت Authority زرین‌پال از ثبت سفارش جداست. سفارش و رزرو موجودی فوراً
      * پاسخ داده می‌شوند و مشتری با دکمه مستقل وارد مرحله پرداخت می‌شود.
      */
     const payment = {
-      configured:
-        paymentConfigured,
+      configured: paymentConfigured,
 
-      redirectUrl:
-        null,
+      redirectUrl: null,
 
-      message:
-        paymentConfigured
-          ? "سفارش ثبت شد. برای ورود به درگاه پرداخت، دکمه پرداخت را بزنید."
-          : "درگاه پرداخت پیکربندی نشده است.",
+      message: paymentConfigured
+        ? "سفارش ثبت شد. برای ورود به درگاه پرداخت، دکمه پرداخت را بزنید."
+        : "درگاه پرداخت پیکربندی نشده است.",
     };
 
     const response = NextResponse.json(
       {
-        successful:
-          true,
+        successful: true,
 
-        reused:
-          result.reused,
+        reused: result.reused,
 
-        order:
-          result.order,
+        order: result.order,
 
         payment,
 
         requestId,
       },
       {
-        status:
-          result.reused
-            ? 200
-            : 201,
+        status: result.reused ? 200 : 201,
 
-        headers:
-          noStoreHeaders(),
+        headers: noStoreHeaders(),
       },
     );
 
     if (paymentConfigured) {
-      setPaymentStartAuthorizationCookie(
-        response,
-        {
-          orderId: result.order.id,
-          amountToman: result.order.payableToman,
-          mobile: canonicalCustomer.mobile,
-        },
-      );
+      setPaymentStartAuthorizationCookie(response, {
+        orderId: result.order.id,
+        amountToman: result.order.payableToman,
+        mobile: canonicalCustomer.mobile,
+      });
     }
 
     return response;
   } catch (error) {
-    if (
-      error instanceof
-      CheckoutOrderError
-    ) {
+    if (error instanceof CheckoutOrderError) {
       return NextResponse.json(
         {
-          successful:
-            false,
+          successful: false,
 
-          code:
-            error.code,
+          code: error.code,
 
-          message:
-            error.message,
+          message: error.message,
 
           requestId,
         },
         {
-          status:
-            error.status,
+          status: error.status,
 
-          headers:
-            noStoreHeaders(),
+          headers: noStoreHeaders(),
         },
       );
     }
 
-    console.error(
-      "[Eloria Checkout API] Unexpected order creation error.",
-      {
-        requestId,
-        error,
-      },
-    );
+    console.error("[Eloria Checkout API] Unexpected order creation error.", {
+      requestId,
+      error,
+    });
 
     return NextResponse.json(
       {
-        successful:
-          false,
+        successful: false,
 
-        code:
-          "INTERNAL_ERROR",
+        code: "INTERNAL_ERROR",
 
         message:
           "ثبت سفارش در حال حاضر امکان‌پذیر نیست. لطفاً دوباره تلاش کنید.",
@@ -640,11 +526,9 @@ export async function POST(
         requestId,
       },
       {
-        status:
-          500,
+        status: 500,
 
-        headers:
-          noStoreHeaders(),
+        headers: noStoreHeaders(),
       },
     );
   }

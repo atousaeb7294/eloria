@@ -10,7 +10,7 @@ async function fileIncludes(
 ): Promise<boolean> {
   try {
     const content = await readFile(path.join(root, file), "utf8");
-    return (Array.isArray(values) ? values : [values]).every(value =>
+    return (Array.isArray(values) ? values : [values]).every((value) =>
       content.includes(value),
     );
   } catch {
@@ -54,7 +54,10 @@ async function main(): Promise<void> {
         "verifyTurnstileToken",
         "checkout-mobile:",
       ])) &&
-        (await fileIncludes("src/lib/checkout-order.ts", "PENDING_ORDER_LIMIT")),
+        (await fileIncludes(
+          "src/lib/checkout-order.ts",
+          "PENDING_ORDER_LIMIT",
+        )),
     ],
     [
       "Turnstile bounded verification",
@@ -138,7 +141,10 @@ async function main(): Promise<void> {
     ],
     [
       "Dedicated health secret separation",
-      (await fileIncludes("src/app/api/health/route.ts", "ELORIA_HEALTH_SECRET")) &&
+      (await fileIncludes(
+        "src/app/api/health/route.ts",
+        "ELORIA_HEALTH_SECRET",
+      )) &&
         (await fileIncludes("src/lib/env-validation.ts", [
           "ELORIA_HEALTH_SECRET",
           "CRON_SECRET",
@@ -146,28 +152,81 @@ async function main(): Promise<void> {
     ],
     [
       "Bounded public JSON request bodies",
-      (await fileIncludes("src/lib/security/json-body.ts", "ELORIA_FINAL_JSON_BODY_LIMIT_V1")) &&
-        (await fileIncludes("src/app/api/checkout/orders/route.ts", "readJsonBody")) &&
-        (await fileIncludes("src/app/api/payments/zarinpal/start/route.ts", "readJsonBody")) &&
-        (await fileIncludes("src/app/api/support/contact/route.ts", "readJsonBody")) &&
-        (await fileIncludes("src/app/api/treasury/products/route.ts", "readJsonBody")) &&
-        (await fileIncludes("src/app/api/customer/auth/request-otp/route.ts", "readJsonBody")) &&
-        (await fileIncludes("src/app/api/customer/auth/verify-otp/route.ts", "readJsonBody")) &&
-        (await fileIncludes("src/app/api/customer/me/route.ts", "readJsonBody")) &&
-        (await fileIncludes("src/app/api/customer/addresses/route.ts", "readJsonBody")) &&
-        (await fileIncludes("src/app/api/customer/addresses/[id]/route.ts", "readJsonBody")) &&
-        (await fileIncludes("src/app/api/customer/favorites/route.ts", "readJsonBody")),
+      (await fileIncludes(
+        "src/lib/security/json-body.ts",
+        "ELORIA_FINAL_JSON_BODY_LIMIT_V1",
+      )) &&
+        (await fileIncludes(
+          "src/app/api/checkout/orders/route.ts",
+          "readJsonBody",
+        )) &&
+        (await fileIncludes(
+          "src/app/api/payments/zarinpal/start/route.ts",
+          "readJsonBody",
+        )) &&
+        (await fileIncludes(
+          "src/app/api/support/contact/route.ts",
+          "readJsonBody",
+        )) &&
+        (await fileIncludes(
+          "src/app/api/treasury/products/route.ts",
+          "readJsonBody",
+        )) &&
+        (await fileIncludes(
+          "src/app/api/customer/auth/request-otp/route.ts",
+          "readJsonBody",
+        )) &&
+        (await fileIncludes(
+          "src/app/api/customer/auth/verify-otp/route.ts",
+          "readJsonBody",
+        )) &&
+        (await fileIncludes(
+          "src/app/api/customer/me/route.ts",
+          "readJsonBody",
+        )) &&
+        (await fileIncludes(
+          "src/app/api/customer/addresses/route.ts",
+          "readJsonBody",
+        )) &&
+        (await fileIncludes(
+          "src/app/api/customer/addresses/[id]/route.ts",
+          "readJsonBody",
+        )) &&
+        (await fileIncludes(
+          "src/app/api/customer/favorites/route.ts",
+          "readJsonBody",
+        )) &&
+        (await fileIncludes(
+          "src/app/api/customer/notifications/route.ts",
+          "readJsonBody",
+        )) &&
+        (await fileIncludes("src/app/api/cart/quote/route.ts", "readJsonBody")),
     ],
     [
       "Sanitized admin and provider-facing errors",
-      (await fileIncludes("src/app/[locale]/admin/(protected)/orders/actions.ts", "publicOrderActionError")) &&
-        (await fileIncludes("src/app/[locale]/admin/(protected)/products/actions.ts", "publicAdminProductError")) &&
-        (await fileIncludes("src/app/[locale]/admin/(protected)/products/assets/actions.ts", "publicAssetError")) &&
-        (await fileIncludes("src/lib/product-media-storage.ts", "Supabase upload failed")),
+      (await fileIncludes(
+        "src/app/[locale]/admin/(protected)/orders/actions.ts",
+        "publicOrderActionError",
+      )) &&
+        (await fileIncludes(
+          "src/app/[locale]/admin/(protected)/products/actions.ts",
+          "publicAdminProductError",
+        )) &&
+        (await fileIncludes(
+          "src/app/[locale]/admin/(protected)/products/assets/actions.ts",
+          "publicAssetError",
+        )) &&
+        (await fileIncludes(
+          "src/lib/product-media-storage.ts",
+          "Supabase upload failed",
+        )),
     ],
     [
       "Payment verification payload minimization",
-      await fileIncludes("src/lib/payment-service.ts", "paymentVerificationSnapshot"),
+      await fileIncludes(
+        "src/lib/payment-service.ts",
+        "paymentVerificationSnapshot",
+      ),
     ],
     [
       "Production secret generator completeness",
@@ -193,11 +252,14 @@ async function main(): Promise<void> {
           "acquireCronLease",
           "CRON_SECRET",
         ])) &&
-        (await fileIncludes("src/app/[locale]/admin/(protected)/security/page.tsx", [
-          "امنیت و هشدارها",
-          "Delivery Outbox",
-        ])) &&
-        (await fileIncludes("src/components/admin/admin-shell.tsx", "/security")),
+        (await fileIncludes(
+          "src/app/[locale]/admin/(protected)/security/page.tsx",
+          ["امنیت و هشدارها", "Delivery Outbox"],
+        )) &&
+        (await fileIncludes(
+          "src/components/admin/admin-shell.tsx",
+          "/security",
+        )),
     ],
     [
       "Customer authentication security telemetry",
@@ -256,7 +318,10 @@ async function main(): Promise<void> {
     ],
     [
       "Bounded SMS provider request",
-      await fileIncludes("src/lib/notifications/kavenegar.ts", "AbortSignal.timeout(8_000)"),
+      await fileIncludes(
+        "src/lib/notifications/kavenegar.ts",
+        "AbortSignal.timeout(8_000)",
+      ),
     ],
     [
       "Metal-rate anomaly circuit breaker",
@@ -282,20 +347,25 @@ async function main(): Promise<void> {
     ],
     [
       "Historical guest order privacy",
-      !(await fileIncludes("src/lib/customer-auth.ts", "customerMobile: mobile")),
+      !(await fileIncludes(
+        "src/lib/customer-auth.ts",
+        "customerMobile: mobile",
+      )),
     ],
     [
       "Structured refund reference",
       (await fileIncludes("src/lib/order-operations.ts", [
         "refundReference",
         "شماره مرجع",
-      ])) &&
-        (await fileIncludes("prisma/schema.prisma", "refundReference")),
+      ])) && (await fileIncludes("prisma/schema.prisma", "refundReference")),
     ],
     [
       "Data retention cron",
       (await fileIncludes("src/lib/data-retention.ts", "runDataRetention")) &&
-        (await fileIncludes("src/app/api/cron/data-retention/route.ts", "CRON_SECRET")),
+        (await fileIncludes(
+          "src/app/api/cron/data-retention/route.ts",
+          "CRON_SECRET",
+        )),
     ],
     [
       "Prisma production migrations",
