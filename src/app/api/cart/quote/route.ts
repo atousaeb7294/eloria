@@ -1,26 +1,18 @@
-import {
-  NextRequest,
-  NextResponse,
-} from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
 import {
   getProductLivePrice,
   ProductPricingError,
 } from "@/lib/product-pricing";
 
-import {
-  consumeRateLimit,
-} from "@/lib/security/rate-limit";
+import { JsonRequestBodyError, readJsonBody } from "@/lib/security/json-body";
+import { consumeRateLimit } from "@/lib/security/rate-limit";
 
 import { calculateShipping } from "@/lib/shipping";
 
-import {
-  hasTrustedOrigin,
-  requestIp,
-} from "@/lib/security/request";
+import { hasTrustedOrigin, requestIp } from "@/lib/security/request";
 
-export const dynamic =
-  "force-dynamic";
+export const dynamic = "force-dynamic";
 
 export const revalidate = 0;
 
@@ -85,78 +77,40 @@ type FailedCartItem = {
 
 function noStoreHeaders() {
   return {
-    "Cache-Control":
-      "no-store, no-cache, must-revalidate",
+    "Cache-Control": "no-store, no-cache, must-revalidate",
   };
 }
 
-function normalizeCartItem(
-  item: IncomingCartItem,
-): ValidCartItem | null {
-  if (
-    typeof item !== "object" ||
-    item === null
-  ) {
+function normalizeCartItem(item: IncomingCartItem): ValidCartItem | null {
+  if (typeof item !== "object" || item === null) {
     return null;
   }
 
-  if (
-    typeof item.slug !==
-    "string"
-  ) {
+  if (typeof item.slug !== "string") {
     return null;
   }
 
-  const slug =
-    item.slug.trim();
+  const slug = item.slug.trim();
 
-  if (
-    !slug ||
-    slug.length > 160
-  ) {
+  if (!slug || slug.length > 160) {
     return null;
   }
 
-  let variantId:
-    string | null = null;
+  let variantId: string | null = null;
 
-  if (
-    typeof item.variantId ===
-    "string"
-  ) {
-    const normalizedVariantId =
-      item.variantId.trim();
+  if (typeof item.variantId === "string") {
+    const normalizedVariantId = item.variantId.trim();
 
-    variantId =
-      normalizedVariantId ||
-      null;
-  } else if (
-    item.variantId !==
-      null &&
-    item.variantId !==
-      undefined
-  ) {
+    variantId = normalizedVariantId || null;
+  } else if (item.variantId !== null && item.variantId !== undefined) {
     return null;
   }
 
-  if (
-    typeof item.quantity !==
-      "number" ||
-    !Number.isInteger(
-      item.quantity,
-    )
-  ) {
+  if (typeof item.quantity !== "number" || !Number.isInteger(item.quantity)) {
     return null;
   }
 
-  const quantity =
-    Math.min(
-      Math.max(
-        item.quantity,
-        1,
-      ),
-      99,
-    );
+  const quantity = Math.min(Math.max(item.quantity, 1), 99);
 
   return {
     slug,
@@ -165,106 +119,61 @@ function normalizeCartItem(
   };
 }
 
-function mergeDuplicateItems(
-  items: ValidCartItem[],
-): ValidCartItem[] {
-  const merged =
-    new Map<
-      string,
-      ValidCartItem
-    >();
+function mergeDuplicateItems(items: ValidCartItem[]): ValidCartItem[] {
+  const merged = new Map<string, ValidCartItem>();
 
   for (const item of items) {
-    const key =
-      `${item.slug}::${item.variantId ?? ""}`;
+    const key = `${item.slug}::${item.variantId ?? ""}`;
 
-    const existing =
-      merged.get(key);
+    const existing = merged.get(key);
 
     if (existing) {
-      existing.quantity =
-        Math.min(
-          existing.quantity +
-            item.quantity,
-          99,
-        );
+      existing.quantity = Math.min(existing.quantity + item.quantity, 99);
 
       continue;
     }
 
-    merged.set(
-      key,
-      {
-        ...item,
-      },
-    );
+    merged.set(key, {
+      ...item,
+    });
   }
 
-  return Array.from(
-    merged.values(),
-  );
+  return Array.from(merged.values());
 }
 
-async function mapWithConcurrency<
-  T,
-  R,
->(
+async function mapWithConcurrency<T, R>(
   items: T[],
   concurrency: number,
-  mapper: (
-    item: T,
-    index: number,
-  ) => Promise<R>,
+  mapper: (item: T, index: number) => Promise<R>,
 ): Promise<R[]> {
-  if (
-    items.length === 0
-  ) {
+  if (items.length === 0) {
     return [];
   }
 
-  const output =
-    new Array<R>(
-      items.length,
-    );
+  const output = new Array<R>(items.length);
 
   let nextIndex = 0;
 
   async function worker() {
     while (true) {
-      const currentIndex =
-        nextIndex;
+      const currentIndex = nextIndex;
 
       nextIndex += 1;
 
-      if (
-        currentIndex >=
-        items.length
-      ) {
+      if (currentIndex >= items.length) {
         return;
       }
 
-      output[currentIndex] =
-        await mapper(
-          items[currentIndex],
-          currentIndex,
-        );
+      output[currentIndex] = await mapper(items[currentIndex], currentIndex);
     }
   }
 
-  const workerCount =
-    Math.min(
-      Math.max(
-        concurrency,
-        1,
-      ),
-      items.length,
-    );
+  const workerCount = Math.min(Math.max(concurrency, 1), items.length);
 
   await Promise.all(
     Array.from(
       {
-        length:
-          workerCount,
+        length: workerCount,
       },
       () => worker(),
     ),
@@ -273,9 +182,7 @@ async function mapWithConcurrency<
   return output;
 }
 
-async function quoteCartItem(
-  item: ValidCartItem,
-): Promise<
+async function quoteCartItem(item: ValidCartItem): Promise<
   | {
       successful: true;
       item: QuotedCartItem;
@@ -286,145 +193,86 @@ async function quoteCartItem(
     }
 > {
   try {
-    const result =
-      await getProductLivePrice({
-        slug:
-          item.slug,
+    const result = await getProductLivePrice({
+      slug: item.slug,
 
-        variantId:
-          item.variantId,
-      });
+      variantId: item.variantId,
+    });
 
-    const image =
-      result.product.primaryImage;
+    const image = result.product.primaryImage;
 
-    const selectedStock =
-      result.variant
-        ?.stock ??
-      result.product.stock;
+    const selectedStock = result.variant?.stock ?? result.product.stock;
 
-    const unitPriceToman =
-      result.pricing
-        .finalPriceToman;
+    const unitPriceToman = result.pricing.finalPriceToman;
 
-    const lineTotalToman =
-      (
-        BigInt(
-          unitPriceToman,
-        ) *
-        BigInt(
-          item.quantity,
-        )
-      ).toString();
+    const lineTotalToman = (
+      BigInt(unitPriceToman) * BigInt(item.quantity)
+    ).toString();
 
-    const hasEnoughStock =
-      selectedStock >=
-      item.quantity;
+    const hasEnoughStock = selectedStock >= item.quantity;
 
-    const canPurchase =
-      result.product
-        .isPurchasable &&
-      hasEnoughStock;
+    const canPurchase = result.product.isPurchasable && hasEnoughStock;
 
-    let unavailableReason:
-      string | null = null;
+    let unavailableReason: string | null = null;
 
-    if (
-      !result.product
-        .isPurchasable
-    ) {
-      unavailableReason =
-        "PRODUCT_UNAVAILABLE";
-    } else if (
-      !hasEnoughStock
-    ) {
-      unavailableReason =
-        "INSUFFICIENT_STOCK";
+    if (!result.product.isPurchasable) {
+      unavailableReason = "PRODUCT_UNAVAILABLE";
+    } else if (!hasEnoughStock) {
+      unavailableReason = "INSUFFICIENT_STOCK";
     }
 
     return {
       successful: true,
 
       item: {
-        slug:
-          result.product.slug,
+        slug: result.product.slug,
 
-        variantId:
-          result.variant
-            ?.id ?? null,
+        variantId: result.variant?.id ?? null,
 
-        quantity:
-          item.quantity,
+        quantity: item.quantity,
 
         product: {
-          id:
-            result.product.id,
+          id: result.product.id,
 
-          nameFa:
-            result.product
-              .nameFa,
+          nameFa: result.product.nameFa,
 
-          nameEn:
-            result.product
-              .nameEn,
+          nameEn: result.product.nameEn,
 
-          material:
-            result.product
-              .material,
+          material: result.product.material,
 
-          sku:
-            result.product.sku,
+          sku: result.product.sku,
 
-          stock:
-            result.product.stock,
+          stock: result.product.stock,
 
-          isPurchasable:
-            result.product
-              .isPurchasable,
+          isPurchasable: result.product.isPurchasable,
         },
 
-        variant:
-          result.variant
-            ? {
-                id:
-                  result.variant
-                    .id,
+        variant: result.variant
+          ? {
+              id: result.variant.id,
 
-                titleFa:
-                  result.variant
-                    .titleFa,
+              titleFa: result.variant.titleFa,
 
-                titleEn:
-                  result.variant
-                    .titleEn,
+              titleEn: result.variant.titleEn,
 
-                sku:
-                  result.variant
-                    .sku,
+              sku: result.variant.sku,
 
-                stock:
-                  result.variant
-                    .stock,
-              }
-            : null,
+              stock: result.variant.stock,
+            }
+          : null,
 
-        image:
-          image
-            ? {
-                url:
-                  image.url,
+        image: image
+          ? {
+              url: image.url,
 
-                altFa:
-                  image.altFa,
+              altFa: image.altFa,
 
-                altEn:
-                  image.altEn,
-              }
-            : null,
+              altEn: image.altEn,
+            }
+          : null,
 
         pricing: {
-          currency:
-            "TOMAN",
+          currency: "TOMAN",
 
           unitPriceToman,
 
@@ -437,68 +285,52 @@ async function quoteCartItem(
       },
     };
   } catch (error) {
-    if (
-      error instanceof
-        ProductPricingError
-    ) {
+    if (error instanceof ProductPricingError) {
       return {
-        successful:
-          false,
+        successful: false,
 
         item: {
-          slug:
-            item.slug,
+          slug: item.slug,
 
-          variantId:
-            item.variantId,
+          variantId: item.variantId,
 
-          quantity:
-            item.quantity,
+          quantity: item.quantity,
 
-          code:
-            error.code,
+          code: error.code,
 
-          message:
-            error.message,
+          message: error.message,
         },
       };
     }
 
-    console.error(
-      `[Eloria Cart] Unable to quote "${item.slug}".`,
-      error,
-    );
+    console.error(`[Eloria Cart] Unable to quote "${item.slug}".`, error);
 
     return {
-      successful:
-        false,
+      successful: false,
 
       item: {
-        slug:
-          item.slug,
+        slug: item.slug,
 
-        variantId:
-          item.variantId,
+        variantId: item.variantId,
 
-        quantity:
-          item.quantity,
+        quantity: item.quantity,
 
-        code:
-          "INTERNAL_ERROR",
+        code: "INTERNAL_ERROR",
 
-        message:
-          "محاسبه قیمت این محصول در حال حاضر امکان‌پذیر نیست.",
+        message: "محاسبه قیمت این محصول در حال حاضر امکان‌پذیر نیست.",
       },
     };
   }
 }
 
-export async function POST(
-  request: NextRequest,
-) {
+export async function POST(request: NextRequest) {
   if (!hasTrustedOrigin(request)) {
     return NextResponse.json(
-      { successful: false, code: "FORBIDDEN_ORIGIN", message: "مبدأ درخواست معتبر نیست." },
+      {
+        successful: false,
+        code: "FORBIDDEN_ORIGIN",
+        message: "مبدأ درخواست معتبر نیست.",
+      },
       { status: 403, headers: noStoreHeaders() },
     );
   }
@@ -511,8 +343,18 @@ export async function POST(
 
   if (!rate.allowed) {
     return NextResponse.json(
-      { successful: false, code: "RATE_LIMITED", message: "تعداد درخواست‌های بررسی قیمت بیش از حد مجاز است." },
-      { status: 429, headers: { ...noStoreHeaders(), "Retry-After": String(rate.retryAfterSeconds) } },
+      {
+        successful: false,
+        code: "RATE_LIMITED",
+        message: "تعداد درخواست‌های بررسی قیمت بیش از حد مجاز است.",
+      },
+      {
+        status: 429,
+        headers: {
+          ...noStoreHeaders(),
+          "Retry-After": String(rate.retryAfterSeconds),
+        },
+      },
     );
   }
 
@@ -520,278 +362,181 @@ export async function POST(
     let body: unknown;
 
     try {
-      body =
-        await request.json();
-    } catch {
+      body = await readJsonBody(request, 32 * 1024);
+    } catch (error) {
+      const bodyError = error instanceof JsonRequestBodyError ? error : null;
+
       return NextResponse.json(
         {
           successful: false,
-          code:
-            "INVALID_JSON",
-          message:
-            "ساختار اطلاعات سبد خرید معتبر نیست.",
+          code: bodyError?.code ?? "INVALID_JSON",
+          message: bodyError?.message ?? "ساختار اطلاعات سبد خرید معتبر نیست.",
         },
         {
-          status: 400,
-          headers:
-            noStoreHeaders(),
+          status: bodyError?.status ?? 400,
+          headers: noStoreHeaders(),
         },
       );
     }
 
     if (
-      typeof body !==
-        "object" ||
+      typeof body !== "object" ||
       body === null ||
-      !(
-        "items" in body
-      ) ||
-      !Array.isArray(
-        body.items,
-      )
+      !("items" in body) ||
+      !Array.isArray(body.items)
     ) {
       return NextResponse.json(
         {
           successful: false,
-          code:
-            "INVALID_CART",
-          message:
-            "سبد خرید معتبر نیست.",
+          code: "INVALID_CART",
+          message: "سبد خرید معتبر نیست.",
         },
         {
           status: 400,
-          headers:
-            noStoreHeaders(),
+          headers: noStoreHeaders(),
         },
       );
     }
 
-    if (
-      body.items.length >
-      50
-    ) {
+    if (body.items.length > 50) {
       return NextResponse.json(
         {
           successful: false,
-          code:
-            "TOO_MANY_ITEMS",
-          message:
-            "تعداد اقلام سبد خرید بیش از حد مجاز است.",
+          code: "TOO_MANY_ITEMS",
+          message: "تعداد اقلام سبد خرید بیش از حد مجاز است.",
         },
         {
           status: 400,
-          headers:
-            noStoreHeaders(),
+          headers: noStoreHeaders(),
         },
       );
     }
 
-    const normalizedItems =
-      body.items
-        .map((item) =>
-          normalizeCartItem(
-            item as IncomingCartItem,
-          ),
-        )
-        .filter(
-          (
-            item,
-          ): item is ValidCartItem =>
-            item !== null,
-        );
+    const normalizedItems = body.items
+      .map((item) => normalizeCartItem(item as IncomingCartItem))
+      .filter((item): item is ValidCartItem => item !== null);
 
-    if (
-      normalizedItems.length !==
-      body.items.length
-    ) {
+    if (normalizedItems.length !== body.items.length) {
       return NextResponse.json(
         {
           successful: false,
-          code:
-            "INVALID_CART_ITEM",
-          message:
-            "حداقل یکی از اقلام سبد خرید معتبر نیست.",
+          code: "INVALID_CART_ITEM",
+          message: "حداقل یکی از اقلام سبد خرید معتبر نیست.",
         },
         {
           status: 400,
-          headers:
-            noStoreHeaders(),
+          headers: noStoreHeaders(),
         },
       );
     }
 
-    const mergedItems =
-      mergeDuplicateItems(
-        normalizedItems,
-      );
+    const mergedItems = mergeDuplicateItems(normalizedItems);
 
-    if (
-      mergedItems.length >
-      30
-    ) {
+    if (mergedItems.length > 30) {
       return NextResponse.json(
         {
           successful: false,
-          code:
-            "TOO_MANY_UNIQUE_ITEMS",
-          message:
-            "حداکثر ۳۰ محصول متفاوت می‌تواند در سبد خرید باشد.",
+          code: "TOO_MANY_UNIQUE_ITEMS",
+          message: "حداکثر ۳۰ محصول متفاوت می‌تواند در سبد خرید باشد.",
         },
         {
           status: 400,
-          headers:
-            noStoreHeaders(),
+          headers: noStoreHeaders(),
         },
       );
     }
 
-    const results =
-      await mapWithConcurrency(
-        mergedItems,
-        2,
-        quoteCartItem,
-      );
+    const results = await mapWithConcurrency(mergedItems, 2, quoteCartItem);
 
-    const quotedItems =
-      results
-        .filter(
-          (
-            result,
-          ): result is {
-            successful: true;
-            item: QuotedCartItem;
-          } =>
-            result.successful,
-        )
-        .map(
-          (result) =>
-            result.item,
-        );
-
-    const failedItems =
-      results
-        .filter(
-          (
-            result,
-          ): result is {
-            successful: false;
-            item: FailedCartItem;
-          } =>
-            !result.successful,
-        )
-        .map(
-          (result) =>
-            result.item,
-        );
-
-    const subtotalToman =
-      quotedItems.reduce(
+    const quotedItems = results
+      .filter(
         (
-          total,
-          item,
-        ) => {
-          if (
-            !item.canPurchase
-          ) {
-            return total;
-          }
+          result,
+        ): result is {
+          successful: true;
+          item: QuotedCartItem;
+        } => result.successful,
+      )
+      .map((result) => result.item);
 
-          return (
-            total +
-            BigInt(
-              item.pricing
-                .lineTotalToman,
-            )
-          );
-        },
-        BigInt(0),
-      );
+    const failedItems = results
+      .filter(
+        (
+          result,
+        ): result is {
+          successful: false;
+          item: FailedCartItem;
+        } => !result.successful,
+      )
+      .map((result) => result.item);
+
+    const subtotalToman = quotedItems.reduce((total, item) => {
+      if (!item.canPurchase) {
+        return total;
+      }
+
+      return total + BigInt(item.pricing.lineTotalToman);
+    }, BigInt(0));
 
     // ELORIA_V3_SERVER_SHIPPING
     const shippingQuote = calculateShipping(subtotalToman);
     const payableToman = subtotalToman + BigInt(shippingQuote.shippingToman);
 
-    const totalQuantity =
-      quotedItems.reduce(
-        (
-          total,
-          item,
-        ) =>
-          total +
-          item.quantity,
-        0,
-      );
+    const totalQuantity = quotedItems.reduce(
+      (total, item) => total + item.quantity,
+      0,
+    );
 
     const canCheckout =
-      mergedItems.length >
-        0 &&
-      failedItems.length ===
-        0 &&
-      quotedItems.every(
-        (item) =>
-          item.canPurchase,
-      );
+      mergedItems.length > 0 &&
+      failedItems.length === 0 &&
+      quotedItems.every((item) => item.canPurchase);
 
     return NextResponse.json(
       {
         successful: true,
 
-        currency:
-          "TOMAN",
+        currency: "TOMAN",
 
-        items:
-          quotedItems,
+        items: quotedItems,
 
         failedItems,
 
         summary: {
-          uniqueItems:
-            quotedItems.length,
+          uniqueItems: quotedItems.length,
 
           totalQuantity,
 
-          subtotalToman:
-            subtotalToman.toString(),
+          subtotalToman: subtotalToman.toString(),
 
-          shippingToman:
-            shippingQuote.shippingToman,
+          shippingToman: shippingQuote.shippingToman,
 
-          freeShippingApplied:
-            shippingQuote.freeShippingApplied,
+          freeShippingApplied: shippingQuote.freeShippingApplied,
 
-          payableToman:
-            payableToman.toString(),
+          payableToman: payableToman.toString(),
 
           canCheckout,
         },
 
-        generatedAt:
-          new Date().toISOString(),
+        generatedAt: new Date().toISOString(),
       },
       {
         status: 200,
-        headers:
-          noStoreHeaders(),
+        headers: noStoreHeaders(),
       },
     );
   } catch (error) {
-    console.error(
-      "[Eloria Cart] Unexpected quote error.",
-      error,
-    );
+    console.error("[Eloria Cart] Unexpected quote error.", error);
 
     return NextResponse.json(
       {
         successful: false,
-        code:
-          "INTERNAL_ERROR",
-        message:
-          "دریافت اطلاعات سبد خرید امکان‌پذیر نیست.",
+        code: "INTERNAL_ERROR",
+        message: "دریافت اطلاعات سبد خرید امکان‌پذیر نیست.",
       },
       {
         status: 500,
-        headers:
-          noStoreHeaders(),
+        headers: noStoreHeaders(),
       },
     );
   }

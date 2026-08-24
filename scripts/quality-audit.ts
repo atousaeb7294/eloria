@@ -255,6 +255,13 @@ check(
     journalArticlePage.includes("getPublishedArticleBySlug"),
 );
 check(
+  "Journal index degrades safely when its database read is unavailable",
+  journalPage.includes("journalUnavailable") &&
+    journalPage.includes("try {") &&
+    journalPage.includes("Published articles are temporarily unavailable") &&
+    journalPage.includes('role="status"'),
+);
+check(
   "Article body renderer does not execute raw HTML",
   !articleMarkdown.includes("dangerouslySetInnerHTML") &&
     articleMarkdown.includes("parseBlocks"),
@@ -339,7 +346,7 @@ check(
 );
 check(
   "Selection guide uses real catalog query parameters",
-  selectionAssistant.includes("availability: \"available\"") &&
+  selectionAssistant.includes('availability: "available"') &&
     selectionAssistant.includes("maxPrice") &&
     selectionAssistant.includes("router.push"),
 );
