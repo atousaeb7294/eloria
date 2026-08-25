@@ -1,3 +1,4 @@
+﻿import { generateProductMyth } from "@/lib/product-myth-generator";
 "use server";
 
 import {
@@ -100,7 +101,7 @@ function readText(
   ) {
     if (required) {
       throw new AdminProductActionError(
-        `فیلد ${key} الزامی است.`,
+        `ÙÛŒÙ„Ø¯ ${key} Ø§Ù„Ø²Ø§Ù…ÛŒ Ø§Ø³Øª.`,
       );
     }
 
@@ -115,7 +116,7 @@ function readText(
     !normalized
   ) {
     throw new AdminProductActionError(
-      "لطفاً تمام فیلدهای الزامی را تکمیل کنید.",
+      "Ù„Ø·ÙØ§Ù‹ ØªÙ…Ø§Ù… ÙÛŒÙ„Ø¯Ù‡Ø§ÛŒ Ø§Ù„Ø²Ø§Ù…ÛŒ Ø±Ø§ ØªÚ©Ù…ÛŒÙ„ Ú©Ù†ÛŒØ¯.",
     );
   }
 
@@ -124,7 +125,7 @@ function readText(
     maximumLength
   ) {
     throw new AdminProductActionError(
-      "طول یکی از فیلدها بیش از حد مجاز است.",
+      "Ø·ÙˆÙ„ ÛŒÚ©ÛŒ Ø§Ø² ÙÛŒÙ„Ø¯Ù‡Ø§ Ø¨ÛŒØ´ Ø§Ø² Ø­Ø¯ Ù…Ø¬Ø§Ø² Ø§Ø³Øª.",
     );
   }
 
@@ -135,14 +136,14 @@ function normalizeDigits(
   value: string,
 ): string {
   const persianDigits =
-    "۰۱۲۳۴۵۶۷۸۹";
+    "Û°Û±Û²Û³Û´ÛµÛ¶Û·Û¸Û¹";
 
   const arabicDigits =
-    "٠١٢٣٤٥٦٧٨٩";
+    "Ù Ù¡Ù¢Ù£Ù¤Ù¥Ù¦Ù§Ù¨Ù©";
 
   return value
     .replace(
-      /[۰-۹]/g,
+      /[Û°-Û¹]/g,
       (digit) =>
         String(
           persianDigits.indexOf(
@@ -151,7 +152,7 @@ function normalizeDigits(
         ),
     )
     .replace(
-      /[٠-٩]/g,
+      /[Ù -Ù©]/g,
       (digit) =>
         String(
           arabicDigits.indexOf(
@@ -159,8 +160,8 @@ function normalizeDigits(
           ),
         ),
     )
-    .replace(/[٬,\s]/g, "")
-    .replace("٫", ".");
+    .replace(/[Ù¬,\s]/g, "")
+    .replace("Ù«", ".");
 }
 
 function readDecimal(
@@ -188,7 +189,7 @@ function readDecimal(
     )
   ) {
     throw new AdminProductActionError(
-      "مقادیر عددی معتبر نیستند.",
+      "Ù…Ù‚Ø§Ø¯ÛŒØ± Ø¹Ø¯Ø¯ÛŒ Ù…Ø¹ØªØ¨Ø± Ù†ÛŒØ³ØªÙ†Ø¯.",
     );
   }
 
@@ -196,7 +197,7 @@ function readDecimal(
     Number(normalized) < 0
   ) {
     throw new AdminProductActionError(
-      "مقادیر عددی نمی‌توانند منفی باشند.",
+      "Ù…Ù‚Ø§Ø¯ÛŒØ± Ø¹Ø¯Ø¯ÛŒ Ù†Ù…ÛŒâ€ŒØªÙˆØ§Ù†Ù†Ø¯ Ù…Ù†ÙÛŒ Ø¨Ø§Ø´Ù†Ø¯.",
     );
   }
 
@@ -230,7 +231,7 @@ function readInteger(
     )
   ) {
     throw new AdminProductActionError(
-      "یکی از مقادیر صحیح خارج از محدوده مجاز است.",
+      "ÛŒÚ©ÛŒ Ø§Ø² Ù…Ù‚Ø§Ø¯ÛŒØ± ØµØ­ÛŒØ­ Ø®Ø§Ø±Ø¬ Ø§Ø² Ù…Ø­Ø¯ÙˆØ¯Ù‡ Ù…Ø¬Ø§Ø² Ø§Ø³Øª.",
     );
   }
 
@@ -243,7 +244,7 @@ function readInteger(
     value > maximum
   ) {
     throw new AdminProductActionError(
-      "یکی از مقادیر صحیح خارج از محدوده مجاز است.",
+      "ÛŒÚ©ÛŒ Ø§Ø² Ù…Ù‚Ø§Ø¯ÛŒØ± ØµØ­ÛŒØ­ Ø®Ø§Ø±Ø¬ Ø§Ø² Ù…Ø­Ø¯ÙˆØ¯Ù‡ Ù…Ø¬Ø§Ø² Ø§Ø³Øª.",
     );
   }
 
@@ -294,7 +295,7 @@ function parseProductInput(
     )
   ) {
     throw new AdminProductActionError(
-      "شناسه URL باید فقط شامل حروف انگلیسی کوچک، عدد و خط تیره باشد.",
+      "Ø´Ù†Ø§Ø³Ù‡ URL Ø¨Ø§ÛŒØ¯ ÙÙ‚Ø· Ø´Ø§Ù…Ù„ Ø­Ø±ÙˆÙ Ø§Ù†Ú¯Ù„ÛŒØ³ÛŒ Ú©ÙˆÚ†Ú©ØŒ Ø¹Ø¯Ø¯ Ùˆ Ø®Ø· ØªÛŒØ±Ù‡ Ø¨Ø§Ø´Ø¯.",
     );
   }
 
@@ -307,7 +308,7 @@ function parseProductInput(
 
   if (primaryImageUrl && !isAllowedProductImageUrl(primaryImageUrl)) {
     throw new AdminProductActionError(
-      "آدرس تصویر خارج از مسیر یا میزبان‌های مجاز است.",
+      "Ø¢Ø¯Ø±Ø³ ØªØµÙˆÛŒØ± Ø®Ø§Ø±Ø¬ Ø§Ø² Ù…Ø³ÛŒØ± ÛŒØ§ Ù…ÛŒØ²Ø¨Ø§Ù†â€ŒÙ‡Ø§ÛŒ Ù…Ø¬Ø§Ø² Ø§Ø³Øª.",
     );
   }
 
@@ -334,7 +335,7 @@ function parseProductInput(
     (!price || Number(price) <= 0)
   ) {
     throw new AdminProductActionError(
-      "برای قیمت‌گذاری دستی، قیمت نهایی محصول الزامی است.",
+      "Ø¨Ø±Ø§ÛŒ Ù‚ÛŒÙ…Øªâ€ŒÚ¯Ø°Ø§Ø±ÛŒ Ø¯Ø³ØªÛŒØŒ Ù‚ÛŒÙ…Øª Ù†Ù‡Ø§ÛŒÛŒ Ù…Ø­ØµÙˆÙ„ Ø§Ù„Ø²Ø§Ù…ÛŒ Ø§Ø³Øª.",
     );
   }
 
@@ -579,12 +580,12 @@ async function ensureUniqueIdentity({
     duplicate.slug === slug
   ) {
     throw new AdminProductActionError(
-      "این شناسه URL قبلاً برای محصول دیگری استفاده شده است.",
+      "Ø§ÛŒÙ† Ø´Ù†Ø§Ø³Ù‡ URL Ù‚Ø¨Ù„Ø§Ù‹ Ø¨Ø±Ø§ÛŒ Ù…Ø­ØµÙˆÙ„ Ø¯ÛŒÚ¯Ø±ÛŒ Ø§Ø³ØªÙØ§Ø¯Ù‡ Ø´Ø¯Ù‡ Ø§Ø³Øª.",
     );
   }
 
   throw new AdminProductActionError(
-    "این کد SKU قبلاً برای محصول دیگری استفاده شده است.",
+    "Ø§ÛŒÙ† Ú©Ø¯ SKU Ù‚Ø¨Ù„Ø§Ù‹ Ø¨Ø±Ø§ÛŒ Ù…Ø­ØµÙˆÙ„ Ø¯ÛŒÚ¯Ø±ÛŒ Ø§Ø³ØªÙØ§Ø¯Ù‡ Ø´Ø¯Ù‡ Ø§Ø³Øª.",
   );
 }
 
@@ -655,7 +656,7 @@ export async function createAdminProductAction(
 ): Promise<AdminProductActionState> {
   if (!(await hasValidAdminSession())) {
     return {
-      error: "نشست مدیریت منقضی شده است؛ دوباره وارد شوید.",
+      error: "Ù†Ø´Ø³Øª Ù…Ø¯ÛŒØ±ÛŒØª Ù…Ù†Ù‚Ø¶ÛŒ Ø´Ø¯Ù‡ Ø§Ø³ØªØ› Ø¯ÙˆØ¨Ø§Ø±Ù‡ ÙˆØ§Ø±Ø¯ Ø´ÙˆÛŒØ¯.",
     };
   }
 
@@ -667,7 +668,13 @@ export async function createAdminProductAction(
         formData,
       );
 
-    await ensureUniqueIdentity({
+    
+    const myth =
+      generateProductMyth({
+        nameFa: input.nameFa,
+        nameEn: input.nameEn,
+      });
+await ensureUniqueIdentity({
       slug:
         input.slug,
       sku:
@@ -678,6 +685,10 @@ export async function createAdminProductAction(
       prisma.product.create({
         data: {
           ...productData(input),
+          mythNameFa: myth.mythNameFa,
+          mythNameEn: myth.mythNameEn,
+          legendFa: myth.legendFa,
+          legendEn: myth.legendEn,
           ...(input.primaryImageUrl
             ? {
                 images: {
@@ -699,7 +710,7 @@ export async function createAdminProductAction(
   } catch (error) {
     return {
       error:
-        publicAdminProductError(error, "ساخت محصول انجام نشد.", "create"),
+        publicAdminProductError(error, "Ø³Ø§Ø®Øª Ù…Ø­ØµÙˆÙ„ Ø§Ù†Ø¬Ø§Ù… Ù†Ø´Ø¯.", "create"),
     };
   }
 
@@ -722,7 +733,7 @@ export async function updateAdminProductAction(
 ): Promise<AdminProductActionState> {
   if (!(await hasValidAdminSession())) {
     return {
-      error: "نشست مدیریت منقضی شده است؛ دوباره وارد شوید.",
+      error: "Ù†Ø´Ø³Øª Ù…Ø¯ÛŒØ±ÛŒØª Ù…Ù†Ù‚Ø¶ÛŒ Ø´Ø¯Ù‡ Ø§Ø³ØªØ› Ø¯ÙˆØ¨Ø§Ø±Ù‡ ÙˆØ§Ø±Ø¯ Ø´ÙˆÛŒØ¯.",
     };
   }
 
@@ -734,7 +745,9 @@ export async function updateAdminProductAction(
         formData,
       );
 
-    await ensureUniqueIdentity({
+    
+
+await ensureUniqueIdentity({
       slug:
         input.slug,
       sku:
@@ -790,7 +803,7 @@ export async function updateAdminProductAction(
   } catch (error) {
     return {
       error:
-        publicAdminProductError(error, "ذخیره تغییرات محصول انجام نشد.", "update"),
+        publicAdminProductError(error, "Ø°Ø®ÛŒØ±Ù‡ ØªØºÛŒÛŒØ±Ø§Øª Ù…Ø­ØµÙˆÙ„ Ø§Ù†Ø¬Ø§Ù… Ù†Ø´Ø¯.", "update"),
     };
   }
 
@@ -811,3 +824,12 @@ export async function updateAdminProductAction(
     `/${input.locale}/admin/products/${productId}?saved=1`,
   );
 }
+
+
+
+
+
+
+
+
+

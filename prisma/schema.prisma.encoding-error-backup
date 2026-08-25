@@ -1,0 +1,1056 @@
+﻿generator client {
+  provider        = "prisma-client"
+  output          = "../src/generated/prisma"
+  previewFeatures = ["relationJoins"]
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum ProductStatus {
+  DRAFT
+  ACTIVE
+  OUT_OF_STOCK
+  ARCHIVED
+}
+
+enum Currency {
+  TOMAN
+  USD
+}
+
+enum MaterialType {
+  GOLD
+  SILVER
+}
+
+enum PricingMode {
+  DYNAMIC
+  MANUAL
+}
+
+enum MakingChargeType {
+  NONE
+  FIXED
+  PER_GRAM
+  PERCENT
+  COMBINED
+}
+
+enum OrderStatus {
+  PENDING_PAYMENT
+  PAID
+  PROCESSING
+  SHIPPED
+  COMPLETED
+  PAYMENT_FAILED
+  PAYMENT_REVIEW
+  CANCELLED
+  EXPIRED
+  REFUNDED
+}
+
+enum PaymentStatus {
+  CREATED
+  REDIRECTED
+  PENDING_VERIFICATION
+  REQUIRES_REVIEW
+  PAID
+  FAILED
+  CANCELLED
+  EXPIRED
+  REFUNDED
+}
+
+enum FinanceExpenseCategory {
+  INVENTORY_PURCHASE
+  SHIPPING_COST
+  MARKETING
+  RENT
+  PAYROLL
+  GATEWAY_FEE
+  PACKAGING
+  TAX
+  SOFTWARE
+  OTHER
+}
+
+enum FinanceExpenseStatus {
+  POSTED
+  VOID
+}
+
+// Content is intentionally reviewed before it reaches the public journal.
+// The site may prepare a factual product-assisted draft, but it never
+// publishes generated copy without an explicit admin decision.
+enum ContentArticleStatus {
+  DRAFT
+  IN_REVIEW
+  PUBLISHED
+  ARCHIVED
+}
+
+enum ContentArticleOrigin {
+  MANUAL
+  PRODUCT_ASSISTED
+}
+
+enum AuditActorType {
+  SYSTEM
+  CUSTOMER
+  ADMIN
+  PAYMENT_GATEWAY
+}
+
+// Support chat stays deliberately separate from orders and payment data.
+// A visitor receives only an opaque browser token; the token hash is stored.
+enum SupportConversationStatus {
+  OPEN
+  CLOSED
+}
+
+enum SupportMessageAuthor {
+  VISITOR
+  ADMIN
+}
+
+model AdminSession {
+  id          String    @id @default(uuid()) @db.Uuid
+  sessionHash String    @unique @db.VarChar(64)
+  ipHash      String?   @db.VarChar(64)
+  userAgent   String?   @db.VarChar(500)
+  expiresAt   DateTime
+  revokedAt   DateTime?
+  lastSeenAt  DateTime  @default(now())
+  createdAt   DateTime  @default(now())
+
+  @@index([expiresAt])
+  @@index([revokedAt])
+  @@map("admin_sessions")
+}
+
+model AdminSecurityEvent {
+  id         String          @id @default(uuid()) @db.Uuid
+  eventType  String          @db.VarChar(100)
+  successful Boolean
+  ipHash     String?         @db.VarChar(64)
+  userAgent  String?         @db.VarChar(500)
+  payload    Json?
+  createdAt  DateTime        @default(now())
+  alerts     SecurityAlert[]
+
+  @@index([eventType, createdAt])
+  @@index([successful, createdAt])
+  @@map("admin_security_events")
+}
+
+model CronLease {
+  key         String   @id @db.VarChar(100)
+  holder      String   @db.VarChar(128)
+  lockedUntil DateTime
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([lockedUntil])
+  @@map("cron_leases")
+}
+
+model RateLimitBucket {
+  key       String   @id @db.VarChar(190)
+  count     Int      @default(0)
+  resetAt   DateTime
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([resetAt])
+  @@map("rate_limit_buckets")
+}
+
+model Collection {
+  id            String  @id @default(uuid()) @db.Uuid
+  slug          String  @unique
+  nameFa        String
+  nameEn        String
+  descriptionFa String?
+  descriptionEn String?
+  imageUrl      String?
+  displayOrder  Int     @default(0)
+  isActive      Boolean @default(true)
+
+  products Product[]
+  articles ContentArticle[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([isActive, displayOrder])
+  @@map("collections")
+}
+
+model Product {
+  id           String @id @default(uuid()) @db.Uuid
+  collectionId String @db.Uuid
+
+  slug String  @unique
+  sku  String? @unique
+
+  nameFa String
+  nameEn String
+
+  descriptionFa String?
+  descriptionEn String?
+
+  material MaterialType @default(GOLD)
+
+  metalWeight Decimal? @map("goldWeight") @db.Decimal(10, 3)
+
+  purity String?
+
+  purityFineness Int?
+
+  pricingMode PricingMode @default(DYNAMIC)
+
+  price Decimal? @db.Decimal(18, 0)
+
+  compareAtPrice Decimal? @db.Decimal(18, 0)
+
+  makingChargeType MakingChargeType @default(NONE)
+
+  makingChargeFixed Decimal @default(0) @db.Decimal(18, 0)
+
+  makingChargePerGram Decimal @default(0) @db.Decimal(18, 0)
+
+  makingChargePercent Decimal @default(0) @db.Decimal(7, 3)
+
+  artisticFee Decimal @default(0) @db.Decimal(18, 0)
+
+  profitPercent Decimal? @db.Decimal(7, 3)
+
+  taxPercent Decimal? @db.Decimal(7, 3)
+
+  currency Currency @default(TOMAN)
+
+  legendFa String?
+  legendEn String?
+
+  mythName String?
+  mythStory String?
+  mythOrigin String?
+  mythKeywords String[] @default([])
+  mythApproved Boolean @default(false)
+
+  stock          Int           @default(0)
+  specifications Json?
+  status         ProductStatus @default(DRAFT)
+  isFeatured     Boolean       @default(false)
+  displayOrder   Int           @default(0)
+
+  collection Collection       @relation(fields: [collectionId], references: [id], onDelete: Restrict)
+  images     ProductImage[]
+  variants   ProductVariant[]
+  orderItems OrderItem[]
+
+  favorites      CustomerFavorite[]
+  productWatches CustomerProductWatch[]
+  articles       ContentArticle[]
+  createdAt      DateTime               @default(now())
+  updatedAt      DateTime               @updatedAt
+
+  @@index([collectionId, status, displayOrder])
+  @@index([material, status])
+  @@index([pricingMode, status])
+  @@index([isFeatured, status])
+  @@map("products")
+}
+
+model ProductImage {
+  id        String @id @default(uuid()) @db.Uuid
+  productId String @db.Uuid
+
+  imageUrl String
+  altFa    String?
+  altEn    String?
+
+  width        Int?
+  height       Int?
+  isPrimary    Boolean @default(false)
+  displayOrder Int     @default(0)
+
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([productId, displayOrder])
+  @@index([productId, isPrimary])
+  @@map("product_images")
+}
+
+model ProductVariant {
+  id        String @id @default(uuid()) @db.Uuid
+  productId String @db.Uuid
+
+  titleFa String
+  titleEn String
+
+  sku String? @unique
+
+  price Decimal? @db.Decimal(18, 0)
+
+  stock Int @default(0)
+
+  metalWeight Decimal? @map("goldWeight") @db.Decimal(10, 3)
+
+  purity String?
+
+  purityFineness Int?
+
+  makingChargeFixed Decimal? @db.Decimal(18, 0)
+
+  makingChargePerGram Decimal? @db.Decimal(18, 0)
+
+  makingChargePercent Decimal? @db.Decimal(7, 3)
+
+  artisticFee Decimal? @db.Decimal(18, 0)
+
+  attributes Json?
+
+  isActive     Boolean @default(true)
+  displayOrder Int     @default(0)
+
+  product    Product     @relation(fields: [productId], references: [id], onDelete: Cascade)
+  orderItems OrderItem[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([productId, isActive, displayOrder])
+  @@map("product_variants")
+}
+
+model PricingPolicy {
+  id String @id @default(uuid()) @db.Uuid
+
+  material MaterialType @unique
+
+  referencePurity Int
+
+  defaultProfitPercent Decimal @default(7) @db.Decimal(7, 3)
+
+  defaultTaxPercent Decimal @default(10) @db.Decimal(7, 3)
+
+  taxMetalValue Boolean @default(false)
+
+  quoteTtlSeconds Int @default(120)
+
+  staleAfterMinutes Int @default(15)
+
+  closedMarketPricingEnabled Boolean @default(true)
+
+  closedMarketMaxAgeMinutes Int @default(14400)
+
+  closedMarketSafetyMarginPercent Decimal @default(3) @db.Decimal(7, 3)
+
+  roundingStep Int @default(1)
+
+  isActive Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([material, isActive])
+  @@map("pricing_policies")
+}
+
+model MetalPrice {
+  id String @id @default(uuid()) @db.Uuid
+
+  material MaterialType @unique
+
+  pricePerGram Decimal @db.Decimal(18, 0)
+
+  referencePurity Int @default(750)
+
+  currency Currency @default(TOMAN)
+
+  source String?
+
+  sourceSymbol String @default("")
+
+  sourceUnit String?
+
+  sourceDate String?
+
+  sourceTime String?
+
+  sourceTimeUnix BigInt?
+
+  fetchedAt DateTime @default(now())
+
+  lastSuccessAt DateTime @default(now())
+
+  lastError String? @db.Text
+
+  rawPayload Json?
+
+  history MetalPriceHistory[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([material, lastSuccessAt])
+  @@index([updatedAt])
+  @@map("metal_prices")
+}
+
+model MetalPriceHistory {
+  id String @id @default(uuid()) @db.Uuid
+
+  metalPriceId String @db.Uuid
+
+  material MaterialType
+
+  pricePerGram Decimal @db.Decimal(18, 0)
+
+  referencePurity Int
+
+  currency Currency @default(TOMAN)
+
+  source String?
+
+  sourceSymbol String
+
+  sourceUnit String?
+
+  sourceDate String?
+
+  sourceTime String?
+
+  sourceTimeUnix BigInt?
+
+  fetchedAt DateTime
+
+  fingerprint String @unique @db.VarChar(64)
+
+  rawPayload Json?
+
+  metalPrice MetalPrice @relation(fields: [metalPriceId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@index([material, fetchedAt])
+  @@index([metalPriceId, fetchedAt])
+  @@map("metal_price_history")
+}
+
+model Order {
+  id String @id @default(uuid()) @db.Uuid
+
+  orderNumber String @unique @db.VarChar(32)
+
+  idempotencyKey String @unique @db.VarChar(128)
+
+  locale String @default("fa") @db.VarChar(10)
+
+  currency Currency @default(TOMAN)
+
+  status OrderStatus @default(PENDING_PAYMENT)
+
+  customerFullName String?
+  customerMobile   String? @db.VarChar(20)
+  customerEmail    String?
+
+  customerId String?   @db.Uuid
+  customer   Customer? @relation(fields: [customerId], references: [id], onDelete: SetNull)
+
+  province   String?
+  city       String?
+  postalCode String? @db.VarChar(20)
+  address    String? @db.Text
+
+  subtotalToman Decimal @db.Decimal(18, 0)
+
+  shippingToman Decimal @default(0) @db.Decimal(18, 0)
+
+  discountToman Decimal @default(0) @db.Decimal(18, 0)
+
+  payableToman Decimal @db.Decimal(18, 0)
+
+  pricingSnapshot Json
+
+  priceVerifiedAt DateTime
+
+  priceExpiresAt DateTime
+
+  inventoryReservedAt DateTime
+
+  inventoryExpiresAt DateTime
+
+  inventoryReleasedAt DateTime?
+
+  inventoryCommittedAt DateTime?
+
+  paidAt DateTime?
+
+  cancelledAt DateTime?
+
+  expiredAt DateTime?
+
+  refundedAt DateTime?
+
+  items                 OrderItem[]
+  payments              PaymentAttempt[]
+  auditEvents           OrderAuditEvent[]
+  customerNotifications CustomerNotification[]
+  shipments             Shipment[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([status, createdAt])
+  @@index([status, paidAt])
+  @@index([customerMobile, createdAt])
+  @@index([customerId, createdAt])
+  @@index([priceExpiresAt])
+  @@index([inventoryExpiresAt])
+  @@map("orders")
+}
+
+model OrderItem {
+  id String @id @default(uuid()) @db.Uuid
+
+  orderId String @db.Uuid
+
+  productId String? @db.Uuid
+
+  variantId String? @db.Uuid
+
+  productSlug String
+
+  productSku String?
+
+  productNameFa String
+
+  productNameEn String
+
+  variantTitleFa String?
+
+  variantTitleEn String?
+
+  variantSku String?
+
+  material MaterialType
+
+  quantity Int
+
+  unitPriceToman Decimal @db.Decimal(18, 0)
+
+  lineTotalToman Decimal @db.Decimal(18, 0)
+
+  metalValueToman Decimal? @db.Decimal(18, 0)
+
+  makingChargeToman Decimal? @db.Decimal(18, 0)
+
+  artisticFeeToman Decimal? @db.Decimal(18, 0)
+
+  profitToman Decimal? @db.Decimal(18, 0)
+
+  taxToman Decimal? @db.Decimal(18, 0)
+
+  originalMetalRateToman Decimal? @db.Decimal(18, 0)
+
+  effectiveMetalRateToman Decimal? @db.Decimal(18, 0)
+
+  metalRateMode String? @db.VarChar(32)
+
+  metalRateReason String? @db.VarChar(64)
+
+  safetyMarginPercent Decimal? @db.Decimal(7, 3)
+
+  safetyMarginToman Decimal? @db.Decimal(18, 0)
+
+  stockBeforeReservation Int
+
+  stockAfterReservation Int
+
+  pricingSnapshot Json
+
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  product Product? @relation(fields: [productId], references: [id], onDelete: SetNull)
+
+  variant ProductVariant? @relation(fields: [variantId], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now())
+
+  @@index([orderId])
+  @@index([productId])
+  @@index([variantId])
+  @@index([material])
+  @@map("order_items")
+}
+
+model PaymentAttempt {
+  id String @id @default(uuid()) @db.Uuid
+
+  orderId String @db.Uuid
+
+  provider String @db.VarChar(50)
+
+  status PaymentStatus @default(CREATED)
+
+  amountToman Decimal @db.Decimal(18, 0)
+
+  gatewayAuthority String? @unique @db.VarChar(128)
+
+  gatewayReference String? @unique @db.VarChar(128)
+
+  activeKey String? @unique @db.VarChar(180)
+
+  requestPayload Json?
+
+  responsePayload Json?
+
+  callbackPayload Json?
+
+  verificationPayload Json?
+
+  errorCode String? @db.VarChar(100)
+
+  errorMessage String? @db.Text
+
+  requestedAt DateTime @default(now())
+
+  redirectedAt DateTime?
+
+  callbackReceivedAt DateTime?
+
+  verificationStartedAt DateTime?
+
+  verificationLeaseExpiresAt DateTime?
+
+  verifiedAt DateTime?
+
+  failedAt DateTime?
+
+  refundedAt DateTime?
+
+  refundReference   String?  @db.VarChar(160)
+  refundAmountToman Decimal? @db.Decimal(18, 0)
+  refundNote        String?  @db.Text
+
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([orderId, status])
+  @@index([status, createdAt])
+  @@index([status, verifiedAt])
+  @@index([status, refundedAt])
+  @@index([provider, createdAt])
+  @@index([verificationLeaseExpiresAt])
+  @@index([refundReference])
+  @@map("payment_attempts")
+}
+
+// External costs are recorded separately from orders so that cash flow,
+// operating margin, and audit evidence remain traceable.
+model FinanceExpense {
+  id             String                 @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  documentNumber String                 @unique @db.VarChar(32)
+  status         FinanceExpenseStatus   @default(POSTED)
+  category       FinanceExpenseCategory
+  amountToman    Decimal                @db.Decimal(18, 0)
+  taxToman       Decimal                @default(0) @db.Decimal(18, 0)
+  occurredAt     DateTime
+  supplier       String                 @db.VarChar(160)
+  reference      String                 @db.VarChar(160)
+  note           String?                @db.Text
+  voidedAt       DateTime?
+  voidReason     String?                @db.Text
+  createdAt      DateTime               @default(now())
+  updatedAt      DateTime               @updatedAt
+
+  auditEvents FinanceExpenseAuditEvent[]
+
+  @@index([status, occurredAt])
+  @@index([category, occurredAt])
+  @@index([reference])
+  @@map("finance_expenses")
+}
+
+model FinanceExpenseAuditEvent {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  expenseId String   @db.Uuid
+  eventType String   @db.VarChar(80)
+  payload   Json
+  createdAt DateTime @default(now())
+
+  expense FinanceExpense @relation(fields: [expenseId], references: [id], onDelete: Restrict)
+
+  @@index([expenseId, createdAt])
+  @@index([eventType, createdAt])
+  @@map("finance_expense_audit_events")
+}
+
+// SEO/content studio. Public pages only query PUBLISHED rows. The source
+// relations make assisted copy traceable to the product or collection it
+// describes, and immutable audit rows record every editorial state change.
+model ContentArticle {
+  id                 String               @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  slug               String               @unique @db.VarChar(140)
+  status             ContentArticleStatus @default(DRAFT)
+  origin             ContentArticleOrigin @default(MANUAL)
+  sourceProductId    String?              @db.Uuid
+  sourceCollectionId String?              @db.Uuid
+  titleFa            String               @db.VarChar(180)
+  titleEn            String               @db.VarChar(180)
+  excerptFa          String               @db.VarChar(360)
+  excerptEn          String               @db.VarChar(360)
+  contentFa          String               @db.Text
+  contentEn          String               @db.Text
+  seoTitleFa         String?              @db.VarChar(180)
+  seoTitleEn         String?              @db.VarChar(180)
+  seoDescriptionFa   String?              @db.VarChar(180)
+  seoDescriptionEn   String?              @db.VarChar(180)
+  focusKeywordFa     String?              @db.VarChar(120)
+  focusKeywordEn     String?              @db.VarChar(120)
+  coverImageUrl      String?              @db.Text
+  publishedAt        DateTime?
+  archivedAt         DateTime?
+  createdAt          DateTime             @default(now())
+  updatedAt          DateTime             @updatedAt
+
+  sourceProduct    Product?                   @relation(fields: [sourceProductId], references: [id], onDelete: SetNull)
+  sourceCollection Collection?                @relation(fields: [sourceCollectionId], references: [id], onDelete: SetNull)
+  auditEvents      ContentArticleAuditEvent[]
+
+  @@index([status, publishedAt])
+  @@index([updatedAt])
+  @@index([sourceProductId])
+  @@index([sourceCollectionId])
+  @@map("content_articles")
+}
+
+model ContentArticleAuditEvent {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  articleId String   @db.Uuid
+  eventType String   @db.VarChar(80)
+  payload   Json
+  createdAt DateTime @default(now())
+
+  article ContentArticle @relation(fields: [articleId], references: [id], onDelete: Restrict)
+
+  @@index([articleId, createdAt])
+  @@index([eventType, createdAt])
+  @@map("content_article_audit_events")
+}
+
+// One daily snapshot makes SEO regressions measurable over time rather than
+// relying on a decorative score in the dashboard.
+model ContentSeoSnapshot {
+  id                         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  recordedFor                DateTime @unique @db.Date
+  overallScore               Int
+  publishedArticleCount      Int
+  draftArticleCount          Int
+  activeProductCount         Int
+  productsMissingDescription Int
+  productsMissingImageAlt    Int
+  stalePublishedArticleCount Int
+  issues                     Json
+  createdAt                  DateTime @default(now())
+
+  @@index([createdAt])
+  @@map("content_seo_snapshots")
+}
+
+// A compact, factual daily operating brief. It is created only by the
+// authenticated automation route and lets the admin panel distinguish a
+// genuinely running scheduler from a static dashboard.
+model DailyStoreBriefing {
+  id                String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  recordedFor       DateTime @unique @db.Date
+  actionCount       Int
+  highPriorityCount Int
+  summary           Json
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @default(now()) @updatedAt
+
+  @@index([createdAt])
+  @@map("daily_store_briefings")
+}
+
+model OrderAuditEvent {
+  id String @id @default(uuid()) @db.Uuid
+
+  orderId String @db.Uuid
+
+  actorType AuditActorType @default(SYSTEM)
+
+  eventType String @db.VarChar(100)
+
+  requestId String? @db.VarChar(128)
+
+  payload Json?
+
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@index([orderId, createdAt])
+  @@index([eventType, createdAt])
+  @@map("order_audit_events")
+}
+
+// ELORIA_PRODUCTION_V3_CUSTOMER_ACCOUNTS
+model Customer {
+  id                   String                 @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  mobile               String                 @unique @db.VarChar(20)
+  fullName             String?
+  email                String?
+  mobileVerifiedAt     DateTime?
+  lastLoginAt          DateTime?
+  isActive             Boolean                @default(true)
+  sessions             CustomerSession[]
+  addresses            CustomerAddress[]
+  favorites            CustomerFavorite[]
+  productWatches       CustomerProductWatch[]
+  notifications        CustomerNotification[]
+  supportConversations SupportConversation[]
+  orders               Order[]
+  createdAt            DateTime               @default(now())
+  updatedAt            DateTime               @default(now()) @updatedAt
+
+  @@index([isActive, createdAt])
+  @@map("customers")
+}
+
+model CustomerSession {
+  id          String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  customerId  String    @db.Uuid
+  sessionHash String    @unique @db.VarChar(64)
+  ipHash      String?   @db.VarChar(64)
+  userAgent   String?   @db.VarChar(500)
+  expiresAt   DateTime
+  revokedAt   DateTime?
+  lastSeenAt  DateTime  @default(now())
+  createdAt   DateTime  @default(now())
+  customer    Customer  @relation(fields: [customerId], references: [id], onDelete: Cascade)
+
+  @@index([customerId, expiresAt])
+  @@index([revokedAt])
+  @@map("customer_sessions")
+}
+
+model CustomerOtpChallenge {
+  id            String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  mobile        String    @db.VarChar(20)
+  codeHash      String    @db.VarChar(64)
+  purpose       String    @default("LOGIN") @db.VarChar(32)
+  attempts      Int       @default(0)
+  maxAttempts   Int       @default(5)
+  expiresAt     DateTime
+  consumedAt    DateTime?
+  requestIpHash String?   @db.VarChar(64)
+  createdAt     DateTime  @default(now())
+
+  @@index([mobile, createdAt])
+  @@index([expiresAt])
+  @@map("customer_otp_challenges")
+}
+
+model CustomerAddress {
+  id            String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  customerId    String   @db.Uuid
+  title         String   @default("Ø¢Ø¯Ø±Ø³ Ù…Ù†") @db.VarChar(80)
+  recipientName String
+  mobile        String   @db.VarChar(20)
+  province      String
+  city          String
+  postalCode    String   @db.VarChar(20)
+  address       String   @db.Text
+  isDefault     Boolean  @default(false)
+  customer      Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @default(now()) @updatedAt
+
+  @@index([customerId, isDefault])
+  @@map("customer_addresses")
+}
+
+model CustomerFavorite {
+  customerId String   @db.Uuid
+  productId  String   @db.Uuid
+  customer   Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  product    Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  createdAt  DateTime @default(now())
+
+  @@id([customerId, productId])
+  @@index([productId])
+  @@map("customer_favorites")
+}
+
+// Customers can opt in to price-drop and restock notifications for a product.
+// Notifications remain in-account; no mobile number or third-party marketing
+// channel is used by this feature.
+model CustomerProductWatch {
+  id                     String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  customerId             String    @db.Uuid
+  productId              String    @db.Uuid
+  notifyOnPriceDrop      Boolean   @default(true)
+  notifyOnRestock        Boolean   @default(true)
+  lastObservedPriceToman Decimal?  @db.Decimal(18, 0)
+  lastObservedInStock    Boolean?
+  lastNotifiedAt         DateTime?
+  createdAt              DateTime  @default(now())
+  updatedAt              DateTime  @default(now()) @updatedAt
+
+  customer Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  product  Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([customerId, productId])
+  @@index([productId, updatedAt])
+  @@index([customerId, createdAt])
+  @@map("customer_product_watches")
+}
+
+model CustomerNotification {
+  id         String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  customerId String    @db.Uuid
+  type       String    @db.VarChar(64)
+  titleFa    String
+  titleEn    String
+  bodyFa     String
+  bodyEn     String
+  orderId    String?   @db.Uuid
+  readAt     DateTime?
+  customer   Customer  @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  order      Order?    @relation(fields: [orderId], references: [id], onDelete: SetNull)
+  createdAt  DateTime  @default(now())
+
+  @@index([customerId, createdAt])
+  @@index([customerId, readAt])
+  @@index([orderId])
+  @@map("customer_notifications")
+}
+
+// Privacy-first, consented telemetry. The schema deliberately contains no
+// personal profile fields, IP address, user agent, query string, or referrer.
+model SiteMeasurementEvent {
+  id             String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  eventKey       String   @unique @db.VarChar(160)
+  eventType      String   @db.VarChar(40)
+  locale         String   @db.VarChar(10)
+  path           String   @db.VarChar(240)
+  sessionId      String   @db.VarChar(80)
+  productSlug    String?  @db.VarChar(140)
+  metricName     String?  @db.VarChar(32)
+  metricValue    Decimal? @db.Decimal(18, 4)
+  metricRating   String?  @db.VarChar(24)
+  navigationType String?  @db.VarChar(32)
+  occurredAt     DateTime
+  createdAt      DateTime @default(now())
+
+  @@index([eventType, occurredAt])
+  @@index([path, occurredAt])
+  @@index([productSlug, occurredAt])
+  @@index([metricName, occurredAt])
+  @@map("site_measurement_events")
+}
+
+model Shipment {
+  id           String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  orderId      String    @db.Uuid
+  carrier      String    @db.VarChar(120)
+  trackingCode String    @db.VarChar(160)
+  status       String    @default("PROCESSING") @db.VarChar(40)
+  note         String?   @db.Text
+  shippedAt    DateTime?
+  order        Order     @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @default(now()) @updatedAt
+
+  @@unique([orderId, carrier, trackingCode])
+  @@index([orderId, createdAt])
+  @@map("shipments")
+}
+
+model SecurityAlert {
+  id            String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  sourceEventId String    @db.Uuid
+  eventType     String    @db.VarChar(100)
+  severity      String    @db.VarChar(16)
+  scope         String    @db.VarChar(32)
+  channel       String    @db.VarChar(16)
+  status        String    @default("PENDING") @db.VarChar(16)
+  dedupeKey     String    @unique @db.VarChar(64)
+  payload       Json
+  attempts      Int       @default(0)
+  nextAttemptAt DateTime  @default(now())
+  lastAttemptAt DateTime?
+  sentAt        DateTime?
+  lastError     String?   @db.VarChar(300)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @default(now()) @updatedAt
+
+  sourceEvent AdminSecurityEvent @relation(fields: [sourceEventId], references: [id], onDelete: Cascade)
+
+  @@index([status, nextAttemptAt])
+  @@index([severity, createdAt])
+  @@index([sourceEventId, createdAt])
+  @@map("security_alerts")
+}
+
+// ELORIA_LUXURY_SUPPORT_CHAT_V1
+// Support records are not connected to payment data. Customer linking is
+// optional and is only made for an already authenticated customer.
+model SupportConversation {
+  id              String                    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  accessTokenHash String                    @unique @db.VarChar(64)
+  customerId      String?                   @db.Uuid
+  locale          String                    @default("fa") @db.VarChar(10)
+  visitorName     String?                   @db.VarChar(120)
+  visitorEmail    String?                   @db.VarChar(254)
+  visitorPhone    String?                   @db.VarChar(30)
+  status          SupportConversationStatus @default(OPEN)
+  lastMessageAt   DateTime                  @default(now())
+  closedAt        DateTime?
+  createdAt       DateTime                  @default(now())
+  updatedAt       DateTime                  @default(now()) @updatedAt
+
+  customer Customer?        @relation(fields: [customerId], references: [id], onDelete: SetNull)
+  messages SupportMessage[]
+
+  @@index([status, lastMessageAt])
+  @@index([customerId, createdAt])
+  @@map("support_conversations")
+}
+
+model SupportMessage {
+  id             String               @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  conversationId String               @db.Uuid
+  author         SupportMessageAuthor
+  body           String               @db.Text
+  readAt         DateTime?
+  createdAt      DateTime             @default(now())
+
+  conversation SupportConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  @@index([conversationId, createdAt])
+  @@index([author, readAt])
+  @@map("support_messages")
+}
+
+// The agent presence row is a heartbeat written only from an authenticated
+// admin inbox. It makes the public "online" indicator factual, not cosmetic.
+model SupportAgentPresence {
+  id         String   @id @default("primary") @db.VarChar(32)
+  lastSeenAt DateTime
+  updatedAt  DateTime @default(now()) @updatedAt
+
+  @@map("support_agent_presence")
+}
+
