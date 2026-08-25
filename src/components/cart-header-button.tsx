@@ -33,36 +33,36 @@ function EloriaBagIcon({
       className={className}
     >
       <path
-        d="M9.4 12.2H22.6L24.3 26H7.7L9.4 12.2Z"
+        d="M7 14.5H25L23.5 25.5H8.5L7 14.5Z"
         stroke="currentColor"
         strokeWidth="1.35"
         strokeLinejoin="round"
       />
 
       <path
-        d="M12 13V10.1C12 7.8 13.8 6 16 6C18.2 6 20 7.8 20 10.1V13"
+        d="M8 14.5L11 7.5H21L24 14.5"
         stroke="currentColor"
         strokeWidth="1.35"
-        strokeLinecap="round"
+        strokeLinejoin="round"
       />
 
       <path
-        d="M16 15.5C17.5 18.1 19.1 19.3 21.4 20.1C19.1 20.9 17.5 22.1 16 24.7C14.5 22.1 12.9 20.9 10.6 20.1C12.9 19.3 14.5 18.1 16 15.5Z"
+        d="M11 18H21"
+        stroke="currentColor"
+        strokeWidth="1.1"
+        strokeLinecap="round"
+        opacity="0.65"
+      />
+
+      <path
+        d="M16 16.5L18.2 19L16 21.5L13.8 19L16 16.5Z"
         stroke="currentColor"
         strokeWidth="1.05"
         strokeLinejoin="round"
       />
-
-      <circle
-        cx="16"
-        cy="20.1"
-        r="1.05"
-        fill="currentColor"
-      />
     </svg>
   );
 }
-
 export function CartHeaderButton({
   locale,
   variant = "default",
@@ -174,12 +174,16 @@ export function CartHeaderButton({
         )}
       </span>
 
-      <span className="relative hidden whitespace-nowrap text-[11px] font-medium sm:inline">
+      <span className="relative whitespace-nowrap text-[11px] font-medium">
         {cartText}
       </span>
     </Link>
   );
 }
+
+
+
+
 
 
 

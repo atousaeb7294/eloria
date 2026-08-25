@@ -44,7 +44,9 @@ export type NetworkInformationLike = {
 export const INTRO_ASSET_VERSION = "2026-08-13-full-first-video-v1";
 
 export const INTRO_VIDEO_ONE_SRC =
-  `/videos/eloria-opening-v4.mp4?v=${INTRO_ASSET_VERSION}`;
+  `/videos/eloria-entry-v3.mp4?v=${INTRO_ASSET_VERSION}`;
 
 export const INTRO_VIDEO_TWO_SRC =
-  `/videos/eloria-entry-v3.mp4?v=${INTRO_ASSET_VERSION}`;
+  `/videos/eloria-opening-v4.mp4?v=${INTRO_ASSET_VERSION}`;
+
+
