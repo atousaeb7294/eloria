@@ -1,5 +1,6 @@
-﻿import { generateProductMyth } from "@/lib/product-myth-generator";
 "use server";
+
+import { generateProductMyth } from "@/lib/product-myth-generator";
 
 import {
   revalidatePath,
@@ -101,7 +102,7 @@ function readText(
   ) {
     if (required) {
       throw new AdminProductActionError(
-        `ÙÛŒÙ„Ø¯ ${key} Ø§Ù„Ø²Ø§Ù…ÛŒ Ø§Ø³Øª.`,
+        `فیلد ${key} الزامی است.`,
       );
     }
 
@@ -116,7 +117,7 @@ function readText(
     !normalized
   ) {
     throw new AdminProductActionError(
-      "Ù„Ø·ÙØ§Ù‹ ØªÙ…Ø§Ù… ÙÛŒÙ„Ø¯Ù‡Ø§ÛŒ Ø§Ù„Ø²Ø§Ù…ÛŒ Ø±Ø§ ØªÚ©Ù…ÛŒÙ„ Ú©Ù†ÛŒØ¯.",
+      "لطفاً تمام فیلدهای الزامی را تکمیل کنید.",
     );
   }
 
@@ -125,7 +126,7 @@ function readText(
     maximumLength
   ) {
     throw new AdminProductActionError(
-      "Ø·ÙˆÙ„ ÛŒÚ©ÛŒ Ø§Ø² ÙÛŒÙ„Ø¯Ù‡Ø§ Ø¨ÛŒØ´ Ø§Ø² Ø­Ø¯ Ù…Ø¬Ø§Ø² Ø§Ø³Øª.",
+      "طول یکی از فیلدها بیش از حد مجاز است.",
     );
   }
 
@@ -136,14 +137,14 @@ function normalizeDigits(
   value: string,
 ): string {
   const persianDigits =
-    "Û°Û±Û²Û³Û´ÛµÛ¶Û·Û¸Û¹";
+    "۰۱۲۳۴۵۶۷۸۹";
 
   const arabicDigits =
-    "Ù Ù¡Ù¢Ù£Ù¤Ù¥Ù¦Ù§Ù¨Ù©";
+    "٠١٢٣٤٥٦٧٨٩";
 
   return value
     .replace(
-      /[Û°-Û¹]/g,
+      /[۰-۹]/g,
       (digit) =>
         String(
           persianDigits.indexOf(
@@ -152,7 +153,7 @@ function normalizeDigits(
         ),
     )
     .replace(
-      /[Ù -Ù©]/g,
+      /[٠-٩]/g,
       (digit) =>
         String(
           arabicDigits.indexOf(
@@ -160,8 +161,8 @@ function normalizeDigits(
           ),
         ),
     )
-    .replace(/[Ù¬,\s]/g, "")
-    .replace("Ù«", ".");
+    .replace(/[٬,\s]/g, "")
+    .replace("٫", ".");
 }
 
 function readDecimal(
@@ -189,7 +190,7 @@ function readDecimal(
     )
   ) {
     throw new AdminProductActionError(
-      "Ù…Ù‚Ø§Ø¯ÛŒØ± Ø¹Ø¯Ø¯ÛŒ Ù…Ø¹ØªØ¨Ø± Ù†ÛŒØ³ØªÙ†Ø¯.",
+      "مقادیر عددی معتبر نیستند.",
     );
   }
 
@@ -197,7 +198,7 @@ function readDecimal(
     Number(normalized) < 0
   ) {
     throw new AdminProductActionError(
-      "Ù…Ù‚Ø§Ø¯ÛŒØ± Ø¹Ø¯Ø¯ÛŒ Ù†Ù…ÛŒâ€ŒØªÙˆØ§Ù†Ù†Ø¯ Ù…Ù†ÙÛŒ Ø¨Ø§Ø´Ù†Ø¯.",
+      "مقادیر عددی نمی‌توانند منفی باشند.",
     );
   }
 
@@ -231,7 +232,7 @@ function readInteger(
     )
   ) {
     throw new AdminProductActionError(
-      "ÛŒÚ©ÛŒ Ø§Ø² Ù…Ù‚Ø§Ø¯ÛŒØ± ØµØ­ÛŒØ­ Ø®Ø§Ø±Ø¬ Ø§Ø² Ù…Ø­Ø¯ÙˆØ¯Ù‡ Ù…Ø¬Ø§Ø² Ø§Ø³Øª.",
+      "یکی از مقادیر صحیح خارج از محدوده مجاز است.",
     );
   }
 
@@ -244,7 +245,7 @@ function readInteger(
     value > maximum
   ) {
     throw new AdminProductActionError(
-      "ÛŒÚ©ÛŒ Ø§Ø² Ù…Ù‚Ø§Ø¯ÛŒØ± ØµØ­ÛŒØ­ Ø®Ø§Ø±Ø¬ Ø§Ø² Ù…Ø­Ø¯ÙˆØ¯Ù‡ Ù…Ø¬Ø§Ø² Ø§Ø³Øª.",
+      "یکی از مقادیر صحیح خارج از محدوده مجاز است.",
     );
   }
 
@@ -295,7 +296,7 @@ function parseProductInput(
     )
   ) {
     throw new AdminProductActionError(
-      "Ø´Ù†Ø§Ø³Ù‡ URL Ø¨Ø§ÛŒØ¯ ÙÙ‚Ø· Ø´Ø§Ù…Ù„ Ø­Ø±ÙˆÙ Ø§Ù†Ú¯Ù„ÛŒØ³ÛŒ Ú©ÙˆÚ†Ú©ØŒ Ø¹Ø¯Ø¯ Ùˆ Ø®Ø· ØªÛŒØ±Ù‡ Ø¨Ø§Ø´Ø¯.",
+      "شناسه URL باید فقط شامل حروف انگلیسی کوچک، عدد و خط تیره باشد.",
     );
   }
 
@@ -308,7 +309,7 @@ function parseProductInput(
 
   if (primaryImageUrl && !isAllowedProductImageUrl(primaryImageUrl)) {
     throw new AdminProductActionError(
-      "Ø¢Ø¯Ø±Ø³ ØªØµÙˆÛŒØ± Ø®Ø§Ø±Ø¬ Ø§Ø² Ù…Ø³ÛŒØ± ÛŒØ§ Ù…ÛŒØ²Ø¨Ø§Ù†â€ŒÙ‡Ø§ÛŒ Ù…Ø¬Ø§Ø² Ø§Ø³Øª.",
+      "آدرس تصویر خارج از مسیر یا میزبان‌های مجاز است.",
     );
   }
 
@@ -335,7 +336,7 @@ function parseProductInput(
     (!price || Number(price) <= 0)
   ) {
     throw new AdminProductActionError(
-      "Ø¨Ø±Ø§ÛŒ Ù‚ÛŒÙ…Øªâ€ŒÚ¯Ø°Ø§Ø±ÛŒ Ø¯Ø³ØªÛŒØŒ Ù‚ÛŒÙ…Øª Ù†Ù‡Ø§ÛŒÛŒ Ù…Ø­ØµÙˆÙ„ Ø§Ù„Ø²Ø§Ù…ÛŒ Ø§Ø³Øª.",
+      "برای قیمت‌گذاری دستی، قیمت نهایی محصول الزامی است.",
     );
   }
 
@@ -580,12 +581,12 @@ async function ensureUniqueIdentity({
     duplicate.slug === slug
   ) {
     throw new AdminProductActionError(
-      "Ø§ÛŒÙ† Ø´Ù†Ø§Ø³Ù‡ URL Ù‚Ø¨Ù„Ø§Ù‹ Ø¨Ø±Ø§ÛŒ Ù…Ø­ØµÙˆÙ„ Ø¯ÛŒÚ¯Ø±ÛŒ Ø§Ø³ØªÙØ§Ø¯Ù‡ Ø´Ø¯Ù‡ Ø§Ø³Øª.",
+      "این شناسه URL قبلاً برای محصول دیگری استفاده شده است.",
     );
   }
 
   throw new AdminProductActionError(
-    "Ø§ÛŒÙ† Ú©Ø¯ SKU Ù‚Ø¨Ù„Ø§Ù‹ Ø¨Ø±Ø§ÛŒ Ù…Ø­ØµÙˆÙ„ Ø¯ÛŒÚ¯Ø±ÛŒ Ø§Ø³ØªÙØ§Ø¯Ù‡ Ø´Ø¯Ù‡ Ø§Ø³Øª.",
+    "این کد SKU قبلاً برای محصول دیگری استفاده شده است.",
   );
 }
 
@@ -656,7 +657,7 @@ export async function createAdminProductAction(
 ): Promise<AdminProductActionState> {
   if (!(await hasValidAdminSession())) {
     return {
-      error: "Ù†Ø´Ø³Øª Ù…Ø¯ÛŒØ±ÛŒØª Ù…Ù†Ù‚Ø¶ÛŒ Ø´Ø¯Ù‡ Ø§Ø³ØªØ› Ø¯ÙˆØ¨Ø§Ø±Ù‡ ÙˆØ§Ø±Ø¯ Ø´ÙˆÛŒØ¯.",
+      error: "نشست مدیریت منقضی شده است؛ دوباره وارد شوید.",
     };
   }
 
@@ -710,7 +711,7 @@ await ensureUniqueIdentity({
   } catch (error) {
     return {
       error:
-        publicAdminProductError(error, "Ø³Ø§Ø®Øª Ù…Ø­ØµÙˆÙ„ Ø§Ù†Ø¬Ø§Ù… Ù†Ø´Ø¯.", "create"),
+        publicAdminProductError(error, "ساخت محصول انجام نشد.", "create"),
     };
   }
 
@@ -733,7 +734,7 @@ export async function updateAdminProductAction(
 ): Promise<AdminProductActionState> {
   if (!(await hasValidAdminSession())) {
     return {
-      error: "Ù†Ø´Ø³Øª Ù…Ø¯ÛŒØ±ÛŒØª Ù…Ù†Ù‚Ø¶ÛŒ Ø´Ø¯Ù‡ Ø§Ø³ØªØ› Ø¯ÙˆØ¨Ø§Ø±Ù‡ ÙˆØ§Ø±Ø¯ Ø´ÙˆÛŒØ¯.",
+      error: "نشست مدیریت منقضی شده است؛ دوباره وارد شوید.",
     };
   }
 
@@ -803,7 +804,7 @@ await ensureUniqueIdentity({
   } catch (error) {
     return {
       error:
-        publicAdminProductError(error, "Ø°Ø®ÛŒØ±Ù‡ ØªØºÛŒÛŒØ±Ø§Øª Ù…Ø­ØµÙˆÙ„ Ø§Ù†Ø¬Ø§Ù… Ù†Ø´Ø¯.", "update"),
+        publicAdminProductError(error, "ذخیره تغییرات محصول انجام نشد.", "update"),
     };
   }
 

@@ -77,7 +77,9 @@ export async function runContentAutopilot() {
   const candidates = await prisma.product.findMany({
     where: {
       status: "ACTIVE",
-      
+      articles: {
+        none: undefined,
+      },
     },
     orderBy: [
       { isFeatured: "desc" },
@@ -195,8 +197,6 @@ export async function runContentAutopilot() {
     reason: "COMPLETED" as const,
   };
 }
-
-
 
 
 

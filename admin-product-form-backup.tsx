@@ -9,11 +9,10 @@ import {
   Save,
 } from "lucide-react";
 
-import type { AdminProductActionState } from "@/app/[locale]/admin/(protected)/products/actions";
-
 import {
   createAdminProductAction,
   updateAdminProductAction,
+  type AdminProductActionState,
 } from "@/app/[locale]/admin/(protected)/products/actions";
 
 export type AdminProductFormValue = {

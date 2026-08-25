@@ -1,19 +1,34 @@
 import OpenAI from "openai";
+
 import { eloriaMythPrompt } from "./prompts";
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
+function getOpenAIClient() {
+  const apiKey = process.env.OPENAI_API_KEY;
 
-export async function generateProductMyth(product: {
-  name: string;
-  description?: string;
+  if (!apiKey) {
+    throw new Error(
+      "OPENAI_API_KEY is missing. Please configure it before generating legends.",
+    );
+  }
+
+  return new OpenAI({
+    apiKey,
+  });
+}
+
+export async function generateProductMyth(input: {
+  nameFa: string;
+  nameEn: string;
   material?: string;
-  category?: string;
 }) {
-  const response = await openai.chat.completions.create({
-    model: "gpt-5-mini",
+  const openai = getOpenAIClient();
 
+  const response = await openai.chat.completions.create({
+    model: "gpt-4.1-mini",
+    temperature: 0.8,
+    response_format: {
+      type: "json_object",
+    },
     messages: [
       {
         role: "system",
@@ -21,14 +36,12 @@ export async function generateProductMyth(product: {
       },
       {
         role: "user",
-        content: JSON.stringify(product),
+        content: JSON.stringify(input),
       },
     ],
-
-    response_format: {
-      type: "json_object",
-    },
   });
 
-  return JSON.parse(response.choices[0].message.content || "{}");
+  return JSON.parse(
+    response.choices[0]?.message?.content ?? "{}",
+  );
 }
