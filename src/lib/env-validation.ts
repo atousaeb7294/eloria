@@ -132,6 +132,7 @@ export function productionEnvironmentChecks(): Check[] {
   const paymentEnabled = boolFlag("ELORIA_PAYMENT_ENABLED");
   const supportEnabled = boolFlag("ELORIA_SUPPORT_ENABLED");
   const supportChatEnabled = boolFlag("ELORIA_SUPPORT_CHAT_ENABLED");
+  const domesticNetworkMode = boolFlag("ELORIA_DOMESTIC_NETWORK_MODE");
   const legalPagesIndex = boolFlag("ELORIA_LEGAL_PAGES_INDEX");
   const legalIdentityRequired = commerceEnabled || legalPagesIndex;
   const legalPhone = value("ELORIA_LEGAL_SUPPORT_PHONE");
@@ -163,10 +164,20 @@ export function productionEnvironmentChecks(): Check[] {
 
   const supportTurnstileRequired =
     boolFlag("ELORIA_SUPPORT_TURNSTILE_REQUIRED");
-  const turnstileRequired =
+  const turnstileRequired = !domesticNetworkMode && (
     commerceEnabled ||
     customerAuthEnabled ||
-    (supportEnabled && supportTurnstileRequired);
+    (supportEnabled && supportTurnstileRequired));
+  const s3StorageConfigured =
+    isHttpsUrl("ELORIA_S3_ENDPOINT") &&
+    isHttpsUrl("ELORIA_S3_PUBLIC_URL") &&
+    present("ELORIA_S3_BUCKET", 2) &&
+    present("ELORIA_S3_ACCESS_KEY", 8) &&
+    present("ELORIA_S3_SECRET_KEY", 16);
+  const supabaseStorageConfigured =
+    isHttpsUrl("SUPABASE_URL") &&
+    present("SUPABASE_SERVICE_ROLE_KEY", 40) &&
+    present("ELORIA_STORAGE_BUCKET", 2);
   const trustProxy = ["true", "1"].includes(value("ELORIA_TRUST_PROXY"));
   const proxyProvider = value("ELORIA_PROXY_PROVIDER").toLowerCase();
 
@@ -192,6 +203,8 @@ export function productionEnvironmentChecks(): Check[] {
     { key: "ELORIA_PAYMENT_ENABLED", required: true, valid: isExplicitBoolean("ELORIA_PAYMENT_ENABLED"), message: "فعال/غیرفعال بودن پرداخت باید صریح باشد" },
     { key: "ELORIA_SUPPORT_ENABLED", required: true, valid: isExplicitBoolean("ELORIA_SUPPORT_ENABLED"), message: "فعال/غیرفعال بودن پشتیبانی باید صریح باشد" },
     { key: "ELORIA_SUPPORT_CHAT_ENABLED", required: false, valid: !value("ELORIA_SUPPORT_CHAT_ENABLED") || isExplicitBoolean("ELORIA_SUPPORT_CHAT_ENABLED"), message: "فعال/غیرفعال بودن گفت‌وگوی پشتیبانی در صورت تنظیم باید صریح باشد" },
+    { key: "ELORIA_DOMESTIC_NETWORK_MODE", required: true, valid: isExplicitBoolean("ELORIA_DOMESTIC_NETWORK_MODE"), message: "حالت شبکه داخلی باید صریح باشد" },
+    { key: "NEXT_PUBLIC_ELORIA_DOMESTIC_NETWORK_MODE", required: true, valid: isExplicitBoolean("NEXT_PUBLIC_ELORIA_DOMESTIC_NETWORK_MODE") && boolFlag("NEXT_PUBLIC_ELORIA_DOMESTIC_NETWORK_MODE") === domesticNetworkMode, message: "حالت شبکه داخلی سرور و مرورگر باید یکسان باشد" },
     { key: "ELORIA_SUPPORT_CHAT_RETENTION_DAYS", required: supportChatEnabled, valid: !supportChatEnabled || isIntegerInRange("ELORIA_SUPPORT_CHAT_RETENTION_DAYS", 30, 1_095), message: "نگهداری گفت‌وگوی پشتیبانی باید بین ۳۰ تا ۱۰۹۵ روز باشد" },
     { key: "ELORIA_MEASUREMENT_ENABLED", required: true, valid: isExplicitBoolean("ELORIA_MEASUREMENT_ENABLED"), message: "فعال/غیرفعال بودن سنجش ناشناس سایت باید صریح باشد" },
     { key: "ELORIA_CUSTOMER_WATCHES_ENABLED", required: true, valid: isExplicitBoolean("ELORIA_CUSTOMER_WATCHES_ENABLED"), message: "فعال/غیرفعال بودن پیگیری قیمت و موجودی باید صریح باشد" },
@@ -235,9 +248,7 @@ export function productionEnvironmentChecks(): Check[] {
     { key: "ZARINPAL_API_BASE", required: false, valid: optionalOfficialHttpsEndpoint("ZARINPAL_API_BASE", "payment.zarinpal.com", "/pg/v4/payment"), message: "API زرین‌پال فقط روی endpoint رسمی HTTPS" },
     { key: "ZARINPAL_STARTPAY_BASE", required: false, valid: optionalOfficialHttpsEndpoint("ZARINPAL_STARTPAY_BASE", "payment.zarinpal.com", "/pg/StartPay"), message: "StartPay زرین‌پال فقط روی endpoint رسمی HTTPS" },
 
-    { key: "SUPABASE_URL", required: true, valid: isHttpsUrl("SUPABASE_URL"), message: "آدرس Storage" },
-    { key: "SUPABASE_SERVICE_ROLE_KEY", required: true, valid: present("SUPABASE_SERVICE_ROLE_KEY", 40), message: "کلید Storage" },
-    { key: "ELORIA_STORAGE_BUCKET", required: true, valid: present("ELORIA_STORAGE_BUCKET", 2), message: "نام Bucket تصاویر" },
+    { key: "ELORIA_PRODUCT_STORAGE", required: true, valid: s3StorageConfigured || supabaseStorageConfigured, message: "یکی از Object Storage پارس‌پک یا Supabase باید کامل تنظیم شود" },
 
     { key: "CRON_SECRET", required: true, valid: present("CRON_SECRET", 48), message: "کلید Cron" },
     { key: "ELORIA_HEALTH_SECRET", required: true, valid: present("ELORIA_HEALTH_SECRET", 48), message: "کلید مستقل Health" },

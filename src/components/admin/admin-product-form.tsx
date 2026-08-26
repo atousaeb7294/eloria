@@ -25,6 +25,8 @@ export type AdminProductFormValue = {
   nameEn: string;
   descriptionFa: string;
   descriptionEn: string;
+  mythNameFa: string;
+  mythNameEn: string;
   legendFa: string;
   legendEn: string;
   material: "GOLD" | "SILVER";
@@ -275,7 +277,7 @@ export function AdminProductForm({
 
       <FormSection
         title="توضیحات و روایت"
-        description="متن معرفی محصول در نسخه فارسی و انگلیسی"
+        description="عنوان و متن روایت را خودتان می‌نویسید؛ هیچ محتوایی به‌صورت خودکار ساخته نمی‌شود."
       >
         <div className="grid gap-4 lg:grid-cols-2">
           <Field label="توضیحات فارسی">
@@ -293,6 +295,14 @@ export function AdminProductForm({
               dir="ltr"
               name="descriptionEn"
             />
+          </Field>
+
+          <Field label="عنوان روایت فارسی">
+            <input className={inputClassName} defaultValue={value.mythNameFa} name="mythNameFa" />
+          </Field>
+
+          <Field label="English legend title">
+            <input className={inputClassName} defaultValue={value.mythNameEn} dir="ltr" name="mythNameEn" />
           </Field>
 
           <Field label="روایت فارسی">

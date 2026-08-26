@@ -14,6 +14,8 @@ COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
 ARG NEXT_PUBLIC_SITE_URL
+ARG NEXT_PUBLIC_ELORIA_DOMESTIC_NETWORK_MODE=false
+ARG NEXT_PUBLIC_TURNSTILE_SITE_KEY
 ARG DATABASE_SSL_MODE=verify-full
 
 RUN --mount=type=secret,id=DATABASE_URL,required=true \
@@ -21,6 +23,8 @@ RUN --mount=type=secret,id=DATABASE_URL,required=true \
     DATABASE_URL="$(cat /run/secrets/DATABASE_URL)" \
     DIRECT_URL="$(cat /run/secrets/DIRECT_URL)" \
     NEXT_PUBLIC_SITE_URL="${NEXT_PUBLIC_SITE_URL}" \
+    NEXT_PUBLIC_ELORIA_DOMESTIC_NETWORK_MODE="${NEXT_PUBLIC_ELORIA_DOMESTIC_NETWORK_MODE}" \
+    NEXT_PUBLIC_TURNSTILE_SITE_KEY="${NEXT_PUBLIC_TURNSTILE_SITE_KEY}" \
     DATABASE_SSL_MODE="${DATABASE_SSL_MODE}" \
     npm run build
 

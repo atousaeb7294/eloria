@@ -13,7 +13,7 @@ import {
   X,
 } from "lucide-react";
 import { usePathname } from "next/navigation";
-import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
+import { FormEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { TurnstileWidget } from "@/components/turnstile-widget";
 
@@ -64,10 +64,12 @@ export function CustomerSupportWidget({ locale }: { locale: "fa" | "en" }) {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
+  const [website, setWebsite] = useState("");
   const [detailsOpen, setDetailsOpen] = useState(false);
   const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
   const [turnstileGeneration, setTurnstileGeneration] = useState(0);
   const [feedback, setFeedback] = useState<{ tone: "success" | "error"; text: string } | null>(null);
+  const loadingRef = useRef(false);
 
   const copy = useMemo(
     () =>
@@ -122,6 +124,8 @@ export function CustomerSupportWidget({ locale }: { locale: "fa" | "en" }) {
   );
 
   const load = useCallback(async () => {
+    if (loadingRef.current || document.visibilityState === "hidden") return;
+    loadingRef.current = true;
     setLoading(true);
     try {
       const response = await fetch("/api/support/chat", {
@@ -145,6 +149,7 @@ export function CustomerSupportWidget({ locale }: { locale: "fa" | "en" }) {
       setEnabled(false);
       setFeedback({ tone: "error", text: copy.failed });
     } finally {
+      loadingRef.current = false;
       setLoading(false);
     }
   }, [copy.failed]);
@@ -152,10 +157,15 @@ export function CustomerSupportWidget({ locale }: { locale: "fa" | "en" }) {
   useEffect(() => {
     if (!open || isAdmin) return;
     const initialLoad = window.setTimeout(() => void load(), 0);
-    const interval = window.setInterval(() => void load(), 8_000);
+    const interval = window.setInterval(() => void load(), 15_000);
+    const handleVisibility = () => {
+      if (document.visibilityState === "visible") void load();
+    };
+    document.addEventListener("visibilitychange", handleVisibility);
     return () => {
       window.clearTimeout(initialLoad);
       window.clearInterval(interval);
+      document.removeEventListener("visibilitychange", handleVisibility);
     };
   }, [isAdmin, load, open]);
 
@@ -186,6 +196,7 @@ export function CustomerSupportWidget({ locale }: { locale: "fa" | "en" }) {
           email: email.trim() || undefined,
           phone: phone.trim() || undefined,
           turnstileToken,
+          website,
         }),
       });
       const data = parseSnapshot(await response.json().catch(() => null));
@@ -278,6 +289,7 @@ export function CustomerSupportWidget({ locale }: { locale: "fa" | "en" }) {
 
           {enabled !== false ? (
             <form onSubmit={submit} className="border-t border-[#e2c879]/14 bg-black/10 p-4 sm:p-5">
+              <input type="text" name="website" value={website} onChange={(event) => setWebsite(event.target.value)} tabIndex={-1} autoComplete="off" aria-hidden="true" className="absolute -start-[9999px] size-px opacity-0" />
               {!conversationOpen ? <p className="mb-3 rounded-xl border border-[#d8b967]/16 bg-[#d8b967]/[.05] px-3 py-2 text-[10px] leading-6 text-[#dec782]/78">{copy.closed}</p> : null}
               <textarea
                 value={message}

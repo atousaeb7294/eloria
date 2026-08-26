@@ -1,4 +1,4 @@
-﻿import assert from "node:assert/strict";
+import assert from "node:assert/strict";
 import { randomUUID } from "node:crypto";
 import { databasePool, prisma } from "../src/lib/prisma";
 import {
@@ -29,7 +29,7 @@ async function main() {
 
     await assert.rejects(
       () => consumeCustomerOtp({ challengeId, mobile, code: "111111" }),
-      /Ú©Ø¯ ØªØ£ÛŒÛŒØ¯ ØµØ­ÛŒØ­ Ù†ÛŒØ³Øª/,
+      /کد تأیید صحیح نیست/,
     );
     let otpState = await prisma.customerOtpChallenge.findUniqueOrThrow({
       where: { id: challengeId },
@@ -39,7 +39,7 @@ async function main() {
 
     await assert.rejects(
       () => consumeCustomerOtp({ challengeId, mobile, code: "222222" }),
-      /Ú©Ø¯ ØªØ£ÛŒÛŒØ¯ ØµØ­ÛŒØ­ Ù†ÛŒØ³Øª/,
+      /کد تأیید صحیح نیست/,
     );
     otpState = await prisma.customerOtpChallenge.findUniqueOrThrow({
       where: { id: challengeId },
@@ -49,7 +49,7 @@ async function main() {
 
     await assert.rejects(
       () => consumeCustomerOtp({ challengeId, mobile, code: otpCode }),
-      /ØªØ¹Ø¯Ø§Ø¯ ØªÙ„Ø§Ø´â€ŒÙ‡Ø§ÛŒ Ú©Ø¯ ØªØ£ÛŒÛŒØ¯ Ø¨ÛŒØ´ Ø§Ø² Ø­Ø¯ Ù…Ø¬Ø§Ø² Ø§Ø³Øª/,
+      /تعداد تلاش‌های کد تأیید بیش از حد مجاز است/,
     );
     console.log("PASS  Customer OTP failed attempts persist and enforce maxAttempts");
 
@@ -71,7 +71,7 @@ async function main() {
       data: { customerId: customer.id, title: "Test", recipientName: "Customer Audit", mobile, province: "Tehran", city: "Tehran", postalCode: "1234567890", address: "Test address", isDefault: true },
     });
     const notification = await prisma.customerNotification.create({
-      data: { customerId: customer.id, type: "AUDIT", titleFa: "ØªØ³Øª", titleEn: "Test", bodyFa: "ØªØ³Øª Ø­Ø³Ø§Ø¨ Ù…Ø´ØªØ±ÛŒ", bodyEn: "Customer account test" },
+      data: { customerId: customer.id, type: "AUDIT", titleFa: "تست", titleEn: "Test", bodyFa: "تست حساب مشتری", bodyEn: "Customer account test" },
     });
     const order = await prisma.order.create({
       data: {

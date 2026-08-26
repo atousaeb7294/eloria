@@ -2,10 +2,6 @@
 
 import { useEffect, useState } from "react";
 
-import {
-  INTRO_SESSION_KEY,
-} from "@/components/intro/eloria-intro-config";
-
 export function useIntroComplete() {
   const [complete, setComplete] =
     useState(false);
@@ -18,24 +14,6 @@ export function useIntroComplete() {
         setComplete(true);
       }
     };
-
-    let alreadySeen = false;
-
-    try {
-      alreadySeen =
-        window.sessionStorage.getItem(
-          INTRO_SESSION_KEY,
-        ) === "1";
-    } catch {
-      alreadySeen = false;
-    }
-
-    if (alreadySeen) {
-      finish();
-      return () => {
-        disposed = true;
-      };
-    }
 
     window.addEventListener(
       "eloria:intro-complete",

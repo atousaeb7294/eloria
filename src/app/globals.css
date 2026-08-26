@@ -286,6 +286,13 @@
   contain-intrinsic-size: 580px 780px;
 }
 
+/* بخش‌های پایین صفحه تا نزدیک‌شدن به viewport رندر سنگین ندارند. */
+[data-eloria-deferred-section="true"] {
+  content-visibility: auto;
+  contain: layout paint style;
+  contain-intrinsic-size: 900px;
+}
+
 @media (hover: hover) and (pointer: fine) {
   .eloria-collection-card {
     transition:

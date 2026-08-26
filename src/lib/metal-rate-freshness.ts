@@ -1,4 +1,4 @@
-﻿export type MetalRateFreshnessReason =
+export type MetalRateFreshnessReason =
   | "FRESH"
   | "STALE"
   | "SOURCE_TIME_MISSING"

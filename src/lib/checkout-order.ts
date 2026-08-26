@@ -54,6 +54,9 @@ const CONCURRENT_ORDER_LOOKUP_ATTEMPTS =
 const CONCURRENT_ORDER_LOOKUP_DELAY_MS =
   150;
 
+export const WELCOME_PROMO_CODE = "ELORIA50";
+export const WELCOME_DISCOUNT_TOMAN = BigInt(50_000);
+
 function wait(
   milliseconds: number,
 ): Promise<void> {
@@ -193,6 +196,9 @@ export type CreateCheckoutOrderInput = {
   items:
     CheckoutOrderItemInput[];
 
+  promoCode?:
+    string | null;
+
   requestId?:
     string | null;
 };
@@ -215,6 +221,9 @@ export type CheckoutOrderResult = {
       "TOMAN";
 
     subtotalToman:
+      string;
+
+    discountToman:
       string;
 
     payableToman:
@@ -348,6 +357,11 @@ type SerializableOrder = {
     string;
 
   subtotalToman: {
+    toString():
+      string;
+  };
+
+  discountToman: {
     toString():
       string;
   };
@@ -746,6 +760,9 @@ function serializeOrder(
       subtotalToman:
         order.subtotalToman.toString(),
 
+      discountToman:
+        order.discountToman.toString(),
+
       payableToman:
         order.payableToman.toString(),
 
@@ -1134,6 +1151,7 @@ export async function createCheckoutOrder({
   locale,
   customer,
   items,
+  promoCode = null,
   requestId = null,
 }: CreateCheckoutOrderInput): Promise<CheckoutOrderResult> {
   const normalizedIdempotencyKey =
@@ -1150,6 +1168,8 @@ export async function createCheckoutOrder({
     normalizeCustomer(
       customer,
     );
+
+  const normalizedPromoCode = promoCode?.trim().toUpperCase() ?? "";
 
   if (
     !Array.isArray(items) ||
@@ -1245,7 +1265,28 @@ export async function createCheckoutOrder({
 
   // ELORIA_V3_SERVER_SHIPPING
   const shippingQuote = calculateShipping(subtotalToman);
-  const payableToman = subtotalToman + BigInt(shippingQuote.shippingToman);
+  const requestedWelcomeDiscount = normalizedPromoCode === WELCOME_PROMO_CODE;
+  const previousPurchase = requestedWelcomeDiscount
+    ? await checkoutPrisma.order.findFirst({
+        where: {
+          customerMobile: normalizedCustomer.mobile,
+          OR: [
+            { status: { in: ["PAID", "PROCESSING", "SHIPPED", "COMPLETED", "PAYMENT_REVIEW"] } },
+            {
+              discountToman: { gt: 0 },
+              status: { in: ["PENDING_PAYMENT", "PAYMENT_FAILED"] },
+              inventoryReleasedAt: null,
+              inventoryExpiresAt: { gt: new Date() },
+            },
+          ],
+        },
+        select: { id: true },
+      })
+    : null;
+  const discountToman = requestedWelcomeDiscount && !previousPurchase
+    ? (subtotalToman < WELCOME_DISCOUNT_TOMAN ? subtotalToman : WELCOME_DISCOUNT_TOMAN)
+    : BigInt(0);
+  const payableToman = subtotalToman + BigInt(shippingQuote.shippingToman) - discountToman;
 
   const quoteExpirationTimes =
     pricedItems.map(
@@ -1319,7 +1360,7 @@ export async function createCheckoutOrder({
         shippingQuote.shippingToman,
 
       discountToman:
-        "0",
+        discountToman.toString(),
 
       payableToman:
         payableToman.toString(),
@@ -1508,6 +1549,32 @@ export async function createCheckoutOrder({
                 inventoryExpiresAt: { gt: new Date() },
               },
             });
+
+            if (discountToman > BigInt(0)) {
+              const conflictingWelcomeOffer = await transaction.order.findFirst({
+                where: {
+                  customerMobile: normalizedCustomer.mobile,
+                  OR: [
+                    { status: { in: ["PAID", "PROCESSING", "SHIPPED", "COMPLETED", "PAYMENT_REVIEW"] } },
+                    {
+                      discountToman: { gt: 0 },
+                      status: { in: ["PENDING_PAYMENT", "PAYMENT_FAILED"] },
+                      inventoryReleasedAt: null,
+                      inventoryExpiresAt: { gt: new Date() },
+                    },
+                  ],
+                },
+                select: { id: true },
+              });
+
+              if (conflictingWelcomeOffer) {
+                throw new CheckoutOrderError(
+                  "CHECKOUT_BUSY",
+                  "تخفیف خوش‌آمدگویی قبلاً برای این شماره استفاده یا رزرو شده است.",
+                  409,
+                );
+              }
+            }
 
             if (activeReservationCount >= 3) {
               throw new CheckoutOrderError(
@@ -1795,7 +1862,7 @@ export async function createCheckoutOrder({
         shippingQuote.shippingToman,
 
                   discountToman:
-                    "0",
+                    discountToman.toString(),
 
                   payableToman:
         payableToman.toString(),

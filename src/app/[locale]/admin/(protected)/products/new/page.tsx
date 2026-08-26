@@ -65,6 +65,8 @@ export default async function NewAdminProductPage({
     nameEn: "",
     descriptionFa: "",
     descriptionEn: "",
+    mythNameFa: "",
+    mythNameEn: "",
     legendFa: "",
     legendEn: "",
     material: "GOLD",

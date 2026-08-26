@@ -38,6 +38,7 @@ import {
 } from "@/components/purchase-progress";
 
 import {
+  clearCart,
   readCartItems,
   removeCartItem,
   subscribeToCart,
@@ -479,6 +480,8 @@ export function CartPageClient({
           lineTotal:
             "مجموع محصول",
           remove: "حذف",
+          clearAll: "پاک‌کردن کل سبد",
+          clearConfirm: "همه محصولات از سبد حذف شوند؟",
           summary:
             "خلاصه سفارش",
           itemCount:
@@ -576,6 +579,8 @@ export function CartPageClient({
 
           remove:
             "Remove",
+          clearAll: "Clear shopping bag",
+          clearConfirm: "Remove every item from your shopping bag?",
 
           summary:
             "Order summary",
@@ -1244,6 +1249,15 @@ export function CartPageClient({
     });
   };
 
+  const clearAllItems = () => {
+    if (!window.confirm(text.clearConfirm)) return;
+    requestControllerRef.current?.abort();
+    quoteRef.current = null;
+    setQuote(null);
+    setError(null);
+    clearCart();
+  };
+
   const getUnavailableText = (
     reason: string | null,
   ) => {
@@ -1472,6 +1486,15 @@ export function CartPageClient({
           locale={locale}
           currentStep={1}
         />
+
+        <button
+          type="button"
+          onClick={clearAllItems}
+          className="mt-5 inline-flex min-h-11 items-center gap-2 rounded-full border border-red-300/25 bg-red-300/[0.05] px-5 text-xs text-red-100/75 transition hover:border-red-200/45 hover:bg-red-300/[0.1]"
+        >
+          <Trash2 className="h-4 w-4" />
+          {text.clearAll}
+        </button>
 
         {shouldShowLiveStatus && (
           <div className="mt-5 flex justify-center">

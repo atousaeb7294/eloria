@@ -89,13 +89,12 @@ function productImageConfiguration(): {
     }
   }
 
-  for (
-    const raw of (
-      process.env
-        .ELORIA_ALLOWED_IMAGE_HOSTS ??
-      ""
-    ).split(",")
-  ) {
+  const configuredImageHosts = [
+    process.env.ELORIA_S3_PUBLIC_URL ?? "",
+    ...(process.env.ELORIA_ALLOWED_IMAGE_HOSTS ?? "").split(","),
+  ];
+
+  for (const raw of configuredImageHosts) {
     const hostname =
       httpsHostname(raw);
 
@@ -213,6 +212,18 @@ const nextConfig:
 
   async headers() {
     return [
+      {
+        source: "/videos/:path*",
+        headers: [{ key: "Cache-Control", value: "public, max-age=31536000, immutable" }],
+      },
+      {
+        source: "/images/:path*",
+        headers: [{ key: "Cache-Control", value: "public, max-age=31536000, immutable" }],
+      },
+      {
+        source: "/fonts/:path*",
+        headers: [{ key: "Cache-Control", value: "public, max-age=31536000, immutable" }],
+      },
       {
         source: "/:path*",
         headers: [

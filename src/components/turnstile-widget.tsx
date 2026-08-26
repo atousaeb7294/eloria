@@ -43,7 +43,9 @@ export function TurnstileWidget({
     | "support-chat";
 }) {
   const siteKey =
-    process.env
+    process.env.NEXT_PUBLIC_ELORIA_DOMESTIC_NETWORK_MODE === "true"
+      ? ""
+      : process.env
       .NEXT_PUBLIC_TURNSTILE_SITE_KEY
       ?.trim();
 

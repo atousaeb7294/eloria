@@ -24,8 +24,8 @@ type PolicyContent = {
   sections: Section[];
 };
 
-const LAST_UPDATED_FA = "۲۶ مرداد ۱۴۰۵";
-const LAST_UPDATED_EN = "17 August 2026";
+const LAST_UPDATED_FA = "۴ شهریور ۱۴۰۵";
+const LAST_UPDATED_EN = "26 August 2026";
 
 const content: Record<PolicySlug, { fa: PolicyContent; en: PolicyContent }> = {
   privacy: {
@@ -122,6 +122,20 @@ const content: Record<PolicySlug, { fa: PolicyContent; en: PolicyContent }> = {
           ],
         },
         {
+          title: "سفارش تلفنی و پیام‌رسان",
+          paragraphs: [
+            "در سفارش تلفنی یا پیام‌رسان، فروشنده باید پیش از نهایی‌شدن خرید، هویت فروشگاه، مشخصات اصلی کالا، تعداد، قیمت نهایی، هزینه ارسال، زمان تقریبی تحویل و شرایط انصراف یا مرجوعی را روشن اعلام کند. تأیید نهایی سفارش و خلاصه اطلاعات خرید باید در یک مسیر قابل استناد مانند پیام، فاکتور یا صفحه سفارش ثبت شود.",
+            "کارشناس فروش مجاز به درخواست رمز کارت، CVV2، رمز پویا یا کد ورود حساب مشتری نیست. مسیر ترجیحی پرداخت، درگاه رسمی متصل به همان سفارش است. واریز مستقیم فقط به حسابی انجام می‌شود که هویت آن از مسیر رسمی فروشگاه اعلام شده باشد و رسید آن با شماره سفارش تطبیق داده شود.",
+          ],
+        },
+        {
+          title: "تخفیف خوش‌آمدگویی",
+          paragraphs: [
+            "کد ELORIA50 فقط یک‌بار، برای نخستین خرید واجد شرایط هر مشتری و پس از احراز شماره موبایل، تا سقف پنجاه هزار تومان از مبلغ کالا کسر می‌شود. این اعتبار نقدی یا قابل انتقال نیست و در صورت کمتر بودن مبلغ کالا، مانده‌ای ایجاد نمی‌کند.",
+            "صلاحیت استفاده و عدم مصرف قبلی در سمت سرور بررسی می‌شود. سفارش پرداخت‌شده قبلی یا رزرو فعال همین تخفیف برای آن شماره، مانع استفاده دوباره است؛ مگر اینکه فروشگاه به‌صورت مکتوب شرایط دیگری اعلام کند.",
+          ],
+        },
+        {
           title: "حق انصراف در معامله از راه دور",
           paragraphs: [
             "اصل عمومی در معاملات از راه دور این است که مصرف‌کننده حداقل هفت روز کاری برای اعمال حق انصراف بدون نیاز به ارائه دلیل و بدون جریمه فرصت دارد. در فروش کالا، آغاز این مهلت از زمان تحویل کالا و پس از ارائه اطلاعات الزامی قانونی محاسبه می‌شود. در انصراف عادی، هزینه بازپس‌فرستادن کالا می‌تواند بر عهده مصرف‌کننده باشد.",
@@ -161,6 +175,20 @@ const content: Record<PolicySlug, { fa: PolicyContent; en: PolicyContent }> = {
           paragraphs: [
             "Creating an order does not by itself mean that payment succeeded. The financial state of an order changes only after the payment result is verified, and relevant payment references and financial audit events are retained with the order.",
             "If fulfilment becomes impossible after funds have been received because stock is unavailable or the obligation cannot be performed, the matter will be handled under applicable law and the received amount will be returned without unjustified charges to the customer.",
+          ],
+        },
+        {
+          title: "Telephone and messaging orders",
+          paragraphs: [
+            "Before a telephone or messaging order is finalised, the seller must clearly state the store identity, essential product characteristics, quantity, final price, delivery charge, expected delivery timing and applicable withdrawal or return terms. Final confirmation and the purchase summary must be recorded through a traceable channel such as a message, invoice or order page.",
+            "Sales staff must never request a card PIN, CVV2, one-time banking password or customer account login code. The preferred payment route is the official gateway linked to the order. A direct transfer should be made only to an account identified through an official store channel and its receipt must be matched to the order number.",
+          ],
+        },
+        {
+          title: "Welcome discount",
+          paragraphs: [
+            "Code ELORIA50 provides a one-time discount of up to 50,000 Toman on each eligible customer's first purchase after mobile-number verification. It is not cash, transferable, or carried forward when the merchandise amount is lower.",
+            "Eligibility and prior use are checked server-side. A previous paid order or an active reservation using this offer for the same mobile number prevents reuse unless Eloria publishes different terms in writing.",
           ],
         },
         {
@@ -268,17 +296,17 @@ const content: Record<PolicySlug, { fa: PolicyContent; en: PolicyContent }> = {
       description: "نحوه اعمال حق انصراف، بررسی مغایرت و عیب، کالاهای شخصی‌سازی‌شده و استرداد وجه.",
       sections: [
         {
-          title: "حق انصراف عادی",
+          title: "سیاست عدم مرجوعی برای محصولات طلا",
           paragraphs: [
-            "در معاملات از راه دور، اصل عمومی حداقل هفت روز کاری مهلت انصراف برای مصرف‌کننده است؛ بدون نیاز به ارائه دلیل و بدون جریمه. در فروش کالا، مهلت از تاریخ تحویل و پس از ارائه اطلاعات الزامی قانونی آغاز می‌شود.",
-            "برای ثبت قابل استناد درخواست، مشتری باید از مسیر ارتباط سایت شماره سفارش و درخواست انصراف را ارسال کند. در انصراف عادی، تنها هزینه بازپس‌فرستادن کالا می‌تواند بر عهده مصرف‌کننده باشد، مگر آنکه قانون یا توافق معتبر شرایط مساعدتری مقرر کرده باشد.",
+            "به دلیل وابستگی مستقیم قیمت محصولات طلا به نرخ لحظه‌ای بازار مالی و قفل‌شدن نرخ در زمان تأیید سفارش، مرجوعی یا لغو صرفاً به علت تغییر نظر مشتری پذیرفته نمی‌شود؛ مشروط به اینکه معامله واقعاً در دامنه استثنای قانونی نوسانات بازار مالی قرار گیرد.",
+            "این سیاست درباره سفارش‌های شخصی‌سازی‌شده، حکاکی‌شده یا ساخته‌شده بر اساس مشخصات مشتری نیز پس از آغاز ساخت اعمال می‌شود. وضعیت عدم مرجوعی باید پیش از پرداخت به‌روشنی به مشتری نمایش داده و پذیرش آن ثبت شود.",
           ],
         },
         {
           title: "استثناهای قانونی",
           paragraphs: [
             "محصولی که بر اساس مشخصات فردی مشتری ساخته شده و به‌وضوح جنبه شخصی دارد، مانند برخی سفارش‌های اختصاصی، حکاکی یا سفارشی‌سازی غیرقابل عرضه مجدد، ممکن است مطابق مقررات از حق انصراف عادی مستثنا باشد. این استثنا نباید فراتر از حدود قانونی آن اعمال شود.",
-            "در مورد استثنای نوسان بازار مالی نیز فقط زمانی می‌توان به آن استناد کرد که محصول یا معامله واقعاً با ضوابط و مصادیق جاری این استثنا منطبق باشد. استفاده از فلز گران‌بها به‌تنهایی موجب حذف خودکار حق انصراف نیست.",
+            "استثنای نوسان بازار مالی فقط زمانی قابل استناد است که قیمت محصول واقعاً خارج از اختیار فروشنده و متأثر از نرخ بازار باشد. برای کالاهای غیرطلایی یا موارد خارج از این تعریف، اصل عمومی حق انصراف و سایر مقررات لازم‌الاجرا اعمال می‌شود.",
           ],
         },
         {
@@ -310,17 +338,17 @@ const content: Record<PolicySlug, { fa: PolicyContent; en: PolicyContent }> = {
       description: "How statutory withdrawal, defects, mismatches, personalised goods and refunds are handled.",
       sections: [
         {
-          title: "Ordinary withdrawal right",
+          title: "No-change-of-mind returns for gold products",
           paragraphs: [
-            "For distance transactions, the general rule provides consumers with at least seven working days to withdraw without giving a reason or paying a penalty. For goods, the period begins on delivery after the legally required information has been supplied.",
-            "To create an auditable request, customers should use the site's contact route and include the order number and withdrawal request. In an ordinary withdrawal, only the cost of returning the goods may be borne by the consumer unless applicable law or a valid agreement provides a more favourable arrangement.",
+            "Because gold-product prices track live financial-market rates and the rate is locked when an order is confirmed, change-of-mind cancellation or return is not accepted where the transaction genuinely falls within the applicable financial-market fluctuation exception.",
+            "The same policy applies to personalised, engraved or made-to-specification orders after production begins. The no-return condition must be shown clearly before payment and the customer's acceptance must be recorded.",
           ],
         },
         {
           title: "Statutory exceptions",
           paragraphs: [
             "Goods made to an individual's specifications and clearly personal in nature, including certain bespoke, engraved or non-resalable custom work, may fall outside the ordinary withdrawal right under the applicable rules. The exception must not be applied beyond its legal scope.",
-            "A financial-market fluctuation exception may be relied upon only where the product or transaction actually meets the current legal criteria and classifications. The mere presence of precious metal does not automatically remove the withdrawal right.",
+            "The market-fluctuation exception may be relied upon only where price is genuinely outside the seller's control and tied to market rates. Non-gold goods and transactions outside this definition remain subject to the general withdrawal rule and other mandatory law.",
           ],
         },
         {

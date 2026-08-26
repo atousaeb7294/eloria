@@ -349,6 +349,9 @@ export function serializeOrder(
       subtotalToman:
         order.subtotalToman.toString(),
 
+      discountToman:
+        order.discountToman.toString(),
+
       payableToman:
         order.payableToman.toString(),
 

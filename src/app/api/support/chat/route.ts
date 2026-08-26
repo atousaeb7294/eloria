@@ -26,6 +26,7 @@ const requestSchema = z.object({
   email: z.string().trim().email().max(254).optional(),
   phone: z.string().trim().min(5).max(30).optional(),
   turnstileToken: z.string().trim().min(1).max(4096).nullable().optional(),
+  website: z.string().max(0).optional(),
 });
 
 function noStoreHeaders() {

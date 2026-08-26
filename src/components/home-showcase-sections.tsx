@@ -72,7 +72,7 @@ export function HomeShowcaseSections({ locale }: HomeShowcaseSectionsProps) {
     return (<div dir={isPersian ? "rtl" : "ltr"} className="relative z-10">
       <HomeNarrativeShowcase locale={locale} copy={copy}/>
 
-    <section className="relative isolate overflow-hidden py-16 sm:py-20 lg:py-24" data-eloria-trust-section="true">
+    <section className="relative isolate overflow-hidden py-16 sm:py-20 lg:py-24" data-eloria-trust-section="true" data-eloria-deferred-section="true">
         <div aria-hidden="true" className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_20%,rgba(18,90,66,.10),transparent_38%)]"/>
 
         <div aria-hidden="true" className="pointer-events-none absolute inset-x-[10%] top-0 h-px bg-[linear-gradient(90deg,transparent,rgba(216,183,96,.15),transparent)]"/>

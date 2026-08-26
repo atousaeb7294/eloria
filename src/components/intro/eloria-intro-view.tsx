@@ -182,6 +182,8 @@ export function EloriaIntroView({
             onError={
               handleVideoFailure
             }
+            onStalled={handleVideoFailure}
+            onAbort={handleVideoFailure}
           />
 
           <video
@@ -196,7 +198,7 @@ export function EloriaIntroView({
             ].join(" ")}
             src={INTRO_VIDEO_TWO_SRC}
             poster="/images/hero/eloria-hero.jpeg"
-            preload="none"
+            preload="metadata"
             playsInline
             disablePictureInPicture
             controls={false}
@@ -217,6 +219,8 @@ export function EloriaIntroView({
             onError={
               handleVideoFailure
             }
+            onStalled={handleSecondVideoWaiting}
+            onAbort={handleVideoFailure}
           />
 
           <div

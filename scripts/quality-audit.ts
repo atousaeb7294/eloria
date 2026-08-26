@@ -57,6 +57,21 @@ function filesUnder(relativeRoot: string): string[] {
   return output;
 }
 
+function allReleaseFiles(): string[] {
+  const output: string[] = [];
+  function walk(current: string) {
+    for (const entry of readdirSync(current)) {
+      if ([".git", ".next", "node_modules"].includes(entry)) continue;
+      const absolute = path.join(current, entry);
+      const stat = statSync(absolute);
+      if (stat.isDirectory()) walk(absolute);
+      else output.push(path.relative(root, absolute).replaceAll("\\", "/"));
+    }
+  }
+  walk(root);
+  return output;
+}
+
 const seo = read("src/lib/seo.ts");
 check(
   "Localized SEO includes x-default",
@@ -360,12 +375,18 @@ check(
     nextConfig.includes('value: "DENY"'),
 );
 
-const tracked = execFileSync("git", ["ls-files"], {
-  cwd: root,
-  encoding: "utf8",
-})
-  .split(/\r?\n/)
-  .filter(Boolean);
+let tracked: string[];
+try {
+  tracked = execFileSync("git", ["ls-files"], {
+    cwd: root,
+    encoding: "utf8",
+    stdio: ["ignore", "pipe", "ignore"],
+  })
+    .split(/\r?\n/)
+    .filter(Boolean);
+} catch {
+  tracked = allReleaseFiles();
+}
 
 const trackedSecrets = tracked.filter((file) => {
   const name = path.basename(file);

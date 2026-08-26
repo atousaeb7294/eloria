@@ -36,6 +36,10 @@ type IncomingCheckoutBody = {
   customer?: unknown;
   items?: unknown;
   turnstileToken?: unknown;
+  termsAccepted?: unknown;
+  termsVersion?: unknown;
+  promoCode?: unknown;
+  companyWebsite?: unknown;
 };
 
 type IncomingCheckoutItem = {
@@ -235,6 +239,9 @@ export async function POST(request: NextRequest) {
     if (
       typeof body.idempotencyKey !== "string" ||
       typeof body.locale !== "string" ||
+      body.termsAccepted !== true ||
+      body.termsVersion !== "2026-08-26" ||
+      body.companyWebsite !== "" ||
       !normalizedCustomer ||
       !Array.isArray(body.items)
     ) {
@@ -253,6 +260,17 @@ export async function POST(request: NextRequest) {
 
           headers: noStoreHeaders(),
         },
+      );
+    }
+
+    if (
+      body.promoCode !== undefined &&
+      body.promoCode !== null &&
+      (typeof body.promoCode !== "string" || body.promoCode.length > 32)
+    ) {
+      return NextResponse.json(
+        { successful: false, code: "INVALID_PROMO_CODE", message: "کد تخفیف معتبر نیست.", requestId },
+        { status: 400, headers: noStoreHeaders() },
       );
     }
 
@@ -404,8 +422,30 @@ export async function POST(request: NextRequest) {
 
       items: normalizedItems as CheckoutOrderItemInput[],
 
+      promoCode: typeof body.promoCode === "string" ? body.promoCode : null,
+
       requestId,
     });
+
+    if (!result.reused) {
+      try {
+        await prisma.orderAuditEvent.create({
+          data: {
+            orderId: result.order.id,
+            actorType: "CUSTOMER",
+            eventType: "CHECKOUT_TERMS_ACCEPTED",
+            requestId,
+            payload: {
+              termsVersion: "2026-08-26",
+              locale: body.locale,
+              noChangeOfMindReturnNotice: true,
+            },
+          },
+        });
+      } catch (auditError) {
+        console.error("[Eloria Checkout] Unable to record terms acceptance.", auditError);
+      }
+    }
 
     if (authenticatedCustomer) {
       try {

@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import {
   motion,
   useReducedMotion,
@@ -308,7 +307,7 @@ export function HeroShowcase({
             className="mt-6 flex w-full max-w-[420px] flex-col items-stretch justify-center gap-3 min-[470px]:flex-row sm:mt-7"
           >
             {/* دکمه اصلی */}
-            <Link
+            <a
               href={`/${locale}/collections`}
               className="group relative isolate flex h-[50px] flex-1 items-center justify-center overflow-hidden rounded-[13px] border border-[#efd181]/62 bg-[linear-gradient(140deg,rgba(12,91,64,0.98),rgba(3,49,34,0.99)_52%,rgba(44,32,8,0.98))] px-5 text-[12px] font-semibold text-[#fff0bd] shadow-[0_16px_40px_rgba(0,0,0,0.42),0_0_28px_rgba(223,181,78,0.12)] transition duration-500 hover:-translate-y-1 hover:border-[#ffe7a4] hover:shadow-[0_22px_52px_rgba(0,0,0,0.52),0_0_36px_rgba(230,187,82,0.26)] sm:text-[13px]"
             >
@@ -350,10 +349,10 @@ export function HeroShowcase({
                   {copy.primaryAction}
                 </span>
               </span>
-            </Link>
+            </a>
 
             {/* دکمه دوم */}
-            <Link
+            <a
               href={`/${locale}/products`}
               className="group relative isolate flex h-[50px] flex-1 items-center justify-center overflow-hidden rounded-[13px] border border-[#dfc16f]/34 bg-[linear-gradient(140deg,rgba(2,24,17,0.8),rgba(8,67,47,0.62))] px-5 text-[12px] font-medium text-[#f8e9c8] shadow-[inset_0_1px_0_rgba(255,255,255,0.07),0_16px_38px_rgba(0,0,0,0.34)] backdrop-blur-xl transition duration-500 hover:-translate-y-1 hover:border-[#eccd77]/66 hover:bg-[linear-gradient(140deg,rgba(3,36,25,0.92),rgba(12,88,62,0.72))] hover:text-[#ffe4a0] sm:text-[13px]"
             >
@@ -393,7 +392,7 @@ export function HeroShowcase({
                   {copy.secondaryAction}
                 </span>
               </span>
-            </Link>
+            </a>
           </motion.div>
         </div>
 

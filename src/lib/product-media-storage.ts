@@ -1,4 +1,4 @@
-import { randomUUID } from "node:crypto";
+import { createHash, createHmac, randomUUID } from "node:crypto";
 import { mkdir, unlink, writeFile } from "node:fs/promises";
 import path from "node:path";
 import sharp from "sharp";
@@ -40,6 +40,86 @@ function storageConfig() {
   };
 }
 
+function s3Config() {
+  return {
+    endpoint: process.env.ELORIA_S3_ENDPOINT?.replace(/\/$/, "") ?? "",
+    region: process.env.ELORIA_S3_REGION?.trim() || "us-east-1",
+    bucket: process.env.ELORIA_S3_BUCKET?.trim() ?? "",
+    accessKey: process.env.ELORIA_S3_ACCESS_KEY?.trim() ?? "",
+    secretKey: process.env.ELORIA_S3_SECRET_KEY?.trim() ?? "",
+    publicUrl: process.env.ELORIA_S3_PUBLIC_URL?.replace(/\/$/, "") ?? "",
+  };
+}
+
+function hmac(key: Buffer | string, value: string): Buffer {
+  return createHmac("sha256", key).update(value).digest();
+}
+
+function awsEncodePath(value: string): string {
+  return value.split("/").map(encodeURIComponent).join("/");
+}
+
+async function signedS3Request(
+  method: "PUT" | "DELETE",
+  objectPath: string,
+  body: Buffer,
+  contentType?: string,
+): Promise<Response> {
+  const config = s3Config();
+  const endpoint = new URL(config.endpoint);
+  const canonicalUri = `/${encodeURIComponent(config.bucket)}/${awsEncodePath(objectPath)}`;
+  const timestamp = new Date().toISOString().replace(/[:-]|\.\d{3}/g, "");
+  const date = timestamp.slice(0, 8);
+  const payloadHash = createHash("sha256").update(body).digest("hex");
+  const signedHeaderNames = contentType
+    ? "content-type;host;x-amz-content-sha256;x-amz-date"
+    : "host;x-amz-content-sha256;x-amz-date";
+  const canonicalHeaders = [
+    ...(contentType ? [`content-type:${contentType}`] : []),
+    `host:${endpoint.host}`,
+    `x-amz-content-sha256:${payloadHash}`,
+    `x-amz-date:${timestamp}`,
+    "",
+  ].join("\n");
+  const canonicalRequest = [
+    method,
+    canonicalUri,
+    "",
+    canonicalHeaders,
+    signedHeaderNames,
+    payloadHash,
+  ].join("\n");
+  const scope = `${date}/${config.region}/s3/aws4_request`;
+  const stringToSign = [
+    "AWS4-HMAC-SHA256",
+    timestamp,
+    scope,
+    createHash("sha256").update(canonicalRequest).digest("hex"),
+  ].join("\n");
+  const dateKey = hmac(`AWS4${config.secretKey}`, date);
+  const regionKey = hmac(dateKey, config.region);
+  const serviceKey = hmac(regionKey, "s3");
+  const signingKey = hmac(serviceKey, "aws4_request");
+  const signature = createHmac("sha256", signingKey).update(stringToSign).digest("hex");
+
+  return fetch(`${config.endpoint}${canonicalUri}`, {
+    method,
+    headers: {
+      ...(contentType ? { "Content-Type": contentType } : {}),
+      "x-amz-content-sha256": payloadHash,
+      "x-amz-date": timestamp,
+      Authorization: `AWS4-HMAC-SHA256 Credential=${config.accessKey}/${scope}, SignedHeaders=${signedHeaderNames}, Signature=${signature}`,
+    },
+    ...(method === "PUT" ? { body: new Uint8Array(body) } : {}),
+    signal: AbortSignal.timeout(STORAGE_TIMEOUT_MS),
+  });
+}
+
+function s3Configured(): boolean {
+  const config = s3Config();
+  return Boolean(config.endpoint && config.bucket && config.accessKey && config.secretKey && config.publicUrl);
+}
+
 function allowedImageHosts(): Set<string> {
   const hosts = new Set<string>();
 
@@ -47,6 +127,14 @@ function allowedImageHosts(): Set<string> {
   if (supabase) {
     try {
       const url = new URL(supabase);
+      if (url.protocol === "https:") hosts.add(url.hostname.toLowerCase());
+    } catch {}
+  }
+
+  const s3PublicUrl = process.env.ELORIA_S3_PUBLIC_URL?.trim();
+  if (s3PublicUrl) {
+    try {
+      const url = new URL(s3PublicUrl);
       if (url.protocol === "https:") hosts.add(url.hostname.toLowerCase());
     } catch {}
   }
@@ -225,6 +313,15 @@ async function uploadToSupabase(objectPath: string, image: ValidatedImage): Prom
   return `${config.url}/storage/v1/object/public/${encodeURIComponent(config.bucket)}/${objectPath}`;
 }
 
+async function uploadToS3(objectPath: string, image: ValidatedImage): Promise<string> {
+  const response = await signedS3Request("PUT", objectPath, image.bytes, image.contentType);
+  if (!response.ok) {
+    console.error("[Eloria Media] S3 upload failed.", { status: response.status });
+    throw new ProductMediaStorageError("آپلود تصویر در فضای ابری داخلی انجام نشد.");
+  }
+  return `${s3Config().publicUrl}/${awsEncodePath(objectPath)}`;
+}
+
 async function uploadLocally(
   productId: string,
   filename: string,
@@ -244,10 +341,11 @@ export async function storeProductImage(productIdValue: string, file: File): Pro
   const objectPath = `products/${productId}/${filename}`;
   const config = storageConfig();
 
+  if (s3Configured()) return uploadToS3(objectPath, image);
   if (config.url && config.key && config.bucket) return uploadToSupabase(objectPath, image);
   if (process.env.NODE_ENV === "production") {
     throw new ProductMediaStorageError(
-      "برای آپلود روی سرور، متغیرهای Supabase Storage را در .env تنظیم کنید.",
+      "برای آپلود روی سرور، Object Storage پارس‌پک یا Supabase Storage را تنظیم کنید.",
     );
   }
   return uploadLocally(productId, filename, image);
@@ -278,6 +376,20 @@ function generatedProductObjectPath(rawPath: string): string | null {
 }
 
 export async function removeStoredProductImage(imageUrl: string): Promise<void> {
+  const domesticStorage = s3Config();
+  const domesticPrefix = s3Configured() ? `${domesticStorage.publicUrl}/` : "";
+  if (domesticPrefix && imageUrl.startsWith(domesticPrefix)) {
+    const objectPath = generatedProductObjectPath(imageUrl.slice(domesticPrefix.length));
+    if (!objectPath) return;
+    try {
+      const response = await signedS3Request("DELETE", objectPath, Buffer.alloc(0));
+      if (!response.ok && response.status !== 404) throw new Error(`S3 delete returned ${response.status}.`);
+    } catch (error) {
+      console.error("[Eloria Media] Unable to remove S3 object.", error);
+    }
+    return;
+  }
+
   const config = storageConfig();
   const publicPrefix =
     config.url && config.bucket

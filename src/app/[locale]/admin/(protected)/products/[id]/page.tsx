@@ -172,6 +172,8 @@ export default async function EditAdminProductPage({
     nameEn: product.nameEn,
     descriptionFa: product.descriptionFa ?? "",
     descriptionEn: product.descriptionEn ?? "",
+    mythNameFa: product.mythNameFa ?? "",
+    mythNameEn: product.mythNameEn ?? "",
     legendFa: product.legendFa ?? "",
     legendEn: product.legendEn ?? "",
     material: product.material,

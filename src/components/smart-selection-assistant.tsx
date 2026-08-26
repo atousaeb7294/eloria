@@ -40,6 +40,8 @@ export function SmartSelectionAssistant({ locale }: { locale: "fa" | "en" }) {
             material: "جنس مورد علاقه",
             budget: "حداکثر بودجه (تومان، اختیاری)",
             show: "نمایش انتخاب‌های مناسب",
+            pair: "مشاهده مکمل پیشنهادی ست",
+            pairHint: "پیشنهاد استایلی الوریا: قطعه اصلی و مکمل را با جنس یکسان انتخاب کنید تا ست یکپارچه‌تر دیده شود.",
             close: "بستن راهنمای انتخاب",
             neck: "گردنبند",
             bracelet: "دستبند",
@@ -55,6 +57,8 @@ export function SmartSelectionAssistant({ locale }: { locale: "fa" | "en" }) {
             material: "Preferred material",
             budget: "Maximum budget (Toman, optional)",
             show: "Show matching creations",
+            pair: "View suggested matching piece",
+            pairHint: "Eloria styling tip: choose the main and complementary pieces in the same material for a more cohesive set.",
             close: "Close selection guide",
             neck: "Necklace",
             bracelet: "Bracelet",
@@ -85,6 +89,16 @@ export function SmartSelectionAssistant({ locale }: { locale: "fa" | "en" }) {
 
   const select = () => {
     const params = new URLSearchParams({ collection, availability: "available" });
+    if (material !== "all") params.set("material", material);
+    if (budget) params.set("maxPrice", budget);
+    setOpen(false);
+    router.push(`/${locale}/products?${params.toString()}`);
+  };
+
+  const selectPair = () => {
+    const pairedCollection: CollectionChoice =
+      collection === "necklaces" ? "earrings" : "necklaces";
+    const params = new URLSearchParams({ collection: pairedCollection, availability: "available" });
     if (material !== "all") params.set("material", material);
     if (budget) params.set("maxPrice", budget);
     setOpen(false);
@@ -149,6 +163,14 @@ export function SmartSelectionAssistant({ locale }: { locale: "fa" | "en" }) {
           <Check className="size-4" />
           {copy.show}
         </button>
+
+        <div className="mt-3 rounded-2xl border border-white/[.08] bg-black/10 p-3.5">
+          <p className="text-[11px] leading-6 text-[#d4c4a1]/66">{copy.pairHint}</p>
+          <button type="button" onClick={selectPair} className="mt-2 inline-flex min-h-10 w-full items-center justify-center gap-2 rounded-full border border-[#e1c46f]/24 text-xs text-[#e8d18a] transition hover:border-[#e8cc78]/50 hover:bg-[#d8b967]/[.07]">
+            <Sparkles className="size-3.5" />
+            {copy.pair}
+          </button>
+        </div>
       </section>
     </div>
   ) : null;

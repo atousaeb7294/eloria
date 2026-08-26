@@ -1,7 +1,5 @@
 "use server";
 
-import { generateProductMyth } from "@/lib/product-myth-generator";
-
 import {
   revalidatePath,
 } from "next/cache";
@@ -55,6 +53,8 @@ type ParsedProductInput = {
   nameEn: string;
   descriptionFa: string | null;
   descriptionEn: string | null;
+  mythNameFa: string | null;
+  mythNameEn: string | null;
   legendFa: string | null;
   legendEn: string | null;
   material: "GOLD" | "SILVER";
@@ -412,6 +412,10 @@ function parseProductInput(
         "descriptionEn",
         10_000,
       ),
+    mythNameFa:
+      readText(formData, "mythNameFa", 240),
+    mythNameEn:
+      readText(formData, "mythNameEn", 240),
     legendFa:
       readText(
         formData,
@@ -608,6 +612,10 @@ function productData(
       input.descriptionFa,
     descriptionEn:
       input.descriptionEn,
+    mythNameFa:
+      input.mythNameFa,
+    mythNameEn:
+      input.mythNameEn,
     legendFa:
       input.legendFa,
     legendEn:
@@ -669,13 +677,7 @@ export async function createAdminProductAction(
         formData,
       );
 
-    
-    const myth =
-      generateProductMyth({
-        nameFa: input.nameFa,
-        nameEn: input.nameEn,
-      });
-await ensureUniqueIdentity({
+    await ensureUniqueIdentity({
       slug:
         input.slug,
       sku:
@@ -686,10 +688,6 @@ await ensureUniqueIdentity({
       prisma.product.create({
         data: {
           ...productData(input),
-          mythNameFa: myth.mythNameFa,
-          mythNameEn: myth.mythNameEn,
-          legendFa: myth.legendFa,
-          legendEn: myth.legendEn,
           ...(input.primaryImageUrl
             ? {
                 images: {
@@ -746,9 +744,7 @@ export async function updateAdminProductAction(
         formData,
       );
 
-    
-
-await ensureUniqueIdentity({
+    await ensureUniqueIdentity({
       slug:
         input.slug,
       sku:
@@ -825,8 +821,6 @@ await ensureUniqueIdentity({
     `/${input.locale}/admin/products/${productId}?saved=1`,
   );
 }
-
-
 
 
 

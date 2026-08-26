@@ -18,6 +18,7 @@ import { CustomerSupportWidget } from "@/components/customer-support-widget";
 import { SmartSelectionAssistant } from "@/components/smart-selection-assistant";
 import { SiteMeasurementTracker } from "@/components/site-measurement-tracker";
 import { SiteStructuredData } from "@/components/site-structured-data";
+import { WelcomeOffer } from "@/components/welcome-offer";
 
 import { routing } from "@/i18n/routing";
 import { siteBaseUrl } from "@/lib/site-url";
@@ -131,6 +132,7 @@ export default async function LocaleLayout({
             />
             {children}
             <SmartSelectionAssistant locale={locale} />
+            <WelcomeOffer locale={locale} />
             <CustomerSupportWidget locale={locale} />
           </PageBackgroundProvider>
         </NextIntlClientProvider>

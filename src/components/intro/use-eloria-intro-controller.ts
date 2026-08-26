@@ -4,7 +4,6 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import {
   FLASH_IN_DURATION_MS,
   INTRO_MAX_FIRST_VIDEO_SECONDS,
-  INTRO_SESSION_KEY,
   TOTAL_TRANSITION_DURATION_MS,
   type EloriaIntroExperienceProps,
   type IntroPhase,
@@ -12,6 +11,8 @@ import {
 } from "@/components/intro/eloria-intro-config";
 
 const ENTRY_HOTSPOT_LEAD_SECONDS = 6;
+const FIRST_VIDEO_TIMEOUT_MS = 12_000;
+const SECOND_VIDEO_TIMEOUT_MS = 15_000;
 
 function forceNormalPlayback(video: HTMLVideoElement) {
   video.defaultPlaybackRate = 1;
@@ -26,6 +27,8 @@ export function useEloriaIntroController({
 
   const heroRevealTimerRef = useRef<number | null>(null);
   const completionTimerRef = useRef<number | null>(null);
+  const mediaWatchdogRef = useRef<number | null>(null);
+  const entryStartedRef = useRef(false);
 
   const [phase, setPhase] = useState<IntroPhase>("checking");
   const [autoplayBlocked, setAutoplayBlocked] = useState(false);
@@ -44,6 +47,16 @@ export function useEloriaIntroController({
       window.clearTimeout(completionTimerRef.current);
       completionTimerRef.current = null;
     }
+
+    if (mediaWatchdogRef.current !== null) {
+      window.clearTimeout(mediaWatchdogRef.current);
+      mediaWatchdogRef.current = null;
+    }
+  }, []);
+
+  const armMediaWatchdog = useCallback((callback: () => void, delay: number) => {
+    if (mediaWatchdogRef.current !== null) window.clearTimeout(mediaWatchdogRef.current);
+    mediaWatchdogRef.current = window.setTimeout(callback, delay);
   }, []);
 
   const announceIntroComplete = useCallback(() => {
@@ -79,15 +92,6 @@ export function useEloriaIntroController({
 
   const completeIntro = useCallback(() => {
     clearTransitionTimers();
-
-    try {
-      window.sessionStorage.setItem(
-        INTRO_SESSION_KEY,
-        "1",
-      );
-    } catch {
-      // Storage can be unavailable in privacy mode.
-    }
 
     setPhase("complete");
     announceIntroComplete();
@@ -134,22 +138,10 @@ export function useEloriaIntroController({
         connection?.effectiveType === "slow-2g" ||
         connection?.effectiveType === "2g";
 
-      let alreadySeen = false;
-
-      try {
-        alreadySeen =
-          window.sessionStorage.getItem(
-            INTRO_SESSION_KEY,
-          ) === "1";
-      } catch {
-        alreadySeen = false;
-      }
-
       const shouldSkip =
         window.location.hash === "#hero" ||
         reducedMotion ||
-        constrainedConnection ||
-        alreadySeen;
+        constrainedConnection;
 
       if (shouldSkip) {
         setPhase("complete");
@@ -166,6 +158,12 @@ export function useEloriaIntroController({
   }, [
     announceIntroComplete,
   ]);
+
+  useEffect(() => {
+    if (phase === "video-one") {
+      armMediaWatchdog(completeIntro, FIRST_VIDEO_TIMEOUT_MS);
+    }
+  }, [armMediaWatchdog, completeIntro, phase]);
 
   useEffect(() => {
     if (
@@ -225,6 +223,7 @@ export function useEloriaIntroController({
         .play()
         .then(() => {
           setAutoplayBlocked(false);
+          armMediaWatchdog(completeIntro, FIRST_VIDEO_TIMEOUT_MS);
 
           // Metadata is cheap and lets the second scene warm up
           // without competing with the first video for full bandwidth.
@@ -236,6 +235,8 @@ export function useEloriaIntroController({
     }, [
       phase,
       prepareSecondVideo,
+      armMediaWatchdog,
+      completeIntro,
     ]);
 
   const handleManualStart =
@@ -327,6 +328,8 @@ export function useEloriaIntroController({
 
   const handleEnterEloria =
     useCallback(() => {
+      if (entryStartedRef.current) return;
+      entryStartedRef.current = true;
       const secondVideo =
         secondVideoRef.current;
 
@@ -347,6 +350,7 @@ export function useEloriaIntroController({
       firstVideo?.pause();
 
       setPhase("video-two");
+      armMediaWatchdog(beginCinematicReveal, SECOND_VIDEO_TIMEOUT_MS);
       secondVideo.currentTime = 0;
       forceNormalPlayback(secondVideo);
       secondVideo.muted = false;
@@ -362,6 +366,7 @@ export function useEloriaIntroController({
         });
     }, [
       beginCinematicReveal,
+      armMediaWatchdog,
       prepareSecondVideo,
       secondVideoReady,
     ]);
@@ -369,12 +374,14 @@ export function useEloriaIntroController({
   const handleSecondVideoPlaying =
     useCallback(() => {
       setSecondVideoBuffering(false);
-    }, []);
+      armMediaWatchdog(beginCinematicReveal, SECOND_VIDEO_TIMEOUT_MS);
+    }, [armMediaWatchdog, beginCinematicReveal]);
 
   const handleSecondVideoWaiting =
     useCallback(() => {
       setSecondVideoBuffering(true);
-    }, []);
+      armMediaWatchdog(beginCinematicReveal, SECOND_VIDEO_TIMEOUT_MS);
+    }, [armMediaWatchdog, beginCinematicReveal]);
 
   const handleVideoFailure =
     useCallback(() => {

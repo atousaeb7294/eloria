@@ -2,7 +2,7 @@ import type { CSSProperties } from "react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { setRequestLocale } from "next-intl/server";
-import { Handshake, Headphones, PackageSearch, Scale } from "lucide-react";
+import { Handshake, Headphones, MessageCircle, PackageSearch, Scale, Send } from "lucide-react";
 
 import { ContactRequestForm } from "@/components/support-forms";
 import { InternalPageShell } from "@/components/internal-page-shell";
@@ -113,6 +113,13 @@ export default async function ContactPage({ params }: ContactPageProps) {
                   <p>{seller.businessAddress}</p>
                   {seller.supportPhone ? <a className="block underline-offset-4 hover:underline" href={`tel:${seller.supportPhone}`}>{seller.supportPhone}</a> : null}
                   {seller.supportEmail ? <a className="block underline-offset-4 hover:underline" href={`mailto:${seller.supportEmail}`}>{seller.supportEmail}</a> : null}
+                  {(seller.instagramUrl || seller.telegramUrl || seller.baleUrl) ? (
+                    <div className="flex flex-wrap gap-2 pt-2">
+                      {seller.instagramUrl ? <a className="inline-flex min-h-10 items-center gap-2 rounded-full border border-[#dfc16f]/20 px-3" href={seller.instagramUrl} target="_blank" rel="noopener noreferrer"><MessageCircle className="size-4" />Instagram</a> : null}
+                      {seller.telegramUrl ? <a className="inline-flex min-h-10 items-center gap-2 rounded-full border border-[#dfc16f]/20 px-3" href={seller.telegramUrl} target="_blank" rel="noopener noreferrer"><Send className="size-4" />Telegram</a> : null}
+                      {seller.baleUrl ? <a className="inline-flex min-h-10 items-center gap-2 rounded-full border border-[#dfc16f]/20 px-3" href={seller.baleUrl} target="_blank" rel="noopener noreferrer"><MessageCircle className="size-4" />{isPersian ? "بله" : "Bale"}</a> : null}
+                    </div>
+                  ) : null}
                 </div>
               ) : (
                 <p className="mt-5 text-sm leading-8 text-[#d4c6a7]/68">

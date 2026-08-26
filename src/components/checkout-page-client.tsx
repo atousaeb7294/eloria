@@ -119,6 +119,7 @@ type CreatedOrder = {
   status: string;
   currency: "TOMAN";
   subtotalToman: string;
+  discountToman: string;
   payableToman: string;
   priceVerifiedAt: string;
   priceExpiresAt: string;
@@ -289,6 +290,12 @@ const FA_TEXT = {
   reservationNotice:
     "پس از ثبت سفارش، موجودی محصولات به مدت ۱۵ دقیقه برای شما رزرو می‌شود.",
 
+  welcomeOffer:
+    "کد ELORIA50 برای خرید اول شما بررسی می‌شود؛ در صورت واجد شرایط بودن، ۵۰ هزار تومان خودکار کم خواهد شد.",
+
+  termsAcceptance:
+    "شرایط خرید، حریم خصوصی و سیاست عدم مرجوعی عادی محصولات طلا را خوانده‌ام و می‌پذیرم.",
+
   orderCreated:
     "سفارش با موفقیت ثبت شد",
 
@@ -440,6 +447,12 @@ const EN_TEXT = {
   reservationNotice:
     "After order creation, inventory is reserved for 15 minutes.",
 
+  welcomeOffer:
+    "Code ELORIA50 is checked for your first purchase; eligible orders automatically receive 50,000 Toman off.",
+
+  termsAcceptance:
+    "I have read and accept the purchase terms, privacy policy and no-change-of-mind return policy for gold products.",
+
   orderCreated:
     "Order created successfully",
 
@@ -551,6 +564,8 @@ function isCreateOrderResponse(
     typeof candidate.order.orderNumber ===
       "string" &&
     typeof candidate.order.payableToman ===
+      "string" &&
+    typeof candidate.order.discountToman ===
       "string" &&
     typeof candidate.order.inventoryExpiresAt ===
       "string" &&
@@ -799,6 +814,7 @@ export function CheckoutPageClient({
     );
 
   const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
+  const [termsAccepted, setTermsAccepted] = useState(false);
 
   const [
     createdOrder,
@@ -1423,6 +1439,14 @@ export function CheckoutPageClient({
 
                   turnstileToken,
 
+                  termsAccepted,
+
+                  termsVersion: "2026-08-26",
+
+                  promoCode: "ELORIA50",
+
+                  companyWebsite: "",
+
                   items:
                     storedItems.map(
                       (item) => ({
@@ -1607,7 +1631,8 @@ export function CheckoutPageClient({
     submitting ||
     Boolean(
       createdOrder,
-    );
+    ) ||
+    !termsAccepted;
 
   if (
     !quoteLoading &&
@@ -2203,6 +2228,13 @@ export function CheckoutPageClient({
                           </div>
                         </div>
 
+                        {BigInt(createdOrder.discountToman || "0") > BigInt(0) ? (
+                          <div className="flex items-center justify-between gap-4 text-sm text-emerald-100/75">
+                            <span>{isPersian ? "تخفیف اولین خرید" : "First-purchase discount"}</span>
+                            <span>−{formatPrice(createdOrder.discountToman)} {text.toman}</span>
+                          </div>
+                        ) : null}
+
                         <div className="flex items-start justify-between gap-4 text-xs">
                           <span className="text-[#c9bb9a]/55">
                             {
@@ -2350,6 +2382,10 @@ export function CheckoutPageClient({
                       </div>
 
                       <div className="mt-5 space-y-3">
+                        <div className="flex items-start gap-3 rounded-xl border border-emerald-300/18 bg-emerald-300/[0.045] px-3 py-3 text-[10px] leading-6 text-emerald-100/72">
+                          <CheckCircle2 className="mt-1 h-3.5 w-3.5 shrink-0" />
+                          {text.welcomeOffer}
+                        </div>
                         <div className="flex items-start gap-3 rounded-xl border border-[#d9b85f]/12 bg-[#d9b85f]/[0.03] px-3 py-3 text-[10px] leading-6 text-[#cfc19e]/55">
                           <ShieldCheck className="mt-1 h-3.5 w-3.5 shrink-0 text-[#d9be6b]/65" />
 
@@ -2366,6 +2402,22 @@ export function CheckoutPageClient({
                           }
                         </div>
                       </div>
+
+                      <label className="mt-5 flex cursor-pointer items-start gap-3 rounded-xl border border-[#d9b85f]/16 bg-[#d9b85f]/[0.035] p-4 text-xs leading-7 text-[#d8c9a6]/72">
+                        <input
+                          type="checkbox"
+                          checked={termsAccepted}
+                          onChange={event => setTermsAccepted(event.target.checked)}
+                          className="mt-1 size-4 shrink-0 accent-[#d9be6b]"
+                          required
+                        />
+                        <span>
+                          {text.termsAcceptance}{" "}
+                          <Link className="text-[#efd98e] underline underline-offset-4" href={`/${locale}/policies/terms`} target="_blank" rel="noopener noreferrer">
+                            {isPersian ? "مشاهده قوانین" : "View policies"}
+                          </Link>
+                        </span>
+                      </label>
 
                       <TurnstileWidget
                         locale={locale}

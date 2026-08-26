@@ -3,17 +3,24 @@ import {
   ArrowUp,
   BookOpen,
   CircleDot,
+  FileText,
   Gem,
   Home,
   LayoutGrid,
   Mail,
+  MessageCircle,
+  Send,
   ShoppingBag,
   ShoppingCart,
   Sparkles,
+  RotateCcw,
+  ShieldCheck,
+  Truck,
 } from "lucide-react";
 import Link from "next/link";
 
 import { MeasurementPreferencesButton } from "@/components/measurement-preferences-button";
+import { legalBusinessIdentity } from "@/lib/legal-business";
 
 type SiteFooterProps = {
   locale: string;
@@ -33,12 +40,18 @@ type FooterColumn = {
 
 export function SiteFooter({ locale }: SiteFooterProps) {
   const isPersian = locale === "fa";
+  const seller = legalBusinessIdentity();
 
   const copy = isPersian
     ? {
         shopTitle: "فروشگاه",
         brandTitle: "الوریا",
         categoryTitle: "دسته‌بندی‌ها",
+        legalTitle: "قوانین و اعتماد",
+        terms: "شرایط خرید",
+        privacy: "حریم خصوصی",
+        shipping: "ارسال و تحویل",
+        returns: "مرجوعی و بازپرداخت",
         products: "تمام آثار",
         collections: "مشاهده دسته‌بندی‌ها",
         cart: "سبد خرید",
@@ -52,11 +65,17 @@ export function SiteFooter({ locale }: SiteFooterProps) {
         rights: "تمام حقوق برای ELORIA محفوظ است.",
         top: "بازگشت به آغاز",
         signature: "جواهراتی با روایت ایران کهن",
+        socialTitle: "ارتباط مستقیم با الوریا",
       }
     : {
         shopTitle: "Shop",
         brandTitle: "Eloria",
         categoryTitle: "Categories",
+        legalTitle: "Legal & trust",
+        terms: "Purchase terms",
+        privacy: "Privacy policy",
+        shipping: "Shipping & delivery",
+        returns: "Returns & refunds",
         products: "All creations",
         collections: "Browse categories",
         cart: "Shopping cart",
@@ -70,6 +89,7 @@ export function SiteFooter({ locale }: SiteFooterProps) {
         rights: "All rights reserved for ELORIA.",
         top: "Back to the beginning",
         signature: "Jewellery shaped by ancient Persian stories",
+        socialTitle: "Connect with Eloria",
       };
 
   const columns: FooterColumn[] = [
@@ -137,6 +157,16 @@ export function SiteFooter({ locale }: SiteFooterProps) {
         },
       ],
     },
+    {
+      title: copy.legalTitle,
+      icon: FileText,
+      links: [
+        { label: copy.terms, href: `/${locale}/policies/terms`, icon: FileText },
+        { label: copy.privacy, href: `/${locale}/policies/privacy`, icon: ShieldCheck },
+        { label: copy.shipping, href: `/${locale}/policies/shipping`, icon: Truck },
+        { label: copy.returns, href: `/${locale}/policies/returns`, icon: RotateCcw },
+      ],
+    },
   ];
 
   return (
@@ -177,9 +207,28 @@ export function SiteFooter({ locale }: SiteFooterProps) {
           <p className="mt-2 text-xs leading-6 text-[#d2c4a5]/58">
             {copy.signature}
           </p>
+          {(seller.instagramUrl || seller.telegramUrl || seller.baleUrl) ? (
+            <nav aria-label={copy.socialTitle} className="mt-5 flex flex-wrap items-center justify-center gap-2">
+              {seller.instagramUrl ? (
+                <a className="inline-flex min-h-10 items-center gap-2 rounded-full border border-[#dfc16f]/20 px-4 text-xs text-[#d8cbb1]/72 transition hover:border-[#dfc16f]/42 hover:text-[#f0d58e] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#dfc16f]/38" href={seller.instagramUrl} target="_blank" rel="noopener noreferrer" aria-label="Instagram">
+                  <MessageCircle aria-hidden="true" className="size-4" /> Instagram
+                </a>
+              ) : null}
+              {seller.telegramUrl ? (
+                <a className="inline-flex min-h-10 items-center gap-2 rounded-full border border-[#dfc16f]/20 px-4 text-xs text-[#d8cbb1]/72 transition hover:border-[#dfc16f]/42 hover:text-[#f0d58e] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#dfc16f]/38" href={seller.telegramUrl} target="_blank" rel="noopener noreferrer" aria-label="Telegram">
+                  <Send aria-hidden="true" className="size-4" /> Telegram
+                </a>
+              ) : null}
+              {seller.baleUrl ? (
+                <a className="inline-flex min-h-10 items-center gap-2 rounded-full border border-[#dfc16f]/20 px-4 text-xs text-[#d8cbb1]/72 transition hover:border-[#dfc16f]/42 hover:text-[#f0d58e] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#dfc16f]/38" href={seller.baleUrl} target="_blank" rel="noopener noreferrer" aria-label={isPersian ? "بله" : "Bale"}>
+                  <MessageCircle aria-hidden="true" className="size-4" /> {isPersian ? "بله" : "Bale"}
+                </a>
+              ) : null}
+            </nav>
+          ) : null}
         </div>
 
-        <div className="mt-10 grid border-y border-[#ddc16d]/12 py-8 md:grid-cols-3 md:py-9">
+        <div className="mt-10 grid border-y border-[#ddc16d]/12 py-8 md:grid-cols-2 lg:grid-cols-4 md:py-9">
           {columns.map((column, index) => {
             const ColumnIcon = column.icon;
 

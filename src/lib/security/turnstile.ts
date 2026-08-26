@@ -15,6 +15,12 @@ function configuredSecret(): string {
   return process.env.TURNSTILE_SECRET_KEY?.trim() ?? "";
 }
 
+function domesticNetworkMode(): boolean {
+  return ["1", "true", "yes", "on"].includes(
+    process.env.ELORIA_DOMESTIC_NETWORK_MODE?.trim().toLowerCase() ?? "",
+  );
+}
+
 function expectedHostname(): string | null {
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL?.trim();
   if (!siteUrl) return null;
@@ -39,6 +45,13 @@ export async function verifyTurnstileToken(input: {
   ip?: string | null;
   expectedAction?: string;
 }): Promise<TurnstileVerificationResult> {
+  // In Iran-only mode the external Cloudflare challenge may be unreachable.
+  // Origin checks, bounded JSON, IP/mobile rate limits and idempotency remain
+  // active; operators should keep this mode off while Turnstile is reachable.
+  if (domesticNetworkMode()) {
+    return { successful: true, configured: false, errors: [] };
+  }
+
   const secret = configuredSecret();
 
   if (!secret) {

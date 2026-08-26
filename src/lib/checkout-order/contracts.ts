@@ -37,6 +37,9 @@ export type CreateCheckoutOrderInput = {
   items:
     CheckoutOrderItemInput[];
 
+  promoCode?:
+    string | null;
+
   requestId?:
     string | null;
 };
@@ -59,6 +62,9 @@ export type CheckoutOrderResult = {
       "TOMAN";
 
     subtotalToman:
+      string;
+
+    discountToman:
       string;
 
     payableToman:
@@ -191,6 +197,11 @@ export type SerializableOrder = {
     string;
 
   subtotalToman: {
+    toString():
+      string;
+  };
+
+  discountToman: {
     toString():
       string;
   };

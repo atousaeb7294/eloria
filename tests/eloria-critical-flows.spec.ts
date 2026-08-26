@@ -1,4 +1,4 @@
-﻿import {
+import {
   appendFileSync,
 } from "node:fs";
 
@@ -362,6 +362,18 @@ test.describe(
 
           locale:
             "en",
+
+          termsAccepted:
+            true,
+
+          termsVersion:
+            "2026-08-26",
+
+          promoCode:
+            "ELORIA50",
+
+          companyWebsite:
+            "",
 
           customer: {
             fullName:
