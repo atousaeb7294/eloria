@@ -128,6 +128,19 @@ function formatDigits(
   );
 }
 
+const TAPESTRY_LAYOUTS = [
+  "col-span-2 row-span-2 sm:col-span-2 sm:row-span-2",
+  "col-span-1 row-span-1",
+  "col-span-1 row-span-2",
+  "col-span-2 row-span-1 sm:col-span-1",
+  "col-span-1 row-span-1",
+  "col-span-1 row-span-2",
+  "col-span-2 row-span-1 sm:col-span-2",
+  "col-span-1 row-span-1",
+  "col-span-1 row-span-1",
+  "col-span-2 row-span-1 sm:col-span-1",
+] as const;
+
 export function HomeFeaturedAlbum({
   locale,
 }: {
@@ -213,7 +226,7 @@ export function HomeFeaturedAlbum({
           await fetch(
             `/api/home-featured-products?locale=${encodeURIComponent(locale)}`,
             {
-              cache: "no-store",
+              cache: "default",
               signal:
                 controller.signal,
             },
@@ -447,6 +460,8 @@ export function HomeFeaturedAlbum({
         100
       : 0;
 
+  const tapestryItems = items.slice(0, 10);
+
   return (
     <div
       dir={isPersian ? "rtl" : "ltr"}
@@ -534,7 +549,7 @@ export function HomeFeaturedAlbum({
             return (
               <div
                 key={item.slug}
-                className="absolute left-1/2 top-3 w-[64%] origin-center transform-gpu will-change-[transform,opacity,filter] transition-[transform,opacity,filter] duration-[1450ms] ease-[cubic-bezier(0.16,1,0.3,1)] motion-reduce:duration-0 sm:w-[49%] lg:w-[39%]"
+                className="absolute left-1/2 top-3 w-[64%] origin-center transform-gpu will-change-[transform,opacity,filter] transition-[transform,opacity,filter] duration-[720ms] ease-[cubic-bezier(0.16,1,0.3,1)] motion-reduce:duration-0 sm:w-[49%] lg:w-[39%]"
                 style={
                   getMotionStyle(
                     offset,
@@ -691,6 +706,49 @@ export function HomeFeaturedAlbum({
           </span>
         </button>
       </div>
+
+      {tapestryItems.length > 3 ? (
+        <div className="relative z-30 mx-auto mt-10 max-w-[980px] sm:mt-14">
+          <div className="mb-5 flex items-end justify-between gap-4 px-1">
+            <div>
+              <p className={isPersian ? "text-[10px] font-medium text-[#d8bf78]/62" : "text-[9px] font-medium tracking-[0.18em] text-[#d8bf78]/62"}>
+                {isPersian ? "گوشه‌هایی از جهان امروز الوریا" : "MORE FROM TODAY'S ELORIA"}
+              </p>
+              <p className={isPersian ? "mt-2 text-sm leading-7 text-[#e9dcc0]/82" : "mt-2 text-sm text-[#e9dcc0]/82"}>
+                {isPersian ? "آثار بیشتری را در یک چیدمان زنده و روزانه کشف کنید." : "Discover more creations in a living daily curation."}
+              </p>
+            </div>
+            <Link href={`/${locale}/products`} className="hidden shrink-0 rounded-full border border-[#d9bb70]/18 bg-[#d9bb70]/[0.045] px-4 py-2 text-[10px] text-[#e6ce89]/78 transition hover:border-[#e8cc7b]/40 hover:text-[#f3d995] sm:inline-flex">
+              {isPersian ? "جست‌وجو در تمام آثار" : "Search all creations"}
+            </Link>
+          </div>
+
+          <div className="grid auto-rows-[128px] grid-cols-2 gap-3 sm:auto-rows-[150px] sm:grid-cols-4 sm:gap-4 lg:auto-rows-[165px] lg:grid-cols-5">
+            {tapestryItems.map((item, index) => (
+              <Link
+                key={`tapestry-${item.slug}`}
+                href={item.href}
+                className={[
+                  "eloria-product-drift group relative isolate overflow-hidden rounded-[22px] border border-[#d9bb70]/12 bg-[#04150f] shadow-[0_18px_54px_rgba(0,0,0,.26)] transition hover:-translate-y-1 hover:border-[#dfc36f]/34 hover:shadow-[0_24px_70px_rgba(0,0,0,.34)]",
+                  TAPESTRY_LAYOUTS[index % TAPESTRY_LAYOUTS.length],
+                ].join(" ")}
+                style={{ animationDelay: `${(index % 5) * -1.15}s` }}
+                aria-label={item.name}
+              >
+                <Image src={item.imageUrl} alt={item.name} fill sizes="(max-width: 640px) 50vw, (max-width: 1024px) 25vw, 20vw" loading="lazy" className="object-cover transition-transform duration-700 ease-out group-hover:scale-[1.035]" />
+                <div aria-hidden="true" className="absolute inset-0 bg-[linear-gradient(180deg,transparent_44%,rgba(1,10,7,.16)_66%,rgba(1,9,6,.88)_100%)]" />
+                <div className="absolute inset-x-0 bottom-0 z-10 px-3 pb-3 pt-8 sm:px-4 sm:pb-4">
+                  <p className={isPersian ? "truncate text-[11px] font-medium text-[#f0ddb0]/90 sm:text-xs" : "truncate text-[10px] font-medium text-[#f0ddb0]/90 sm:text-[11px]"}>{item.name}</p>
+                </div>
+                <span aria-hidden="true" className="absolute end-3 top-3 z-10 size-2 rotate-45 border border-[#e3c873]/45 bg-[#0b3b2b]/65 opacity-70 transition group-hover:rotate-[135deg] group-hover:border-[#f1d88b]/75" />
+              </Link>
+            ))}
+          </div>
+          <Link href={`/${locale}/products`} className="mx-auto mt-5 inline-flex min-h-10 items-center justify-center rounded-full border border-[#d9bb70]/18 bg-[#d9bb70]/[0.045] px-5 text-[10px] text-[#e6ce89]/78 transition hover:border-[#e8cc7b]/40 hover:text-[#f3d995] sm:hidden">
+            {isPersian ? "جست‌وجو در تمام آثار" : "Search all creations"}
+          </Link>
+        </div>
+      ) : null}
     </div>
   );
 }

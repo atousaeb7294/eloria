@@ -114,7 +114,7 @@ function normalizeFullName(
   return normalized;
 }
 
-function normalizeMobile(
+export function normalizeCheckoutMobile(
   value: unknown,
 ): string {
   if (
@@ -342,7 +342,7 @@ export function normalizeCheckoutCustomer(
       ),
 
     mobile:
-      normalizeMobile(
+      normalizeCheckoutMobile(
         input.mobile,
       ),
 

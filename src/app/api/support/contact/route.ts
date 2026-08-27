@@ -7,9 +7,6 @@ import {
   sendSms,
 } from "@/lib/notifications/kavenegar";
 import {
-  isSupportEnabled,
-} from "@/lib/runtime-features";
-import {
   readJsonBody,
 } from "@/lib/security/json-body";
 import {
@@ -22,6 +19,7 @@ import {
 import {
   verifyTurnstileToken,
 } from "@/lib/security/turnstile";
+import { addVisitorSupportMessage } from "@/lib/support-chat";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -132,13 +130,6 @@ function turnstileRequired():
 export async function POST(
   request: NextRequest,
 ) {
-  if (!isSupportEnabled()) {
-    return NextResponse.json(
-      { successful: false, message: "پشتیبانی آنلاین در حال حاضر غیرفعال است." },
-      { status: 503 },
-    );
-  }
-
   if (!hasTrustedOrigin(request)) {
     return NextResponse.json(
       {
@@ -207,6 +198,8 @@ export async function POST(
     clean(body.subject, 160);
   const message =
     clean(body.message, 1200);
+  const locale =
+    body.locale === "en" ? "en" : "fa";
 
   if (
     !name ||
@@ -301,6 +294,23 @@ export async function POST(
   let delivered = false;
   const errors: string[] = [];
 
+  // The website database is the primary delivery channel. External SMS/webhook
+  // integrations are optional notifications and must never make the contact form
+  // unusable when they are not configured.
+  try {
+    await addVisitorSupportMessage({
+      accessToken: null,
+      locale,
+      name,
+      phone,
+      message: `${subject}\n\n${message}`,
+    });
+    delivered = true;
+  } catch (error) {
+    console.error("[Eloria Support] Database persistence failed.", error);
+    errors.push("ثبت پیام در سامانه پشتیبانی ناموفق بود.");
+  }
+
   if (webhook) {
     try {
       const response =
@@ -376,25 +386,11 @@ export async function POST(
     }
   }
 
-  if (
-    !webhook &&
-    !supportMobile
-  ) {
-    return NextResponse.json(
-      {
-        successful: false,
-        message:
-          "کانال پشتیبانی هنوز پیکربندی نشده است.",
-      },
-      { status: 503 },
-    );
-  }
-
   return NextResponse.json(
     {
       successful: delivered,
       message: delivered
-        ? "درخواست شما ثبت و برای پشتیبانی ارسال شد."
+        ? "درخواست شما با موفقیت در سامانه پشتیبانی الوریا ثبت شد."
         : errors.join(" ") ||
           "ارسال انجام نشد.",
     },

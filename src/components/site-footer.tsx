@@ -7,6 +7,9 @@ import {
   Home,
   LayoutGrid,
   Mail,
+  Camera,
+  Send,
+  MessageCircle,
   ShoppingBag,
   ShoppingCart,
   Sparkles,
@@ -52,6 +55,10 @@ export function SiteFooter({ locale }: SiteFooterProps) {
         rights: "تمام حقوق برای ELORIA محفوظ است.",
         top: "بازگشت به آغاز",
         signature: "جواهراتی با روایت ایران کهن",
+        quickSocial: "دسترسی سریع و شبکه‌های رسمی",
+        instagram: "اینستاگرام",
+        telegram: "تلگرام",
+        bale: "بله",
       }
     : {
         shopTitle: "Shop",
@@ -70,7 +77,29 @@ export function SiteFooter({ locale }: SiteFooterProps) {
         rights: "All rights reserved for ELORIA.",
         top: "Back to the beginning",
         signature: "Jewellery shaped by ancient Persian stories",
+        quickSocial: "Quick access & official channels",
+        instagram: "Instagram",
+        telegram: "Telegram",
+        bale: "Bale",
       };
+
+  const socialLinks = [
+    {
+      label: copy.instagram,
+      href: process.env.NEXT_PUBLIC_ELORIA_INSTAGRAM_URL?.trim() || null,
+      icon: Camera,
+    },
+    {
+      label: copy.telegram,
+      href: process.env.NEXT_PUBLIC_ELORIA_TELEGRAM_URL?.trim() || null,
+      icon: Send,
+    },
+    {
+      label: copy.bale,
+      href: process.env.NEXT_PUBLIC_ELORIA_BALE_URL?.trim() || null,
+      icon: MessageCircle,
+    },
+  ];
 
   const columns: FooterColumn[] = [
     {
@@ -234,6 +263,37 @@ export function SiteFooter({ locale }: SiteFooterProps) {
               </nav>
             );
           })}
+        </div>
+
+        <div className="mt-7 rounded-[1.6rem] border border-[#ddc16d]/12 bg-black/10 px-4 py-4 sm:px-5">
+          <div className="flex flex-col items-center justify-between gap-4 sm:flex-row">
+            <p className="text-xs font-medium text-[#ead9a7]/72">{copy.quickSocial}</p>
+            <div className="flex flex-wrap items-center justify-center gap-2">
+              {socialLinks.map(({ label, href, icon: SocialIcon }) =>
+                href ? (
+                  <a
+                    key={label}
+                    href={href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex min-h-10 items-center gap-2 rounded-full border border-[#dfc16f]/18 bg-[#dfc16f]/[0.035] px-4 text-xs text-[#d8c994]/68 transition hover:-translate-y-0.5 hover:border-[#dfc16f]/42 hover:text-[#f1d993]"
+                  >
+                    <SocialIcon aria-hidden="true" className="size-4" />
+                    {label}
+                  </a>
+                ) : (
+                  <span
+                    key={label}
+                    title={isPersian ? "لینک این شبکه در تنظیمات سرور وارد نشده است" : "This channel URL is not configured"}
+                    className="inline-flex min-h-10 cursor-not-allowed items-center gap-2 rounded-full border border-white/10 px-4 text-xs text-white/30"
+                  >
+                    <SocialIcon aria-hidden="true" className="size-4" />
+                    {label}
+                  </span>
+                ),
+              )}
+            </div>
+          </div>
         </div>
 
         <div className="flex flex-col items-center justify-between gap-4 pt-6 text-center text-xs text-[#c8b993]/52 sm:flex-row sm:text-start">

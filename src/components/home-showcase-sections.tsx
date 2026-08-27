@@ -25,10 +25,10 @@ export function HomeShowcaseSections({ locale }: HomeShowcaseSectionsProps) {
             trustEyebrow: "انتخاب با اطمینان",
             trustTitle: "زیبایی باید با وضوح همراه باشد",
             trustDescription: "اطلاعات هر اثر روشن و منظم ارائه می‌شود تا مشخصات، موجودی و قیمت را پیش از انتخاب بدون ابهام ببینید.",
-            finalEyebrow: "آغاز یک روایت",
-            finalTitle: "اثری را انتخاب کنید که امضای سلیقه شما باشد",
+            finalEyebrow: "پیشنهاد هوشمند امروز",
+            finalTitle: "گزیده‌ای تازه از آثاری که امروز بیشتر ارزش دیدن دارند",
             finalDescription: "تمام آثار الوریا را ببینید و انتخاب خود را براساس دسته‌بندی، جنس، موجودی و بازه قیمت دقیق‌تر کنید.",
-            finalPrimary: "تماشای تمام آثار",
+            finalPrimary: "جست‌وجو در تمام آثار",
             finalSecondary: "مرور گنجینه‌ها",
             principles: [
                 {
@@ -49,10 +49,10 @@ export function HomeShowcaseSections({ locale }: HomeShowcaseSectionsProps) {
             trustEyebrow: "Choose with clarity",
             trustTitle: "Beauty should be accompanied by clarity",
             trustDescription: "Each creation is presented clearly so you can review specifications, availability and pricing before choosing.",
-            finalEyebrow: "Begin a narrative",
-            finalTitle: "Choose a creation that reflects your signature taste",
+            finalEyebrow: "Today’s smart selection",
+            finalTitle: "A fresh curation of creations most worth discovering today",
             finalDescription: "Browse every Eloria creation and refine your selection by category, material, availability and price range.",
-            finalPrimary: "View all creations",
+            finalPrimary: "Search all creations",
             finalSecondary: "Browse collections",
             principles: [
                 {

@@ -15,6 +15,7 @@ import {
 } from "@/lib/catalog";
 import { normalizeCatalogPage } from "@/lib/catalog-pagination";
 import { getPricedProductsCatalog } from "@/lib/priced-catalog";
+import { parseSmartCatalogQuery } from "@/lib/smart-catalog-query";
 
 export const dynamic = "force-dynamic";
 
@@ -117,11 +118,13 @@ export default async function ProductsPage({ params, searchParams }: ProductsPag
 
   const collectionSlugs = new Set(collections.map(item => item.slug));
 
-  const search = single(raw.q)?.trim() ?? "";
-  const rawMaterial = single(raw.material);
-  const rawCollection = single(raw.collection);
-  const minPrice = single(raw.minPrice) ?? "";
-  const maxPrice = single(raw.maxPrice) ?? "";
+  const rawSearch = single(raw.q)?.trim() ?? "";
+  const smartQuery = parseSmartCatalogQuery(rawSearch);
+  const search = smartQuery.search;
+  const rawMaterial = single(raw.material) ?? (smartQuery.material === "GOLD" ? "gold" : smartQuery.material === "SILVER" ? "silver" : undefined);
+  const rawCollection = single(raw.collection) ?? smartQuery.collectionSlug;
+  const minPrice = single(raw.minPrice) ?? smartQuery.minPriceToman ?? "";
+  const maxPrice = single(raw.maxPrice) ?? smartQuery.maxPriceToman ?? "";
   const rawAvailability = single(raw.availability);
   const page = positivePage(single(raw.page));
 

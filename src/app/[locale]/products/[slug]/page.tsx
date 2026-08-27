@@ -16,6 +16,7 @@ import {
   ScrollText,
   ShieldCheck,
   Sparkles,
+  Truck,
 } from "lucide-react";
 
 import {
@@ -61,6 +62,9 @@ import { ProductStructuredData } from "@/components/product-detail/product-struc
 
 import { TreasuryButton } from "@/components/treasury/treasury-button";
 import { ProductWatchButton } from "@/components/product-watch-button";
+import { ProductShareActions } from "@/components/product-share-actions";
+import { CatalogProductCard } from "@/components/catalog-product-card";
+import { getPricedProductsCatalog } from "@/lib/priced-catalog";
 
 export const dynamic =
   "force-dynamic";
@@ -656,6 +660,68 @@ export default async function ProductPage({
         : "The legend of this piece has not yet been written in Eloria’s book of secrets."
     );
 
+  let relatedProducts: Awaited<ReturnType<typeof getPricedProductsCatalog>>["products"] = [];
+  try {
+    const relatedCatalog = await getPricedProductsCatalog({
+      material: result.product.material,
+      availability: "AVAILABLE",
+      page: 1,
+      pageSize: 32,
+    });
+
+    const candidates = relatedCatalog.products.filter(
+      item => item.slug !== result.product.slug && item.displayPriceToman,
+    );
+    const candidateSlugs = candidates.map(item => item.slug);
+    const recentSince = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+
+    const [viewRows, saleRows] = candidateSlugs.length
+      ? await Promise.all([
+          prisma.siteMeasurementEvent.groupBy({
+            by: ["productSlug"],
+            where: {
+              eventType: "view_item",
+              occurredAt: { gte: recentSince },
+              productSlug: { in: candidateSlugs },
+            },
+            _count: { _all: true },
+          }),
+          prisma.orderItem.groupBy({
+            by: ["productSlug"],
+            where: {
+              productSlug: { in: candidateSlugs },
+              createdAt: { gte: recentSince },
+              order: { status: { in: ["PAID", "PROCESSING", "SHIPPED", "COMPLETED"] } },
+            },
+            _sum: { quantity: true },
+          }),
+        ])
+      : [[], []];
+
+    const views = new Map(
+      viewRows.filter(row => row.productSlug).map(row => [row.productSlug as string, row._count._all]),
+    );
+    const sales = new Map(saleRows.map(row => [row.productSlug, row._sum.quantity ?? 0]));
+    const currentPrice = BigInt(result.pricing.finalPriceToman);
+
+    relatedProducts = candidates
+      .map(item => {
+        const itemPrice = BigInt(item.displayPriceToman ?? "0");
+        const distance = currentPrice > 0n
+          ? Number((itemPrice > currentPrice ? itemPrice - currentPrice : currentPrice - itemPrice) * 10_000n / currentPrice) / 100
+          : 100;
+        const priceScore = Math.max(0, 28 - Math.min(28, distance * 0.35));
+        const collectionScore = item.collectionSlug === collectionSlug ? 32 : 0;
+        const behaviorScore = Math.min(views.get(item.slug) ?? 0, 50) * 0.35 + Math.min(sales.get(item.slug) ?? 0, 12) * 3.5;
+        return { item, score: collectionScore + priceScore + behaviorScore };
+      })
+      .sort((a, b) => b.score - a.score)
+      .slice(0, 4)
+      .map(entry => entry.item);
+  } catch (error) {
+    console.warn(`[Eloria Recommendations] Smart related products unavailable for ${result.product.slug}.`, error);
+  }
+
   return (
     <InternalPageShell
       locale={locale}
@@ -672,6 +738,9 @@ export default async function ProductPage({
         finalPriceToman={result.pricing.finalPriceToman}
         stock={stock}
         purchasable={result.product.isPurchasable && stock > 0}
+        material={materialLabel}
+        weightGrams={weight?.toString() ?? null}
+        purity={purity ?? (purityFineness ? purityFineness.toString() : null)}
       />
       <section className="relative z-10 mx-auto w-full max-w-[1450px] px-4 pb-28 pt-[130px] sm:px-6 sm:pt-[142px] lg:px-10">
         <div className="flex flex-wrap items-center justify-between gap-4">
@@ -935,6 +1004,14 @@ export default async function ProductPage({
                     }
                   />
                 </div>
+
+                <p className="mt-3 rounded-2xl border border-white/[0.055] bg-black/10 px-3.5 py-3 text-[10px] leading-6 text-[#cdbf9f]/62">
+                  {isPersian
+                    ? (isGold
+                        ? "قیمت نهایی این اثر، حاصل ارزش روز طلای به‌کاررفته به‌همراه اجرت ساخت، سهم سود و ارزش هنری قطعهٔ دست‌بافت الوریاست؛ همهٔ این موارد در مبلغ نهایی لحاظ شده‌اند."
+                        : "قیمت نهایی این اثر، حاصل ارزش روز نقرهٔ به‌کاررفته به‌همراه اجرت ساخت، سهم سود و ارزش هنری قطعهٔ دست‌بافت الوریاست؛ همهٔ این موارد در مبلغ نهایی لحاظ شده‌اند.")
+                    : "The final price combines the live value of the precious metal with craftsmanship, margin, and the artistic value of Eloria’s handwoven element; all are already included in the displayed total."}
+                </p>
               </div>
 
               <div className="mt-5">
@@ -970,6 +1047,7 @@ export default async function ProductPage({
                   locale={locale}
                   slug={result.product.slug}
                 />
+                <ProductShareActions locale={locale} slug={result.product.slug} title={productName} />
               <div className="mt-3">
                 <TreasuryButton
                   locale={locale}
@@ -977,18 +1055,106 @@ export default async function ProductPage({
               </div>
               </div>
 
-              <div className="mt-4 grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
+                <section className="rounded-[2rem] border border-[#d9b85f]/18 bg-[#061c15]/78 p-4 shadow-[0_24px_70px_rgba(0,0,0,0.3)] backdrop-blur-xl sm:p-5">
+                <div className="mb-4 flex items-center gap-3">
+                  <ShieldCheck className="h-5 w-5 text-[#d9bd70]" />
+
+                  <h2 className="text-sm font-medium text-[#ebdfc8]">
+                    {isPersian
+                      ? "مشخصات محصول"
+                      : "Product specifications"}
+                  </h2>
+                </div>
+
+                <div className="grid gap-2 sm:grid-cols-2">
+                  <SpecificationItem
+                    icon={
+                      <MaterialIcon className="h-5 w-5" />
+                    }
+                    label={
+                      isPersian
+                        ? "جنس"
+                        : "Material"
+                    }
+                    value={
+                      materialLabel
+                    }
+                  />
+
+                  <SpecificationItem
+                    icon={
+                      <Gem className="h-5 w-5" />
+                    }
+                    label={
+                      isPersian
+                        ? "عیار"
+                        : "Purity"
+                    }
+                    value={
+                      purity ??
+                      (
+                        purityFineness
+                          ? formatDecimal(
+                              purityFineness,
+                              locale,
+                            )
+                          : "—"
+                      )
+                    }
+                  />
+
+                  <SpecificationItem
+                    icon={
+                      <PackageCheck className="h-5 w-5" />
+                    }
+                    label={
+                      isPersian
+                        ? "موجودی"
+                        : "Stock"
+                    }
+                    value={
+                      stock > 0
+                        ? `${stock.toLocaleString(
+                            isPersian
+                              ? "fa-IR"
+                              : "en-US",
+                          )} ${
+                            isPersian
+                              ? "عدد"
+                              : "items"
+                          }`
+                        : isPersian
+                          ? "ناموجود"
+                          : "Out of stock"
+                    }
+                  />
+
+                  <SpecificationItem
+                    icon={
+                      <Hash className="h-5 w-5" />
+                    }
+                    label={
+                      isPersian
+                        ? "کد محصول"
+                        : "SKU"
+                    }
+                    value={
+                      sku ??
+                      "—"
+                    }
+                  />
+                </div>
+                </section>
+
+              <div className="mt-4 grid gap-2 sm:grid-cols-3">
+
                 <PurchaseAssuranceItem
-                  icon={<ShieldCheck className="h-4 w-4" />}
-                  title={
-                    isPersian
-                      ? "قیمت‌گذاری شفاف"
-                      : "Transparent pricing"
-                  }
+                  icon={<Truck className="h-4 w-4" />}
+                  title={isPersian ? "ارسال مهمانِ الوریا" : "Complimentary Eloria delivery"}
                   description={
                     isPersian
-                      ? "مبلغ نهایی در سرور محاسبه می‌شود."
-                      : "The final amount is calculated on the server."
+                      ? "این اثر با ارسال رایگان و بسته‌بندی اختصاصی الوریا به دست شما می‌رسد."
+                      : "This piece reaches you with complimentary delivery and Eloria’s signature packaging."
                   }
                 />
 
@@ -1003,20 +1169,6 @@ export default async function ProductPage({
                     isPersian
                       ? "سبد و ثبت سفارش، مبلغ را از همان منبع مالیِ سرور دوباره تأیید می‌کنند."
                       : "Cart and order creation reconfirm the amount from the same server financial source."
-                  }
-                />
-
-                <PurchaseAssuranceItem
-                  icon={<PackageCheck className="h-4 w-4" />}
-                  title={
-                    isPersian
-                      ? "موجودی واقعی"
-                      : "Live availability"
-                  }
-                  description={
-                    isPersian
-                      ? "تعداد قابل سفارش از موجودی فعلی خوانده می‌شود."
-                      : "Order limits use the current available stock."
                   }
                 />
 
@@ -1058,100 +1210,53 @@ export default async function ProductPage({
               <p className="mt-4 whitespace-pre-line text-sm leading-8 text-[#d8cbb2]/72">
                 {productDescription}
               </p>
+
+              {collectionSlug === "bracelets" ? (
+                <div className="mt-5 rounded-2xl border border-[#e0c16d]/22 bg-[#e0c16d]/[0.045] px-4 py-4 text-sm leading-8 text-[#e5d5ad]/78">
+                  <strong className="font-semibold text-[#f2d98f]">
+                    {isPersian
+                      ? "سایز تمام دستبندها استاندارد است. در صورت تمایل به شخصی‌سازی سایز، اندازهٔ مچ دست خود را در قسمت «توضیحات سفارش» بنویسید."
+                      : "All bracelets use a standard size. If you would like a personalized fit, enter your wrist measurement in the order notes."}
+                  </strong>{" "}
+                  <Link
+                    href={`/${locale}/journal/wrist-size-guide`}
+                    className="font-medium text-[#efd17d] underline decoration-[#efd17d]/35 underline-offset-4 transition hover:text-[#fff0bd]"
+                  >
+                    {isPersian
+                      ? "راهنمای اندازه‌گیری سایز مچ دست"
+                      : "Wrist measurement guide"}
+                  </Link>
+                </div>
+              ) : null}
             </article>
 
-            <article className="rounded-[2rem] border border-[#d9b85f]/18 bg-[#061c15]/78 p-4 shadow-[0_24px_70px_rgba(0,0,0,0.3)] backdrop-blur-xl sm:p-5">
-              <div className="mb-4 flex items-center gap-3">
-                <ShieldCheck className="h-5 w-5 text-[#d9bd70]" />
 
-                <h2 className="text-sm font-medium text-[#ebdfc8]">
-                  {isPersian
-                    ? "مشخصات محصول"
-                    : "Product specifications"}
-                </h2>
-              </div>
-
-              <div className="grid gap-2 sm:grid-cols-2">
-                <SpecificationItem
-                  icon={
-                    <MaterialIcon className="h-5 w-5" />
-                  }
-                  label={
-                    isPersian
-                      ? "جنس"
-                      : "Material"
-                  }
-                  value={
-                    materialLabel
-                  }
-                />
-
-                <SpecificationItem
-                  icon={
-                    <Gem className="h-5 w-5" />
-                  }
-                  label={
-                    isPersian
-                      ? "عیار"
-                      : "Purity"
-                  }
-                  value={
-                    purity ??
-                    (
-                      purityFineness
-                        ? formatDecimal(
-                            purityFineness,
-                            locale,
-                          )
-                        : "—"
-                    )
-                  }
-                />
-
-                <SpecificationItem
-                  icon={
-                    <PackageCheck className="h-5 w-5" />
-                  }
-                  label={
-                    isPersian
-                      ? "موجودی"
-                      : "Stock"
-                  }
-                  value={
-                    stock > 0
-                      ? `${stock.toLocaleString(
-                          isPersian
-                            ? "fa-IR"
-                            : "en-US",
-                        )} ${
-                          isPersian
-                            ? "عدد"
-                            : "items"
-                        }`
-                      : isPersian
-                        ? "ناموجود"
-                        : "Out of stock"
-                  }
-                />
-
-                <SpecificationItem
-                  icon={
-                    <Hash className="h-5 w-5" />
-                  }
-                  label={
-                    isPersian
-                      ? "کد محصول"
-                      : "SKU"
-                  }
-                  value={
-                    sku ??
-                    "—"
-                  }
-                />
-              </div>
-            </article>
           </div>
         </div>
+
+        {relatedProducts.length > 0 ? (
+          <section className="mt-10" aria-labelledby="eloria-related-products-title">
+            <div className="mb-5 flex items-end justify-between gap-4">
+              <div>
+                <span className="text-[10px] uppercase tracking-[0.2em] text-[#d2b96e]/55">Eloria Curated For You</span>
+                <h2 id="eloria-related-products-title" className={isPersian ? "font-persian-title mt-2 text-xl text-[#f1e2be]" : "mt-2 text-xl font-semibold text-[#f1e2be]"}>
+                  {isPersian ? "اگر این اثر را پسندیدید" : "You may also love"}
+                </h2>
+                <p className="mt-2 text-xs leading-6 text-[#cbbd9d]/58">
+                  {isPersian ? "انتخاب‌هایی نزدیک به جنس، گنجینه و بازهٔ قیمت این اثر، با اولویت آثار آمادهٔ سفارش." : "A smart selection close to this piece by material and collection, with live pricing and availability."}
+                </p>
+              </div>
+              <Link href={`/${locale}/products`} className="hidden rounded-full border border-[#d9b85f]/25 px-4 py-2 text-[11px] text-[#e4cd8a] transition hover:border-[#e7ce79]/55 sm:inline-flex">
+                {isPersian ? "همه آثار" : "All creations"}
+              </Link>
+            </div>
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              {relatedProducts.map((product) => (
+                <CatalogProductCard key={product.id} product={product} locale={locale} showCollection={false} />
+              ))}
+            </div>
+          </section>
+        ) : null}
 
         <article className="relative mt-8 overflow-hidden rounded-[2.2rem] border border-[#d9b85f]/22 bg-[linear-gradient(135deg,rgba(8,39,29,0.94),rgba(2,20,14,0.98))] px-5 py-7 shadow-[0_28px_80px_rgba(0,0,0,0.34)] backdrop-blur-xl sm:px-8 sm:py-8">
           <div

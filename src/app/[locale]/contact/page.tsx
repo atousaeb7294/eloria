@@ -110,7 +110,6 @@ export default async function ContactPage({ params }: ContactPageProps) {
 
               {seller.complete ? (
                 <div className="mt-5 space-y-3 text-sm leading-8 text-[#d4c6a7]/68">
-                  <p>{seller.businessAddress}</p>
                   {seller.supportPhone ? <a className="block underline-offset-4 hover:underline" href={`tel:${seller.supportPhone}`}>{seller.supportPhone}</a> : null}
                   {seller.supportEmail ? <a className="block underline-offset-4 hover:underline" href={`mailto:${seller.supportEmail}`}>{seller.supportEmail}</a> : null}
                 </div>

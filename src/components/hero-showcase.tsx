@@ -54,7 +54,7 @@ export function HeroShowcase({
             "کشف جهان الوریا",
 
           secondaryAction:
-            "تماشای آثار",
+            "جست‌وجو در تمام آثار",
 
           welcome:
             "به جهان الوریا خوش آمدید",
@@ -76,7 +76,7 @@ export function HeroShowcase({
             "Discover Eloria",
 
           secondaryAction:
-            "Explore the Creations",
+            "Search all creations",
 
           welcome:
             "Welcome to the World of Eloria",

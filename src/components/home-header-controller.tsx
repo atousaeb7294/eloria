@@ -127,7 +127,7 @@ export function HomeHeaderController({
           {
             label: "تماس با ما",
             description: "ارتباط مستقیم با همراهان الوریا",
-            href: "#contact",
+            href: `/${locale}/contact`,
             icon: "contact",
           },
         ]
@@ -141,7 +141,7 @@ export function HomeHeaderController({
           {
             label: "Contact Us",
             description: "Connect directly with Eloria",
-            href: "#contact",
+            href: `/${locale}/contact`,
             icon: "contact",
           },
         ];

@@ -2,11 +2,6 @@ import { expect, test } from "@playwright/test";
 
 const mobileWidths = [320, 375, 430];
 
-test.beforeEach(async ({ page }) => {
-  await page.addInitScript(() => {
-    window.sessionStorage.setItem("eloria_intro_seen_v5", "1");
-  });
-});
 
 test("health endpoints distinguish liveness from readiness", async ({ request }) => {
   const live = await request.get("/api/health?mode=live");
@@ -19,7 +14,17 @@ test("health endpoints distinguish liveness from readiness", async ({ request })
 test("Hero actions and the seeded catalog are connected", async ({ page }, testInfo) => {
   await page.goto("/fa#hero");
 
-  await expect(page.locator(".eloria-intro-root")).toBeHidden();
+  await expect(page.locator(".eloria-intro-root")).toBeVisible();
+  await page.locator("video").first().evaluate((video) => {
+    video.dispatchEvent(new Event("ended"));
+  });
+  const enterButton = page.getByRole("button", { name: /ورود به دنیای الوریا/ });
+  await expect(enterButton).toBeVisible();
+  await enterButton.click();
+  await page.locator("video").nth(1).evaluate((video) => {
+    video.dispatchEvent(new Event("ended"));
+  });
+  await expect(page.locator(".eloria-intro-root")).toBeHidden({ timeout: 5000 });
   await expect(page.getByRole("heading", { name: /روایتی ماندگار/ })).toBeVisible();
 
   const creationsLink = page.getByRole("link", { name: "تماشای آثار" });

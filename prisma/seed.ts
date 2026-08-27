@@ -147,6 +147,75 @@ const PRODUCTS = [
   },
 ] as const;
 
+const EDUCATIONAL_GUIDES = [
+  {
+    slug: "how-to-measure-ring-size",
+    titleFa: "چگونه سایز انگشتر را دقیق پیدا کنیم؟",
+    titleEn: "How to Find Your Ring Size",
+    keywordFa: "تعیین سایز انگشتر",
+    keywordEn: "ring size guide",
+    excerptFa: "راهنمای اندازه‌گیری قطر داخلی انگشتر و دور انگشت، با نکته‌های مهم برای جلوگیری از انتخاب سایز اشتباه.",
+    excerptEn: "A practical guide to measuring an existing ring or your finger and avoiding common sizing mistakes.",
+    contentFa: "## روش اول: اندازه‌گیری انگشتر فعلی\n\nانگشتری را انتخاب کنید که روی همان انگشت به‌خوبی می‌نشیند. قطر داخلی آن را با خط‌کش میلی‌متری، از یک لبه داخلی تا لبه داخلی روبه‌رو اندازه بگیرید.\n\n## روش دوم: اندازه‌گیری دور انگشت\n\nیک نوار کاغذی باریک را بدون فشار دور پهن‌ترین قسمت انگشت قرار دهید، محل اتصال را علامت بزنید و طول آن را به میلی‌متر اندازه بگیرید. اندازه‌گیری را در پایان روز و در دمای معمول انجام دهید.\n\n## نکته‌های مهم\n\nدست غالب ممکن است کمی بزرگ‌تر باشد. انگشترهای پهن معمولاً به فضای بیشتری نیاز دارند. اگر اندازه بین دو سایز است، برای مدل پهن سایز بزرگ‌تر منطقی‌تر است. پیش از سفارش نهایی، اندازه را دوبار کنترل کنید.",
+    contentEn: "## Measure an existing ring\n\nMeasure the inside diameter of a ring that already fits the intended finger. Use millimetres and measure from inner edge to inner edge.\n\n## Measure your finger\n\nWrap a narrow paper strip around the widest part without pulling tightly, mark the overlap, and measure it in millimetres. Measure near the end of the day at a normal temperature.\n\n## Final checks\n\nYour dominant hand may be slightly larger. Wide bands often need more room. Repeat the measurement before ordering.",
+  },
+  {
+    slug: "what-is-gold-making-charge",
+    titleFa: "اجرت طلا چیست و چگونه محاسبه می‌شود؟",
+    titleEn: "What Is a Gold Making Charge?",
+    keywordFa: "اجرت طلا",
+    keywordEn: "gold making charge",
+    excerptFa: "توضیح ساده اجرت ساخت، سود و مالیات و تفاوت آن‌ها با ارزش طلای خام در قیمت نهایی جواهر.",
+    excerptEn: "A clear explanation of making charge, profit, tax and the underlying metal value in a jewellery price.",
+    contentFa: "## اجرت ساخت یعنی چه؟\n\nاجرت، هزینه طراحی، ساخت، پرداخت و مهارتی است که یک قطعه طلای خام را به جواهر تبدیل می‌کند. اجرت می‌تواند مبلغ ثابت، مبلغ به‌ازای هر گرم، درصدی یا ترکیبی باشد.\n\n## اجزای قیمت\n\nقیمت نهایی معمولاً از ارزش وزن طلای خالص‌شده بر اساس عیار، اجرت، هزینه هنری، سود و مالیات مجاز تشکیل می‌شود. این اجزا باید روی فاکتور شفاف باشند.\n\n## هنگام مقایسه\n\nدو قطعه هم‌وزن الزاماً قیمت یکسان ندارند؛ پیچیدگی ساخت و جزئیات دست‌ساز بر اجرت اثر می‌گذارد. عدد نهایی را همراه وزن، عیار و شیوه محاسبه بررسی کنید.",
+    contentEn: "## Meaning\n\nThe making charge covers design, craft, finishing and the work that turns metal into jewellery. It may be fixed, per gram, percentage-based or combined.\n\n## Price structure\n\nA final price may include metal value adjusted for purity, making and artistic charges, profit and applicable tax. These elements should be transparent on the invoice.\n\n## Compare carefully\n\nEqual weight does not mean equal price because craftsmanship and complexity differ.",
+  },
+  {
+    slug: "white-gold-vs-yellow-gold",
+    titleFa: "تفاوت طلای سفید و طلای زرد",
+    titleEn: "White Gold vs Yellow Gold",
+    keywordFa: "تفاوت طلای سفید و زرد",
+    keywordEn: "white gold vs yellow gold",
+    excerptFa: "مقایسه رنگ، ترکیب آلیاژ، نگهداری و نکات انتخاب طلای سفید و زرد بدون ادعاهای گمراه‌کننده.",
+    excerptEn: "A comparison of colour, alloy composition, care and selection considerations for white and yellow gold.",
+    contentFa: "## تفاوت اصلی\n\nهر دو می‌توانند طلای واقعی با عیار یکسان باشند؛ تفاوت رنگ از فلزات آلیاژی و پرداخت سطح می‌آید. طلای سفید معمولاً ظاهر سردتر دارد و برخی مدل‌ها با روکش رودیوم عرضه می‌شوند.\n\n## نگهداری\n\nروکش بعضی قطعات سفید ممکن است با گذر زمان نیاز به تجدید داشته باشد. طلای زرد تغییر ظاهری روکش سفید را ندارد، اما هر دو باید از مواد شیمیایی و ضربه دور بمانند.\n\n## انتخاب\n\nرنگ پوست، رنگ سنگ، سبک لباس و میزان نگهداری مورد قبول شما مهم‌تر از تصور برتری مطلق یکی بر دیگری است.",
+    contentEn: "## Main difference\n\nBoth can be genuine gold of the same purity. Their colour differs because of alloy metals and surface finishing. Some white-gold pieces use rhodium plating.\n\n## Care\n\nPlating may eventually need renewal. Both colours should be protected from chemicals and impact.\n\n## Choosing\n\nConsider skin tone, gemstones, personal style and the maintenance you are comfortable with.",
+  },
+  {
+    slug: "gold-gift-buying-guide",
+    titleFa: "راهنمای خرید طلا برای هدیه",
+    titleEn: "Gold Gift Buying Guide",
+    keywordFa: "خرید طلا برای هدیه",
+    keywordEn: "gold gift guide",
+    excerptFa: "چطور با توجه به سبک فرد، بودجه، سایز و امکان تعویض، هدیه‌ای ماندگار و کاربردی انتخاب کنیم.",
+    excerptEn: "How to choose a lasting gift by considering personal style, budget, sizing and exchange conditions.",
+    contentFa: "## از سبک فرد شروع کنید\n\nبه رنگ زیورآلاتی که معمولاً استفاده می‌کند، طرح‌های ساده یا شاخص و سبک روزمره او توجه کنید.\n\n## بودجه شفاف\n\nپیش از انتخاب، سقف بودجه را مشخص و قیمت را با وزن، عیار، اجرت و شرایط فاکتور بررسی کنید. برای هدیه غافلگیرانه، گردنبند و گوشواره معمولاً دردسر سایز کمتری از انگشتر دارند.\n\n## پیش از پرداخت\n\nشرایط تعویض، سلامت پلمب، مدارک محصول و زمان تحویل را بخوانید. برای قطعه سفارشی یا شخصی‌سازی‌شده، محدودیت بازگشت را از قبل بپرسید.",
+    contentEn: "## Start with their style\n\nNotice the jewellery colour, level of detail and everyday style they already prefer.\n\n## Set a clear budget\n\nCheck weight, purity, making charge and invoice terms. Necklaces and earrings often carry less sizing risk than rings.\n\n## Before payment\n\nReview exchange terms, product documentation and delivery timing, especially for customised pieces.",
+  },
+  {
+    slug: "how-to-care-for-gold-jewelry",
+    titleFa: "نحوه نگهداری و تمیزکردن طلا",
+    titleEn: "How to Care for Gold Jewellery",
+    keywordFa: "نگهداری از طلا",
+    keywordEn: "gold jewellery care",
+    excerptFa: "روش‌های امن نگهداری روزمره، تمیزکردن ملایم و جلوگیری از خط‌وخش، مواد شیمیایی و آسیب سنگ‌ها.",
+    excerptEn: "Safe everyday storage, gentle cleaning and ways to reduce scratches, chemical exposure and gemstone damage.",
+    contentFa: "## نگهداری روزمره\n\nهر قطعه را جداگانه در کیسه یا محفظه نرم بگذارید تا روی قطعات دیگر خراش ایجاد نکند. پیش از ورزش، حمام، استخر و کار با شوینده‌ها زیور را بردارید.\n\n## تمیزکردن ملایم\n\nبرای قطعات ساده، آب ولرم و مقدار کمی شوینده بسیار ملایم کافی است؛ سپس با پارچه نرم خشک کنید. برای سنگ‌های متخلخل، مروارید، چسب یا بافت مکرومه از خیساندن خودداری و دستور اختصاصی فروشنده را رعایت کنید.\n\n## بررسی دوره‌ای\n\nقفل، چنگ سنگ و اتصالات را منظم بررسی کنید. لق‌شدن سنگ یا پارگی بافت باید پیش از استفاده دوباره توسط متخصص بررسی شود.",
+    contentEn: "## Daily storage\n\nStore pieces separately in soft pouches. Remove jewellery before exercise, bathing, swimming or using cleaning chemicals.\n\n## Gentle cleaning\n\nWarm water and a very mild cleanser can suit simple pieces. Avoid soaking porous stones, pearls, adhesive settings or macramé; follow piece-specific advice.\n\n## Periodic checks\n\nInspect clasps, stone settings and connections, and seek professional help when anything becomes loose.",
+  },
+  {
+    slug: "ring-buying-guide",
+    titleFa: "راهنمای کامل خرید انگشتر",
+    titleEn: "Complete Ring Buying Guide",
+    keywordFa: "راهنمای خرید انگشتر",
+    keywordEn: "ring buying guide",
+    excerptFa: "چک‌لیست انتخاب سایز، عیار، وزن، فرم رکاب، سنگ، راحتی و فاکتور پیش از خرید انگشتر.",
+    excerptEn: "A checklist covering size, purity, weight, band shape, stones, comfort and invoice details before buying a ring.",
+    contentFa: "## کاربرد را مشخص کنید\n\nانگشتر روزمره باید لبه‌های راحت، ارتفاع مناسب و استحکام متناسب داشته باشد. مدل‌های ظریف یا سنگ‌دار ممکن است برای فعالیت سنگین مناسب نباشند.\n\n## مشخصات را تطبیق دهید\n\nسایز، وزن، عیار، جنس و وضعیت سنگ‌ها را با توضیحات و فاکتور مقایسه کنید. تصاویر باید خود محصول یا نمونه کاملاً مشخص‌شده باشند.\n\n## قیمت و خدمات\n\nارزش فلز، اجرت، سود و مالیات را جداگانه بررسی کنید. درباره تغییر سایز، خدمات پس از فروش، زمان تحویل و محدودیت قطعات سفارشی پیش از پرداخت سؤال کنید.",
+    contentEn: "## Define the use\n\nAn everyday ring needs comfortable edges, practical height and suitable strength. Delicate or stone-set designs may not suit heavy activity.\n\n## Match the specifications\n\nCompare size, weight, purity, material and stones with the description and invoice.\n\n## Price and service\n\nReview metal value, making charge, profit and tax, plus resizing and after-sales terms before payment.",
+  },
+] as const;
+
 async function seed() {
   const now = new Date();
   const sourceTimeUnix = BigInt(Math.floor(now.getTime() / 1000));
@@ -236,6 +305,72 @@ async function seed() {
       },
     });
   }
+
+  for (const guide of EDUCATIONAL_GUIDES) {
+    await prisma.contentArticle.upsert({
+      where: { slug: guide.slug },
+      create: {
+        slug: guide.slug,
+        status: "PUBLISHED",
+        origin: "MANUAL",
+        titleFa: guide.titleFa,
+        titleEn: guide.titleEn,
+        excerptFa: guide.excerptFa,
+        excerptEn: guide.excerptEn,
+        contentFa: guide.contentFa,
+        contentEn: guide.contentEn,
+        seoTitleFa: `${guide.titleFa} | مجله الوریا`,
+        seoTitleEn: `${guide.titleEn} | Eloria Journal`,
+        seoDescriptionFa: guide.excerptFa,
+        seoDescriptionEn: guide.excerptEn,
+        focusKeywordFa: guide.keywordFa,
+        focusKeywordEn: guide.keywordEn,
+        publishedAt: now,
+      },
+      update: {
+        status: "PUBLISHED",
+        titleFa: guide.titleFa,
+        titleEn: guide.titleEn,
+        excerptFa: guide.excerptFa,
+        excerptEn: guide.excerptEn,
+        contentFa: guide.contentFa,
+        contentEn: guide.contentEn,
+        seoTitleFa: `${guide.titleFa} | مجله الوریا`,
+        seoTitleEn: `${guide.titleEn} | Eloria Journal`,
+        seoDescriptionFa: guide.excerptFa,
+        seoDescriptionEn: guide.excerptEn,
+        focusKeywordFa: guide.keywordFa,
+        focusKeywordEn: guide.keywordEn,
+        publishedAt: now,
+      },
+    });
+  }
+
+  await prisma.coupon.upsert({
+    where: { code: "ELORIA50" },
+    create: {
+      code: "ELORIA50",
+      titleFa: "هدیه ۵۰ هزار تومانی خرید اول الوریا",
+      titleEn: "Eloria first-purchase 50,000 Toman gift",
+      discountType: "FIXED_TOMAN",
+      value: "50000",
+      minSubtotalToman: "0",
+      maxDiscountToman: null,
+      perCustomerLimit: 1,
+      firstPurchaseOnly: true,
+      isActive: true,
+    },
+    update: {
+      titleFa: "هدیه ۵۰ هزار تومانی خرید اول الوریا",
+      titleEn: "Eloria first-purchase 50,000 Toman gift",
+      discountType: "FIXED_TOMAN",
+      value: "50000",
+      maxDiscountToman: null,
+      perCustomerLimit: 1,
+      firstPurchaseOnly: true,
+      isActive: true,
+    },
+  });
 
   const policies = [
     {

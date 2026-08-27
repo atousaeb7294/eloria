@@ -1,4 +1,10 @@
-ELORIA COMPLETE REPAIR V2
-2026-08-06
-- Fixes CJS/top-level-await database preflight failure.
-- Makes silver commodity API failure non-fatal; gold sync continues and existing silver rate is preserved.
+ELORIA FINAL SMART PRODUCTION R4
+Release date: 2026-08-27
+Base: ELORIA_FINAL_PRODUCTION_2026-08-27 + Intro Fixed + Smart Production R3
+Intro: interactive v10 / skip enabled / embedded video-one entry hotspot
+Public first-purchase coupon: ELORIA50 / fixed 50,000 Toman / first purchase only / one redemption per customer mobile
+Home: 12-item smart daily curation + motion tapestry
+Navigation: internal-route prefetch accelerator + faster interaction transitions
+AI policy: free deterministic provider by default; optional local Ollama; paid OpenAI disabled unless explicitly selected
+Database changes in R4: none; existing additive migrations remain unchanged
+Installer: INSTALL_ELORIA_R4.ps1 (Windows PowerShell 5.1-safe ASCII)

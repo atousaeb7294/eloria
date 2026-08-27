@@ -333,3 +333,22 @@ html[lang="fa"] .font-persian-calligraphy {
   text-rendering: optimizeLegibility;
 }
 /* ELORIA IRAN NASTALIQ SELF HOST END */
+
+
+/* ELORIA R4 responsiveness and product tapestry */
+@keyframes eloria-product-drift { 0%, 100% { transform: translate3d(0,0,0); } 50% { transform: translate3d(0,-5px,0); } }
+.eloria-product-drift { animation: eloria-product-drift 7.5s ease-in-out infinite; contain: layout paint; }
+a, button, [role="button"] { touch-action: manipulation; }
+a[href], button:not(:disabled), [role="button"]:not([aria-disabled="true"]) { transition-duration: 180ms !important; }
+@media (prefers-reduced-motion: reduce) { .eloria-product-drift { animation: none !important; } }
+.eloria-page-container { width: min(100% - 2rem, 88rem); margin-inline: auto; }
+.eloria-panel { border: 1px solid rgb(222 193 111 / .2); background: linear-gradient(145deg,rgb(7 39 29 / .92),rgb(2 20 14 / .965)); box-shadow: 0 24px 80px rgb(0 0 0 / .28), inset 0 1px 0 rgb(255 255 255 / .035); backdrop-filter: blur(18px); }
+.eloria-field { min-height: 3rem; width: 100%; border-radius: .9rem; border: 1px solid rgb(255 255 255 / .1); background: rgb(0 0 0 / .16); padding-inline: 1rem; color: #f3e6c9; outline: none; transition: border-color 180ms ease, background-color 180ms ease, box-shadow 180ms ease; }
+.eloria-field::placeholder { color: rgb(200 185 150 / .3); }
+.eloria-field:focus { border-color: rgb(229 200 115 / .62); background: rgb(217 184 95 / .035); box-shadow: 0 0 0 3px rgb(217 184 95 / .065); }
+.eloria-kicker { font-size: .68rem; font-weight: 600; color: rgb(221 195 119 / .68); }
+.eloria-button-primary, .eloria-button-secondary { display: inline-flex; min-height: 3rem; align-items: center; justify-content: center; gap: .55rem; border-radius: 9999px; padding: .7rem 1.25rem; font-size: .78rem; transition: border-color 180ms ease, background-color 180ms ease, color 180ms ease, box-shadow 180ms ease; }
+.eloria-button-primary { border: 1px solid rgb(225 193 105 / .54); background: linear-gradient(110deg,rgb(102 74 22 / .24),rgb(214 178 85 / .22),rgb(7 74 52 / .38)); color: #f5df9f; box-shadow: 0 12px 34px rgb(0 0 0 / .24); }
+.eloria-button-primary:hover { border-color: rgb(240 213 130 / .8); background-color: rgb(217 184 95 / .11); }
+.eloria-button-secondary { border: 1px solid rgb(255 255 255 / .12); background: rgb(255 255 255 / .035); color: rgb(246 232 198 / .8); }
+.eloria-button-secondary:hover { border-color: rgb(225 193 105 / .4); color: #f4dfa3; }

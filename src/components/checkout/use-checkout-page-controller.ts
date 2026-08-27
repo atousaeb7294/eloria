@@ -2,9 +2,11 @@
 
 import { type FormEvent, useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import { CART_LIVE_PRICE_EVENT, type CartLivePriceEventDetail } from "@/components/cart-live-price-refresh";
-import { CheckoutCustomerError, normalizeCheckoutCustomer, type CheckoutCustomerInput } from "@/lib/checkout-customer";
+import { CheckoutCustomerError, normalizeCheckoutCustomer, normalizeCheckoutMobile, type CheckoutCustomerInput } from "@/lib/checkout-customer";
 import { subscribeToCart, type CartItem } from "@/lib/cart-storage";
-import { didQuotePriceChange, getCartSnapshot, getErrorMessage, getCartFingerprint, getOrCreateIdempotencyKey, getServerCartSnapshot, isCartQuoteResponse, isCreateOrderResponse, parseCartSnapshot, FA_TEXT, EN_TEXT, type CartQuoteResponse, type CheckoutPageClientProps, type CreatedOrder, type CustomerForm, type PriceChangeNotice } from "@/components/checkout/checkout-page-model";
+import { recordClientMeasurement } from "@/lib/site-measurement-client";
+import { getMarketingAttribution } from "@/lib/marketing-attribution-client";
+import { didQuotePriceChange, getCartSnapshot, getErrorMessage, getCartFingerprint, getOrCreateIdempotencyKey, getServerCartSnapshot, isCartQuoteResponse, isCreateOrderResponse, parseCartSnapshot, FA_TEXT, EN_TEXT, type CartQuoteResponse, type CheckoutPageClientProps, type CreatedOrder, type CustomerForm, type PriceChangeNotice, type CouponPreviewResponse } from "@/components/checkout/checkout-page-model";
 
 export function useCheckoutPageController({
   locale,
@@ -32,6 +34,11 @@ export function useCheckoutPageController({
         ),
       [cartSnapshot],
     );
+
+  const cartFingerprint = useMemo(
+    () => getCartFingerprint(storedItems),
+    [storedItems],
+  );
 
   const [
     quote,
@@ -105,7 +112,51 @@ export function useCheckoutPageController({
       city: "",
       postalCode: "",
       address: "",
+      orderNotes: "",
     });
+
+
+  const [couponCode, setCouponCode] = useState("");
+  const [couponPreview, setCouponPreview] = useState<CouponPreviewResponse | null>(null);
+  const [couponMessage, setCouponMessage] = useState<string | null>(null);
+  const [couponApplying, setCouponApplying] = useState(false);
+
+  useEffect(() => {
+    let storedCoupon = "";
+    let storedNotes = "";
+    try {
+      storedCoupon = window.sessionStorage.getItem("eloria_coupon_code") ?? "";
+      storedNotes = window.sessionStorage.getItem("eloria_order_notes") ?? "";
+    } catch {
+      // Checkout remains functional when session storage is unavailable.
+    }
+    const timer = window.setTimeout(() => {
+      if (storedCoupon) setCouponCode(storedCoupon);
+      if (storedNotes) setForm((current) => ({ ...current, orderNotes: storedNotes.slice(0, 1000) }));
+    }, 0);
+    return () => window.clearTimeout(timer);
+  }, []);
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      setCouponPreview(null);
+      setCouponMessage(null);
+    }, 0);
+    return () => window.clearTimeout(timer);
+  }, [form.mobile, cartFingerprint]);
+
+  useEffect(() => {
+    try {
+      if (form.orderNotes.trim()) window.sessionStorage.setItem("eloria_order_notes", form.orderNotes.slice(0, 1000));
+      else window.sessionStorage.removeItem("eloria_order_notes");
+    } catch {}
+  }, [form.orderNotes]);
+
+  const updateCouponCode = useCallback((value: string) => {
+    setCouponCode(value.toUpperCase().slice(0, 40));
+    setCouponPreview(null);
+    setCouponMessage(null);
+  }, []);
 
   const quoteRef =
     useRef<CartQuoteResponse | null>(
@@ -540,6 +591,71 @@ export function useCheckoutPageController({
       storedItems,
     ]);
 
+
+  const applyCoupon = useCallback(async (preferredCode?: string): Promise<CouponPreviewResponse | null> => {
+    const code = (preferredCode ?? couponCode).trim().toUpperCase();
+    if (!code) {
+      setCouponMessage(isPersian ? "کد تخفیف را وارد کنید." : "Enter a discount code.");
+      setCouponPreview(null);
+      return null;
+    }
+
+    let mobile: string;
+    try {
+      mobile = normalizeCheckoutMobile(form.mobile);
+    } catch {
+      setCouponMessage(text.couponMobileFirst);
+      setCouponPreview(null);
+      return null;
+    }
+
+    if (!storedItems.length) return null;
+
+    setCouponApplying(true);
+    setCouponMessage(null);
+    try {
+      const response = await fetch("/api/checkout/coupon/preview", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Accept: "application/json" },
+        cache: "no-store",
+        body: JSON.stringify({ code, customerMobile: mobile, items: storedItems }),
+      });
+      const data = await response.json().catch(() => null) as (CouponPreviewResponse & { message?: string }) | null;
+      if (!response.ok || !data?.successful) {
+        throw new Error(data?.message || (isPersian ? "این کد قابل استفاده نیست." : "This code cannot be applied."));
+      }
+      setCouponCode(data.code);
+      setCouponPreview(data);
+      setCouponMessage(data.message);
+      try { window.sessionStorage.setItem("eloria_coupon_code", data.code); } catch {}
+      recordClientMeasurement({
+        event_type: "coupon_applied",
+        locale: isPersian ? "fa" : "en",
+        path: window.location.pathname,
+      });
+      return data;
+    } catch (error) {
+      setCouponPreview(null);
+      const message = error instanceof Error ? error.message : (isPersian ? "بررسی کد تخفیف انجام نشد." : "Coupon validation failed.");
+      setCouponMessage(message);
+      recordClientMeasurement({
+        event_type: "coupon_rejected",
+        locale: isPersian ? "fa" : "en",
+        path: window.location.pathname,
+      });
+      return null;
+    } finally {
+      setCouponApplying(false);
+    }
+  }, [couponCode, form.mobile, isPersian, storedItems, text.couponMobileFirst]);
+
+  const useFirstPurchaseGift = useCallback(() => {
+    setCouponCode("ELORIA50");
+    setCouponPreview(null);
+    setCouponMessage(null);
+    void applyCoupon("ELORIA50");
+  }, [applyCoupon]);
+
   const handleSubmit =
     async (
       event:
@@ -657,6 +773,14 @@ export function useCheckoutPageController({
           return;
         }
 
+        if (couponCode.trim()) {
+          const validatedCoupon = await applyCoupon();
+          if (!validatedCoupon) {
+            setSubmitError(isPersian ? "کد تخفیف را اصلاح یا حذف کنید و دوباره ادامه دهید." : "Fix or remove the discount code before continuing.");
+            return;
+          }
+        }
+
         const response =
           await fetch(
             "/api/checkout/orders",
@@ -686,6 +810,12 @@ export function useCheckoutPageController({
                     normalizedCustomer,
 
                   turnstileToken,
+
+                  couponCode: couponCode.trim() || null,
+
+                  orderNotes: form.orderNotes.trim() || null,
+
+                  marketingAttribution: getMarketingAttribution(),
 
                   items:
                     storedItems.map(
@@ -733,6 +863,10 @@ export function useCheckoutPageController({
         };
 
         setCreatedOrder(createdOrderWithPayment);
+        try {
+          window.sessionStorage.removeItem("eloria_order_notes");
+          window.sessionStorage.removeItem("eloria_coupon_code");
+        } catch {}
         setSubmitError(null);
 
         if (data.payment.redirectUrl) {
@@ -782,6 +916,13 @@ export function useCheckoutPageController({
     priceChangeNotice,
     form,
     setForm,
+    couponCode,
+    setCouponCode: updateCouponCode,
+    couponPreview,
+    couponMessage,
+    couponApplying,
+    applyCoupon,
+    useFirstPurchaseGift,
     formatPrice,
     formatNumber,
     formatDateTime,

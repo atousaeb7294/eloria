@@ -50,6 +50,9 @@ export type CartQuoteResponse = {
     uniqueItems: number;
     totalQuantity: number;
     subtotalToman: string;
+    shippingToman: string;
+    freeShippingApplied: boolean;
+    payableToman: string;
     canCheckout: boolean;
   };
 
@@ -103,6 +106,17 @@ export type CustomerForm = {
   city: string;
   postalCode: string;
   address: string;
+  orderNotes: string;
+};
+
+export type CouponPreviewResponse = {
+  successful: true;
+  code: string;
+  discountToman: string;
+  subtotalToman: string;
+  shippingToman: string;
+  payableToman: string;
+  message: string;
 };
 
 export type PriceChangeNotice = {
@@ -167,7 +181,43 @@ export const FA_TEXT = {
     "کد پستی ۱۰ رقمی",
 
   addressPlaceholder:
-    "خیابان، کوچه، پلاک، واحد و توضیحات لازم",
+    "خیابان، کوچه، پلاک و واحد",
+
+  orderNotes:
+    "توضیحات سفارش و شخصی‌سازی",
+
+  orderNotesPlaceholder:
+    "مثلاً: اندازه مچ دست ۱۶ سانتی‌متر، یا هر توضیحی که برای آماده‌سازی سفارش لازم است.",
+
+  orderNotesHelp:
+    "این بخش اختیاری است. برای شخصی‌سازی دستبند، اندازه واقعی مچ دست را اینجا بنویسید.",
+
+  couponTitle:
+    "هدیه خرید اول الوریا",
+
+  couponDescription:
+    "برای نخستین خرید، کد ELORIA50 را وارد کنید تا پس از تأیید شماره موبایل، ۵۰٬۰۰۰ تومان از سفارش کم شود.",
+
+  couponLabel:
+    "کد تخفیف",
+
+  couponPlaceholder:
+    "ELORIA50",
+
+  couponApply:
+    "اعمال کد",
+
+  couponApplying:
+    "در حال بررسی...",
+
+  couponUseGift:
+    "استفاده از هدیه خرید اول",
+
+  couponMobileFirst:
+    "برای بررسی کد، ابتدا شماره موبایل معتبر خریدار را وارد کنید.",
+
+  discount:
+    "تخفیف خرید اول",
 
   summary:
     "خلاصه سفارش",
@@ -180,6 +230,12 @@ export const FA_TEXT = {
 
   subtotal:
     "مبلغ سفارش",
+
+  shipping:
+    "هزینه ارسال",
+
+  freeShipping:
+    "رایگان",
 
   payable:
     "مبلغ قابل پرداخت",
@@ -318,7 +374,43 @@ export const EN_TEXT = {
     "10-digit postal code",
 
   addressPlaceholder:
-    "Street, building number, unit, and delivery notes",
+    "Street, building number and unit",
+
+  orderNotes:
+    "Order notes and personalization",
+
+  orderNotesPlaceholder:
+    "Example: wrist size 16 cm, or any preparation note for your order.",
+
+  orderNotesHelp:
+    "Optional. For bracelet personalization, enter the actual wrist measurement here.",
+
+  couponTitle:
+    "Eloria first-purchase gift",
+
+  couponDescription:
+    "Enter ELORIA50 on your first purchase to receive a server-verified 50,000 Toman discount.",
+
+  couponLabel:
+    "Discount code",
+
+  couponPlaceholder:
+    "ELORIA50",
+
+  couponApply:
+    "Apply code",
+
+  couponApplying:
+    "Checking...",
+
+  couponUseGift:
+    "Use first-purchase gift",
+
+  couponMobileFirst:
+    "Enter a valid customer mobile number before checking the code.",
+
+  discount:
+    "First-purchase discount",
 
   summary:
     "Order summary",
@@ -331,6 +423,12 @@ export const EN_TEXT = {
 
   subtotal:
     "Order amount",
+
+  shipping:
+    "Shipping",
+
+  freeShipping:
+    "Free",
 
   payable:
     "Payable amount",
@@ -467,6 +565,11 @@ export function isCartQuoteResponse(
     typeof candidate.summary ===
       "object" &&
     candidate.summary !== null &&
+    typeof candidate.summary.subtotalToman === "string" &&
+    typeof candidate.summary.shippingToman === "string" &&
+    typeof candidate.summary.freeShippingApplied === "boolean" &&
+    typeof candidate.summary.payableToman === "string" &&
+    typeof candidate.summary.canCheckout === "boolean" &&
     typeof candidate.generatedAt ===
       "string"
   );

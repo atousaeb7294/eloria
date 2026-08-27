@@ -3,6 +3,7 @@ import {
   createHmac,
   randomBytes,
   randomUUID,
+  scryptSync,
   timingSafeEqual,
 } from "node:crypto";
 import { cookies } from "next/headers";
@@ -34,6 +35,15 @@ function adminUsername(): string {
 function adminPassword(): string {
   return env("ELORIA_ADMIN_PASSWORD");
 }
+
+function verifyAdminPassword(password: string): boolean {
+  const configured = adminPassword();
+  const match = configured.match(/^scrypt\$([a-f0-9]{32})\$([a-f0-9]{128})$/i);
+  if (!match) return safeEqual(password, configured);
+
+  const supplied = scryptSync(password, Buffer.from(match[1]!, "hex"), 64);
+  return timingSafeEqual(supplied, Buffer.from(match[2]!, "hex"));
+}
 function sessionSecret(): string {
   return env("ELORIA_ADMIN_SESSION_SECRET");
 }
@@ -62,7 +72,7 @@ export function isAdminConfigured(): boolean {
 
   return (
     adminUsername().length >= 3 &&
-    adminPassword().length >= minimumPasswordLength &&
+    (adminPassword().startsWith("scrypt$") || adminPassword().length >= minimumPasswordLength) &&
     sessionSecret().length >= 48 &&
     sessionVersion().length >= 1 &&
     (!isAdminTotpRequired() || hasValidTotpSecret())
@@ -140,7 +150,7 @@ export function verifyAdminCredentials(input: {
 }): boolean {
   if (!isAdminConfigured()) return false;
   if (!safeEqual(input.username.trim(), adminUsername())) return false;
-  if (!safeEqual(input.password, adminPassword())) return false;
+  if (!verifyAdminPassword(input.password)) return false;
   if (!isAdminTotpRequired()) return true;
   if (!/^\d{6}$/.test(input.totpCode)) return false;
   const current = Math.floor(Date.now() / 30_000);
