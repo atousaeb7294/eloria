@@ -18,6 +18,9 @@ import { CustomerSupportWidget } from "@/components/customer-support-widget";
 import { SmartSelectionAssistant } from "@/components/smart-selection-assistant";
 import { SiteMeasurementTracker } from "@/components/site-measurement-tracker";
 import { SiteStructuredData } from "@/components/site-structured-data";
+import { PwaRegistration } from "@/components/pwa-registration";
+import { MarketingAttributionTracker } from "@/components/marketing-attribution-tracker";
+import { NavigationAccelerator } from "@/components/navigation-accelerator";
 
 import { routing } from "@/i18n/routing";
 import { siteBaseUrl } from "@/lib/site-url";
@@ -125,6 +128,9 @@ export default async function LocaleLayout({
         <NextIntlClientProvider locale={locale} messages={messages}>
           <PageBackgroundProvider>
             <SiteStructuredData />
+            <PwaRegistration />
+            <MarketingAttributionTracker />
+            <NavigationAccelerator locale={locale} />
             <SiteMeasurementTracker
               locale={locale}
               enabled={isSiteMeasurementEnabled()}

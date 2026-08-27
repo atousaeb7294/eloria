@@ -1,9 +1,16 @@
 export const site_measurement_event_types = [
   "page_view",
   "view_item",
+  "select_item",
   "view_cart",
   "begin_checkout",
   "add_to_cart",
+  "share_product",
+  "favorite",
+  "coupon_applied",
+  "coupon_rejected",
+  "search",
+  "catalog_filter",
   "web_vital",
 ] as const;
 

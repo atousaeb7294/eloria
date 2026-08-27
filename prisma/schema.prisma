@@ -123,6 +123,7 @@ model Product {
   orderItems          OrderItem[]
   images              ProductImage[]
   variants            ProductVariant[]
+  timelineEvents      ProductTimelineEvent[]
   collection          Collection             @relation(fields: [collectionId], references: [id])
 
   @@index([collectionId, status, displayOrder])
@@ -130,6 +131,28 @@ model Product {
   @@index([pricingMode, status])
   @@index([isFeatured, status])
   @@map("products")
+}
+
+model ProductTimelineEvent {
+  id               String   @id @default(uuid()) @db.Uuid
+  productId        String   @db.Uuid
+  eventType        String   @db.VarChar(80)
+  actorType        String   @default("SYSTEM") @db.VarChar(40)
+  actorLabel       String?  @db.VarChar(160)
+  titleFa          String   @db.VarChar(240)
+  details          Json?
+  metalWeight      Decimal? @db.Decimal(10, 3)
+  priceToman       Decimal? @db.Decimal(18, 0)
+  stock            Int?
+  orderId          String?  @db.Uuid
+  invoiceReference String?  @db.VarChar(180)
+  occurredAt       DateTime @default(now())
+  product          Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@index([productId, occurredAt])
+  @@index([eventType, occurredAt])
+  @@index([orderId])
+  @@map("product_timeline_events")
 }
 
 model ProductImage {
@@ -262,6 +285,11 @@ model Order {
   city                  String?
   postalCode            String?                @db.VarChar(20)
   address               String?
+  orderNotes            String?                @db.VarChar(1000)
+  marketingSource       String?                @db.VarChar(120)
+  marketingMedium       String?                @db.VarChar(120)
+  marketingCampaign     String?                @db.VarChar(160)
+  marketingContent      String?                @db.VarChar(160)
   subtotalToman         Decimal                @db.Decimal(18, 0)
   shippingToman         Decimal                @default(0) @db.Decimal(18, 0)
   discountToman         Decimal                @default(0) @db.Decimal(18, 0)
@@ -286,14 +314,54 @@ model Order {
   customer              Customer?              @relation(fields: [customerId], references: [id])
   payments              PaymentAttempt[]
   shipments             Shipment[]
+  couponRedemption      CouponRedemption?
 
   @@index([status, createdAt])
   @@index([status, paidAt])
   @@index([customerMobile, createdAt])
   @@index([customerId, createdAt])
+  @@index([marketingSource, createdAt])
+  @@index([marketingCampaign, createdAt])
   @@index([priceExpiresAt])
   @@index([inventoryExpiresAt])
   @@map("orders")
+}
+
+
+model Coupon {
+  id                String             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  code              String             @unique @db.VarChar(64)
+  titleFa           String?            @db.VarChar(140)
+  titleEn           String?            @db.VarChar(140)
+  discountType      CouponDiscountType
+  value             Decimal            @db.Decimal(18, 3)
+  minSubtotalToman  Decimal            @default(0) @db.Decimal(18, 0)
+  maxDiscountToman  Decimal?           @db.Decimal(18, 0)
+  usageLimit        Int?
+  perCustomerLimit  Int                @default(1)
+  firstPurchaseOnly Boolean            @default(false)
+  startsAt          DateTime?
+  expiresAt         DateTime?
+  isActive          Boolean            @default(true)
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @default(now()) @updatedAt
+  redemptions       CouponRedemption[]
+
+  @@index([isActive, startsAt, expiresAt])
+  @@map("coupons")
+}
+
+model CouponRedemption {
+  id            String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  couponId      String   @db.Uuid
+  orderId       String   @unique @db.Uuid
+  discountToman Decimal  @db.Decimal(18, 0)
+  createdAt     DateTime @default(now())
+  coupon        Coupon   @relation(fields: [couponId], references: [id], onDelete: Restrict)
+  order         Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@index([couponId, createdAt])
+  @@map("coupon_redemptions")
 }
 
 model OrderItem {
@@ -741,6 +809,11 @@ model SupportAgentPresence {
   @@map("support_agent_presence")
 }
 
+enum CouponDiscountType {
+  PERCENT
+  FIXED_TOMAN
+}
+
 enum ProductStatus {
   DRAFT
   ACTIVE
@@ -842,4 +915,3 @@ enum SupportMessageAuthor {
   VISITOR
   ADMIN
 }
-

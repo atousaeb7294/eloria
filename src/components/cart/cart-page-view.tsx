@@ -36,6 +36,10 @@ export function CartPageView({
     shouldShowLiveStatus,
     checkoutBlocked,
     priceNoticeDescription,
+    couponCode,
+    saveCouponCode,
+    orderNotes,
+    saveOrderNotes,
   } = controller;
 
   if (
@@ -642,6 +646,41 @@ export function CartPageView({
                   text.securePricing
                 }
               </p>
+
+              <label className="mt-5 block rounded-2xl border border-[#d9b85f]/16 bg-[#d9b85f]/[0.025] p-4">
+                <span className="text-xs font-medium text-[#ead59a]">{text.orderNotes}</span>
+                <textarea
+                  rows={4}
+                  maxLength={1000}
+                  value={orderNotes}
+                  onChange={(event) => saveOrderNotes(event.target.value)}
+                  placeholder={text.orderNotesPlaceholder}
+                  className="mt-3 w-full resize-y rounded-xl border border-white/10 bg-[#03130d] px-4 py-3 text-sm leading-7 text-[#f2dfaa] outline-none transition placeholder:text-white/25 focus:border-[#d9b85f]/45"
+                />
+                <span className="mt-2 block text-[10px] leading-5 text-[#c9bb9a]/45">{text.orderNotesHelp}</span>
+              </label>
+
+              <label className="mt-4 block rounded-2xl border border-[#d9b85f]/15 bg-black/10 p-4">
+                <span className="text-xs font-medium text-[#ead59a]">{text.coupon}</span>
+                <input
+                  dir="ltr"
+                  value={couponCode}
+                  onChange={(event) => saveCouponCode(event.target.value)}
+                  placeholder={text.couponPlaceholder}
+                  autoComplete="off"
+                  className="mt-3 h-11 w-full rounded-xl border border-white/10 bg-[#03130d] px-4 text-left text-sm uppercase tracking-wider text-[#f2dfaa] outline-none transition placeholder:text-white/25 focus:border-[#d9b85f]/45"
+                />
+                <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
+                  <span className="block text-[10px] leading-5 text-[#c9bb9a]/45">{text.couponHelp}</span>
+                  <button
+                    type="button"
+                    onClick={() => saveCouponCode("ELORIA50")}
+                    className="inline-flex min-h-8 items-center rounded-full border border-[#d9b85f]/20 bg-[#d9b85f]/[0.05] px-3 text-[10px] text-[#e6cf8d] transition hover:border-[#e8cd79]/45"
+                  >
+                    {locale === "fa" ? "استفاده از ELORIA50" : "Use ELORIA50"}
+                  </button>
+                </div>
+              </label>
 
               <button
                 type="button"

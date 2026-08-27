@@ -19,6 +19,15 @@ export type StoreBriefingSummary = {
     unavailableProducts: number;
     watchedProducts: number;
   };
+  marketing: {
+    momentum: Array<{
+      slug: string;
+      currentViews: number;
+      previousViews: number;
+      growthPercent: number;
+      sales: number;
+    }>;
+  };
   actions: IntelligenceAction[];
 };
 
@@ -74,6 +83,9 @@ function summaryFromReport(
     operations: {
       unavailableProducts: report.operations.unavailableProducts,
       watchedProducts: report.operations.watches,
+    },
+    marketing: {
+      momentum: report.marketing.momentum.slice(0, 6),
     },
     actions: report.actions,
   };

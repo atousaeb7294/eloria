@@ -486,7 +486,7 @@ export function SiteHeader({ locale }: SiteHeaderProps) {
               </div>
 
               <Link
-                href="#contact"
+                href={`/${resolvedLocale}/contact`}
                 title={labels.contact}
                 className={normalButtonClass}
               >

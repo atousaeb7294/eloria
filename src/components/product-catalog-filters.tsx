@@ -18,6 +18,8 @@ import {
   SlidersHorizontal,
 } from "lucide-react";
 
+import { recordClientMeasurement } from "@/lib/site-measurement-client";
+
 import {
   AllProductsRuneIcon,
   FilterRuneIcon,
@@ -214,6 +216,28 @@ export function ProductCatalogFilters({
 
     const query =
       params.toString();
+
+    if (normalizedSearch) {
+      recordClientMeasurement({
+        event_type: "search",
+        locale: isPersian ? "fa" : "en",
+        path: pathname,
+      });
+    }
+
+    if (
+      material !== "all" ||
+      collection !== "all" ||
+      Boolean(minPrice) ||
+      Boolean(maxPrice) ||
+      availability !== "all"
+    ) {
+      recordClientMeasurement({
+        event_type: "catalog_filter",
+        locale: isPersian ? "fa" : "en",
+        path: pathname,
+      });
+    }
 
     setFiltersOpen(false);
 

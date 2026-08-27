@@ -13,6 +13,8 @@ import {
   useSyncExternalStore,
 } from "react";
 
+import { recordClientMeasurement } from "@/lib/site-measurement-client";
+
 import {
   isInTreasury,
   subscribeToTreasury,
@@ -119,9 +121,13 @@ export function TreasuryButton({
       type="button"
       aria-pressed={saved}
       onClick={() => {
-        toggleTreasury(
-          slug,
-        );
+        toggleTreasury(slug);
+        recordClientMeasurement({
+          event_type: "favorite",
+          locale: isPersian ? "fa" : "en",
+          path: window.location.pathname,
+          product_slug: slug,
+        });
       }}
       className={[
         "group flex min-h-12 w-full items-center justify-center gap-2.5 rounded-2xl border px-5 py-3 transition duration-300 motion-reduce:transition-none",
