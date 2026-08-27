@@ -1,0 +1,84 @@
+﻿ELORIA PARSPACK DIAGNOSTIC
+Date: 08/27/2026 21:38:12
+
+========================
+SUMMARY
+========================
+
+
+Step                          Status Detail                                                    
+----                          ------ ------                                                    
+Project path                  PASS   C:\eloria                                                 
+File: package.json            PASS   Found                                                     
+File: package-lock.json       PASS   Found                                                     
+File: prisma\schema.prisma    PASS   Found                                                     
+File: prisma.config.ts        PASS   Found                                                     
+File: postcss.config.mjs      PASS   Found                                                     
+Package backup                PASS   Backup files created                                      
+Node.js                       PASS   v24.18.0                                                  
+npm                           PASS   11.16.0                                                   
+npm registry connection       PASS   https://registry.npmjs.org/                               
+Prisma package versions       PASS   All Prisma packages pinned to 7.9.1                       
+Prisma generation strategy    PASS   prisma generate moved to prebuild                         
+Production build dependencies PASS   Tailwind, PostCSS and TypeScript available in dependencies
+package-lock sync             PASS   package-lock.json synchronized                            
+Remove node_modules           PASS   Old node_modules removed                                  
+npm ci --omit=dev             PASS   Production dependencies installed                         
+Prisma executable             PASS   Windows and Linux-style Prisma launchers exist            
+Prisma dependency tree        PASS   Prisma dependency tree resolved                           
+Prisma CLI                    PASS   Prisma CLI runs                                           
+Prisma schema validation      PASS   schema.prisma is valid                                    
+Prisma Client generation      PASS   Prisma Client generated                                   
+Tailwind/PostCSS              PASS   Required CSS build dependencies installed                 
+TypeScript                    PASS   TypeScript installed for production build                 
+Next.js cache                 PASS   .next cache cleared                                       
+Start script                  PASS   "node scripts/start-production.mjs"                       
+
+
+
+
+========================
+FAILURES
+========================
+
+
+
+Build Exit Code:
+1
+
+Node:
+v24.18.0
+
+npm:
+11.16.0
+
+Registry:
+https://registry.npmjs.org/
+
+Prisma:
+"7.9.1"
+
+Prisma Client:
+"7.9.1"
+
+Prisma Adapter:
+"7.9.1"
+
+Tailwind PostCSS:
+"^4.3.3"
+
+Tailwind:
+"^4.3.3"
+
+TypeScript:
+"^5.9.3"
+
+Prebuild:
+"prisma generate"
+
+Build:
+"next build"
+
+Start:
+"node scripts/start-production.mjs"
+
