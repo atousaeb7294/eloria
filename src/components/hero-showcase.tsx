@@ -54,7 +54,7 @@ export function HeroShowcase({
             "کشف جهان الوریا",
 
           secondaryAction:
-            "تماشای آثار",
+            "جست‌وجو در تمام آثار",
 
           welcome:
             "به جهان الوریا خوش آمدید",
@@ -76,7 +76,7 @@ export function HeroShowcase({
             "Discover Eloria",
 
           secondaryAction:
-            "Explore the Creations",
+            "Search all creations",
 
           welcome:
             "Welcome to the World of Eloria",
@@ -108,6 +108,7 @@ export function HeroShowcase({
           objectPosition="center 46%"
           imageClassName="scale-[1.02]"
         />
+
 
         {/* پوشش تصویر */}
         <div
@@ -154,11 +155,6 @@ export function HeroShowcase({
           className="pointer-events-none absolute inset-y-0 left-1/2 z-[4] w-[34rem] max-w-[76vw] -translate-x-1/2 bg-[linear-gradient(90deg,transparent,rgba(248,219,145,0.045),rgba(255,235,181,0.085),rgba(248,219,145,0.045),transparent)] blur-[46px]"
         />
 
-        {/* بافت هندسی */}
-        <div
-          aria-hidden="true"
-          className="pointer-events-none absolute inset-0 z-[5] opacity-[0.035] [background-image:linear-gradient(rgba(238,205,118,0.5)_1px,transparent_1px),linear-gradient(90deg,rgba(238,205,118,0.5)_1px,transparent_1px)] [background-size:84px_84px] [mask-image:radial-gradient(circle_at_center,black,transparent_70%)]"
-        />
 
         {/* خط طلایی بالا */}
         <div

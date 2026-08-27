@@ -17,6 +17,7 @@ import { getCustomerFromRequest } from "@/lib/customer-auth";
 import { prisma } from "@/lib/prisma";
 import { isCommerceEnabled } from "@/lib/runtime-features";
 import { setPaymentStartAuthorizationCookie } from "@/lib/payment-start-authorization";
+import { normalizeMarketingAttribution } from "@/lib/marketing-attribution";
 
 import {
   CheckoutOrderError,
@@ -36,6 +37,9 @@ type IncomingCheckoutBody = {
   customer?: unknown;
   items?: unknown;
   turnstileToken?: unknown;
+  couponCode?: unknown;
+  orderNotes?: unknown;
+  marketingAttribution?: unknown;
 };
 
 type IncomingCheckoutItem = {
@@ -395,6 +399,27 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    const orderNotes =
+      typeof body.orderNotes === "string"
+        ? body.orderNotes.replace(/\s+/g, " ").trim().slice(0, 1000) || null
+        : body.orderNotes === undefined || body.orderNotes === null
+          ? null
+          : undefined;
+
+    if (orderNotes === undefined) {
+      return NextResponse.json(
+        {
+          successful: false,
+          code: "INVALID_ORDER_NOTES",
+          message: "توضیحات سفارش معتبر نیست.",
+          requestId,
+        },
+        { status: 400, headers: noStoreHeaders() },
+      );
+    }
+
+    const marketingAttribution = normalizeMarketingAttribution(body.marketingAttribution);
+
     const result = await createCheckoutOrder({
       idempotencyKey: body.idempotencyKey,
 
@@ -403,6 +428,13 @@ export async function POST(request: NextRequest) {
       customer: canonicalCustomer,
 
       items: normalizedItems as CheckoutOrderItemInput[],
+
+      couponCode:
+        typeof body.couponCode === "string" ? body.couponCode : null,
+
+      orderNotes,
+
+      marketingAttribution,
 
       requestId,
     });

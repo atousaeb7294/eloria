@@ -35,7 +35,7 @@ export function SmartSelectionAssistant({ locale }: { locale: "fa" | "en" }) {
       fa
         ? {
             title: "راهنمای انتخاب الوریا",
-            description: "چند انتخاب کوتاه انجام دهید؛ نتیجه مستقیماً با فیلترهای واقعیِ آثار و قیمت نهایی زنده باز می‌شود.",
+            description: "چند انتخاب کوتاه انجام دهید تا نزدیک‌ترین آثار الوریا به سلیقه و بودجه شما نمایش داده شوند.",
             category: "چه نوع اثری می‌خواهید؟",
             material: "جنس مورد علاقه",
             budget: "حداکثر بودجه (تومان، اختیاری)",
@@ -50,7 +50,7 @@ export function SmartSelectionAssistant({ locale }: { locale: "fa" | "en" }) {
           }
         : {
             title: "Eloria selection guide",
-            description: "Choose a few preferences and open the live catalog with real filters and live final pricing.",
+            description: "Choose a few preferences and discover the Eloria creations closest to your style and budget.",
             category: "What are you looking for?",
             material: "Preferred material",
             budget: "Maximum budget (Toman, optional)",

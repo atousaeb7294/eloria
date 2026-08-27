@@ -29,6 +29,14 @@ import { calculateShipping } from "@/lib/shipping";
 import {
   hasMatchingCheckoutIdempotencyOwner,
 } from "@/lib/checkout-idempotency";
+import { type MarketingAttribution } from "@/lib/marketing-attribution";
+
+import {
+  CouponValidationError,
+  normalizeCouponCode,
+  previewCoupon,
+  validateCouponForCheckout,
+} from "@/lib/coupons";
 
 const MAX_CART_ITEMS =
   30;
@@ -193,6 +201,12 @@ export type CreateCheckoutOrderInput = {
   items:
     CheckoutOrderItemInput[];
 
+  couponCode?: string | null;
+
+  orderNotes?: string | null;
+
+  marketingAttribution?: MarketingAttribution | null;
+
   requestId?:
     string | null;
 };
@@ -267,6 +281,8 @@ export type CheckoutOrderErrorCode =
   | "INVALID_CUSTOMER"
   | "INVALID_CART"
   | "INVALID_CART_ITEM"
+  | "INVALID_COUPON"
+  | "COUPON_CHANGED"
   | "TOO_MANY_ITEMS"
   | "PRODUCT_UNAVAILABLE"
   | "INSUFFICIENT_STOCK"
@@ -1134,6 +1150,9 @@ export async function createCheckoutOrder({
   locale,
   customer,
   items,
+  couponCode = null,
+  orderNotes = null,
+  marketingAttribution = null,
   requestId = null,
 }: CreateCheckoutOrderInput): Promise<CheckoutOrderResult> {
   const normalizedIdempotencyKey =
@@ -1150,6 +1169,11 @@ export async function createCheckoutOrder({
     normalizeCustomer(
       customer,
     );
+
+  const normalizedOrderNotes =
+    typeof orderNotes === "string"
+      ? orderNotes.replace(/\s+/g, " ").trim().slice(0, 1000) || null
+      : null;
 
   if (
     !Array.isArray(items) ||
@@ -1243,9 +1267,28 @@ export async function createCheckoutOrder({
     );
   }
 
+  let normalizedCouponCode: string | null = null;
+  let discountToman = 0n;
+  try {
+    normalizedCouponCode = normalizeCouponCode(couponCode);
+    if (normalizedCouponCode) {
+      const preview = await previewCoupon({
+        code: normalizedCouponCode,
+        subtotalToman,
+        customerMobile: normalizedCustomer.mobile,
+      });
+      discountToman = preview.discountToman;
+    }
+  } catch (error) {
+    if (error instanceof CouponValidationError) {
+      throw new CheckoutOrderError("INVALID_COUPON", error.message, 400);
+    }
+    throw error;
+  }
+
   // ELORIA_V3_SERVER_SHIPPING
   const shippingQuote = calculateShipping(subtotalToman);
-  const payableToman = subtotalToman + BigInt(shippingQuote.shippingToman);
+  const payableToman = subtotalToman + BigInt(shippingQuote.shippingToman) - discountToman;
 
   const quoteExpirationTimes =
     pricedItems.map(
@@ -1319,7 +1362,9 @@ export async function createCheckoutOrder({
         shippingQuote.shippingToman,
 
       discountToman:
-        "0",
+        discountToman.toString(),
+
+      couponCode: normalizedCouponCode,
 
       payableToman:
         payableToman.toString(),
@@ -1513,6 +1558,22 @@ export async function createCheckoutOrder({
               throw new CheckoutOrderError(
                 "PENDING_ORDER_LIMIT",
                 "ابتدا یکی از سفارش‌های در انتظار پرداخت قبلی را تکمیل کنید.",
+                409,
+              );
+            }
+
+            const lockedCoupon = normalizedCouponCode
+              ? await validateCouponForCheckout(transaction, {
+                  code: normalizedCouponCode,
+                  subtotalToman,
+                  customerMobile: normalizedCustomer.mobile,
+                })
+              : null;
+
+            if (lockedCoupon && lockedCoupon.discountToman !== discountToman) {
+              throw new CheckoutOrderError(
+                "COUPON_CHANGED",
+                "مقدار کد تخفیف تغییر کرده است؛ سفارش را دوباره بررسی کنید.",
                 409,
               );
             }
@@ -1788,6 +1849,21 @@ export async function createCheckoutOrder({
                   address:
                     normalizedCustomer.address,
 
+                  orderNotes:
+                    normalizedOrderNotes,
+
+                  marketingSource:
+                    marketingAttribution?.source ?? null,
+
+                  marketingMedium:
+                    marketingAttribution?.medium ?? null,
+
+                  marketingCampaign:
+                    marketingAttribution?.campaign ?? null,
+
+                  marketingContent:
+                    marketingAttribution?.content ?? null,
+
                   subtotalToman:
                     subtotalToman.toString(),
 
@@ -1795,10 +1871,21 @@ export async function createCheckoutOrder({
         shippingQuote.shippingToman,
 
                   discountToman:
-                    "0",
+                    discountToman.toString(),
 
                   payableToman:
         payableToman.toString(),
+
+                  ...(lockedCoupon
+                    ? {
+                        couponRedemption: {
+                          create: {
+                            couponId: lockedCoupon.id,
+                            discountToman: lockedCoupon.discountToman.toString(),
+                          },
+                        },
+                      }
+                    : {}),
 
                   pricingSnapshot:
                     orderPricingSnapshot,

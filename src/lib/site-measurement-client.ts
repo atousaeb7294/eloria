@@ -1,7 +1,7 @@
 "use client";
 
 export type ClientMeasurementEvent = {
-  event_type: "page_view" | "view_item" | "view_cart" | "begin_checkout" | "add_to_cart" | "web_vital";
+  event_type: "page_view" | "view_item" | "select_item" | "view_cart" | "begin_checkout" | "add_to_cart" | "share_product" | "favorite" | "coupon_applied" | "coupon_rejected" | "search" | "catalog_filter" | "web_vital";
   locale: "fa" | "en";
   path: string;
   product_slug?: string;

@@ -12,19 +12,25 @@ export function EloriaIntroView({
     secondVideoRef,
     phase,
     autoplayBlocked,
+    firstVideoError,
+    secondVideoError,
     setSecondVideoReady,
-    secondVideoBuffering,
+    firstEntryHotspotVisible,
     isPersian,
-    completeIntro,
     beginCinematicReveal,
+    handleSkipIntro,
     handleFirstVideoCanPlay,
     handleManualStart,
     handleFirstVideoEnded,
     handleFirstVideoProgress,
     handleEnterEloria,
+    handleEmbeddedEntry,
     handleSecondVideoPlaying,
     handleSecondVideoWaiting,
-    handleVideoFailure,
+    handleFirstVideoFailure,
+    handleSecondVideoFailure,
+    retryFirstVideo,
+    retrySecondVideo,
   } = controller;
 
   if (
@@ -164,8 +170,7 @@ export function EloriaIntroView({
             ].join(" ")}
             src={INTRO_VIDEO_ONE_SRC}
             poster="/images/hero/eloria-hero.jpeg"
-            preload="metadata"
-            autoPlay
+            preload="auto"
             muted
             playsInline
             disablePictureInPicture
@@ -180,7 +185,7 @@ export function EloriaIntroView({
               handleFirstVideoEnded
             }
             onError={
-              handleVideoFailure
+              handleFirstVideoFailure
             }
           />
 
@@ -196,7 +201,7 @@ export function EloriaIntroView({
             ].join(" ")}
             src={INTRO_VIDEO_TWO_SRC}
             poster="/images/hero/eloria-hero.jpeg"
-            preload="none"
+            preload="auto"
             playsInline
             disablePictureInPicture
             controls={false}
@@ -215,7 +220,7 @@ export function EloriaIntroView({
               beginCinematicReveal
             }
             onError={
-              handleVideoFailure
+              handleSecondVideoFailure
             }
           />
 
@@ -432,6 +437,32 @@ export function EloriaIntroView({
           }}
         />
 
+        {!transitionActive && phase !== "checking" && (
+          <button
+            type="button"
+            onClick={handleSkipIntro}
+            className="absolute end-[max(1rem,env(safe-area-inset-right))] top-[max(1rem,env(safe-area-inset-top))] z-[175] inline-flex min-h-10 items-center gap-2 rounded-full border border-white/16 bg-black/28 px-4 text-[10px] font-medium text-white/72 shadow-[0_10px_32px_rgba(0,0,0,.28)] backdrop-blur-xl transition hover:border-[#efd382]/42 hover:bg-black/42 hover:text-[#ffe5a3] sm:end-8 sm:top-8"
+            aria-label={isPersian ? "رد کردن اینترو و ورود به سایت" : "Skip intro and enter site"}
+          >
+            <span>{isPersian ? "رد کردن" : "Skip intro"}</span>
+            <span aria-hidden="true" className="text-[#e9cf86]/75">↗</span>
+          </button>
+        )}
+
+        {(firstEntryHotspotVisible || phase === "awaiting-entry") && !secondVideoError && (
+          <div className="pointer-events-none absolute left-1/2 top-1/2 z-[170] aspect-video w-[min(100vw,177.7778vh)] -translate-x-1/2 -translate-y-1/2">
+            <button
+              type="button"
+              onClick={handleEmbeddedEntry}
+              aria-label={isPersian ? "ورود به دنیای الوریا" : "Enter the world of Eloria"}
+              title={isPersian ? "ورود به دنیای الوریا" : "Enter the world of Eloria"}
+              className="pointer-events-auto absolute left-[39%] top-[80.5%] h-[14%] w-[22%] cursor-pointer rounded-[24%] bg-transparent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#f4d98a]/75"
+            >
+              <span className="sr-only">{isPersian ? "ورود به دنیای الوریا" : "Enter the world of Eloria"}</span>
+            </button>
+          </div>
+        )}
+
         {/* نشانگر مرحله Intro */}
         {!transitionActive && phase !== "checking" && (
           <div
@@ -466,21 +497,6 @@ export function EloriaIntroView({
               ))}
             </span>
           </div>
-        )}
-
-        {/* دکمه ردکردن */}
-        {!transitionActive && (
-          <button
-            type="button"
-            onClick={
-              completeIntro
-            }
-            className="absolute end-[max(1rem,env(safe-area-inset-right))] top-[max(1rem,env(safe-area-inset-top))] z-[130] min-h-11 rounded-full border border-white/20 bg-black/30 px-4 py-2 text-[11px] tracking-[0.1em] text-white/72 backdrop-blur-xl transition duration-300 hover:border-[#e7ca78]/60 hover:bg-black/45 hover:text-[#f5dda0] sm:end-8 sm:top-8"
-          >
-            {isPersian
-              ? "رد کردن"
-              : "Skip"}
-          </button>
         )}
 
         {/* بارگذاری اولیه */}
@@ -520,52 +536,49 @@ export function EloriaIntroView({
             </div>
           )}
 
-        {/* قاب جادویی ورود؛ بدون حلقه یا چرخش دائمی */}
-                {phase === "awaiting-entry" && (
-          <button
-            type="button"
-            data-eloria-video-hotspot="true"
-            onClick={handleEnterEloria}
-            aria-label={isPersian ? "ورود به دنیای الوریا" : "Enter the world of Eloria"}
-            className="absolute left-1/2 bottom-[8%] z-[150] h-[18%] w-[62%] -translate-x-1/2 cursor-pointer border-0 bg-transparent p-0 outline-none"
-          >
-            <span className="sr-only">
-              {isPersian ? "ورود به دنیای الوریا" : "Enter the world of Eloria"}
-            </span>
-          </button>
+        {/* خطای رسانه هرگز باعث پرش به Home نمی‌شود. کاربر باید همان پرده را دوباره اجرا کند. */}
+        {firstVideoError && phase === "video-one" && (
+          <div className="absolute inset-0 z-[160] grid place-items-center bg-black/72 px-6 backdrop-blur-md">
+            <div className="w-full max-w-md rounded-[2rem] border border-amber-200/20 bg-[#041a12]/95 p-7 text-center shadow-[0_30px_90px_rgba(0,0,0,0.55)]">
+              <p className="text-sm leading-7 text-[#f2dfb4]">
+                {isPersian
+                  ? "پخش پردهٔ نخست کامل نشد. برای ادامه، ویدیو را دوباره بارگذاری کنید."
+                  : "Act one could not finish playing. Reload the video to continue."}
+              </p>
+              <button
+                type="button"
+                onClick={retryFirstVideo}
+                className="mt-5 min-h-11 rounded-full border border-[#e8cb78]/45 bg-[#d9b85f]/[0.09] px-6 text-xs text-[#f5dfa0] transition hover:border-[#f3d98a]/75"
+              >
+                {isPersian ? "تلاش دوباره" : "Try again"}
+              </button>
+            </div>
+          </div>
         )}
 
-        {/* Buffer ویدیوی دوم */}
-        <AnimatePresence>
-          {phase ===
-            "video-two" &&
-            secondVideoBuffering && (
-              <motion.div
-                initial={{
-                  opacity:
-                    0,
+        {secondVideoError && phase === "awaiting-entry" && (
+          <div className="absolute inset-0 z-[160] grid place-items-center bg-black/72 px-6 backdrop-blur-md">
+            <div className="w-full max-w-md rounded-[2rem] border border-amber-200/20 bg-[#041a12]/95 p-7 text-center shadow-[0_30px_90px_rgba(0,0,0,0.55)]">
+              <p className="text-sm leading-7 text-[#f2dfb4]">
+                {isPersian
+                  ? "پردهٔ دوم پخش نشد. دوباره تلاش کنید یا اگر تمایل ندارید، اینترو را رد کنید."
+                  : "Act two could not play. Try again, or skip the intro if you prefer."}
+              </p>
+              <button
+                type="button"
+                onClick={() => {
+                  retrySecondVideo();
+                  window.setTimeout(handleEnterEloria, 0);
                 }}
-                animate={{
-                  opacity:
-                    1,
-                }}
-                exit={{
-                  opacity:
-                    0,
-                }}
-                className="pointer-events-none absolute inset-0 z-[125] grid place-items-center bg-black/20 backdrop-blur-[2px]"
-                role="status"
-                aria-live="polite"
+                className="mt-5 min-h-11 rounded-full border border-[#e8cb78]/45 bg-[#d9b85f]/[0.09] px-6 text-xs text-[#f5dfa0] transition hover:border-[#f3d98a]/75"
               >
-                <div className="flex flex-col items-center gap-3 rounded-2xl border border-white/10 bg-black/25 px-5 py-4 backdrop-blur-xl">
-                  <span className="size-9 animate-spin rounded-full border border-white/20 border-t-[#f1d68d]" />
-                  <span className="text-[10px] tracking-[0.08em] text-white/64">
-                    {isPersian ? "آماده‌سازی ادامه روایت" : "Preparing the next scene"}
-                  </span>
-                </div>
-              </motion.div>
-            )}
-        </AnimatePresence>
+                {isPersian ? "پخش دوبارهٔ پردهٔ دوم" : "Replay act two"}
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Act two is preloaded during act one; no technical loading message is shown to the visitor. */}
 
         <style jsx global>{`
           .eloria-intro-root {

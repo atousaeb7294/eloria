@@ -1,0 +1,12 @@
+ELORIA FINAL LUXURY INTELLIGENCE R6
+Release date: 2026-08-27
+Base: ELORIA FINAL SMART PRODUCTION R4 + Intro v10 + Smart Production stack
+Home: 16-item daily curation + campaign cover + runway + asymmetric luxury lookbook
+Motion: existing free Motion/GSAP stack; reduced-motion aware; no premium add-on required
+Performance: warm home fetch + route prefetch + dynamic effects + media cache + content-visibility
+Intelligence: RFM + funnel + product quality + UTM + weekly product momentum + smart merchandising
+SEO: Product/Offer + Organization logo + ContactPoint + optional MerchantReturnPolicy + canonical/sitemap
+Support phone: 09180079556
+Next.js target after installer: 16.3.3 security baseline
+Database changes in R6: none; only existing pending additive migrations may deploy
+Installer: INSTALL_ELORIA_R6.ps1

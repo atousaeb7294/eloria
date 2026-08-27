@@ -3,6 +3,7 @@ import Link from "next/link";
 import {
   ArrowRight,
   ExternalLink,
+  History,
 } from "lucide-react";
 
 import {
@@ -120,6 +121,36 @@ export default async function EditAdminProductPage({
                   createdAt: "asc",
                 },
               ],
+            },
+            timelineEvents: {
+              orderBy: { occurredAt: "desc" },
+              take: 100,
+            },
+            orderItems: {
+              orderBy: { createdAt: "desc" },
+              take: 100,
+              select: {
+                id: true,
+                quantity: true,
+                unitPriceToman: true,
+                metalValueToman: true,
+                createdAt: true,
+                order: {
+                  select: {
+                    id: true,
+                    orderNumber: true,
+                    status: true,
+                    customerFullName: true,
+                    paidAt: true,
+                    payments: {
+                      where: { status: "PAID" },
+                      take: 1,
+                      orderBy: { verifiedAt: "desc" },
+                      select: { gatewayReference: true },
+                    },
+                  },
+                },
+              },
             },
             _count: {
               select: {
@@ -271,6 +302,59 @@ export default async function EditAdminProductPage({
         archived={one(query.variantArchived) === "1"}
         error={decoded(query.variantError)}
       />
+
+      <section className="overflow-hidden rounded-2xl border border-[#d1b45c]/18 bg-[#071a14]/70">
+        <header className="flex items-center gap-3 border-b border-[#d1b45c]/14 px-5 py-4 sm:px-6">
+          <span className="grid size-10 place-items-center rounded-xl border border-[#d1b45c]/20 bg-[#d1b45c]/[0.06] text-[#dfc46e]">
+            <History className="size-5" />
+          </span>
+          <div>
+            <h2 className="font-semibold text-[#f4dfaa]">Timeline کامل این قطعه</h2>
+            <p className="mt-1 text-xs text-[#9f9279]">ثبت ورود، وزن، تغییر قیمت و موجودی، رزرو، فروش و مرجع فاکتور</p>
+          </div>
+        </header>
+
+        <div className="divide-y divide-white/[0.055]">
+          {product.timelineEvents.map((event) => (
+            <article key={event.id} className="grid gap-2 px-5 py-4 sm:grid-cols-[11rem_1fr] sm:px-6">
+              <time className="text-xs text-[#9f9279]">
+                {new Intl.DateTimeFormat("fa-IR", { dateStyle: "medium", timeStyle: "short" }).format(event.occurredAt)}
+              </time>
+              <div>
+                <p className="text-sm font-medium text-[#ead39a]">{event.titleFa}</p>
+                <p className="mt-1 text-xs leading-6 text-[#b9aa8c]">
+                  {event.actorLabel ?? event.actorType}
+                  {event.metalWeight ? ` · وزن ${event.metalWeight.toString()} گرم` : ""}
+                  {event.priceToman ? ` · قیمت ${new Intl.NumberFormat("fa-IR").format(Number(event.priceToman))} تومان` : ""}
+                  {event.stock !== null ? ` · موجودی ${new Intl.NumberFormat("fa-IR").format(event.stock)}` : ""}
+                </p>
+              </div>
+            </article>
+          ))}
+
+          {product.orderItems.map((item) => (
+            <article key={item.id} className="grid gap-2 px-5 py-4 sm:grid-cols-[11rem_1fr] sm:px-6">
+              <time className="text-xs text-[#9f9279]">
+                {new Intl.DateTimeFormat("fa-IR", { dateStyle: "medium", timeStyle: "short" }).format(item.createdAt)}
+              </time>
+              <div>
+                <p className="text-sm font-medium text-[#ead39a]">
+                  {item.order.paidAt ? "فروش و پرداخت قطعه" : "رزرو قطعه در سفارش"}
+                </p>
+                <p className="mt-1 text-xs leading-6 text-[#b9aa8c]">
+                  سفارش {item.order.orderNumber} · وضعیت {item.order.status} · تعداد {new Intl.NumberFormat("fa-IR").format(item.quantity)}
+                  {item.order.customerFullName ? ` · خریدار ${item.order.customerFullName}` : ""}
+                  {item.order.payments[0]?.gatewayReference ? ` · مرجع فاکتور/پرداخت ${item.order.payments[0].gatewayReference}` : ""}
+                </p>
+              </div>
+            </article>
+          ))}
+
+          {product.timelineEvents.length === 0 && product.orderItems.length === 0 ? (
+            <p className="px-6 py-8 text-sm text-[#9f9279]">هنوز رویدادی برای این قطعه ثبت نشده است؛ اولین ویرایش، Timeline را آغاز می‌کند.</p>
+          ) : null}
+        </div>
+      </section>
 
       <AdminProductDangerZone
         productId={product.id}

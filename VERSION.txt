@@ -1,4 +1,11 @@
-ELORIA COMPLETE REPAIR V2
-2026-08-06
-- Fixes CJS/top-level-await database preflight failure.
-- Makes silver commodity API failure non-fatal; gold sync continues and existing silver rate is preserved.
+ELORIA FINAL R8.3.2 SILK SHADER SLIDESHOW
+Release date: 2026-08-27
+Base: ELORIA R8.3.1 Hero Clean + Intro v10 + Smart Production stack
+Home slideshow: directional silk-shader crossfade + soft refraction sweeps + continuous autoplay progress
+Motion: Motion-based, reduced-motion aware, no new runtime dependency
+Performance: transform/opacity/filter only; no WebGL canvas or paid add-on
+Smart discovery: free-text catalog discovery remains active
+Support phone: 09180079556
+Next.js: 16.3.3 security baseline
+Database changes in R8.3.2: none
+Installer: INSTALL_ELORIA_R8_3_2.ps1

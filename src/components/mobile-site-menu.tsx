@@ -95,7 +95,7 @@ export function MobileSiteMenu() {
 
   const journalHref = `/${locale}/journal`;
 
-  const contactHref = `/${locale}#contact`;
+  const contactHref = `/${locale}/contact`;
 
   const profileHref = `/${locale}/profile`;
 

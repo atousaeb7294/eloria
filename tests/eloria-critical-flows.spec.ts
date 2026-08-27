@@ -656,21 +656,6 @@ test.describe(
 test.describe(
   "ELORIA critical browser flows",
   () => {
-    test.beforeEach(
-      async ({
-        page,
-      }) => {
-        await page.addInitScript(
-          () => {
-            window.sessionStorage.setItem(
-              "eloria_intro_seen_v5",
-              "1",
-            );
-          },
-        );
-      },
-    );
-
     test(
       "product pricing keeps internal financial components private",
       async ({

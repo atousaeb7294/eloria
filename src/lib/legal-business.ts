@@ -6,6 +6,8 @@ export type LegalBusinessIdentity = {
   complete: boolean;
 };
 
+const DEFAULT_PUBLIC_SUPPORT_PHONE = "09180079556";
+
 function env(name: string): string {
   return process.env[name]?.trim() ?? "";
 }
@@ -18,13 +20,16 @@ function validEmail(value: string): boolean {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
 }
 
+export function publicSupportPhone(): string {
+  const configured = env("ELORIA_LEGAL_SUPPORT_PHONE") || env("NEXT_PUBLIC_ELORIA_SUPPORT_PHONE");
+  return validPhone(configured) ? configured : DEFAULT_PUBLIC_SUPPORT_PHONE;
+}
+
 export function legalBusinessIdentity(): LegalBusinessIdentity {
   const configuredSellerName = env("ELORIA_LEGAL_SELLER_NAME");
   const businessAddress = env("ELORIA_LEGAL_BUSINESS_ADDRESS");
-  const rawPhone = env("ELORIA_LEGAL_SUPPORT_PHONE");
+  const supportPhone = publicSupportPhone();
   const rawEmail = env("ELORIA_LEGAL_SUPPORT_EMAIL");
-
-  const supportPhone = validPhone(rawPhone) ? rawPhone : "";
   const supportEmail = validEmail(rawEmail) ? rawEmail : "";
 
   return {
