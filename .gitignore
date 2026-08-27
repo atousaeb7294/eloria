@@ -54,10 +54,3 @@ Thumbs.db
 .idea/
 
 public/videos/Aiarty.Video.Enhancer.3.7.x64.rar
-
-.env
-.env.local
-.env.*.local
-node_modules/
-.next/
-*.log

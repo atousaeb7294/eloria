@@ -1,11 +1,12 @@
-ELORIA FINAL R8.3.2 SILK SHADER SLIDESHOW
+ELORIA FINAL R8.3.3 CLASSIC FAST SLIDESHOW
 Release date: 2026-08-27
-Base: ELORIA R8.3.1 Hero Clean + Intro v10 + Smart Production stack
-Home slideshow: directional silk-shader crossfade + soft refraction sweeps + continuous autoplay progress
-Motion: Motion-based, reduced-motion aware, no new runtime dependency
-Performance: transform/opacity/filter only; no WebGL canvas or paid add-on
+Base: ELORIA R8.3.2 Silk Shader + all R8.3 fixes
+Home slideshow: restored exact R8.2/R8.3.1 classic fast motion (0.78s scale/y/blur transition)
+Motion: faster, cleaner, no silk sweep overlay, reduced-motion aware
+Hero: clean, no decorative woven lines over hero image
 Smart discovery: free-text catalog discovery remains active
+Intro: instant-preloaded Intro 2 flow remains active
 Support phone: 09180079556
 Next.js: 16.3.3 security baseline
-Database changes in R8.3.2: none
-Installer: INSTALL_ELORIA_R8_3_2.ps1
+Database changes in R8.3.3: none
+Installer: INSTALL_ELORIA_R8_3_3.ps1

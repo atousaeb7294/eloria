@@ -30,7 +30,6 @@ export function HomeFeaturedAlbum({ locale }: { locale: string }) {
   const fallback = useMemo(() => fallbackItems(locale), [locale]);
   const [items, setItems] = useState(fallback);
   const [active, setActive] = useState(0);
-  const [direction, setDirection] = useState<1 | -1>(1);
   const [paused, setPaused] = useState(false);
   const touchStart = useRef<number | null>(null);
 
@@ -56,26 +55,12 @@ export function HomeFeaturedAlbum({ locale }: { locale: string }) {
 
   useEffect(() => {
     if (paused || reducedMotion || items.length < 2) return;
-    const timer = window.setInterval(() => {
-      setDirection(1);
-      setActive((value) => (value + 1) % items.length);
-    }, AUTOPLAY_MS);
+    const timer = window.setInterval(() => setActive((value) => (value + 1) % items.length), AUTOPLAY_MS);
     return () => window.clearInterval(timer);
   }, [items.length, paused, reducedMotion]);
 
-  const previous = () => {
-    setDirection(-1);
-    setActive((value) => (value - 1 + items.length) % items.length);
-  };
-  const next = () => {
-    setDirection(1);
-    setActive((value) => (value + 1) % items.length);
-  };
-  const goTo = (index: number) => {
-    if (index === active) return;
-    setDirection(index > active ? 1 : -1);
-    setActive(index);
-  };
+  const previous = () => setActive((value) => (value - 1 + items.length) % items.length);
+  const next = () => setActive((value) => (value + 1) % items.length);
   const current = items[active] ?? fallback[0]!;
   const before = items[(active - 1 + items.length) % items.length] ?? current;
   const after = items[(active + 1) % items.length] ?? current;
@@ -121,46 +106,18 @@ export function HomeFeaturedAlbum({ locale }: { locale: string }) {
           </button>
         ))}
 
-        <AnimatePresence mode="wait" initial={false} custom={direction}>
+        <AnimatePresence mode="wait" initial={false}>
           <motion.article
             key={current.slug}
-            custom={direction}
-            initial={reducedMotion ? false : { opacity: 0, scale: 0.982, x: direction * 20, filter: "blur(10px) saturate(.92)" }}
-            animate={{ opacity: 1, scale: 1, x: 0, filter: "blur(0px) saturate(1)" }}
-            exit={reducedMotion ? undefined : { opacity: 0, scale: 1.012, x: direction * -14, filter: "blur(7px) saturate(.96)" }}
-            transition={{ duration: reducedMotion ? 0 : 1.05, ease: [0.22, 1, 0.36, 1] }}
-            className="group relative z-10 aspect-[4/5] w-[88%] max-w-[500px] overflow-hidden rounded-[2rem] border border-[#e4c878]/24 bg-[#03140e] shadow-[0_45px_140px_rgba(0,0,0,.52),0_0_55px_rgba(218,183,91,.08)] will-change-[transform,opacity,filter] sm:w-[64%] sm:max-w-[560px] sm:rounded-[2.6rem] lg:w-[44%] lg:max-w-[610px]"
+            initial={reducedMotion ? false : { opacity: 0, scale: 0.965, y: 22, filter: "blur(8px)" }}
+            animate={{ opacity: 1, scale: 1, y: 0, filter: "blur(0px)" }}
+            exit={reducedMotion ? undefined : { opacity: 0, scale: 1.018, y: -12, filter: "blur(5px)" }}
+            transition={{ duration: reducedMotion ? 0 : 0.78, ease: [0.16, 1, 0.3, 1] }}
+            className="group relative z-10 aspect-[4/5] w-[88%] max-w-[500px] overflow-hidden rounded-[2rem] border border-[#e4c878]/24 bg-[#03140e] shadow-[0_45px_140px_rgba(0,0,0,.52),0_0_55px_rgba(218,183,91,.08)] sm:w-[64%] sm:max-w-[560px] sm:rounded-[2.6rem] lg:w-[44%] lg:max-w-[610px]"
           >
             <Link href={current.href} prefetch onClick={() => select(current)} className="absolute inset-0">
-              <motion.div
-                className="absolute inset-0"
-                initial={reducedMotion ? false : { scale: 1.045, x: direction * 10 }}
-                animate={{ scale: 1, x: 0 }}
-                transition={{ duration: reducedMotion ? 0 : 1.55, ease: [0.22, 1, 0.36, 1] }}
-              >
-                <Image src={current.imageUrl} alt={current.name} fill priority fetchPriority="high" sizes="(max-width: 640px) 88vw, (max-width: 1024px) 64vw, 44vw" className="object-cover transition-transform duration-[1800ms] ease-[cubic-bezier(.16,1,.3,1)] group-hover:scale-[1.025] motion-reduce:transition-none" />
-              </motion.div>
-
-              {!reducedMotion ? (
-                <>
-                  <motion.span
-                    aria-hidden="true"
-                    initial={{ x: direction > 0 ? "-125%" : "125%", opacity: 0.75, skewX: direction > 0 ? -8 : 8 }}
-                    animate={{ x: direction > 0 ? "125%" : "-125%", opacity: [0.72, 0.5, 0] }}
-                    transition={{ duration: 1.18, ease: [0.22, 1, 0.36, 1] }}
-                    className="pointer-events-none absolute -inset-y-[12%] left-[-20%] w-[64%] bg-[linear-gradient(90deg,transparent_0%,rgba(8,40,29,.10)_18%,rgba(230,199,117,.10)_38%,rgba(255,246,220,.30)_50%,rgba(225,190,103,.08)_62%,rgba(3,24,17,.10)_82%,transparent_100%)] blur-[10px] mix-blend-screen will-change-transform"
-                  />
-                  <motion.span
-                    aria-hidden="true"
-                    initial={{ x: direction > 0 ? "-105%" : "105%", opacity: 0 }}
-                    animate={{ x: direction > 0 ? "105%" : "-105%", opacity: [0, 0.42, 0] }}
-                    transition={{ duration: 1.4, delay: 0.04, ease: [0.16, 1, 0.3, 1] }}
-                    className="pointer-events-none absolute inset-y-0 w-[28%] bg-[linear-gradient(90deg,transparent,rgba(250,230,168,.16),transparent)] blur-[22px] mix-blend-soft-light will-change-transform"
-                  />
-                </>
-              ) : null}
-
-              <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(1,8,6,.02)_32%,rgba(1,9,6,.14)_61%,rgba(1,8,6,.94)_100%)]" />
+              <Image src={current.imageUrl} alt={current.name} fill priority fetchPriority="high" sizes="(max-width: 640px) 88vw, (max-width: 1024px) 64vw, 44vw" className="object-cover transition-transform duration-[1600ms] ease-[cubic-bezier(.16,1,.3,1)] group-hover:scale-[1.035] motion-reduce:transition-none" />
+              <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(1,8,6,.03)_35%,rgba(1,9,6,.16)_61%,rgba(1,8,6,.94)_100%)]" />
               <div className="absolute inset-x-0 bottom-0 p-6 text-center sm:p-9">
                 <p className="text-[9px] font-semibold tracking-[.22em] text-[#e2c674]/68">ELORIA · {String(active + 1).padStart(2, "0")}</p>
                 <h3 className={isPersian ? "font-persian-title mt-3 text-2xl text-[#fff1cf] sm:text-3xl" : "mt-3 font-serif text-3xl text-[#fff1cf] sm:text-4xl"}>{current.name}</h3>
@@ -191,16 +148,8 @@ export function HomeFeaturedAlbum({ locale }: { locale: string }) {
 
       <div className="mx-auto mt-7 flex max-w-sm gap-1.5" aria-label={isPersian ? "انتخاب اسلاید" : "Choose a slide"}>
         {items.map((item, index) => (
-          <button key={item.slug} type="button" onClick={() => goTo(index)} aria-label={`${isPersian ? "اسلاید" : "Slide"} ${index + 1}`} className="h-1 flex-1 overflow-hidden rounded-full bg-[#dfc16f]/12">
-            {index === active ? (
-              <motion.span
-                key={`${item.slug}-${active}-${paused ? "paused" : "playing"}`}
-                className="block h-full origin-start rounded-full bg-[linear-gradient(90deg,#b89445,#f1d98f,#d6b45b)]"
-                initial={{ scaleX: paused || reducedMotion ? 1 : 0 }}
-                animate={{ scaleX: 1 }}
-                transition={{ duration: paused || reducedMotion ? 0 : AUTOPLAY_MS / 1000, ease: "linear" }}
-              />
-            ) : null}
+          <button key={item.slug} type="button" onClick={() => setActive(index)} aria-label={`${isPersian ? "اسلاید" : "Slide"} ${index + 1}`} className="h-1 flex-1 overflow-hidden rounded-full bg-[#dfc16f]/12">
+            <span className={`block h-full origin-start rounded-full bg-[#e3c675] transition-transform duration-500 ${index === active ? "scale-x-100" : "scale-x-0"}`} />
           </button>
         ))}
       </div>
