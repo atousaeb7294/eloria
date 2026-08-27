@@ -1,12 +1,12 @@
-ELORIA FINAL R8.3.3 CLASSIC FAST SLIDESHOW
+ELORIA FINAL R8.3.4 ORBIT SWAP MOTION
 Release date: 2026-08-27
-Base: ELORIA R8.3.2 Silk Shader + all R8.3 fixes
-Home slideshow: restored exact R8.2/R8.3.1 classic fast motion (0.78s scale/y/blur transition)
-Motion: faster, cleaner, no silk sweep overlay, reduced-motion aware
+Base: ELORIA R8.3.3 Classic Fast Motion + all R8.3 fixes
+Home showcase: Orbit Swap revolving motion with transform-only 3D exchange; no image fade and no blur transition
+Motion: 1.08s smooth orbit, shallow rotateY/depth swap, continuous adjacent-card handoff, reduced-motion aware
 Hero: clean, no decorative woven lines over hero image
 Smart discovery: free-text catalog discovery remains active
 Intro: instant-preloaded Intro 2 flow remains active
 Support phone: 09180079556
 Next.js: 16.3.3 security baseline
-Database changes in R8.3.3: none
-Installer: INSTALL_ELORIA_R8_3_3.ps1
+Database changes in R8.3.4: none
+Installer: INSTALL_ELORIA_R8_3_4.ps1
