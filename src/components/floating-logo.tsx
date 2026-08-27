@@ -12,7 +12,7 @@ export function FloatingLogo() {
 
   return (
     <motion.div
-      className="relative flex h-11 w-11 shrink-0 items-center justify-center sm:h-16 sm:w-16"
+      className="relative flex h-[3.35rem] w-[3.75rem] shrink-0 items-center justify-center sm:h-[4.35rem] sm:w-[5.1rem]"
       animate={
         reducedMotion
           ? undefined
@@ -28,28 +28,16 @@ export function FloatingLogo() {
     >
       <motion.span
         aria-hidden="true"
-        className="absolute inset-0 rounded-full border border-dashed border-[#e5c675]/30"
-        animate={
-          reducedMotion
-            ? undefined
-            : {
-                rotate: 360,
-              }
-        }
-        transition={{
-          duration: 18,
-          repeat: Infinity,
-          ease: "linear",
-        }}
+        className="absolute inset-[1px] rounded-[1.2rem] border border-[#efd27c]/52 shadow-[0_0_28px_rgba(235,201,109,.22)]"
       />
 
       <span
         aria-hidden="true"
-        className="absolute inset-[5px] rounded-full border border-[#e4c46f]/20 bg-[radial-gradient(circle,rgba(222,188,91,0.13),rgba(2,39,27,0.2)_60%,transparent_75%)] shadow-[0_0_24px_rgba(220,187,92,0.1)]"
+        className="absolute inset-[4px] rounded-[1rem] border border-[#f0d480]/32 bg-[radial-gradient(circle,rgba(247,219,136,0.22),rgba(2,39,27,0.25)_60%,transparent_80%)] shadow-[0_0_34px_rgba(229,194,101,0.22)]"
       />
 
       <motion.div
-        className="relative z-10 h-9 w-9 sm:h-12 sm:w-12"
+        className="relative z-10 h-[2.9rem] w-[3.35rem] sm:h-[3.85rem] sm:w-[4.5rem]"
         whileHover={
           reducedMotion
             ? undefined
@@ -67,8 +55,8 @@ export function FloatingLogo() {
           alt="Eloria"
           fill
           priority
-          sizes="48px"
-          className="object-contain drop-shadow-[0_0_10px_rgba(230,197,111,0.28)]"
+          sizes="(max-width: 640px) 54px, 72px"
+          className="object-contain mix-blend-screen brightness-[1.42] contrast-[1.38] saturate-[1.18] drop-shadow-[0_0_16px_rgba(255,222,133,0.78)]"
         />
       </motion.div>
     </motion.div>

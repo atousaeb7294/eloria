@@ -402,10 +402,6 @@ export default async function PolicyPage({ params }: PolicyPageProps) {
 
             {seller.complete ? (
               <div className="mt-5 space-y-3 text-sm leading-8 text-[#d1c3a3]/70 sm:text-base">
-                <p>
-                  <strong>{isPersian ? "نشانی محل تجاری/کاری: " : "Business/work address: "}</strong>
-                  {seller.businessAddress}
-                </p>
                 {seller.supportPhone ? (
                   <p>
                     <strong>{isPersian ? "تلفن: " : "Phone: "}</strong>

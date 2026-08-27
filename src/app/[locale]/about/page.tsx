@@ -183,6 +183,45 @@ export default async function AboutPage({ params }: AboutPageProps) {
           </div>
         </article>
 
+        <article className="relative mx-auto mt-8 max-w-6xl overflow-hidden rounded-[2.8rem] border border-[#d8b860]/22 bg-[linear-gradient(145deg,rgba(9,45,32,0.94),rgba(2,20,14,0.99))] px-6 py-10 shadow-[0_34px_100px_rgba(0,0,0,0.4)] backdrop-blur-xl sm:px-10 sm:py-14 lg:px-16">
+          <div aria-hidden="true" className="absolute inset-x-16 top-0 h-px bg-gradient-to-r from-transparent via-[#efd17a]/65 to-transparent" />
+          <div aria-hidden="true" className="absolute -start-28 top-8 size-64 rounded-full bg-[#d4b258]/[0.06] blur-[90px]" />
+
+          <div className="relative mx-auto max-w-4xl">
+            <p className="text-[9px] uppercase tracking-[0.4em] text-[#d3bb78]/58">
+              {isPersian ? "افسانهٔ سرزمین کهن" : "The Legend of the Ancient Land"}
+            </p>
+            <h2
+              className={[
+                "mt-4 text-[#f2e1ba]",
+                isPersian
+                  ? "font-persian-title text-3xl font-semibold leading-[1.9] sm:text-4xl"
+                  : "text-3xl font-semibold leading-tight sm:text-4xl",
+              ].join(" ")}
+            >
+              {isPersian ? "الوریا؛ سرزمین کهن و جواهری که از تارِ زمان بافته شد" : "Eloria; the Ancient Land and the jewel woven from time"}
+            </h2>
+
+            <div className="mt-6 space-y-5 text-sm leading-9 text-[#d6c8aa]/72 sm:text-base">
+              <p>
+                {isPersian
+                  ? "در افسانه‌های الوریا آمده است که نام این سرزمین به معنای «سرزمین کهن» بود؛ جایی در مرز میان تاریخ و خیال، که زرگران، سنگ‌تراشان و بافندگان هر کدام بخشی از راز زمین را در دست داشتند. می‌گفتند طلا حافظهٔ خورشید است، سنگ‌ها خاطرهٔ کوه‌اند و نخ، راهی است که این دو را به زندگی انسان پیوند می‌دهد."
+                  : "In the legends of Eloria, its name meant “the Ancient Land”: a realm on the border of history and imagination, where goldsmiths, stone cutters and weavers each guarded a part of the earth’s secret. Gold was said to hold the memory of the sun, stones the memory of the mountains, and thread the path that joined both to human life."}
+              </p>
+              <p>
+                {isPersian
+                  ? "روزی بافنده‌ای جوان در کارگاه خاموش خود رشته‌های مکرومه را گره زد؛ اما به جای آن‌که بافت را تنها با نخ ادامه دهد، میان هر گره قطعه‌ای کوچک از طلا و سنگی زینتی نشاند. عقیق، فیروزه و سنگ‌های رنگین در تارها جای گرفتند و قطعات طلا چون نشانه‌هایی از نور میان آن‌ها درخشیدند. با هر گره، جواهر نه ساخته، بلکه روایت می‌شد؛ گویی تارها نقشهٔ سرزمین کهن را دوباره می‌بافتند."
+                  : "One day, a young artisan tied macramé cords in a quiet workshop. Instead of continuing with thread alone, the artisan placed a small piece of gold or an ornamental stone between the knots. Agate, turquoise and coloured stones settled into the weave, while fragments of gold shone like signs of light. With every knot, the jewel was not merely made but narrated, as if the cords were weaving the map of the Ancient Land anew."}
+              </p>
+              <p>
+                {isPersian
+                  ? "آن اثر را نخستین «بافتهٔ الوریا» نامیدند؛ جواهری که ارزشش فقط در فلز یا سنگ نبود، بلکه در پیوند آن‌ها با دست، صبر و داستان نهفته بود. از آن پس گفته شد هر قطعهٔ الوریا باید چیزی از همان پیمان را با خود داشته باشد: میراثی از گذشته، ظرافتی برای امروز و فضایی خالی برای داستانی که صاحب آیندهٔ آن خواهد نوشت."
+                  : "They called the piece the first “Eloria Weave”: a jewel whose value did not live only in metal or stone, but in their bond with handwork, patience and story. From then on, every Eloria piece was said to carry part of the same covenant: a heritage from the past, refinement for the present, and an open space for the story its future owner would write."}
+              </p>
+            </div>
+          </div>
+        </article>
+
         <div className="mx-auto mt-8 grid max-w-6xl gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {principles.map((principle) => {
             const Icon = principle.icon;

@@ -1,5 +1,6 @@
 import type { Prisma } from "@/generated/prisma/client";
 import { normalizeCatalogPage } from "@/lib/catalog-pagination";
+import { normalizePersianSearchText } from "@/lib/smart-catalog-query";
 import { prisma, withDatabaseRetry } from "@/lib/prisma";
 
 export type CatalogMaterial = "GOLD" | "SILVER";
@@ -124,7 +125,7 @@ function normalizeCollectionSlug(slug: string): string {
 }
 
 function normalizeSearch(search?: string): string | undefined {
-  const normalized = search?.trim().replace(/\s+/g, " ").slice(0, 80);
+  const normalized = search ? normalizePersianSearchText(search).slice(0, 80) : "";
   return normalized || undefined;
 }
 
@@ -169,14 +170,21 @@ async function buildCatalogWhere(filters: ProductCatalogFilters) {
   const and: Prisma.ProductWhereInput[] = [];
 
   if (search) {
-    and.push({
-      OR: [
-        { nameFa: { contains: search, mode: "insensitive" } },
-        { nameEn: { contains: search, mode: "insensitive" } },
-        { slug: { contains: search, mode: "insensitive" } },
-        { sku: { contains: search, mode: "insensitive" } },
-      ],
-    });
+    const tokens = search.split(" ").filter(Boolean).slice(0, 8);
+    for (const token of tokens) {
+      and.push({
+        OR: [
+          { nameFa: { contains: token, mode: "insensitive" } },
+          { nameEn: { contains: token, mode: "insensitive" } },
+          { descriptionFa: { contains: token, mode: "insensitive" } },
+          { descriptionEn: { contains: token, mode: "insensitive" } },
+          { legendFa: { contains: token, mode: "insensitive" } },
+          { legendEn: { contains: token, mode: "insensitive" } },
+          { slug: { contains: token, mode: "insensitive" } },
+          { sku: { contains: token, mode: "insensitive" } },
+        ],
+      });
+    }
   }
 
   if (availability === "AVAILABLE") {

@@ -123,6 +123,7 @@ export function ContactRequestForm({
                     "message",
                   ),
                 turnstileToken,
+                locale: safeLocale,
               }),
           },
         );
@@ -190,44 +191,47 @@ export function ContactRequestForm({
   return (
     <form
       onSubmit={submit}
-      className="eloria-panel rounded-[2.2rem] p-5 sm:p-8"
+      className="eloria-panel relative overflow-hidden rounded-[2.2rem] border-[#e2c46f]/28 p-5 shadow-[0_32px_110px_rgba(0,0,0,.34),0_0_46px_rgba(210,174,82,.045)] sm:p-8"
       data-reveal="left"
     >
-      <p className="eloria-kicker">
+      <div aria-hidden="true" className="pointer-events-none absolute inset-x-10 top-0 h-px bg-gradient-to-r from-transparent via-[#f0d27a]/65 to-transparent" />
+      <div aria-hidden="true" className="pointer-events-none absolute -end-24 -top-24 size-56 rounded-full bg-[#d5af50]/[0.055] blur-3xl" />
+
+      <p className="eloria-kicker relative">
         {isPersian
           ? "فرم ارتباط"
           : "Contact form"}
       </p>
 
-      <h2 className="mt-3 text-2xl font-semibold text-[#f2e4c5]">
+      <h2 className="relative mt-3 text-2xl font-semibold text-[#f2e4c5]">
         {isPersian
           ? "پیام خود را ثبت کنید"
           : "Leave your message"}
       </h2>
 
-      <div className="mt-7 grid gap-4 sm:grid-cols-2">
-        <label className="space-y-2 text-xs text-[#d8c9a6]/72">
+      <div className="relative mt-7 grid gap-4 sm:grid-cols-2">
+        <label className="group rounded-[1.15rem] border border-white/[0.065] bg-black/[0.09] p-3 text-xs text-[#d8c9a6]/72 transition focus-within:border-[#e1c36e]/32 focus-within:bg-[#d9b85f]/[0.025]">
           <span>
             {isPersian
               ? "نام و نام خانوادگی"
               : "Full name"}
           </span>
           <input
-            className="eloria-field"
+            className="eloria-field mt-2"
             required
             name="name"
             autoComplete="name"
           />
         </label>
 
-        <label className="space-y-2 text-xs text-[#d8c9a6]/72">
+        <label className="group rounded-[1.15rem] border border-white/[0.065] bg-black/[0.09] p-3 text-xs text-[#d8c9a6]/72 transition focus-within:border-[#e1c36e]/32 focus-within:bg-[#d9b85f]/[0.025]">
           <span>
             {isPersian
               ? "شماره تماس"
               : "Phone number"}
           </span>
           <input
-            className="eloria-field"
+            className="eloria-field mt-2"
             required
             name="phone"
             inputMode="tel"
@@ -236,27 +240,27 @@ export function ContactRequestForm({
         </label>
       </div>
 
-      <label className="mt-4 block space-y-2 text-xs text-[#d8c9a6]/72">
+      <label className="group relative mt-4 block rounded-[1.15rem] border border-white/[0.065] bg-black/[0.09] p-3 text-xs text-[#d8c9a6]/72 transition focus-within:border-[#e1c36e]/32 focus-within:bg-[#d9b85f]/[0.025]">
         <span>
           {isPersian
             ? "موضوع"
             : "Subject"}
         </span>
         <input
-          className="eloria-field"
+          className="eloria-field mt-2"
           required
           name="subject"
         />
       </label>
 
-      <label className="mt-4 block space-y-2 text-xs text-[#d8c9a6]/72">
+      <label className="group relative mt-4 block rounded-[1.15rem] border border-white/[0.065] bg-black/[0.09] p-3 text-xs text-[#d8c9a6]/72 transition focus-within:border-[#e1c36e]/32 focus-within:bg-[#d9b85f]/[0.025]">
         <span>
           {isPersian
             ? "متن پیام"
             : "Message"}
         </span>
         <textarea
-          className="eloria-field min-h-36 resize-y py-4"
+          className="eloria-field mt-2 min-h-40 resize-y py-4"
           minLength={10}
           required
           name="message"

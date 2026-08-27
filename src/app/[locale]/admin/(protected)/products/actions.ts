@@ -703,6 +703,23 @@ await ensureUniqueIdentity({
                 },
               }
             : {}),
+          timelineEvents: {
+            create: {
+              eventType: "CREATED",
+              actorType: "ADMIN",
+              actorLabel: "مدیر الوریا",
+              titleFa: "ثبت اولیه قطعه در سامانه",
+              metalWeight: input.metalWeight,
+              priceToman: input.price,
+              stock: input.stock,
+              details: {
+                slug: input.slug,
+                sku: input.sku,
+                material: input.material,
+                status: input.status,
+              },
+            },
+          },
         },
         select: { id: true },
       }),
@@ -760,9 +777,68 @@ await ensureUniqueIdentity({
     await withDatabaseRetry(
       () =>
         prisma.$transaction(async transaction => {
+          const before = await transaction.product.findUniqueOrThrow({
+            where: { id: productId },
+            select: {
+              slug: true,
+              sku: true,
+              metalWeight: true,
+              price: true,
+              stock: true,
+              status: true,
+              pricingMode: true,
+            },
+          });
+
           await transaction.product.update({
             where: { id: productId },
             data: productData(input),
+          });
+
+          const changedFields = [
+            before.slug !== input.slug ? "slug" : null,
+            (before.sku ?? null) !== input.sku ? "sku" : null,
+            (before.metalWeight?.toString() ?? null) !== input.metalWeight ? "metalWeight" : null,
+            (before.price?.toString() ?? null) !== input.price ? "price" : null,
+            before.stock !== input.stock ? "stock" : null,
+            before.status !== input.status ? "status" : null,
+            before.pricingMode !== input.pricingMode ? "pricingMode" : null,
+          ].filter((field): field is string => Boolean(field));
+
+          await transaction.productTimelineEvent.create({
+            data: {
+              productId,
+              eventType: changedFields.length ? "UPDATED" : "REVIEWED",
+              actorType: "ADMIN",
+              actorLabel: "مدیر الوریا",
+              titleFa: changedFields.length
+                ? "ویرایش اطلاعات، وزن، قیمت یا موجودی قطعه"
+                : "بازبینی و ذخیره اطلاعات قطعه",
+              metalWeight: input.metalWeight,
+              priceToman: input.price,
+              stock: input.stock,
+              details: {
+                changedFields,
+                previous: {
+                  slug: before.slug,
+                  sku: before.sku,
+                  metalWeight: before.metalWeight?.toString() ?? null,
+                  priceToman: before.price?.toString() ?? null,
+                  stock: before.stock,
+                  status: before.status,
+                  pricingMode: before.pricingMode,
+                },
+                current: {
+                  slug: input.slug,
+                  sku: input.sku,
+                  metalWeight: input.metalWeight,
+                  priceToman: input.price,
+                  stock: input.stock,
+                  status: input.status,
+                  pricingMode: input.pricingMode,
+                },
+              },
+            },
           });
 
           if (!input.primaryImageUrl) return;
@@ -825,7 +901,6 @@ await ensureUniqueIdentity({
     `/${input.locale}/admin/products/${productId}?saved=1`,
   );
 }
-
 
 
 

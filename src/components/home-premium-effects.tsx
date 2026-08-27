@@ -211,24 +211,9 @@ export function HomePremiumEffects() {
       revealHero,
     );
 
-    let introAlreadyComplete = false;
-
-    try {
-      introAlreadyComplete =
-        window.sessionStorage.getItem(
-          "eloria_intro_seen_v5",
-        ) === "1";
-    } catch {
-      introAlreadyComplete = false;
-    }
-
-    const initialHeroTimer =
-      introAlreadyComplete
-        ? window.setTimeout(
-            revealHero,
-            100,
-          )
-        : null;
+    // Hero reveal is driven exclusively by the current intro completion event.
+    // No persisted/session flag may reveal Home before act two finishes.
+    const initialHeroTimer: number | null = null;
 
     const revealed =
       new WeakSet<Element>();

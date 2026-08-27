@@ -5,6 +5,7 @@ import {
   Banknote,
   MapPin,
   Package,
+  MessageSquareText,
   ReceiptText,
   UserRound,
 } from "lucide-react";
@@ -244,6 +245,33 @@ export default async function AdminOrderDetailPage({
           </div>
         </article>
       </section>
+
+      {order.marketingSource || order.marketingCampaign ? (
+        <section className="rounded-[24px] border border-[#d0b359]/15 bg-[#041d15]/82 p-5">
+          <div className="flex items-center gap-3 text-[#d8bd68]">
+            <ReceiptText className="h-5 w-5" />
+            <h2 className="font-semibold">منبع بازاریابی سفارش</h2>
+          </div>
+          <div className="mt-4 grid gap-3 text-sm text-[#d6c7a6] sm:grid-cols-2 lg:grid-cols-4">
+            <p><span className="text-[#a99a7d]">منبع:</span> {order.marketingSource || "—"}</p>
+            <p><span className="text-[#a99a7d]">رسانه:</span> {order.marketingMedium || "—"}</p>
+            <p><span className="text-[#a99a7d]">کمپین:</span> {order.marketingCampaign || "—"}</p>
+            <p><span className="text-[#a99a7d]">محتوا:</span> {order.marketingContent || "—"}</p>
+          </div>
+        </section>
+      ) : null}
+
+      {order.orderNotes ? (
+        <section className="rounded-[24px] border border-[#d0b359]/15 bg-[#041d15]/82 p-5">
+          <div className="flex items-center gap-3 text-[#d8bd68]">
+            <MessageSquareText className="h-5 w-5" />
+            <h2 className="font-semibold">توضیحات مشتری و شخصی‌سازی</h2>
+          </div>
+          <p className="mt-4 whitespace-pre-line rounded-2xl border border-[#d0b359]/10 bg-black/10 px-4 py-3 text-sm leading-8 text-[#d6c7a6]">
+            {order.orderNotes}
+          </p>
+        </section>
+      ) : null}
 
       <section className="overflow-hidden rounded-[24px] border border-[#d0b359]/15 bg-[#041d15]/82">
         <header className="flex items-center gap-3 border-b border-[#d0b359]/12 px-5 py-4">

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { AlertTriangle, ArrowLeft, ArrowRight, CheckCircle2, Clock3, LoaderCircle, RefreshCw, ShieldCheck, ShoppingBag, UserRound, WalletCards, X } from "lucide-react";
+import { AlertTriangle, ArrowLeft, ArrowRight, CheckCircle2, Clock3, Gift, LoaderCircle, RefreshCw, ShieldCheck, ShoppingBag, TicketPercent, UserRound, WalletCards, X } from "lucide-react";
 import { PurchaseProgress } from "@/components/purchase-progress";
 import { TurnstileWidget } from "@/components/turnstile-widget";
 import { getItemKey, type CheckoutPageClientProps } from "@/components/checkout/checkout-page-model";
@@ -27,6 +27,13 @@ export function CheckoutPageView({
     priceChangeNotice,
     form,
     setForm,
+    couponCode,
+    setCouponCode,
+    couponPreview,
+    couponMessage,
+    couponApplying,
+    applyCoupon,
+    useFirstPurchaseGift,
     formatPrice,
     formatNumber,
     formatDateTime,
@@ -479,6 +486,21 @@ export function CheckoutPageView({
                         className="w-full resize-y rounded-xl border border-white/[0.09] bg-black/10 px-4 py-3 text-sm leading-7 text-[#f3e6c9] outline-none transition placeholder:text-[#c8b996]/25 focus:border-[#e5c873]/60 focus:bg-[#d9b85f]/[0.035] focus:shadow-[0_0_0_3px_rgba(217,184,95,0.06)]"
                       />
                     </label>
+
+                    <label className="block sm:col-span-2">
+                      <span className="mb-2 block text-xs text-[#d7c9a7]/65">{text.orderNotes}</span>
+                      <textarea
+                        rows={4}
+                        maxLength={1000}
+                        value={form.orderNotes}
+                        onChange={(event) =>
+                          setForm((current) => ({ ...current, orderNotes: event.target.value }))
+                        }
+                        placeholder={text.orderNotesPlaceholder}
+                        className="w-full resize-y rounded-xl border border-[#d9b85f]/16 bg-[#d9b85f]/[0.025] px-4 py-3 text-sm leading-7 text-[#f3e6c9] outline-none transition placeholder:text-[#c8b996]/28 focus:border-[#e5c873]/60 focus:bg-[#d9b85f]/[0.04] focus:shadow-[0_0_0_3px_rgba(217,184,95,0.06)]"
+                      />
+                      <span className="mt-2 block text-[10px] leading-5 text-[#c9bb9a]/48">{text.orderNotesHelp}</span>
+                    </label>
                   </div>
                   </section>
                 </div>
@@ -682,6 +704,61 @@ export function CheckoutPageView({
                         }
                       </h2>
 
+                      <div className="mt-6 rounded-2xl border border-[#d9b85f]/20 bg-[#d9b85f]/[0.045] p-4">
+                        <div className="flex items-start gap-3">
+                          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-[#d9b85f]/22 bg-black/10 text-[#e4c977]">
+                            <Gift className="h-4.5 w-4.5" />
+                          </span>
+                          <div className="min-w-0 flex-1">
+                            <h3 className="text-sm font-medium text-[#f0ddb0]">{text.couponTitle}</h3>
+                            <p className="mt-1 text-[10px] leading-5 text-[#cbbd9d]/58">{text.couponDescription}</p>
+                          </div>
+                        </div>
+
+                        <div className="mt-4 flex gap-2">
+                          <input
+                            dir="ltr"
+                            value={couponCode}
+                            onChange={(event) => {
+                              setCouponCode(event.target.value.toUpperCase().slice(0, 40));
+                            }}
+                            placeholder={text.couponPlaceholder}
+                            aria-label={text.couponLabel}
+                            className="min-h-11 min-w-0 flex-1 rounded-xl border border-white/[0.09] bg-black/15 px-3 text-left text-xs uppercase tracking-[0.08em] text-[#f4e4bd] outline-none placeholder:text-[#c8b996]/30 focus:border-[#e5c873]/55"
+                          />
+                          <button
+                            type="button"
+                            disabled={couponApplying}
+                            onClick={() => void applyCoupon()}
+                            className="inline-flex min-h-11 shrink-0 items-center gap-2 rounded-xl border border-[#d9b85f]/28 bg-[#d9b85f]/[0.08] px-3 text-[11px] text-[#edd48c] transition hover:border-[#efd17d]/55 disabled:opacity-45"
+                          >
+                            {couponApplying ? <LoaderCircle className="h-3.5 w-3.5 animate-spin" /> : <TicketPercent className="h-3.5 w-3.5" />}
+                            {couponApplying ? text.couponApplying : text.couponApply}
+                          </button>
+                        </div>
+
+                        <button
+                          type="button"
+                          disabled={couponApplying}
+                          onClick={useFirstPurchaseGift}
+                          className="mt-2 inline-flex items-center gap-2 text-[10px] text-[#e4cd89]/75 underline decoration-[#e4cd89]/25 underline-offset-4 transition hover:text-[#f4dfa1] disabled:opacity-45"
+                        >
+                          <Gift className="h-3.5 w-3.5" />
+                          {text.couponUseGift}
+                        </button>
+
+                        {couponMessage ? (
+                          <p className={[
+                            "mt-3 rounded-xl border px-3 py-2 text-[10px] leading-5",
+                            couponPreview
+                              ? "border-emerald-200/15 bg-emerald-950/20 text-emerald-100/72"
+                              : "border-amber-200/15 bg-amber-950/15 text-amber-100/68",
+                          ].join(" ")}>
+                            {couponMessage}
+                          </p>
+                        ) : null}
+                      </div>
+
                       <div className="mt-7 space-y-4 border-y border-white/[0.07] py-6">
                         <div className="flex items-center justify-between gap-4 text-sm">
                           <span className="text-[#c9bb9a]/60">
@@ -698,26 +775,34 @@ export function CheckoutPageView({
                           </span>
                         </div>
 
-                        <div className="flex items-end justify-between gap-4">
-                          <span className="text-sm text-[#c9bb9a]/60">
-                            {
-                              text.payable
-                            }
-                          </span>
+                        <div className="flex items-center justify-between gap-4 text-sm">
+                          <span className="text-[#c9bb9a]/60">{text.subtotal}</span>
+                          <span className="text-[#eee1c7]">{formatPrice(quote.summary.subtotalToman)} {text.toman}</span>
+                        </div>
 
+                        <div className="flex items-center justify-between gap-4 text-sm">
+                          <span className="text-[#c9bb9a]/60">{text.shipping}</span>
+                          <span className="text-[#eee1c7]">
+                            {quote.summary.shippingToman === "0"
+                              ? text.freeShipping
+                              : `${formatPrice(quote.summary.shippingToman)} ${text.toman}`}
+                          </span>
+                        </div>
+
+                        {couponPreview ? (
+                          <div className="flex items-center justify-between gap-4 text-sm">
+                            <span className="text-emerald-100/65">{text.discount}</span>
+                            <span className="text-emerald-100">− {formatPrice(couponPreview.discountToman)} {text.toman}</span>
+                          </div>
+                        ) : null}
+
+                        <div className="flex items-end justify-between gap-4 border-t border-white/[0.07] pt-4">
+                          <span className="text-sm text-[#c9bb9a]/60">{text.payable}</span>
                           <div className="text-end">
                             <span className="text-xl font-semibold text-[#f0d477]">
-                              {formatPrice(
-                                quote.summary
-                                  .subtotalToman,
-                              )}
+                              {formatPrice(couponPreview?.payableToman ?? quote.summary.payableToman)}
                             </span>
-
-                            <span className="ms-2 text-[10px] text-[#c9bb9a]/50">
-                              {
-                                text.toman
-                              }
-                            </span>
+                            <span className="ms-2 text-[10px] text-[#c9bb9a]/50">{text.toman}</span>
                           </div>
                         </div>
                       </div>
@@ -834,8 +919,8 @@ export function CheckoutPageView({
 
                       <p className="mt-0.5 truncate text-base font-semibold text-[#f0d477]">
                         {formatPrice(
-                          quote.summary
-                            .subtotalToman,
+                          couponPreview?.payableToman ?? quote.summary
+                            .payableToman,
                         )}{" "}
                         <span className="text-[10px] font-normal text-[#c9bb9a]/55">
                           {text.toman}

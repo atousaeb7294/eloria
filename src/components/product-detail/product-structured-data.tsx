@@ -12,6 +12,9 @@ type ProductStructuredDataProps = {
   finalPriceToman: string;
   stock: number;
   purchasable: boolean;
+  material: string;
+  weightGrams: string | null;
+  purity: string | null;
 };
 
 function baseUrl(): URL | null {
@@ -63,6 +66,9 @@ export function ProductStructuredData({
   finalPriceToman,
   stock,
   purchasable,
+  material,
+  weightGrams,
+  purity,
 }: ProductStructuredDataProps) {
   const base = baseUrl();
   const priceIrr = tomanToIrr(finalPriceToman);
@@ -91,6 +97,11 @@ export function ProductStructuredData({
       name: "ELORIA",
     },
     category: collectionName,
+    additionalProperty: [
+      { "@type": "PropertyValue", name: locale === "fa" ? "جنس" : "Material", value: material },
+      ...(weightGrams ? [{ "@type": "PropertyValue", name: locale === "fa" ? "وزن فلز" : "Metal weight", value: `${weightGrams} g` }] : []),
+      ...(purity ? [{ "@type": "PropertyValue", name: locale === "fa" ? "عیار" : "Purity", value: purity }] : []),
+    ],
     offers: {
       "@type": "Offer",
       url: productUrl,
@@ -108,6 +119,18 @@ export function ProductStructuredData({
       seller: {
         "@type": "Organization",
         name: "ELORIA",
+      },
+      shippingDetails: {
+        "@type": "OfferShippingDetails",
+        shippingRate: {
+          "@type": "MonetaryAmount",
+          value: "0",
+          currency: "IRR",
+        },
+        shippingDestination: {
+          "@type": "DefinedRegion",
+          addressCountry: "IR",
+        },
       },
     },
   };

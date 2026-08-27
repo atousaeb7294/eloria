@@ -1,695 +1,163 @@
 "use client";
 
-import type {
-  CSSProperties,
-} from "react";
-
-import {
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
-
+import { useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { ArrowLeft, ArrowRight, ArrowUpLeft, Pause, Play } from "lucide-react";
+import { AnimatePresence, motion, useReducedMotion } from "motion/react";
+import { useRouter } from "next/navigation";
 
-import {
-  useIntroComplete,
-} from "@/components/intro/use-intro-complete";
+import { recordClientMeasurement } from "@/lib/site-measurement-client";
 
-type FeaturedAlbumItem = {
-  slug: string;
-  name: string;
-  imageUrl: string;
-  href: string;
-};
+type FeaturedAlbumItem = { slug: string; name: string; imageUrl: string; href: string };
+const AUTOPLAY_MS = 5600;
+const FALLBACK_IMAGES = ["/images/collections/bracelet.jpg", "/images/collections/earring.jpg", "/images/collections/necklaces.jfif"];
 
-type FeaturedResponse = {
-  items?: FeaturedAlbumItem[];
-};
-
-const AUTO_ADVANCE_MS = 4200;
-const API_CLIENT_TIMEOUT_MS = 1800;
-
-const FA_SELECTION =
-  "\u0645\u0646\u062a\u062e\u0628 \u0627\u0644\u0648\u0631\u06cc\u0627";
-
-const FA_PREVIOUS =
-  "\u0627\u062b\u0631 \u0642\u0628\u0644\u06cc";
-
-const FA_NEXT =
-  "\u0627\u062b\u0631 \u0628\u0639\u062f\u06cc";
-
-const FA_CAROUSEL_LABEL =
-  "\u0645\u0646\u062a\u062e\u0628\u200c\u0647\u0627\u06cc \u0627\u0644\u0648\u0631\u06cc\u0627";
-
-function getFallbackItems(
-  locale: string,
-): FeaturedAlbumItem[] {
-  const name =
-    locale === "fa"
-      ? FA_SELECTION
-      : "Eloria Selection";
-
-  return [
-    {
-      slug: "fallback-bracelet",
-      name,
-      imageUrl: "/images/collections/bracelet.jpg",
-      href: `/${locale}/products`,
-    },
-    {
-      slug: "fallback-earring",
-      name,
-      imageUrl: "/images/collections/earring.jpg",
-      href: `/${locale}/products`,
-    },
-    {
-      slug: "fallback-necklace",
-      name,
-      imageUrl: "/images/collections/necklaces.jfif",
-      href: `/${locale}/products`,
-    },
-  ];
+function fallbackItems(locale: string): FeaturedAlbumItem[] {
+  const names = locale === "fa"
+    ? ["دست‌بندهای دست‌ساز", "گوشواره‌های منتخب", "گردن‌آویزهای روایی"]
+    : ["Artisan bracelets", "Curated earrings", "Narrative necklaces"];
+  return FALLBACK_IMAGES.map((imageUrl, index) => ({
+    slug: `carousel-fallback-${index}`,
+    name: names[index] ?? names[0]!, imageUrl, href: `/${locale}/products`,
+  }));
 }
 
-function ArrowLeftIcon() {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      aria-hidden="true"
-      className="h-5 w-5"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.75"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d="M14.75 5.5 8.25 12l6.5 6.5" />
-    </svg>
-  );
-}
-
-function ArrowRightIcon() {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      aria-hidden="true"
-      className="h-5 w-5"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.75"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d="m9.25 5.5 6.5 6.5-6.5 6.5" />
-    </svg>
-  );
-}
-
-function formatDigits(
-  value: number,
-  isPersian: boolean,
-) {
-  const raw =
-    String(value).padStart(2, "0");
-
-  if (!isPersian) {
-    return raw;
-  }
-
-  return raw.replace(
-    /\d/g,
-    (digit) =>
-      "\u06f0\u06f1\u06f2\u06f3\u06f4\u06f5\u06f6\u06f7\u06f8\u06f9"[
-        Number(digit)
-      ],
-  );
-}
-
-export function HomeFeaturedAlbum({
-  locale,
-}: {
-  locale: string;
-}) {
-  const isPersian =
-    locale === "fa";
-
-  const fallbackItems = useMemo(
-    () => getFallbackItems(locale),
-    [locale],
-  );
-
-  const [items, setItems] =
-    useState<FeaturedAlbumItem[]>(
-      fallbackItems,
-    );
-
-  const [activeIndex, setActiveIndex] =
-    useState(0);
-
-  const [paused, setPaused] =
-    useState(false);
-
-  const introComplete =
-    useIntroComplete();
-
-  const [
-    prefersReducedMotion,
-    setPrefersReducedMotion,
-  ] = useState(false);
-
-  const touchStartX =
-    useRef<number | null>(null);
+export function HomeFeaturedAlbum({ locale }: { locale: string }) {
+  const isPersian = locale === "fa";
+  const reducedMotion = useReducedMotion();
+  const router = useRouter();
+  const fallback = useMemo(() => fallbackItems(locale), [locale]);
+  const [items, setItems] = useState(fallback);
+  const [active, setActive] = useState(0);
+  const [paused, setPaused] = useState(false);
+  const touchStart = useRef<number | null>(null);
 
   useEffect(() => {
-    const query =
-      window.matchMedia(
-        "(prefers-reduced-motion: reduce)",
-      );
-
-    const sync = () => {
-      setPrefersReducedMotion(
-        query.matches,
-      );
-    };
-
-    sync();
-    query.addEventListener(
-      "change",
-      sync,
-    );
-
-    return () => {
-      query.removeEventListener(
-        "change",
-        sync,
-      );
-    };
-  }, []);
+    const controller = new AbortController();
+    const timeout = window.setTimeout(() => controller.abort(), 2200);
+    void fetch(`/api/home-featured-products?locale=${encodeURIComponent(locale)}`, { cache: "default", signal: controller.signal })
+      .then((response) => (response.ok ? response.json() : null))
+      .then((payload: { items?: FeaturedAlbumItem[] } | null) => {
+        if (!payload?.items || payload.items.length < 3) return;
+        const nextItems = payload.items.slice(0, 8);
+        setItems(nextItems);
+        setActive(0);
+        const prefetch = () => nextItems.slice(0, 4).forEach((item) => router.prefetch(item.href));
+        const browser = window as Window & { requestIdleCallback?: (callback: () => void, options?: { timeout: number }) => number };
+        if (browser.requestIdleCallback) browser.requestIdleCallback(prefetch, { timeout: 1400 });
+        else globalThis.setTimeout(prefetch, 200);
+      })
+      .catch(() => undefined)
+      .finally(() => window.clearTimeout(timeout));
+    return () => { controller.abort(); window.clearTimeout(timeout); };
+  }, [locale, router]);
 
   useEffect(() => {
-    if (!introComplete) {
-      return;
-    }
+    if (paused || reducedMotion || items.length < 2) return;
+    const timer = window.setInterval(() => setActive((value) => (value + 1) % items.length), AUTOPLAY_MS);
+    return () => window.clearInterval(timer);
+  }, [items.length, paused, reducedMotion]);
 
-    const controller =
-      new AbortController();
+  const previous = () => setActive((value) => (value - 1 + items.length) % items.length);
+  const next = () => setActive((value) => (value + 1) % items.length);
+  const current = items[active] ?? fallback[0]!;
+  const before = items[(active - 1 + items.length) % items.length] ?? current;
+  const after = items[(active + 1) % items.length] ?? current;
 
-    let cancelled = false;
+  const select = (item: FeaturedAlbumItem) => recordClientMeasurement({
+    event_type: "select_item", locale: isPersian ? "fa" : "en", path: `/${locale}`, product_slug: item.slug,
+  });
 
-    const timeout =
-      window.setTimeout(
-        () => {
-          controller.abort();
-        },
-        API_CLIENT_TIMEOUT_MS,
-      );
-
-    async function loadProducts() {
-      try {
-        const response =
-          await fetch(
-            `/api/home-featured-products?locale=${encodeURIComponent(locale)}`,
-            {
-              cache: "no-store",
-              signal:
-                controller.signal,
-            },
-          );
-
-        if (!response.ok) {
-          return;
-        }
-
-        const payload =
-          (await response.json()) as FeaturedResponse;
-
-        if (
-          cancelled ||
-          !Array.isArray(payload.items) ||
-          payload.items.length < 2
-        ) {
-          return;
-        }
-
-        setItems(payload.items);
-        setActiveIndex(0);
-      } catch (error) {
-        if (
-          error instanceof DOMException &&
-          error.name === "AbortError"
-        ) {
-          return;
-        }
-
-        // Keep the local fallback visible.
-      } finally {
-        window.clearTimeout(
-          timeout,
-        );
-      }
-    }
-
-    void loadProducts();
-
-    return () => {
-      cancelled = true;
-      controller.abort();
-      window.clearTimeout(
-        timeout,
-      );
-    };
-  }, [
-    introComplete,
-    locale,
-  ]);
-
-  useEffect(() => {
-    if (
-      !introComplete ||
-      paused ||
-      prefersReducedMotion ||
-      items.length < 2
-    ) {
-      return;
-    }
-
-    const timer =
-      window.setInterval(() => {
-        setActiveIndex(
-          (current) =>
-            (current + 1) %
-            items.length,
-        );
-      }, AUTO_ADVANCE_MS);
-
-    return () => {
-      window.clearInterval(timer);
-    };
-  }, [
-    introComplete,
-    items.length,
-    paused,
-    prefersReducedMotion,
-  ]);
-
-  function previous() {
-    setActiveIndex(
-      (current) =>
-        (current -
-          1 +
-          items.length) %
-        items.length,
-    );
-  }
-
-  function next() {
-    setActiveIndex(
-      (current) =>
-        (current + 1) %
-        items.length,
-    );
-  }
-
-  function getSignedOffset(
-    index: number,
-  ) {
-    const length =
-      items.length;
-
-    if (!length) {
-      return 99;
-    }
-
-    let offset =
-      (index -
-        activeIndex +
-        length) %
-      length;
-
-    if (
-      offset >
-      length / 2
-    ) {
-      offset -= length;
-    }
-
-    return offset;
-  }
-
-  function getMotionStyle(
-    rawOffset: number,
-  ): CSSProperties {
-    const offset =
-      isPersian
-        ? -rawOffset
-        : rawOffset;
-
-    if (offset === 0) {
-      return {
-        transform:
-          "translate3d(-50%, 0px, 0) scale(1) rotate(0deg)",
-        opacity: 1,
-        filter:
-          "brightness(1) saturate(1)",
-        zIndex: 30,
-        pointerEvents: "auto",
-      };
-    }
-
-    if (offset === -1) {
-      return {
-        transform:
-          "translate3d(-118%, 48px, 0) scale(.89) rotate(-3.5deg)",
-        opacity: 0.48,
-        filter:
-          "brightness(.69) saturate(.79)",
-        zIndex: 16,
-        pointerEvents: "none",
-      };
-    }
-
-    if (offset === 1) {
-      return {
-        transform:
-          "translate3d(18%, 48px, 0) scale(.89) rotate(3.5deg)",
-        opacity: 0.48,
-        filter:
-          "brightness(.69) saturate(.79)",
-        zIndex: 16,
-        pointerEvents: "none",
-      };
-    }
-
-    if (offset === -2) {
-      return {
-        transform:
-          "translate3d(-151%, 76px, 0) scale(.80) rotate(-6deg)",
-        opacity: 0,
-        filter:
-          "brightness(.56) saturate(.68) blur(1.2px)",
-        zIndex: 4,
-        pointerEvents: "none",
-      };
-    }
-
-    return {
-      transform:
-        "translate3d(51%, 76px, 0) scale(.80) rotate(6deg)",
-      opacity: 0,
-      filter:
-        "brightness(.56) saturate(.68) blur(1.2px)",
-      zIndex: 4,
-      pointerEvents: "none",
-    };
-  }
-
-  function handleSwipe(
-    distance: number,
-  ) {
-    if (
-      Math.abs(distance) <
-      45
-    ) {
-      return;
-    }
-
-    if (
-      isPersian
-        ? distance < 0
-        : distance > 0
-    ) {
-      previous();
-      return;
-    }
-
-    next();
-  }
-
-  const currentNumber =
-    formatDigits(
-      activeIndex + 1,
-      isPersian,
-    );
-
-  const totalNumber =
-    formatDigits(
-      items.length,
-      isPersian,
-    );
-
-  const progress =
-    items.length
-      ? ((activeIndex + 1) /
-          items.length) *
-        100
-      : 0;
+  const handleTouchEnd = (end: number) => {
+    if (touchStart.current === null) return;
+    const distance = end - touchStart.current;
+    if (Math.abs(distance) > 45) (distance > 0 ? previous : next)();
+    touchStart.current = null;
+  };
 
   return (
     <div
       dir={isPersian ? "rtl" : "ltr"}
       role="region"
       aria-roledescription="carousel"
-      aria-label={
-        isPersian
-          ? FA_CAROUSEL_LABEL
-          : "Eloria featured creations"
-      }
-      className="relative mx-auto w-full max-w-[1010px] select-none touch-pan-y"
-      onMouseEnter={() =>
-        setPaused(true)
-      }
-      onMouseLeave={() =>
-        setPaused(false)
-      }
-      onFocusCapture={() =>
-        setPaused(true)
-      }
-      onBlurCapture={() =>
-        setPaused(false)
-      }
-      onTouchStart={(event) => {
-        touchStartX.current =
-          event.touches[0]
-            ?.clientX ?? null;
-      }}
-      onTouchEnd={(event) => {
-        if (
-          touchStartX.current ===
-          null
-        ) {
-          return;
-        }
-
-        const endX =
-          event.changedTouches[0]
-            ?.clientX;
-
-        if (
-          endX !== undefined
-        ) {
-          handleSwipe(
-            endX -
-              touchStartX.current,
-          );
-        }
-
-        touchStartX.current =
-          null;
-      }}
+      aria-label={isPersian ? "اسلایدشوی آثار الوریا" : "Eloria creations slideshow"}
+      className="relative mx-auto max-w-[1280px]"
+      onMouseEnter={() => setPaused(true)}
+      onMouseLeave={() => setPaused(false)}
+      onFocusCapture={() => setPaused(true)}
+      onBlurCapture={() => setPaused(false)}
+      onTouchStart={(event) => { touchStart.current = event.touches[0]?.clientX ?? null; }}
+      onTouchEnd={(event) => handleTouchEnd(event.changedTouches[0]?.clientX ?? 0)}
     >
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute left-1/2 top-[45%] h-[320px] w-[62%] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#0e7553]/[0.11] blur-[92px]"
-      />
+      <div aria-hidden="true" className="pointer-events-none absolute left-1/2 top-[46%] h-[28rem] w-[72%] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[radial-gradient(circle,rgba(24,117,84,.18),rgba(211,174,78,.06)_45%,transparent_72%)] blur-3xl" />
 
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute left-1/2 top-[42%] h-[210px] w-[38%] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#d6b45d]/[0.07] blur-[72px]"
-      />
+      <div className="relative flex min-h-[540px] items-center justify-center overflow-hidden sm:min-h-[680px] lg:min-h-[760px]">
+        {[before, after].map((item, index) => (
+          <button
+            key={`${item.slug}-${index}`}
+            type="button"
+            onClick={index === 0 ? previous : next}
+            aria-label={index === 0 ? (isPersian ? "اثر قبلی" : "Previous creation") : (isPersian ? "اثر بعدی" : "Next creation")}
+            className={`absolute top-1/2 hidden aspect-[4/5] w-[25%] -translate-y-1/2 overflow-hidden rounded-[2rem] border border-[#dfc16f]/12 bg-[#03130d] opacity-45 shadow-[0_30px_90px_rgba(0,0,0,.34)] transition duration-700 hover:opacity-70 lg:block ${index === 0 ? "left-[2%] -rotate-[3deg]" : "right-[2%] rotate-[3deg]"}`}
+          >
+            <Image src={item.imageUrl} alt="" fill sizes="25vw" className="object-cover" />
+            <span className="absolute inset-0 bg-[#01100b]/20" />
+          </button>
+        ))}
 
-      <div className="relative h-[405px] overflow-visible sm:h-[510px] lg:h-[575px]">
-        {items.map(
-          (
-            item,
-            index,
-          ) => {
-            const offset =
-              getSignedOffset(
-                index,
-              );
-
-            if (
-              Math.abs(offset) >
-              2
-            ) {
-              return null;
-            }
-
-            const isActive =
-              offset === 0;
-
-            return (
-              <div
-                key={item.slug}
-                className="absolute left-1/2 top-3 w-[64%] origin-center transform-gpu will-change-[transform,opacity,filter] transition-[transform,opacity,filter] duration-[1450ms] ease-[cubic-bezier(0.16,1,0.3,1)] motion-reduce:duration-0 sm:w-[49%] lg:w-[39%]"
-                style={
-                  getMotionStyle(
-                    offset,
-                  )
-                }
-                aria-hidden={
-                  !isActive
-                }
-              >
-                <div
-                  className={
-                    isActive
-                      ? "relative overflow-hidden rounded-[30px] border border-[#d9bb70]/26 bg-[#061710] shadow-[0_38px_120px_rgba(0,0,0,.48),0_0_48px_rgba(215,181,94,.08)]"
-                      : "relative overflow-hidden rounded-[28px] border border-[#d9bb70]/10 bg-[#04120d] shadow-[0_22px_68px_rgba(0,0,0,.32)]"
-                  }
-                >
-                  <div className="relative aspect-[4/5] overflow-hidden">
-                    <Link
-                      href={item.href}
-                      tabIndex={
-                        isActive
-                          ? 0
-                          : -1
-                      }
-                      className={
-                        isActive
-                          ? "group relative block h-full w-full"
-                          : "pointer-events-none relative block h-full w-full"
-                      }
-                    >
-                      <Image
-                        src={item.imageUrl}
-                        alt={item.name}
-                        fill
-                        sizes="(max-width: 640px) 64vw, (max-width: 1024px) 49vw, 39vw"
-                        draggable={false}
-                        loading="lazy"
-                        fetchPriority="auto"
-                        className={
-                          isActive
-                            ? "object-cover transition-transform duration-[4000ms] ease-out group-hover:scale-[1.018] motion-reduce:transition-none"
-                            : "object-cover"
-                        }
-                      />
-
-                      <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,transparent_54%,rgba(1,9,6,.08)_68%,rgba(1,9,6,.91)_100%)]" />
-
-                      <div className="pointer-events-none absolute inset-x-0 bottom-0 px-5 pb-5 pt-14 text-center sm:px-7 sm:pb-7">
-                        <div className="mx-auto mb-3 h-px w-10 bg-[linear-gradient(90deg,transparent,#d7b55f,transparent)]" />
-
-                        <p
-                          className={
-                            isPersian
-                              ? "font-sans truncate text-[12px] font-medium leading-7 tracking-normal text-[#f0ddb0]/92 sm:text-[14px]"
-                              : "truncate text-[11px] font-medium tracking-[0.02em] text-[#f0ddb0]/92 sm:text-[13px]"
-                          }
-                        >
-                          {item.name}
-                        </p>
-                      </div>
-                    </Link>
-                  </div>
-                </div>
+        <AnimatePresence mode="wait" initial={false}>
+          <motion.article
+            key={current.slug}
+            initial={reducedMotion ? false : { opacity: 0, scale: 0.965, y: 22, filter: "blur(8px)" }}
+            animate={{ opacity: 1, scale: 1, y: 0, filter: "blur(0px)" }}
+            exit={reducedMotion ? undefined : { opacity: 0, scale: 1.018, y: -12, filter: "blur(5px)" }}
+            transition={{ duration: reducedMotion ? 0 : 0.78, ease: [0.16, 1, 0.3, 1] }}
+            className="group relative z-10 aspect-[4/5] w-[88%] max-w-[500px] overflow-hidden rounded-[2rem] border border-[#e4c878]/24 bg-[#03140e] shadow-[0_45px_140px_rgba(0,0,0,.52),0_0_55px_rgba(218,183,91,.08)] sm:w-[64%] sm:max-w-[560px] sm:rounded-[2.6rem] lg:w-[44%] lg:max-w-[610px]"
+          >
+            <Link href={current.href} prefetch onClick={() => select(current)} className="absolute inset-0">
+              <Image src={current.imageUrl} alt={current.name} fill priority fetchPriority="high" sizes="(max-width: 640px) 88vw, (max-width: 1024px) 64vw, 44vw" className="object-cover transition-transform duration-[1600ms] ease-[cubic-bezier(.16,1,.3,1)] group-hover:scale-[1.035] motion-reduce:transition-none" />
+              <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(1,8,6,.03)_35%,rgba(1,9,6,.16)_61%,rgba(1,8,6,.94)_100%)]" />
+              <div className="absolute inset-x-0 bottom-0 p-6 text-center sm:p-9">
+                <p className="text-[9px] font-semibold tracking-[.22em] text-[#e2c674]/68">ELORIA · {String(active + 1).padStart(2, "0")}</p>
+                <h3 className={isPersian ? "font-persian-title mt-3 text-2xl text-[#fff1cf] sm:text-3xl" : "mt-3 font-serif text-3xl text-[#fff1cf] sm:text-4xl"}>{current.name}</h3>
+                <span className="mx-auto mt-5 inline-flex items-center gap-2 border-b border-[#e5c978]/36 pb-1.5 text-[11px] text-[#efd994] transition group-hover:border-[#efd994]/80">
+                  {isPersian ? "مشاهده اثر" : "View creation"}<ArrowUpLeft className="size-3.5" />
+                </span>
               </div>
-            );
-          },
-        )}
+              <span className="absolute inset-x-[12%] top-0 h-px bg-gradient-to-r from-transparent via-[#ffe6a0]/75 to-transparent" />
+            </Link>
+          </motion.article>
+        </AnimatePresence>
       </div>
 
-      <div className="relative z-40 mx-auto mt-3 flex w-fit items-center gap-2 rounded-full border border-[#d9bb70]/15 bg-[linear-gradient(180deg,rgba(6,28,20,.76),rgba(3,17,12,.88))] p-1.5 shadow-[0_16px_48px_rgba(0,0,0,.26),inset_0_1px_0_rgba(255,255,255,.025)] backdrop-blur-xl sm:gap-3 sm:p-2">
-        <button
-          type="button"
-          onClick={previous}
-          aria-label={
-            isPersian
-              ? FA_PREVIOUS
-              : "Previous creation"
-          }
-          className="group grid h-11 w-11 place-items-center rounded-full border border-[#d9bb70]/12 bg-[#0a2319]/52 text-[#dfc275]/76 transition duration-500 hover:border-[#e6c97c]/32 hover:bg-[#103326]/72 hover:text-[#f2dc96] focus-visible:outline-none"
-        >
-          <span className="transition-transform duration-500 group-hover:scale-110">
-            {isPersian
-              ? <ArrowRightIcon />
-              : <ArrowLeftIcon />}
-          </span>
+      <div className="relative z-20 mx-auto mt-3 flex w-fit items-center gap-2 rounded-full border border-[#dfc16f]/16 bg-[#031710]/82 p-1.5 shadow-[0_20px_60px_rgba(0,0,0,.32)] backdrop-blur-xl sm:gap-3">
+        <button type="button" onClick={previous} aria-label={isPersian ? "اثر قبلی" : "Previous creation"} className="grid size-11 place-items-center rounded-full border border-[#dfc16f]/14 text-[#e5ca7c] transition hover:border-[#e7cc7e]/45 hover:bg-[#d7b85e]/[.08]">
+          {isPersian ? <ArrowRight className="size-4" /> : <ArrowLeft className="size-4" />}
         </button>
-
-        <div
-          className="relative flex h-11 min-w-[128px] items-center justify-center overflow-hidden rounded-full border border-[#d9bb70]/10 bg-[#04150f]/62 px-5"
-          aria-label={`${currentNumber} / ${totalNumber}`}
-        >
-          <div className="relative z-10 flex items-baseline gap-2">
-            <span
-              className={
-                isPersian
-                  ? "font-sans min-w-[28px] text-center text-[15px] font-semibold tracking-normal text-[#efd78d]"
-                  : "min-w-[28px] text-center text-[14px] font-semibold tracking-[0.08em] text-[#efd78d]"
-              }
-            >
-              {currentNumber}
-            </span>
-
-            <span className="text-[10px] text-[#a99262]/42">
-              /
-            </span>
-
-            <span
-              className={
-                isPersian
-                  ? "font-sans min-w-[24px] text-center text-[11px] tracking-normal text-[#c8b482]/58"
-                  : "min-w-[24px] text-center text-[10px] tracking-[0.08em] text-[#c8b482]/58"
-              }
-            >
-              {totalNumber}
-            </span>
-          </div>
-
-          <div
-            aria-hidden="true"
-            className="pointer-events-none absolute inset-x-4 bottom-[6px] h-px overflow-visible bg-[#d9bb70]/10"
-          >
-            <span
-              className="absolute inset-y-0 start-0 bg-[linear-gradient(90deg,#a98136,#e7cc81)] transition-[width] duration-700 ease-out motion-reduce:duration-0"
-              style={{
-                width:
-                  `${progress}%`,
-              }}
-            />
-
-            <span
-              className="absolute top-1/2 h-[5px] w-[5px] -translate-y-1/2 rotate-45 bg-[#e8cc80] shadow-[0_0_10px_rgba(232,204,128,.42)] transition-[inset-inline-start] duration-700 ease-out motion-reduce:duration-0"
-              style={{
-                insetInlineStart:
-                  `calc(${progress}% - 2px)`,
-              }}
-            />
-          </div>
+        <div className="flex min-w-28 items-center justify-center gap-2 px-3 text-[10px] tracking-[.16em] text-[#d8c28a]/52">
+          <span className="text-sm font-semibold text-[#efd78b]">{String(active + 1).padStart(2, "0")}</span><span>/</span><span>{String(items.length).padStart(2, "0")}</span>
         </div>
-
-        <button
-          type="button"
-          onClick={next}
-          aria-label={
-            isPersian
-              ? FA_NEXT
-              : "Next creation"
-          }
-          className="group grid h-11 w-11 place-items-center rounded-full border border-[#d9bb70]/12 bg-[#0a2319]/52 text-[#dfc275]/76 transition duration-500 hover:border-[#e6c97c]/32 hover:bg-[#103326]/72 hover:text-[#f2dc96] focus-visible:outline-none"
-        >
-          <span className="transition-transform duration-500 group-hover:scale-110">
-            {isPersian
-              ? <ArrowLeftIcon />
-              : <ArrowRightIcon />}
-          </span>
+        <button type="button" onClick={() => setPaused((value) => !value)} aria-label={paused ? (isPersian ? "ادامه پخش" : "Resume slideshow") : (isPersian ? "توقف پخش" : "Pause slideshow")} className="grid size-9 place-items-center rounded-full text-[#d9c381]/64 transition hover:text-[#f1d88d]">
+          {paused ? <Play className="size-3.5" /> : <Pause className="size-3.5" />}
         </button>
+        <button type="button" onClick={next} aria-label={isPersian ? "اثر بعدی" : "Next creation"} className="grid size-11 place-items-center rounded-full border border-[#dfc16f]/14 text-[#e5ca7c] transition hover:border-[#e7cc7e]/45 hover:bg-[#d7b85e]/[.08]">
+          {isPersian ? <ArrowLeft className="size-4" /> : <ArrowRight className="size-4" />}
+        </button>
+      </div>
+
+      <div className="mx-auto mt-7 flex max-w-sm gap-1.5" aria-label={isPersian ? "انتخاب اسلاید" : "Choose a slide"}>
+        {items.map((item, index) => (
+          <button key={item.slug} type="button" onClick={() => setActive(index)} aria-label={`${isPersian ? "اسلاید" : "Slide"} ${index + 1}`} className="h-1 flex-1 overflow-hidden rounded-full bg-[#dfc16f]/12">
+            <span className={`block h-full origin-start rounded-full bg-[#e3c675] transition-transform duration-500 ${index === active ? "scale-x-100" : "scale-x-0"}`} />
+          </button>
+        ))}
+      </div>
+
+      <div className="mt-9 text-center">
+        <Link href={`/${locale}/products`} prefetch className="inline-flex items-center gap-3 text-xs font-semibold text-[#ead18a] transition hover:text-[#ffe4a0]">
+          {isPersian ? "مشاهده تمام آثار" : "View every creation"}<span className="h-px w-12 bg-current/45" />
+        </Link>
       </div>
     </div>
   );

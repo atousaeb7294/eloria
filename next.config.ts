@@ -196,6 +196,7 @@ const nextConfig:
   },
 
   images: {
+    minimumCacheTTL: 14400,
     qualities: [
       75,
       84,
@@ -213,6 +214,18 @@ const nextConfig:
 
   async headers() {
     return [
+      {
+        source: "/videos/:path*",
+        headers: [{ key: "Cache-Control", value: "public, max-age=31536000, immutable" }],
+      },
+      {
+        source: "/images/:path*",
+        headers: [{ key: "Cache-Control", value: "public, max-age=31536000, immutable" }],
+      },
+      {
+        source: "/fonts/:path*",
+        headers: [{ key: "Cache-Control", value: "public, max-age=31536000, immutable" }],
+      },
       {
         source: "/:path*",
         headers: [
