@@ -55,7 +55,7 @@
   --radius-4xl: calc(var(--radius) * 2.6);
 }
 
-/* ELORIA R8 â€” motion inspired by macrame craft, never decorative particles. */
+/* ELORIA R8 Ã¢â‚¬â€ motion inspired by macrame craft, never decorative particles. */
 @keyframes eloria-thread-draw {
   0% { stroke-dashoffset: 1; opacity: 0; }
   24% { opacity: .42; }
@@ -313,7 +313,7 @@
   }
 }
 
-/* Ú©Ø§Ø±Øªâ€ŒÙ‡Ø§ÛŒ Ú¯Ù†Ø¬ÛŒÙ†Ù‡ Ø®Ø§Ø±Ø¬ Ø§Ø² Ø¯ÛŒØ¯ Ù…Ø±ÙˆØ±Ú¯Ø± Ø±Ù†Ø¯Ø± Ú©Ø§Ù…Ù„ Ù†Ù…ÛŒâ€ŒØ´ÙˆÙ†Ø¯. */
+/* ÃšÂ©Ã˜Â§Ã˜Â±Ã˜ÂªÃ¢â‚¬Å’Ã™â€¡Ã˜Â§Ã›Å’ ÃšÂ¯Ã™â€ Ã˜Â¬Ã›Å’Ã™â€ Ã™â€¡ Ã˜Â®Ã˜Â§Ã˜Â±Ã˜Â¬ Ã˜Â§Ã˜Â² Ã˜Â¯Ã›Å’Ã˜Â¯ Ã™â€¦Ã˜Â±Ã™Ë†Ã˜Â±ÃšÂ¯Ã˜Â± Ã˜Â±Ã™â€ Ã˜Â¯Ã˜Â± ÃšÂ©Ã˜Â§Ã™â€¦Ã™â€ž Ã™â€ Ã™â€¦Ã›Å’Ã¢â‚¬Å’Ã˜Â´Ã™Ë†Ã™â€ Ã˜Â¯. */
 .eloria-collection-card {
   content-visibility: auto;
   contain: layout paint style;
@@ -334,8 +334,8 @@
 }
 
 /*
- * Ù„ÛŒÙ†Ú©â€ŒÙ‡Ø§ÛŒ Ø®Ø§Ù†Ù‡ Ú©Ù‡ Ù…Ø³ØªÙ‚ÛŒÙ…Ø§Ù‹ Ø¨Ù‡ #hero Ù…ÛŒâ€ŒØ±ÙˆÙ†Ø¯ØŒ Ø¨Ø§ÛŒØ¯ Intro Ø±Ø§ Ù¾ÛŒØ´ Ø§Ø² Hydration
- * Ù†ÛŒØ² Ú©Ù†Ø§Ø± Ø¨Ø²Ù†Ù†Ø¯ ØªØ§ Ù‡ÛŒÚ† Ù„Ø§ÛŒÙ‡â€ŒØ§ÛŒ Ú©Ù„ÛŒÚ©â€ŒÙ‡Ø§ÛŒ Hero ÛŒØ§ Ù‡Ø¯Ø± Ø±Ø§ Ù…Ø³Ø¯ÙˆØ¯ Ù†Ú©Ù†Ø¯.
+ * Ã™â€žÃ›Å’Ã™â€ ÃšÂ©Ã¢â‚¬Å’Ã™â€¡Ã˜Â§Ã›Å’ Ã˜Â®Ã˜Â§Ã™â€ Ã™â€¡ ÃšÂ©Ã™â€¡ Ã™â€¦Ã˜Â³Ã˜ÂªÃ™â€šÃ›Å’Ã™â€¦Ã˜Â§Ã™â€¹ Ã˜Â¨Ã™â€¡ #hero Ã™â€¦Ã›Å’Ã¢â‚¬Å’Ã˜Â±Ã™Ë†Ã™â€ Ã˜Â¯Ã˜Å’ Ã˜Â¨Ã˜Â§Ã›Å’Ã˜Â¯ Intro Ã˜Â±Ã˜Â§ Ã™Â¾Ã›Å’Ã˜Â´ Ã˜Â§Ã˜Â² Hydration
+ * Ã™â€ Ã›Å’Ã˜Â² ÃšÂ©Ã™â€ Ã˜Â§Ã˜Â± Ã˜Â¨Ã˜Â²Ã™â€ Ã™â€ Ã˜Â¯ Ã˜ÂªÃ˜Â§ Ã™â€¡Ã›Å’Ãšâ€  Ã™â€žÃ˜Â§Ã›Å’Ã™â€¡Ã¢â‚¬Å’Ã˜Â§Ã›Å’ ÃšÂ©Ã™â€žÃ›Å’ÃšÂ©Ã¢â‚¬Å’Ã™â€¡Ã˜Â§Ã›Å’ Hero Ã›Å’Ã˜Â§ Ã™â€¡Ã˜Â¯Ã˜Â± Ã˜Â±Ã˜Â§ Ã™â€¦Ã˜Â³Ã˜Â¯Ã™Ë†Ã˜Â¯ Ã™â€ ÃšÂ©Ã™â€ Ã˜Â¯.
  */
 html[data-eloria-skip-intro="true"] .eloria-intro-root,
 html:has(#hero:target) .eloria-intro-root {
@@ -387,7 +387,7 @@ a[href], button:not(:disabled), [role="button"]:not([aria-disabled="true"]) { tr
 .eloria-button-secondary { border: 1px solid rgb(255 255 255 / .12); background: rgb(255 255 255 / .035); color: rgb(246 232 198 / .8); }
 .eloria-button-secondary:hover { border-color: rgb(225 193 105 / .4); color: #f4dfa3; }
 
-/* ELORIA R5 â€” editorial fashion storefront */
+/* ELORIA R5 Ã¢â‚¬â€ editorial fashion storefront */
 @keyframes eloria-editorial-marquee { from { transform: translate3d(0,0,0); } to { transform: translate3d(-50%,0,0); } }
 .eloria-editorial-marquee { overflow: hidden; mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent); }
 .eloria-editorial-marquee-track { display: flex; width: max-content; min-width: 200%; gap: 2.25rem; white-space: nowrap; color: rgb(221 193 112 / .34); font-family: Georgia, "Times New Roman", serif; font-size: .65rem; letter-spacing: .22em; animation: eloria-editorial-marquee 28s linear infinite; will-change: transform; }
@@ -397,7 +397,7 @@ a[href], button:not(:disabled), [role="button"]:not([aria-disabled="true"]) { tr
 .eloria-editorial-piece { content-visibility: auto; contain: layout paint style; contain-intrinsic-size: 620px 760px; }
 @media (prefers-reduced-motion: reduce) { .eloria-editorial-marquee-track { animation: none !important; transform: none !important; } }
 
-/* ELORIA R6 â€” luxury fashion editorial motion system */
+/* ELORIA R6 Ã¢â‚¬â€ luxury fashion editorial motion system */
 .eloria-home-lazy-section {
   content-visibility: auto;
   contain: layout paint style;
@@ -494,3 +494,42 @@ html[lang="fa"] body {
   }
 }
 /* ELORIA MOBILE TYPOGRAPHY STABILITY END */
+
+/* ELORIA MOBILE PERSIAN SHAPING FIX START */
+@media (max-width: 768px) {
+  html[lang="fa"] .font-persian-title,
+  html[lang="fa"] .font-persian-calligraphy {
+    font-family:
+      "Vazirmatn Variable",
+      Vazirmatn,
+      Tahoma,
+      "Segoe UI",
+      sans-serif !important;
+    font-style: normal !important;
+    font-weight: 500 !important;
+    font-synthesis: none !important;
+    font-feature-settings: normal !important;
+    font-kerning: normal !important;
+    letter-spacing: normal !important;
+    word-spacing: normal !important;
+    line-height: 1.75 !important;
+    text-rendering: auto !important;
+    text-wrap: pretty;
+    unicode-bidi: plaintext;
+  }
+
+  html[lang="fa"] body,
+  html[lang="fa"] button,
+  html[lang="fa"] input,
+  html[lang="fa"] textarea,
+  html[lang="fa"] select {
+    font-family:
+      "Vazirmatn Variable",
+      Vazirmatn,
+      Tahoma,
+      "Segoe UI",
+      sans-serif;
+    font-synthesis: none;
+  }
+}
+/* ELORIA MOBILE PERSIAN SHAPING FIX END */
