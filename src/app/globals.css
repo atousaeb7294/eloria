@@ -348,7 +348,7 @@ html:has(#hero:target) .eloria-intro-root {
   src: url("/fonts/IranNastaliq-Web.woff2") format("woff2");
   font-style: normal;
   font-weight: 400;
-  font-display: block;
+  font-display: optional;
 }
 
 html[lang="fa"] .font-persian-title,
@@ -467,69 +467,41 @@ a[href], button:not(:disabled), [role="button"]:not([aria-disabled="true"]) { tr
   }
 }
 
-/* ELORIA MOBILE TYPOGRAPHY STABILITY START */
-html[lang="fa"] body {
-  font-family:
-    "Vazirmatn Variable",
-    Tahoma,
-    "Segoe UI",
-    sans-serif;
-  font-synthesis: none;
-}
-
-@media (max-width: 640px) {
-  html[lang="fa"] .font-persian-title {
-    line-height: 1.86 !important;
-    padding-block: 0.12em 0.24em;
-    word-break: normal;
-    overflow-wrap: normal;
-    text-wrap: pretty;
-  }
-
-  html[lang="fa"] .font-persian-calligraphy {
-    line-height: 1.96 !important;
-    padding-block: 0.12em 0.26em;
-    word-break: normal;
-    overflow-wrap: normal;
-  }
-}
-/* ELORIA MOBILE TYPOGRAPHY STABILITY END */
-
-/* ELORIA MOBILE PERSIAN SHAPING FIX START */
-@media (max-width: 768px) {
+/* ELORIA MOBILE NASTALIQ SAFE MODE START */
+/*
+  IranNastaliq is disabled on mobile to avoid broken Persian shaping
+  and to keep the decorative font out of the critical rendering path.
+*/
+@media (max-width: 900px) {
+  html[lang="fa"] body,
+  html[lang="fa"] button,
+  html[lang="fa"] input,
+  html[lang="fa"] textarea,
+  html[lang="fa"] select,
   html[lang="fa"] .font-persian-title,
-  html[lang="fa"] .font-persian-calligraphy {
+  html[lang="fa"] .font-persian-calligraphy,
+  html[lang="fa"] [class*="font-persian-"],
+  html[lang="fa"] [style*="Eloria Iran Nastaliq"] {
     font-family:
       "Vazirmatn Variable",
       Vazirmatn,
       Tahoma,
       "Segoe UI",
       sans-serif !important;
-    font-style: normal !important;
-    font-weight: 500 !important;
     font-synthesis: none !important;
     font-feature-settings: normal !important;
-    font-kerning: normal !important;
+    font-variant-ligatures: normal !important;
     letter-spacing: normal !important;
     word-spacing: normal !important;
-    line-height: 1.75 !important;
     text-rendering: auto !important;
-    text-wrap: pretty;
-    unicode-bidi: plaintext;
   }
 
-  html[lang="fa"] body,
-  html[lang="fa"] button,
-  html[lang="fa"] input,
-  html[lang="fa"] textarea,
-  html[lang="fa"] select {
-    font-family:
-      "Vazirmatn Variable",
-      Vazirmatn,
-      Tahoma,
-      "Segoe UI",
-      sans-serif;
-    font-synthesis: none;
+  html[lang="fa"] .font-persian-title,
+  html[lang="fa"] .font-persian-calligraphy,
+  html[lang="fa"] [class*="font-persian-"] {
+    line-height: 1.7 !important;
+    word-break: normal !important;
+    overflow-wrap: normal !important;
   }
 }
-/* ELORIA MOBILE PERSIAN SHAPING FIX END */
+/* ELORIA MOBILE NASTALIQ SAFE MODE END */

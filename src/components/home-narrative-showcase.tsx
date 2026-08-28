@@ -38,7 +38,7 @@ export function HomeNarrativeShowcase({ locale, copy }: HomeNarrativeShowcasePro
             </h2>
             <p className="mt-4 max-w-2xl text-xs leading-7 text-[#c8b995]/48 sm:text-[13px]">
               {isPersian
-                ? "آثار الوریا مثل صفحات یک لوک‌بوک لوکس کنار هم می‌نشینند؛ هر بار مجموعه‌ای تازه از قطعات شاخص، محبوب و تازه‌وارد پیش روی شما قرار می‌گیرد."
+                ? "آثار الوریا مانند فصل‌های یک روایت کنار هم قرار می‌گیرند؛ هر بار مجموعه‌ای تازه از قطعات شاخص، محبوب و تازه‌وارد پیش روی شما قرار می‌گیرد."
                 : "Eloria unfolds like a luxury lookbook, bringing together a fresh edit of signature, loved and newly arrived creations."}
             </p>
           </div>

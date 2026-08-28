@@ -9,7 +9,7 @@ type HomeShowcaseSectionsProps = {
 export function HomeShowcaseSections({ locale }: HomeShowcaseSectionsProps) {
   const isPersian = locale === "fa";
   const copy = isPersian
-    ? { finalEyebrow: "گزیده آثار الوریا", finalTitle: "هر اثر، روایتی برای ماندن" }
+    ? { finalEyebrow: "روایت‌های برگزیده الوریا", finalTitle: "هر قطعه، نشانی از یک افسانه" }
     : { finalEyebrow: "The Eloria collection", finalTitle: "Every creation, a story made to endure" };
 
   return (

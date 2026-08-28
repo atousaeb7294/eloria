@@ -170,7 +170,7 @@ export function EloriaIntroView({
             ].join(" ")}
             src={INTRO_VIDEO_ONE_SRC}
             poster="/images/hero/eloria-hero.jpeg"
-            preload="auto"
+            preload="metadata"
             muted
             playsInline
             disablePictureInPicture
@@ -201,7 +201,7 @@ export function EloriaIntroView({
             ].join(" ")}
             src={INTRO_VIDEO_TWO_SRC}
             poster="/images/hero/eloria-hero.jpeg"
-            preload="auto"
+            preload="none"
             playsInline
             disablePictureInPicture
             controls={false}
