@@ -579,7 +579,8 @@ model Customer {
   id                   String                 @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   fullName             String?
   mobile               String                 @unique @db.VarChar(20)
-  email                String?
+  email                String?   @unique
+    emailVerifiedAt      DateTime?
   mobileVerifiedAt     DateTime?
   lastLoginAt          DateTime?
   isActive             Boolean                @default(true)
@@ -616,7 +617,9 @@ model CustomerSession {
 
 model CustomerOtpChallenge {
   id            String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  mobile        String    @db.VarChar(20)
+  mobile        String?   @db.VarChar(20)
+  email         String?   @db.VarChar(254)
+  channel       String    @default("SMS") @db.VarChar(16)
   codeHash      String    @db.VarChar(64)
   purpose       String    @default("LOGIN") @db.VarChar(32)
   attempts      Int       @default(0)
@@ -627,6 +630,8 @@ model CustomerOtpChallenge {
   createdAt     DateTime  @default(now())
 
   @@index([mobile, createdAt])
+  @@index([email, createdAt])
+  @@index([channel, createdAt])
   @@index([expiresAt])
   @@map("customer_otp_challenges")
 }
@@ -634,7 +639,7 @@ model CustomerOtpChallenge {
 model CustomerAddress {
   id            String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   customerId    String   @unique(map: "customer_addresses_one_default_per_customer_idx", where: raw("(\"isDefault\" = true)")) @db.Uuid
-  title         String   @default("آدرس من") @db.VarChar(80)
+  title         String   @default("ÃƒËœÃ‚Â¢ÃƒËœÃ‚Â¯ÃƒËœÃ‚Â±ÃƒËœÃ‚Â³ Ãƒâ„¢Ã¢â‚¬Â¦Ãƒâ„¢Ã¢â‚¬Â ") @db.VarChar(80)
   recipientName String
   mobile        String   @db.VarChar(20)
   province      String
@@ -915,3 +920,4 @@ enum SupportMessageAuthor {
   VISITOR
   ADMIN
 }
+
