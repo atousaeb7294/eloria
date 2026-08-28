@@ -124,6 +124,15 @@ export default async function LocaleLayout({
       dir={locale === "fa" ? "rtl" : "ltr"}
       suppressHydrationWarning
     >
+      <head>
+        <link
+          rel="preload"
+          href="/fonts/IranNastaliq-Web.woff2"
+          as="font"
+          type="font/woff2"
+          crossOrigin="anonymous"
+        />
+      </head>
       <body className="min-h-screen">
         <NextIntlClientProvider locale={locale} messages={messages}>
           <PageBackgroundProvider>
