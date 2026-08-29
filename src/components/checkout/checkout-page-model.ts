@@ -141,6 +141,12 @@ export const FA_TEXT = {
   customerDescription:
     "اطلاعات را دقیق و مطابق نشانی دریافت سفارش وارد کنید.",
 
+  guestCheckoutBadge:
+    "خرید مهمان فعال است",
+
+  guestCheckoutDescription:
+    "برای ثبت سفارش و پرداخت، ساخت حساب کاربری اجباری نیست. اگر بعداً عضو شوید، سفارش‌های حساب‌دار در پنل شما نمایش داده می‌شوند.",
+
   fullName:
     "نام و نام خانوادگی",
 
@@ -333,6 +339,12 @@ export const EN_TEXT = {
 
   customerDescription:
     "Enter accurate information for delivery and order processing.",
+
+  guestCheckoutBadge:
+    "Guest checkout is available",
+
+  guestCheckoutDescription:
+    "You can place and pay for an order without creating an account. Account-linked orders appear in your profile when you are signed in.",
 
   fullName:
     "Full name",

@@ -48,13 +48,13 @@ export function HeroShowcase({
             "روایتی ماندگار",
 
           description:
-            "آثاری برای آنان که می‌خواهند بخشی از یک افسانه را با خود همراه کنند.",
+            "در الوریا فقط زیور انتخاب نمی‌کنید؛ اثر متناسب با داستان خودتان را پیدا می‌کنید.",
 
           primaryAction:
-            "کشف جهان الوریا",
+            "اثر من را پیدا کن",
 
           secondaryAction:
-            "جست‌وجو در تمام آثار",
+            "مشاهده تمام آثار",
 
           welcome:
             "به جهان الوریا خوش آمدید",
@@ -70,13 +70,13 @@ export function HeroShowcase({
             "an Enduring Story",
 
           description:
-            "Creations for those who wish to carry a fragment of legend with them.",
+            "At Eloria, you do not simply choose jewellery; you discover the creation that belongs to your story.",
 
           primaryAction:
-            "Discover Eloria",
+            "Find my creation",
 
           secondaryAction:
-            "Search all creations",
+            "View all creations",
 
           welcome:
             "Welcome to the World of Eloria",
@@ -304,8 +304,9 @@ export function HeroShowcase({
             className="mt-6 flex w-full max-w-[420px] flex-col items-stretch justify-center gap-3 min-[470px]:flex-row sm:mt-7"
           >
             {/* دکمه اصلی */}
-            <Link
-              href={`/${locale}/collections`}
+            <button
+              type="button"
+              onClick={() => window.dispatchEvent(new Event("eloria-open-selection"))}
               className="group relative isolate flex h-[50px] flex-1 items-center justify-center overflow-hidden rounded-[13px] border border-[#efd181]/62 bg-[linear-gradient(140deg,rgba(12,91,64,0.98),rgba(3,49,34,0.99)_52%,rgba(44,32,8,0.98))] px-5 text-[12px] font-semibold text-[#fff0bd] shadow-[0_16px_40px_rgba(0,0,0,0.42),0_0_28px_rgba(223,181,78,0.12)] transition duration-500 hover:-translate-y-1 hover:border-[#ffe7a4] hover:shadow-[0_22px_52px_rgba(0,0,0,0.52),0_0_36px_rgba(230,187,82,0.26)] sm:text-[13px]"
             >
               <span className="pointer-events-none absolute inset-[3px] rounded-[10px] border border-[#f5dc98]/13" />
@@ -346,7 +347,7 @@ export function HeroShowcase({
                   {copy.primaryAction}
                 </span>
               </span>
-            </Link>
+            </button>
 
             {/* دکمه دوم */}
             <Link

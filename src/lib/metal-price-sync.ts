@@ -86,6 +86,21 @@ const MAXIMUM_CONCURRENT_WRITE_ATTEMPTS =
   3;
 
 /**
+ * The bundled test seed is intentionally far from a real market rate.
+ * On the first trusted BRS sync we keep the absolute safety bounds but
+ * skip only the percentage-deviation comparison against that seed.
+ */
+export function isTrustedSeedToLiveTransition({
+  currentSource,
+  incomingSource,
+}: {
+  currentSource: string | null | undefined;
+  incomingSource: string | null | undefined;
+}): boolean {
+  return currentSource === "ELORIA_TEST_SEED" && incomingSource === "BRS_API";
+}
+
+/**
  * timestampهای ثانیه‌ای و میلی‌ثانیه‌ای
  * را برای مقایسه به میلی‌ثانیه تبدیل می‌کند.
  */
@@ -436,6 +451,9 @@ async function saveCurrentRate(
             pricePerGram:
               true,
 
+            source:
+              true,
+
             updatedAt:
               true,
           },
@@ -447,7 +465,11 @@ async function saveCurrentRate(
         incomingPricePerGramToman:
           rate.pricePerGramToman,
         currentPricePerGramToman:
-          currentRate
+          currentRate &&
+          !isTrustedSeedToLiveTransition({
+            currentSource: currentRate.source,
+            incomingSource: rate.source,
+          })
             ? Number(
                 currentRate.pricePerGram.toString(),
               )

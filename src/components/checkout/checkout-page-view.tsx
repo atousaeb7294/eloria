@@ -268,6 +268,16 @@ export function CheckoutPageView({
                     </div>
                   </div>
 
+                  <div className="mt-5 rounded-2xl border border-emerald-200/12 bg-emerald-200/[0.035] px-4 py-3">
+                    <div className="flex items-center gap-2 text-[11px] font-medium text-emerald-100/80">
+                      <ShieldCheck className="h-3.5 w-3.5" />
+                      {text.guestCheckoutBadge}
+                    </div>
+                    <p className="mt-1 text-[10px] leading-5 text-[#c9bb9a]/52">
+                      {text.guestCheckoutDescription}
+                    </p>
+                  </div>
+
                   <div className="mt-7 grid gap-5 sm:grid-cols-2">
                     <label className="block">
                       <span className="mb-2 block text-xs text-[#d7c9a7]/65">
