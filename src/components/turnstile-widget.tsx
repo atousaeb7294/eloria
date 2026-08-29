@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import Script from "next/script";
 import {
@@ -6,23 +6,18 @@ import {
   useEffect,
   useId,
   useRef,
+  useState,
 } from "react";
 
 declare global {
   interface Window {
     turnstile?: {
       render: (
-        container:
-          string | HTMLElement,
-        options:
-          Record<string, unknown>,
+        container: string | HTMLElement,
+        options: Record<string, unknown>,
       ) => string;
-      remove: (
-        widgetId: string,
-      ) => void;
-      reset: (
-        widgetId: string,
-      ) => void;
+      remove: (widgetId: string) => void;
+      reset: (widgetId: string) => void;
     };
   }
 }
@@ -32,9 +27,7 @@ export function TurnstileWidget({
   locale,
   action = "checkout",
 }: {
-  onTokenChange: (
-    token: string | null,
-  ) => void;
+  onTokenChange: (token: string | null) => void;
   locale: "fa" | "en";
   action?:
     | "checkout"
@@ -42,93 +35,105 @@ export function TurnstileWidget({
     | "support-contact"
     | "support-chat";
 }) {
-  const siteKey =
-    process.env
-      .NEXT_PUBLIC_TURNSTILE_SITE_KEY
-      ?.trim();
+  const [siteKey, setSiteKey] = useState("");
 
   const id =
-    `eloria-turnstile-${useId().replace(
-      /:/g,
-      "",
-    )}`;
+    `eloria-turnstile-${useId().replace(/:/g, "")}`;
 
-  const widgetId =
-    useRef<string | null>(
-      null,
-    );
+  const widgetId = useRef<string | null>(null);
 
   useEffect(() => {
-    if (!siteKey) {
-      onTokenChange(null);
+    let active = true;
+
+    fetch("/api/public/turnstile-config", {
+      cache: "no-store",
+    })
+      .then(response => {
+        if (!response.ok) {
+          throw new Error("turnstile-config-failed");
+        }
+
+        return response.json() as Promise<{
+          siteKey?: string;
+        }>;
+      })
+      .then(data => {
+        if (!active) {
+          return;
+        }
+
+        const nextSiteKey =
+          typeof data.siteKey === "string"
+            ? data.siteKey.trim()
+            : "";
+
+        setSiteKey(nextSiteKey);
+
+        if (!nextSiteKey) {
+          onTokenChange(null);
+        }
+      })
+      .catch(() => {
+        if (active) {
+          setSiteKey("");
+          onTokenChange(null);
+        }
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [onTokenChange]);
+
+  const render = useCallback(() => {
+    if (
+      !siteKey ||
+      !window.turnstile ||
+      widgetId.current
+    ) {
+      return;
     }
+
+    widgetId.current = window.turnstile.render(
+      `#${id}`,
+      {
+        sitekey: siteKey,
+        theme: "dark",
+        language:
+          locale === "fa"
+            ? "fa"
+            : "en",
+        action,
+        callback: (token: string) =>
+          onTokenChange(token),
+        "expired-callback": () =>
+          onTokenChange(null),
+        "error-callback": () =>
+          onTokenChange(null),
+      },
+    );
   }, [
+    action,
+    id,
+    locale,
     onTokenChange,
     siteKey,
   ]);
 
-  const render =
-    useCallback(() => {
-      if (
-        !siteKey ||
-        !window.turnstile ||
-        widgetId.current
-      ) {
-        return;
-      }
-
-      widgetId.current =
-        window.turnstile.render(
-          `#${id}`,
-          {
-            sitekey: siteKey,
-            theme: "dark",
-            language:
-              locale === "fa"
-                ? "fa"
-                : "en",
-            action,
-            callback:
-              (
-                token:
-                  string,
-              ) =>
-                onTokenChange(
-                  token,
-                ),
-            "expired-callback":
-              () =>
-                onTokenChange(
-                  null,
-                ),
-            "error-callback":
-              () =>
-                onTokenChange(
-                  null,
-                ),
-          },
-        );
-    }, [
-      action,
-      id,
-      locale,
-      onTokenChange,
-      siteKey,
-    ]);
-
   useEffect(() => {
-    const timer =
-      window.setInterval(
-        render,
-        250,
-      );
+    if (!siteKey) {
+      return;
+    }
+
+    const timer = window.setInterval(
+      render,
+      250,
+    );
 
     render();
 
     return () => {
-      window.clearInterval(
-        timer,
-      );
+      window.clearInterval(timer);
 
       if (
         widgetId.current &&
@@ -137,11 +142,10 @@ export function TurnstileWidget({
         window.turnstile.remove(
           widgetId.current,
         );
-        widgetId.current =
-          null;
+        widgetId.current = null;
       }
     };
-  }, [render]);
+  }, [render, siteKey]);
 
   if (!siteKey) {
     return null;
