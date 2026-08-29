@@ -36,10 +36,47 @@ const child = spawn(command, args, {
   },
 });
 
+const embeddedMetalSyncEnabled =
+  process.env.ELORIA_EMBEDDED_METAL_SYNC_ENABLED?.trim().toLowerCase() === "true";
+const metalSyncIntervalMinutes = Math.min(
+  Math.max(Number.parseInt(process.env.ELORIA_EMBEDDED_METAL_SYNC_INTERVAL_MINUTES || "5", 10) || 5, 2),
+  60,
+);
+let metalSyncTimer;
+
+async function runEmbeddedMetalSync() {
+  const secret = process.env.CRON_SECRET?.trim();
+  if (!embeddedMetalSyncEnabled || !secret) return;
+
+  try {
+    const response = await fetch(`http://127.0.0.1:${port}/api/cron/metal-prices`, {
+      headers: { Authorization: `Bearer ${secret}` },
+      signal: AbortSignal.timeout(90_000),
+    });
+
+    if (!response.ok && response.status !== 202) {
+      console.error(`[ELORIA] Embedded metal sync returned HTTP ${response.status}.`);
+    }
+  } catch (error) {
+    console.error("[ELORIA] Embedded metal sync failed.", error);
+  }
+}
+
+if (embeddedMetalSyncEnabled) {
+  metalSyncTimer = setTimeout(() => {
+    void runEmbeddedMetalSync();
+    metalSyncTimer = setInterval(
+      () => void runEmbeddedMetalSync(),
+      metalSyncIntervalMinutes * 60_000,
+    );
+  }, 15_000);
+}
+
 let stopping = false;
 function stop(signal) {
   if (stopping) return;
   stopping = true;
+  if (metalSyncTimer) clearTimeout(metalSyncTimer);
   child.kill(signal);
 }
 

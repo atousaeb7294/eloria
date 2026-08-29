@@ -348,7 +348,7 @@ html:has(#hero:target) .eloria-intro-root {
   src: url("/fonts/IranNastaliq-Web.woff2") format("woff2");
   font-style: normal;
   font-weight: 400;
-  font-display: optional;
+  font-display: swap;
 }
 
 html[lang="fa"] .font-persian-title,
@@ -494,6 +494,8 @@ a[href], button:not(:disabled), [role="button"]:not([aria-disabled="true"]) { tr
     letter-spacing: normal !important;
     word-spacing: normal !important;
     text-rendering: auto !important;
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
   }
 
   html[lang="fa"] .font-persian-title,

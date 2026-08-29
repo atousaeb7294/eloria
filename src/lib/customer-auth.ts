@@ -76,11 +76,11 @@ export function normalizeIranMobile(
 ): string {
   const translated = value
     .trim()
-    .replace(/[Û°-Û¹]/g, c =>
-      String("Û°Û±Û²Û³Û´ÛµÛ¶Û·Û¸Û¹".indexOf(c)),
+    .replace(/[۰-۹]/g, c =>
+      String("۰۱۲۳۴۵۶۷۸۹".indexOf(c)),
     )
-    .replace(/[Ù -Ù©]/g, c =>
-      String("Ù Ù¡Ù¢Ù£Ù¤Ù¥Ù¦Ù§Ù¨Ù©".indexOf(c)),
+    .replace(/[٠-٩]/g, c =>
+      String("٠١٢٣٤٥٦٧٨٩".indexOf(c)),
     )
     .replace(/[\s()-]/g, "");
 
@@ -99,7 +99,7 @@ export function normalizeIranMobile(
 
   if (!/^09\d{9}$/.test(mobile)) {
     throw new Error(
-      "Ø´Ù…Ø§Ø±Ù‡ Ù…ÙˆØ¨Ø§ÛŒÙ„ Ù…Ø¹ØªØ¨Ø± Ù†ÛŒØ³Øª.",
+      "شماره موبایل معتبر نیست.",
     );
   }
 
@@ -119,7 +119,7 @@ export function normalizeCustomerAuthEmail(
     !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
   ) {
     throw new Error(
-      "Ù†Ø´Ø§Ù†ÛŒ Ø§ÛŒÙ…ÛŒÙ„ Ù…Ø¹ØªØ¨Ø± Ù†ÛŒØ³Øª.",
+      "نشانی ایمیل معتبر نیست.",
     );
   }
 
@@ -317,7 +317,7 @@ export async function consumeCustomerOtp(
 
   if (!/^\d{6}$/.test(code)) {
     throw new Error(
-      "Ú©Ø¯ ØªØ£ÛŒÛŒØ¯ Ø¨Ø§ÛŒØ¯ Û¶ Ø±Ù‚Ù… Ø¨Ø§Ø´Ø¯.",
+      "کد تأیید باید ۶ رقم باشد.",
     );
   }
 
@@ -342,7 +342,7 @@ export async function consumeCustomerOtp(
 
         if (!challenge) {
           throw new Error(
-            "Ø¯Ø±Ø®ÙˆØ§Ø³Øª Ú©Ø¯ ØªØ£ÛŒÛŒØ¯ Ù…Ø¹ØªØ¨Ø± Ù†ÛŒØ³Øª.",
+            "درخواست کد تأیید معتبر نیست.",
           );
         }
 
@@ -351,7 +351,7 @@ export async function consumeCustomerOtp(
           input.channel
         ) {
           throw new Error(
-            "Ú©Ø§Ù†Ø§Ù„ Ú©Ø¯ ØªØ£ÛŒÛŒØ¯ Ù…Ø¹ØªØ¨Ø± Ù†ÛŒØ³Øª.",
+            "کانال کد تأیید معتبر نیست.",
           );
         }
 
@@ -359,7 +359,7 @@ export async function consumeCustomerOtp(
           challenge.mobile !== mobile
         ) {
           throw new Error(
-            "Ø¯Ø±Ø®ÙˆØ§Ø³Øª Ú©Ø¯ ØªØ£ÛŒÛŒØ¯ Ù…Ø¹ØªØ¨Ø± Ù†ÛŒØ³Øª.",
+            "درخواست کد تأیید معتبر نیست.",
           );
         }
 
@@ -368,7 +368,7 @@ export async function consumeCustomerOtp(
           challenge.email !== email
         ) {
           throw new Error(
-            "Ø¯Ø±Ø®ÙˆØ§Ø³Øª Ú©Ø¯ ØªØ£ÛŒÛŒØ¯ Ù…Ø¹ØªØ¨Ø± Ù†ÛŒØ³Øª.",
+            "درخواست کد تأیید معتبر نیست.",
           );
         }
 
@@ -376,13 +376,13 @@ export async function consumeCustomerOtp(
           challenge.purpose !== "LOGIN"
         ) {
           throw new Error(
-            "Ù‡Ø¯Ù Ú©Ø¯ ØªØ£ÛŒÛŒØ¯ Ù…Ø¹ØªØ¨Ø± Ù†ÛŒØ³Øª.",
+            "هدف کد تأیید معتبر نیست.",
           );
         }
 
         if (challenge.consumedAt) {
           throw new Error(
-            "Ø§ÛŒÙ† Ú©Ø¯ Ù‚Ø¨Ù„Ø§ Ø§Ø³ØªÙØ§Ø¯Ù‡ Ø´Ø¯Ù‡ Ø§Ø³Øª.",
+            "این کد قبلاً استفاده شده است.",
           );
         }
 
@@ -391,7 +391,7 @@ export async function consumeCustomerOtp(
           now.getTime()
         ) {
           throw new Error(
-            "Ù…Ù‡Ù„Øª Ú©Ø¯ ØªØ£ÛŒÛŒØ¯ Ù¾Ø§ÛŒØ§Ù† ÛŒØ§ÙØªÙ‡ Ø§Ø³Øª.",
+            "مهلت کد تأیید پایان یافته است.",
           );
         }
 
@@ -400,7 +400,7 @@ export async function consumeCustomerOtp(
           challenge.maxAttempts
         ) {
           throw new Error(
-            "ØªØ¹Ø¯Ø§Ø¯ ØªÙ„Ø§Ø´Ù‡Ø§ÛŒ Ú©Ø¯ ØªØ£ÛŒÛŒØ¯ Ø¨ÛŒØ´ Ø§Ø² Ø­Ø¯ Ù…Ø¬Ø§Ø² Ø§Ø³Øª.",
+            "تعداد تلاش‌های کد تأیید بیش از حد مجاز است.",
           );
         }
 
@@ -428,7 +428,7 @@ export async function consumeCustomerOtp(
           return {
             successful: false as const,
             message:
-              "Ú©Ø¯ ØªØ£ÛŒÛŒØ¯ ØµØ­ÛŒØ­ Ù†ÛŒØ³Øª.",
+              "کد تأیید صحیح نیست.",
           };
         }
 
@@ -461,7 +461,7 @@ export async function consumeCustomerOtp(
             return {
               successful: false as const,
               message:
-                "Ø§ÛŒÙ† Ø­Ø³Ø§Ø¨ Ú©Ø§Ø±Ø¨Ø±ÛŒ ØºÛŒØ±ÙØ¹Ø§Ù„ Ø§Ø³Øª.",
+                "این حساب کاربری غیرفعال است.",
             };
           }
 
@@ -511,7 +511,7 @@ export async function consumeCustomerOtp(
           return {
             successful: false as const,
             message:
-              "Ø§ÛŒÙ† Ø§ÛŒÙ…ÛŒÙ„ Ùˆ Ø´Ù…Ø§Ø±Ù‡ Ù…ÙˆØ¨Ø§ÛŒÙ„ Ø¨Ù‡ Ø¯Ùˆ Ø­Ø³Ø§Ø¨ Ù…ØªÙØ§ÙˆØª Ù…ØªØµÙ„ Ù‡Ø³ØªÙ†Ø¯.",
+              "این ایمیل و شماره موبایل به دو حساب متفاوت متصل هستند.",
           };
         }
 
@@ -526,7 +526,7 @@ export async function consumeCustomerOtp(
           return {
             successful: false as const,
             message:
-              "Ø§ÛŒÙ† Ø­Ø³Ø§Ø¨ Ú©Ø§Ø±Ø¨Ø±ÛŒ ØºÛŒØ±ÙØ¹Ø§Ù„ Ø§Ø³Øª.",
+              "این حساب کاربری غیرفعال است.",
           };
         }
 
@@ -538,7 +538,7 @@ export async function consumeCustomerOtp(
           return {
             successful: false as const,
             message:
-              "Ø§ÛŒÙ† Ø´Ù…Ø§Ø±Ù‡ Ù…ÙˆØ¨Ø§ÛŒÙ„ Ø¨Ù‡ Ø§ÛŒÙ…ÛŒÙ„ Ø¯ÛŒÚ¯Ø±ÛŒ Ù…ØªØµÙ„ Ø§Ø³Øª.",
+              "این شماره موبایل به ایمیل دیگری متصل است.",
           };
         }
 

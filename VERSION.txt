@@ -1,12 +1,13 @@
-ELORIA FINAL R8.3.4 ORBIT SWAP MOTION
-Release date: 2026-08-27
-Base: ELORIA R8.3.3 Classic Fast Motion + all R8.3 fixes
-Home showcase: Orbit Swap revolving motion with transform-only 3D exchange; no image fade and no blur transition
-Motion: 1.08s smooth orbit, shallow rotateY/depth swap, continuous adjacent-card handoff, reduced-motion aware
-Hero: clean, no decorative woven lines over hero image
-Smart discovery: free-text catalog discovery remains active
-Intro: instant-preloaded Intro 2 flow remains active
-Support phone: 09180079556
-Next.js: 16.3.3 security baseline
-Database changes in R8.3.4: none
-Installer: INSTALL_ELORIA_R8_3_4.ps1
+ELORIA FINAL R9 PARSPACK COMMERCE
+Release date: 2026-08-29
+Base: ELORIA R8.3.4 Orbit Swap Motion
+Customer: email OTP membership/login connected to the real customer dashboard
+Header: guest Login / Join label and authenticated My Account state
+Mobile typography: stable Vazirmatn fallback with protected Persian shaping
+Desktop typography: self-hosted Iran Nastaliq retained with reliable font swap
+Metal pricing: optional protected embedded scheduler for ParsPack application deployments
+Security: dependency audit clean; customer authentication encoding and Persian digit normalization repaired
+Smart marketing: product article drafts and SEO health remain available from Admin
+Next.js: 16.3.3
+Database schema changes in R9: none
+Deployment guide: ELORIA_R9_PARSPACK_GUIDE_FA.md
