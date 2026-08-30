@@ -133,7 +133,7 @@ export function productionEnvironmentChecks(): Check[] {
   const supportEnabled = boolFlag("ELORIA_SUPPORT_ENABLED");
   const supportChatEnabled = boolFlag("ELORIA_SUPPORT_CHAT_ENABLED");
   const legalPagesIndex = boolFlag("ELORIA_LEGAL_PAGES_INDEX");
-  const legalIdentityRequired = commerceEnabled || legalPagesIndex;
+  const legalIdentityRequired = legalPagesIndex;
   const legalPhone = value("ELORIA_LEGAL_SUPPORT_PHONE");
   const legalEmail = value("ELORIA_LEGAL_SUPPORT_EMAIL");
   const legalContactValid =
