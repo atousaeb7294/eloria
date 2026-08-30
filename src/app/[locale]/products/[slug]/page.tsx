@@ -65,6 +65,7 @@ import { ProductWatchButton } from "@/components/product-watch-button";
 import { ProductShareActions } from "@/components/product-share-actions";
 import { CatalogProductCard } from "@/components/catalog-product-card";
 import { getPricedProductsCatalog } from "@/lib/priced-catalog";
+import { generateProductMyth } from "@/lib/product-myth-generator";
 
 export const dynamic =
   "force-dynamic";
@@ -663,13 +664,17 @@ export default async function ProductPage({
       ? productRecord.legendFa
       : productRecord.legendEn;
 
+  const generatedLegend = generateProductMyth({
+    nameFa: productRecord.nameFa,
+    nameEn: productRecord.nameEn ?? undefined,
+    material: productRecord.material,
+  });
+
   const legendText =
     hiddenLegend?.trim() ||
-    (
-      isPersian
-        ? "افسانه این قطعه هنوز در دفتر رازهای الوریا ثبت نشده است."
-        : "The legend of this piece has not yet been written in Eloria’s book of secrets."
-    );
+    (isPersian
+      ? generatedLegend.legendFa
+      : generatedLegend.legendEn);
 
   let relatedProducts: Awaited<ReturnType<typeof getPricedProductsCatalog>>["products"] = [];
   try {

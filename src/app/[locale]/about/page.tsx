@@ -189,7 +189,7 @@ export default async function AboutPage({ params }: AboutPageProps) {
 
           <div className="relative mx-auto max-w-4xl">
             <p className="text-[9px] uppercase tracking-[0.4em] text-[#d3bb78]/58">
-              {isPersian ? "افسانهٔ سرزمین کهن" : "The Legend of the Ancient Land"}
+              {isPersian ? "افسانهٔ سرزمین افسانه‌ها" : "The Legend of the Land of Legends"}
             </p>
             <h2
               className={[
@@ -199,19 +199,19 @@ export default async function AboutPage({ params }: AboutPageProps) {
                   : "text-3xl font-semibold leading-tight sm:text-4xl",
               ].join(" ")}
             >
-              {isPersian ? "الوریا؛ سرزمین کهن و جواهری که از تارِ زمان بافته شد" : "Eloria; the Ancient Land and the jewel woven from time"}
+              {isPersian ? "الوریا؛ سرزمین افسانه‌ها و جواهری که از تارِ زمان بافته شد" : "Eloria; the Land of Legends and the jewel woven from time"}
             </h2>
 
             <div className="mt-6 space-y-5 text-sm leading-9 text-[#d6c8aa]/72 sm:text-base">
               <p>
                 {isPersian
-                  ? "در افسانه‌های الوریا آمده است که نام این سرزمین به معنای «سرزمین کهن» بود؛ جایی در مرز میان تاریخ و خیال، که زرگران، سنگ‌تراشان و بافندگان هر کدام بخشی از راز زمین را در دست داشتند. می‌گفتند طلا حافظهٔ خورشید است، سنگ‌ها خاطرهٔ کوه‌اند و نخ، راهی است که این دو را به زندگی انسان پیوند می‌دهد."
-                  : "In the legends of Eloria, its name meant “the Ancient Land”: a realm on the border of history and imagination, where goldsmiths, stone cutters and weavers each guarded a part of the earth’s secret. Gold was said to hold the memory of the sun, stones the memory of the mountains, and thread the path that joined both to human life."}
+                  ? "در روایت برند الوریا، نام این جهان به معنای «سرزمین افسانه‌ها» است؛ سرزمینی خیالی الهام‌گرفته از شکوه ایران کهن؛ جایی در مرز میان تاریخ و خیال، که زرگران، سنگ‌تراشان و بافندگان هر کدام بخشی از راز زمین را در دست داشتند. می‌گفتند طلا حافظهٔ خورشید است، سنگ‌ها خاطرهٔ کوه‌اند و نخ، راهی است که این دو را به زندگی انسان پیوند می‌دهد."
+                  : "In Eloria’s brand story, its name means “the Land of Legends”: an imagined realm inspired by the splendour of ancient Iran, a realm on the border of history and imagination, where goldsmiths, stone cutters and weavers each guarded a part of the earth’s secret. Gold was said to hold the memory of the sun, stones the memory of the mountains, and thread the path that joined both to human life."}
               </p>
               <p>
                 {isPersian
-                  ? "روزی بافنده‌ای جوان در کارگاه خاموش خود رشته‌های مکرومه را گره زد؛ اما به جای آن‌که بافت را تنها با نخ ادامه دهد، میان هر گره قطعه‌ای کوچک از طلا و سنگی زینتی نشاند. عقیق، فیروزه و سنگ‌های رنگین در تارها جای گرفتند و قطعات طلا چون نشانه‌هایی از نور میان آن‌ها درخشیدند. با هر گره، جواهر نه ساخته، بلکه روایت می‌شد؛ گویی تارها نقشهٔ سرزمین کهن را دوباره می‌بافتند."
-                  : "One day, a young artisan tied macramé cords in a quiet workshop. Instead of continuing with thread alone, the artisan placed a small piece of gold or an ornamental stone between the knots. Agate, turquoise and coloured stones settled into the weave, while fragments of gold shone like signs of light. With every knot, the jewel was not merely made but narrated, as if the cords were weaving the map of the Ancient Land anew."}
+                  ? "روزی بافنده‌ای جوان در کارگاه خاموش خود رشته‌های مکرومه را گره زد؛ اما به جای آن‌که بافت را تنها با نخ ادامه دهد، میان هر گره قطعه‌ای کوچک از طلا و سنگی زینتی نشاند. عقیق، فیروزه و سنگ‌های رنگین در تارها جای گرفتند و قطعات طلا چون نشانه‌هایی از نور میان آن‌ها درخشیدند. با هر گره، جواهر نه ساخته، بلکه روایت می‌شد؛ گویی تارها نقشهٔ سرزمین افسانه‌ها را دوباره می‌بافتند."
+                  : "One day, a young artisan tied macramé cords in a quiet workshop. Instead of continuing with thread alone, the artisan placed a small piece of gold or an ornamental stone between the knots. Agate, turquoise and coloured stones settled into the weave, while fragments of gold shone like signs of light. With every knot, the jewel was not merely made but narrated, as if the cords were weaving the map of the Land of Legends anew."}
               </p>
               <p>
                 {isPersian

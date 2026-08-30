@@ -102,6 +102,18 @@ export async function sendEmailOtp(
     );
 
     if (!response.ok) {
+      const providerMessage = await response
+        .text()
+        .catch(() => "");
+
+      console.error(
+        "[Eloria Email OTP] Resend rejected the request",
+        {
+          status: response.status,
+          providerMessage: providerMessage.slice(0, 500),
+        },
+      );
+
       return {
         configured: true,
         successful: false,

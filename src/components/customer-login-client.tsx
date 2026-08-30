@@ -413,8 +413,16 @@ export function CustomerLoginClient({
                 }
               />
 
+              {!turnstileToken ? (
+                <p className="text-center text-[11px] leading-6 text-[#bcae8d]/45">
+                  {fa
+                    ? "پس از تکمیل بررسی امنیتی، دکمه ارسال کد فعال می‌شود."
+                    : "The send button becomes available after the security check is complete."}
+                </p>
+              ) : null}
+
               <button
-                disabled={loading}
+                disabled={loading || !turnstileToken}
                 className="flex h-13 w-full items-center justify-center gap-2 rounded-2xl border border-[#e3c873]/30 bg-[#143c2d] text-sm text-[#efd991] disabled:opacity-50"
               >
                 {loading ? (

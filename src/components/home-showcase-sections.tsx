@@ -14,8 +14,8 @@ export function HomeShowcaseSections({ locale }: HomeShowcaseSectionsProps) {
 
   return (
     <div dir={isPersian ? "rtl" : "ltr"} className="relative z-10">
-      <HomeSmartDiscovery locale={locale} />
       <HomeNarrativeShowcase locale={locale} copy={copy} />
+      <HomeSmartDiscovery locale={locale} />
     </div>
   );
 }
