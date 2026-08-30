@@ -7,6 +7,7 @@ import {
   Home,
   LayoutGrid,
   Mail,
+  PhoneCall,
   Camera,
   Send,
   MessageCircle,
@@ -18,6 +19,7 @@ import Link from "next/link";
 
 import { MeasurementPreferencesButton } from "@/components/measurement-preferences-button";
 import { eloriaSocialLinks } from "@/lib/social-links";
+import { publicSupportPhone } from "@/lib/legal-business";
 
 type SiteFooterProps = {
   locale: string;
@@ -85,19 +87,24 @@ export function SiteFooter({ locale }: SiteFooterProps) {
       };
 
   const officialSocialLinks = eloriaSocialLinks();
+  const supportPhone = publicSupportPhone();
+
   const socialLinks = [
     {
       label: copy.instagram,
+      handle: "@eloriagallery_gold",
       href: officialSocialLinks.instagram,
       icon: Camera,
     },
     {
       label: copy.telegram,
+      handle: "@eloriagallery_gold",
       href: officialSocialLinks.telegram,
       icon: Send,
     },
     {
       label: copy.bale,
+      handle: "@eloriagallery_gold",
       href: officialSocialLinks.bale,
       icon: MessageCircle,
     },
@@ -267,25 +274,54 @@ export function SiteFooter({ locale }: SiteFooterProps) {
           })}
         </div>
 
-        <div className="mt-7 rounded-[1.6rem] border border-[#ddc16d]/12 bg-black/10 px-4 py-4 sm:px-5">
-          <div className="flex flex-col items-center justify-between gap-4 sm:flex-row">
-            <p className="text-xs font-medium text-[#ead9a7]/72">{copy.quickSocial}</p>
-            <div className="flex flex-wrap items-center justify-center gap-2">
-              {socialLinks.map(({ label, href, icon: SocialIcon }) =>
-                (
-                  <a
-                    key={label}
-                    href={href}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex min-h-10 items-center gap-2 rounded-full border border-[#dfc16f]/18 bg-[#dfc16f]/[0.035] px-4 text-xs text-[#d8c994]/68 transition hover:-translate-y-0.5 hover:border-[#dfc16f]/42 hover:text-[#f1d993]"
+        <div className="mt-7 rounded-[1.6rem] border border-[#ddc16d]/12 bg-black/10 px-4 py-5 sm:px-5">
+          <div className="mx-auto flex max-w-md flex-col items-stretch gap-3">
+            <p className="mb-1 text-center text-xs font-medium text-[#ead9a7]/72">
+              {copy.quickSocial}
+            </p>
+
+            {socialLinks.map(({ label, handle, href, icon: SocialIcon }) => (
+              <a
+                key={label}
+                href={href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group flex min-h-12 items-center gap-3 rounded-xl border border-[#dfc16f]/18 bg-[#dfc16f]/[0.035] px-4 transition hover:-translate-y-0.5 hover:border-[#dfc16f]/42"
+              >
+                <span className="grid size-8 shrink-0 place-items-center rounded-full border border-[#dfc16f]/16 text-[#d7bd72]">
+                  <SocialIcon aria-hidden="true" className="size-4" />
+                </span>
+
+                <span className="flex min-w-0 flex-col text-start">
+                  <span className="text-xs text-[#f0dca3]/78">{label}</span>
+                  <span
+                    dir="ltr"
+                    className="text-sm text-[#d8c994]/68 transition-colors group-hover:text-[#f1d993]"
                   >
-                    <SocialIcon aria-hidden="true" className="size-4" />
-                    {label}
-                  </a>
-                ),
-              )}
-            </div>
+                    {handle}
+                  </span>
+                </span>
+              </a>
+            ))}
+
+            <a
+              href={`tel:${supportPhone}`}
+              className="group flex min-h-12 items-center gap-3 rounded-xl border border-[#dfc16f]/18 bg-[#dfc16f]/[0.035] px-4 transition hover:-translate-y-0.5 hover:border-[#dfc16f]/42"
+            >
+              <span className="grid size-8 shrink-0 place-items-center rounded-full border border-[#dfc16f]/16 text-[#d7bd72]">
+                <PhoneCall aria-hidden="true" className="size-4" />
+              </span>
+
+              <span className="flex min-w-0 flex-col text-start">
+                <span className="text-xs text-[#f0dca3]/78">{copy.contact}</span>
+                <span
+                  dir="ltr"
+                  className="text-sm text-[#d8c994]/68 transition-colors group-hover:text-[#f1d993]"
+                >
+                  {supportPhone}
+                </span>
+              </span>
+            </a>
           </div>
         </div>
 
