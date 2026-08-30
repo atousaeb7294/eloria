@@ -8,10 +8,10 @@ function provider(): "template" | "ollama" {
   return value === "ollama" ? "ollama" : "template";
 }
 
-function isMythOutput(value: unknown): value is ProductMythOutput {
+function isGeneratedMyth(value: unknown): value is Pick<ProductMythOutput, "mythNameFa" | "mythNameEn" | "legendFa" | "legendEn"> {
   if (typeof value !== "object" || value === null) return false;
   const item = value as Record<string, unknown>;
-  return ["mythKey", "mythNameFa", "mythNameEn", "legendFa", "legendEn"].every((key) => typeof item[key] === "string" && (item[key] as string).trim().length > 0);
+  return ["mythNameFa", "mythNameEn", "legendFa", "legendEn"].every((key) => typeof item[key] === "string" && (item[key] as string).trim().length > 0);
 }
 
 export async function generateProductMyth(input: MythInput): Promise<ProductMythOutput> {
@@ -29,7 +29,15 @@ export async function generateProductMyth(input: MythInput): Promise<ProductMyth
     const body = (await response.json()) as { response?: unknown };
     const raw = typeof body.response === "string" ? body.response : "{}";
     const parsed: unknown = JSON.parse(raw);
-    return isMythOutput(parsed) ? parsed : fallback;
+    return isGeneratedMyth(parsed)
+      ? {
+          ...fallback,
+          mythNameFa: parsed.mythNameFa.trim(),
+          mythNameEn: parsed.mythNameEn.trim(),
+          legendFa: parsed.legendFa.trim(),
+          legendEn: parsed.legendEn.trim(),
+        }
+      : fallback;
   } catch (error) {
     console.error("[Eloria Myth] optional local Ollama provider failed; using local template.", error);
     return fallback;

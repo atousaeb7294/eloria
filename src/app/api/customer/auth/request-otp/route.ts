@@ -418,7 +418,10 @@ export async function POST(
               successful: false,
               message:
                 emailResult.configured
-                  ? "ارسال ایمیل ناموفق بود. لطفا دوباره تلاش کنید."
+                  ? emailResult.errorCode?.includes("VALIDATION") ||
+                    emailResult.errorCode?.includes("INVALID_FROM")
+                    ? "دامنه یا نشانی فرستندهٔ ایمیل هنوز تأیید نشده است. مدیر سایت باید تنظیمات Resend را بررسی کند."
+                    : "ارسال ایمیل ناموفق بود. لطفا دوباره تلاش کنید."
                   : "سامانه ایمیل ورود پیکربندی نشده است.",
             },
             {
@@ -431,7 +434,7 @@ export async function POST(
         const sms =
           await sendSms(
             mobile,
-            `الاریا: کد ورود شما ${challenge.code} است. این کد تا ${customerOtpMinutes()} دقیقه معتبر است.`,
+            `الوریا: کد ورود شما ${challenge.code} است. این کد تا ${customerOtpMinutes()} دقیقه معتبر است.`,
           );
 
         if (

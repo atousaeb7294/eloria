@@ -13,7 +13,7 @@ import {
   X,
 } from "lucide-react";
 import { usePathname } from "next/navigation";
-import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
+import { FormEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { TurnstileWidget } from "@/components/turnstile-widget";
 
@@ -69,6 +69,7 @@ export function CustomerSupportWidget({ locale }: { locale: "fa" | "en" }) {
   const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
   const [turnstileGeneration, setTurnstileGeneration] = useState(0);
   const [feedback, setFeedback] = useState<{ tone: "success" | "error"; text: string } | null>(null);
+  const loadInFlight = useRef(false);
 
   const copy = useMemo(
     () =>
@@ -123,6 +124,8 @@ export function CustomerSupportWidget({ locale }: { locale: "fa" | "en" }) {
   );
 
   const load = useCallback(async () => {
+    if (loadInFlight.current || document.visibilityState === "hidden") return;
+    loadInFlight.current = true;
     setLoading(true);
     try {
       const response = await fetch("/api/support/chat", {
@@ -147,16 +150,22 @@ export function CustomerSupportWidget({ locale }: { locale: "fa" | "en" }) {
       setFeedback({ tone: "error", text: copy.failed });
     } finally {
       setLoading(false);
+      loadInFlight.current = false;
     }
   }, [copy.failed]);
 
   useEffect(() => {
     if (!open || isAdmin) return;
     const initialLoad = window.setTimeout(() => void load(), 0);
-    const interval = window.setInterval(() => void load(), 8_000);
+    const interval = window.setInterval(() => void load(), 15_000);
+    const onVisibility = () => {
+      if (document.visibilityState === "visible") void load();
+    };
+    document.addEventListener("visibilitychange", onVisibility);
     return () => {
       window.clearTimeout(initialLoad);
       window.clearInterval(interval);
+      document.removeEventListener("visibilitychange", onVisibility);
     };
   }, [isAdmin, load, open]);
 

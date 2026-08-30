@@ -10,6 +10,7 @@ import {
 } from "@/lib/admin-auth";
 import { consumeRateLimit } from "@/lib/security/rate-limit";
 import { serverActionIp } from "@/lib/security/request";
+import { verifyTurnstileToken } from "@/lib/security/turnstile";
 
 export type AdminLoginState = { error: string | null };
 
@@ -24,6 +25,7 @@ export async function adminLoginAction(
   const username = String(formData.get("username") ?? "").trim();
   const password = String(formData.get("password") ?? "");
   const totpCode = String(formData.get("totpCode") ?? "").trim();
+  const turnstileToken = String(formData.get("turnstileToken") ?? "").trim();
 
   const [ipRate, identityRate] = await Promise.all([
     consumeRateLimit({
@@ -54,6 +56,23 @@ export async function adminLoginAction(
     return {
       error: `ورود موقتاً قفل شده است. ${retryAfterSeconds} ثانیه دیگر دوباره تلاش کنید.`,
     };
+  }
+
+  const challenge = await verifyTurnstileToken({
+    token: turnstileToken || null,
+    ip,
+    expectedAction: "admin-login",
+  });
+
+  if (!challenge.successful) {
+    await recordAdminSecurityEvent({
+      eventType: "LOGIN_TURNSTILE_FAILED",
+      successful: false,
+      ip,
+      userAgent,
+      payload: { reason: challenge.errors[0] ?? "turnstile-failed" },
+    });
+    return { error: "تأیید «من ربات نیستم» کامل نشد؛ دوباره تلاش کنید." };
   }
 
   if (!isAdminConfigured()) {

@@ -6,6 +6,24 @@ export type ProductMythOutput = {
   mythNameEn: string;
   legendFa: string;
   legendEn: string;
+  worldProfile: ProductWorldProfile;
+};
+
+export type ProductWorldProfile = {
+  characterNameFa: string;
+  characterNameEn: string;
+  roleFa: string;
+  roleEn: string;
+  homelandFa: string;
+  homelandEn: string;
+  eraFa: string;
+  eraEn: string;
+  appearanceFa: string;
+  appearanceEn: string;
+  relicMeaningFa: string;
+  relicMeaningEn: string;
+  motherLegendAnchor: string;
+  visualPromptFa: string;
 };
 
 const roots = [
@@ -34,6 +52,39 @@ const endings = [
   { fa: "پر", en: "Par", ownerFa: "پیغام‌رسان بلندترین برج", ownerEn: "the messenger of the highest tower", clueFa: "نامه‌ای که حمل می‌کرد هرگز پیدا نشد", clueEn: "the letter being carried was never found" },
 ] as const;
 
+const iranianAttire = [
+  { fa: "پیراهن بلند پارسی با چین‌های منظم، شلوار سواری و شنلی کوتاه با حاشیهٔ سرو", en: "a long pleated Persian tunic, riding trousers and a short cypress-bordered mantle" },
+  { fa: "جامهٔ مادیِ آستین‌دار با شلوار باریک، نیم‌تاج زرین و بافت موی ایرانی", en: "a sleeved Median robe with fitted trousers, a gold half-crown and Iranian braided hair" },
+  { fa: "ردای ساسانی با نقش سیمرغ، شلوار ابریشمی و کمربند نشان‌دار", en: "a Sasanian robe bearing a Simurgh motif, silk trousers and a sigil belt" },
+  { fa: "جامهٔ سواره‌نظام اشکانی با یقهٔ بسته، شلوار چین‌دار و چکمهٔ چرمی", en: "a high-collared Parthian riding coat, pleated trousers and leather boots" },
+] as const;
+
+function worldProfile(mythKey: string, input: ProductMythInput): ProductWorldProfile {
+  const numeric = Math.max(0, Number.parseInt(mythKey.slice(-3), 10) - 1);
+  const root = roots[Math.floor(numeric / endings.length) % roots.length];
+  const ending = endings[numeric % endings.length];
+  const attire = iranianAttire[numeric % iranianAttire.length];
+  const characterNameFa = `${root.fa}${ending.fa}`;
+  const characterNameEn = `${root.en}${ending.en}`;
+  const piece = input.nameFa.trim();
+  return {
+    characterNameFa,
+    characterNameEn,
+    roleFa: ending.ownerFa,
+    roleEn: ending.ownerEn,
+    homelandFa: root.placeFa,
+    homelandEn: root.placeEn,
+    eraFa: ["روزگار هخامنشیِ متأخر", "روزگار اشکانی", "روزگار ساسانی", "سال‌های پایانی الوریا"][numeric % 4],
+    eraEn: ["late Achaemenid age", "Parthian age", "Sasanian age", "Eloria's final years"][numeric % 4],
+    appearanceFa: `چهره‌ای ایرانی با مو و چشم تیره؛ ${attire.fa}`,
+    appearanceEn: `Iranian features with dark hair and eyes; ${attire.en}`,
+    relicMeaningFa: `«${piece}» نشان شخصی او و شاهد واقعهٔ ${root.placeFa} است؛ روایت این اثر مستقل خوانده می‌شود و یکی از نشانه‌های پراکنده‌شده در شب بسته‌شدن دروازه‌های الوریاست.`,
+    relicMeaningEn: `“${(input.nameEn ?? input.nameFa).trim()}” is this character's personal sign and a witness to the event at ${root.placeEn}; its story stands alone while belonging to the signs scattered on the night Eloria's gates closed.`,
+    motherLegendAnchor: "night-of-the-sealed-gates",
+    visualPromptFa: `پرتره سینمایی و واقع‌گرایانه از ${characterNameFa}، ${ending.ownerFa}، با چهره و آناتومی ایرانی، ${attire.fa}، زیور ${piece}، معماری و نقوش ایران باستان؛ بدون عناصر رومی، یونانی، عربی، اروپایی یا فانتزی غربی.`,
+  };
+}
+
 export const ELORIA_MYTH_LIBRARY: readonly ProductMythOutput[] = roots.flatMap(
   (root, rootIndex) => endings.map((ending, endingIndex) => {
     const key = `iranian-myth-${String(rootIndex * 10 + endingIndex + 1).padStart(3, "0")}`;
@@ -45,6 +96,7 @@ export const ELORIA_MYTH_LIBRARY: readonly ProductMythOutput[] = roots.flatMap(
       mythNameEn,
       legendFa: `${mythNameFa} به ${ending.ownerFa} تعلق داشت؛ ${root.eventFa}، در ${root.placeFa} ${root.traceFa}. ${ending.clueFa}.`,
       legendEn: `${mythNameEn} belonged to ${ending.ownerEn}; ${root.eventEn}, it ${root.traceEn} at ${root.placeEn}. ${ending.clueEn}.`,
+      worldProfile: worldProfile(key, { nameFa: mythNameFa, nameEn: mythNameEn }),
     };
   }),
 );
@@ -62,6 +114,7 @@ function personalize(myth: ProductMythOutput, input: ProductMythInput): ProductM
     ...myth,
     legendFa: myth.legendFa.replace(myth.mythNameFa, `«${faName}»`),
     legendEn: myth.legendEn.replace(myth.mythNameEn, `“${enName}”`),
+    worldProfile: worldProfile(myth.mythKey, input),
   };
 }
 

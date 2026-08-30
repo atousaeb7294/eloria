@@ -10,7 +10,7 @@ import {
   Send,
   XCircle,
 } from "lucide-react";
-import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
+import { FormEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 type InboxItem = {
   id: string;
@@ -57,8 +57,13 @@ export function AdminSupportInboxClient() {
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
   const [feedback, setFeedback] = useState<string | null>(null);
+  const inboxBusy = useRef(false);
+  const conversationBusy = useRef(false);
+  const heartbeatBusy = useRef(false);
 
   const refreshInbox = useCallback(async () => {
+    if (inboxBusy.current || document.visibilityState === "hidden") return;
+    inboxBusy.current = true;
     try {
       const response = await fetch("/api/admin/support", { cache: "no-store" });
       const data = parseJson(await response.json().catch(() => null));
@@ -72,11 +77,14 @@ export function AdminSupportInboxClient() {
     } catch (error) {
       setFeedback(error instanceof Error ? error.message : "دریافت صندوق پشتیبانی ممکن نیست.");
     } finally {
+      inboxBusy.current = false;
       setLoading(false);
     }
   }, []);
 
   const refreshConversation = useCallback(async (id: string) => {
+    if (conversationBusy.current || document.visibilityState === "hidden") return;
+    conversationBusy.current = true;
     try {
       const response = await fetch(`/api/admin/support?conversation=${encodeURIComponent(id)}`, {
         cache: "no-store",
@@ -88,15 +96,25 @@ export function AdminSupportInboxClient() {
       setConversation(data.conversation as Conversation);
     } catch (error) {
       setFeedback(error instanceof Error ? error.message : "دریافت گفت‌وگو ممکن نیست.");
+    } finally {
+      conversationBusy.current = false;
     }
   }, []);
 
   const heartbeat = useCallback(async () => {
-    await fetch("/api/admin/support", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ action: "heartbeat" }),
-    }).catch(() => undefined);
+    if (heartbeatBusy.current || document.visibilityState === "hidden") return;
+    heartbeatBusy.current = true;
+    try {
+      await fetch("/api/admin/support", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "heartbeat" }),
+      });
+    } catch {
+      // A later heartbeat retries automatically; avoid disrupting the inbox UI.
+    } finally {
+      heartbeatBusy.current = false;
+    }
   }, []);
 
   useEffect(() => {
@@ -104,12 +122,20 @@ export function AdminSupportInboxClient() {
       void refreshInbox();
       void heartbeat();
     }, 0);
-    const inboxTimer = window.setInterval(() => void refreshInbox(), 8_000);
+    const inboxTimer = window.setInterval(() => void refreshInbox(), 15_000);
     const heartbeatTimer = window.setInterval(() => void heartbeat(), 30_000);
+    const onVisible = () => {
+      if (document.visibilityState === "visible") {
+        void refreshInbox();
+        void heartbeat();
+      }
+    };
+    document.addEventListener("visibilitychange", onVisible);
     return () => {
       window.clearTimeout(initialLoad);
       window.clearInterval(inboxTimer);
       window.clearInterval(heartbeatTimer);
+      document.removeEventListener("visibilitychange", onVisible);
     };
   }, [heartbeat, refreshInbox]);
 
@@ -118,7 +144,7 @@ export function AdminSupportInboxClient() {
       return;
     }
     const initialLoad = window.setTimeout(() => void refreshConversation(selectedId), 0);
-    const timer = window.setInterval(() => void refreshConversation(selectedId), 6_000);
+    const timer = window.setInterval(() => void refreshConversation(selectedId), 12_000);
     return () => {
       window.clearTimeout(initialLoad);
       window.clearInterval(timer);

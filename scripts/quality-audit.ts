@@ -324,6 +324,7 @@ const adminSupportRoute = read("src/app/api/admin/support/route.ts");
 const supportChatData = read("src/lib/support-chat.ts");
 const supportWidget = read("src/components/customer-support-widget.tsx");
 const selectionAssistant = read("src/components/smart-selection-assistant.tsx");
+const smartSelectionRoute = read("src/app/api/smart-selection/route.ts");
 check(
   "Support chat stores opaque visitor sessions and protects writes",
   supportChatData.includes("accessTokenHash") &&
@@ -346,9 +347,10 @@ check(
 );
 check(
   "Selection guide uses real catalog query parameters",
-  selectionAssistant.includes('availability: "available"') &&
-    selectionAssistant.includes("maxPrice") &&
-    selectionAssistant.includes("router.push"),
+  selectionAssistant.includes('fetch("/api/smart-selection"') &&
+    smartSelectionRoute.includes('availability: "AVAILABLE"') &&
+    smartSelectionRoute.includes("maxPriceToman") &&
+    smartSelectionRoute.includes("getPricedProductsCatalog"),
 );
 
 const nextConfig = read("next.config.ts");
@@ -360,12 +362,22 @@ check(
     nextConfig.includes('value: "DENY"'),
 );
 
-const tracked = execFileSync("git", ["ls-files"], {
-  cwd: root,
-  encoding: "utf8",
-})
-  .split(/\r?\n/)
-  .filter(Boolean);
+let tracked: string[];
+try {
+  tracked = execFileSync("git", ["ls-files"], {
+    cwd: root,
+    encoding: "utf8",
+    stdio: ["ignore", "pipe", "ignore"],
+  })
+    .split(/\r?\n/)
+    .filter(Boolean);
+} catch {
+  // Release ZIPs intentionally contain no .git directory. In that case the
+  // distributable root is the audit boundary.
+  tracked = readdirSync(root, { recursive: true, encoding: "utf8" })
+    .map((file) => String(file).replaceAll("\\", "/"))
+    .filter((file) => !/(^|\/)(?:node_modules|\.next|generated)(\/|$)/.test(file));
+}
 
 const trackedSecrets = tracked.filter((file) => {
   const name = path.basename(file);

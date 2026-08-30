@@ -1,3 +1,6 @@
+import { createHash } from "node:crypto";
+import { Resend } from "resend";
+
 type EmailOtpResult = {
   configured: boolean;
   successful: boolean;
@@ -38,18 +41,12 @@ export async function sendEmailOtp(
   }
 
   try {
-    const response = await fetch(
-      "https://api.resend.com/emails",
-      {
-        method: "POST",
-        headers: {
-          authorization: `Bearer ${config.apiKey}`,
-          "content-type": "application/json",
-        },
-        body: JSON.stringify({
+    const resend = new Resend(config.apiKey);
+    const result = await resend.emails.send(
+        {
           from: config.from,
           to: [email],
-          subject: "کد ورود به حساب الاریا",
+          subject: "کد ورود امن به حساب الوریا",
           html: `
             <div
               dir="rtl"
@@ -64,7 +61,7 @@ export async function sendEmailOtp(
               "
             >
               <h2 style="margin:0 0 18px">
-                الاریا
+                الوریا
               </h2>
 
               <p>
@@ -88,35 +85,35 @@ export async function sendEmailOtp(
               </p>
 
               <p style="font-size:12px;opacity:.55;margin-top:28px">
-                اگر شما درخواست ورود ندادهاید این ایمیل را نادیده بگیرید.
+                اگر شما درخواست ورود نداده‌اید، این ایمیل را نادیده بگیرید.
               </p>
             </div>
           `,
           text:
-            `کد ورود الاریا: ${code}\n` +
+            `کد ورود الوریا: ${code}\n` +
             `این کد تا ${expiresInMinutes} دقیقه معتبر است.`,
-        }),
-        cache: "no-store",
-        signal: AbortSignal.timeout(8_000),
-      },
-    );
-
-    if (!response.ok) {
-      const providerBody = await response.text().catch(() => "");
-      console.error(
-        "[Eloria Email OTP] Resend rejected the request",
+          tags: [{ name: "category", value: "customer_login_otp" }],
+        },
         {
-          status: response.status,
-          body: providerBody.slice(0, 800),
-          from: config.from,
+          // A provider retry must not create two emails for the same code.
+          idempotencyKey: createHash("sha256")
+            .update(`eloria-login:${email.toLowerCase()}:${code}`)
+            .digest("hex"),
         },
       );
+
+    if (result.error) {
+      const providerCode = result.error.name || "provider_error";
+      console.error("[Eloria Email OTP] Resend rejected the request", {
+        code: providerCode,
+        message: result.error.message.slice(0, 500),
+        from: config.from,
+      });
 
       return {
         configured: true,
         successful: false,
-        errorCode:
-          `RESEND_HTTP_${response.status}`,
+        errorCode: `RESEND_${providerCode.toUpperCase().replace(/[^A-Z0-9_]/g, "_")}`,
       };
     }
 

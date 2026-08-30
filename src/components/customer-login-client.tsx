@@ -42,6 +42,7 @@ export function CustomerLoginClient({
 
   const [turnstileToken, setTurnstileToken] =
     useState<string | null>(null);
+  const [turnstileGeneration, setTurnstileGeneration] = useState(0);
 
   const [loading, setLoading] =
     useState(false);
@@ -151,6 +152,10 @@ export function CustomerLoginClient({
             : "A login code was sent to your mobile.",
       );
     } catch (error) {
+      // Turnstile tokens are single-use. Always request a fresh challenge after
+      // any failed delivery attempt so retrying cannot fail with a stale token.
+      setTurnstileToken(null);
+      setTurnstileGeneration(value => value + 1);
       setMessage(
         error instanceof Error
           ? error.message
@@ -406,6 +411,7 @@ export function CustomerLoginClient({
               </p>
 
               <TurnstileWidget
+                key={turnstileGeneration}
                 locale={locale}
                 action="customer-login"
                 onTokenChange={

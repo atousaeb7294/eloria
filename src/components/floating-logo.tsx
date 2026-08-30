@@ -51,7 +51,7 @@ export function FloatingLogo() {
         }}
       >
         <Image
-          src="/images/brand/eloria-logo.png"
+          src="/images/brand/eloria-logo.webp"
           alt="Eloria"
           fill
           priority

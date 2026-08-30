@@ -4,6 +4,7 @@ import Link from "next/link";
 
 import {
   BarChart3,
+  BookOpenText,
   Bot,
   Boxes,
   FileText,
@@ -45,6 +46,11 @@ const navigation = [
     href: "/content",
     label: "محتوا و سئو",
     icon: FileText,
+  },
+  {
+    href: "/world",
+    label: "جهان و افسانه‌ها",
+    icon: BookOpenText,
   },
   {
     href: "/intelligence",

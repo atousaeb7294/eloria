@@ -33,7 +33,10 @@ function adminUsername(): string {
   return env("ELORIA_ADMIN_USERNAME");
 }
 function adminPassword(): string {
-  return env("ELORIA_ADMIN_PASSWORD") || env("ELORIA_ADMIN_PASSWORD_HASH");
+  // Prefer the explicit non-reversible hash. Older deployments may still use
+  // ELORIA_ADMIN_PASSWORD, but defining both must never make the safer value
+  // silently ineffective.
+  return env("ELORIA_ADMIN_PASSWORD_HASH") || env("ELORIA_ADMIN_PASSWORD");
 }
 
 function verifyAdminPassword(password: string): boolean {

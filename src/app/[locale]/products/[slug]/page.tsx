@@ -676,6 +676,11 @@ export default async function ProductPage({
       ? generatedLegend.legendFa
       : generatedLegend.legendEn);
 
+  const legendName =
+    (isPersian ? productRecord.mythNameFa : productRecord.mythNameEn)?.trim() ||
+    (isPersian ? generatedLegend.mythNameFa : generatedLegend.mythNameEn);
+  const worldProfile = generatedLegend.worldProfile;
+
   let relatedProducts: Awaited<ReturnType<typeof getPricedProductsCatalog>>["products"] = [];
   try {
     const relatedCatalog = await getPricedProductsCatalog({
@@ -1313,14 +1318,36 @@ export default async function ProductPage({
                     : "text-xl font-semibold",
                 ].join(" ")}
               >
-                {isPersian
-                  ? "افسانه پنهان"
-                  : "The Hidden Legend"}
+                {isPersian ? `افسانهٔ ${legendName}` : `The Legend of ${legendName}`}
               </h2>
 
               <p className="mt-2 text-xs leading-7 text-[#d7c9aa]/65 sm:text-sm">
                 {legendText}
               </p>
+
+              <div className="mt-5 grid gap-2 text-xs leading-6 text-[#cdbf9f]/65 sm:grid-cols-3">
+                <div className="rounded-xl border border-white/[0.07] bg-black/10 px-3 py-2">
+                  <span className="block text-[9px] text-[#d8bd72]/60">{isPersian ? "شخصیت این اثر" : "Character"}</span>
+                  <strong className="font-normal text-[#ead8ae]">{isPersian ? worldProfile.characterNameFa : worldProfile.characterNameEn}</strong>
+                </div>
+                <div className="rounded-xl border border-white/[0.07] bg-black/10 px-3 py-2">
+                  <span className="block text-[9px] text-[#d8bd72]/60">{isPersian ? "نقش و خاستگاه" : "Role and homeland"}</span>
+                  <strong className="font-normal text-[#ead8ae]">{isPersian ? `${worldProfile.roleFa}؛ ${worldProfile.homelandFa}` : `${worldProfile.roleEn}; ${worldProfile.homelandEn}`}</strong>
+                </div>
+                <div className="rounded-xl border border-white/[0.07] bg-black/10 px-3 py-2">
+                  <span className="block text-[9px] text-[#d8bd72]/60">{isPersian ? "دوره" : "Era"}</span>
+                  <strong className="font-normal text-[#ead8ae]">{isPersian ? worldProfile.eraFa : worldProfile.eraEn}</strong>
+                </div>
+              </div>
+
+              <p className="mt-4 text-[11px] leading-7 text-[#bfb08f]/55">
+                {isPersian ? worldProfile.relicMeaningFa : worldProfile.relicMeaningEn}
+              </p>
+
+              <Link href={`/${locale}/about#mother-legend`} className="mt-4 inline-flex items-center gap-2 rounded-full border border-[#d9b85f]/24 px-4 py-2 text-[10px] text-[#e5cd86] transition hover:border-[#e8cf7c]/55">
+                <WorldRuneIcon className="size-4" />
+                {isPersian ? "پیوند این اثر با افسانهٔ مادر" : "How this piece connects to the mother legend"}
+              </Link>
             </div>
           </div>
         </article>

@@ -1,21 +1,15 @@
-﻿"use client";
+"use client";
 
 import Script from "next/script";
-import {
-  useCallback,
-  useEffect,
-  useId,
-  useRef,
-  useState,
-} from "react";
+import { Check, LoaderCircle, ShieldAlert } from "lucide-react";
+import { useCallback, useEffect, useId, useRef, useState } from "react";
+
+type TurnstileState = "loading" | "ready" | "verified" | "error" | "disabled";
 
 declare global {
   interface Window {
     turnstile?: {
-      render: (
-        container: string | HTMLElement,
-        options: Record<string, unknown>,
-      ) => string;
+      render: (container: string | HTMLElement, options: Record<string, unknown>) => string;
       remove: (widgetId: string) => void;
       reset: (widgetId: string) => void;
     };
@@ -24,141 +18,101 @@ declare global {
 
 export function TurnstileWidget({
   onTokenChange,
+  onStateChange,
   locale,
   action = "checkout",
 }: {
   onTokenChange: (token: string | null) => void;
+  onStateChange?: (state: TurnstileState) => void;
   locale: "fa" | "en";
-  action?:
-    | "checkout"
-    | "customer-login"
-    | "support-contact"
-    | "support-chat";
+  action?: "checkout" | "customer-login" | "admin-login" | "support-contact" | "support-chat";
 }) {
-  const [siteKey, setSiteKey] = useState("");
-
-  const id =
-    `eloria-turnstile-${useId().replace(/:/g, "")}`;
-
+  const [siteKey, setSiteKey] = useState<string | null>(null);
+  const [required, setRequired] = useState(true);
+  const [scriptReady, setScriptReady] = useState(false);
+  const [state, setState] = useState<TurnstileState>("loading");
+  const id = `eloria-turnstile-${useId().replace(/:/g, "")}`;
   const widgetId = useRef<string | null>(null);
+
+  const updateState = useCallback((next: TurnstileState) => {
+    setState(next);
+    onStateChange?.(next);
+  }, [onStateChange]);
 
   useEffect(() => {
     let active = true;
-
-    fetch("/api/public/turnstile-config", {
-      cache: "no-store",
-    })
-      .then(response => {
-        if (!response.ok) {
-          throw new Error("turnstile-config-failed");
-        }
-
-        return response.json() as Promise<{
-          siteKey?: string;
-        }>;
+    const controller = new AbortController();
+    fetch("/api/public/turnstile-config", { cache: "no-store", signal: controller.signal })
+      .then(async response => {
+        const body = (await response.json().catch(() => null)) as { siteKey?: unknown; required?: unknown } | null;
+        if (!response.ok || !body) throw new Error("turnstile-config-failed");
+        return body;
       })
       .then(data => {
-        if (!active) {
-          return;
-        }
-
-        const nextSiteKey =
-          typeof data.siteKey === "string"
-            ? data.siteKey.trim()
-            : "";
-
+        if (!active) return;
+        const nextSiteKey = typeof data.siteKey === "string" ? data.siteKey.trim() : "";
+        const nextRequired = data.required !== false;
+        setRequired(nextRequired);
         setSiteKey(nextSiteKey);
-
-        if (!nextSiteKey) {
-          onTokenChange(null);
-        }
+        if (!nextRequired && !nextSiteKey) updateState("disabled");
+        else if (!nextSiteKey) updateState("error");
       })
-      .catch(() => {
-        if (active) {
-          setSiteKey("");
-          onTokenChange(null);
-        }
+      .catch(error => {
+        if (!active || error instanceof DOMException && error.name === "AbortError") return;
+        setSiteKey("");
+        updateState("error");
+        onTokenChange(null);
       });
-
-    return () => {
-      active = false;
-    };
-  }, [onTokenChange]);
-
-  const render = useCallback(() => {
-    if (
-      !siteKey ||
-      !window.turnstile ||
-      widgetId.current
-    ) {
-      return;
-    }
-
-    widgetId.current = window.turnstile.render(
-      `#${id}`,
-      {
-        sitekey: siteKey,
-        theme: "dark",
-        language:
-          locale === "fa"
-            ? "fa"
-            : "en",
-        action,
-        callback: (token: string) =>
-          onTokenChange(token),
-        "expired-callback": () =>
-          onTokenChange(null),
-        "error-callback": () =>
-          onTokenChange(null),
-      },
-    );
-  }, [
-    action,
-    id,
-    locale,
-    onTokenChange,
-    siteKey,
-  ]);
+    return () => { active = false; controller.abort(); };
+  }, [onTokenChange, updateState]);
 
   useEffect(() => {
-    if (!siteKey) {
-      return;
+    if (!siteKey || !scriptReady || !window.turnstile || widgetId.current) return;
+    try {
+      widgetId.current = window.turnstile.render(`#${id}`, {
+        sitekey: siteKey,
+        theme: "dark",
+        size: "flexible",
+        language: locale === "fa" ? "fa" : "en",
+        action,
+        appearance: "always",
+        "feedback-enabled": false,
+        "offlabel-show-help": false,
+        callback: (token: string) => { onTokenChange(token); updateState("verified"); },
+        "expired-callback": () => { onTokenChange(null); updateState("ready"); },
+        "error-callback": () => { onTokenChange(null); updateState("error"); },
+        "unsupported-callback": () => { onTokenChange(null); updateState("error"); },
+      });
+      // Turnstile rendering is an external-system synchronization. Defer the
+      // UI notification so this effect itself does not synchronously cascade.
+      queueMicrotask(() => updateState("ready"));
+    } catch {
+      onTokenChange(null);
+      queueMicrotask(() => updateState("error"));
     }
+  }, [action, id, locale, onTokenChange, scriptReady, siteKey, updateState]);
 
-    const timer = window.setInterval(
-      render,
-      250,
-    );
+  useEffect(() => () => {
+    if (widgetId.current && window.turnstile) {
+      window.turnstile.remove(widgetId.current);
+      widgetId.current = null;
+    }
+  }, []);
 
-    render();
-
-    return () => {
-      window.clearInterval(timer);
-
-      if (
-        widgetId.current &&
-        window.turnstile
-      ) {
-        window.turnstile.remove(
-          widgetId.current,
-        );
-        widgetId.current = null;
-      }
-    };
-  }, [render, siteKey]);
-
+  if (siteKey === null) {
+    return <div className="mt-5 flex min-h-14 items-center justify-center gap-2 rounded-xl border border-[#d9b85f]/12 bg-black/10 text-xs text-[#cbbb96]/60" role="status"><LoaderCircle className="size-4 animate-spin" />{locale === "fa" ? "در حال آماده‌سازی تأیید امنیتی…" : "Preparing security verification…"}</div>;
+  }
   if (!siteKey) {
-    return null;
+    if (!required) return null;
+    return <div className="mt-5 flex items-start gap-3 rounded-xl border border-amber-300/20 bg-amber-950/20 p-3 text-xs leading-6 text-amber-100" role="alert"><ShieldAlert className="mt-0.5 size-4 shrink-0" /><span>{locale === "fa" ? "تأیید «من ربات نیستم» بارگذاری نشد. اتصال اینترنت را بررسی و صفحه را تازه‌سازی کنید." : "The human verification could not load. Check your connection and refresh the page."}</span></div>;
   }
 
-  return (
-    <div className="mt-5 flex justify-center overflow-hidden rounded-xl border border-[#d9b85f]/12 bg-black/10 p-2">
-      <Script
-        src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit"
-        strategy="afterInteractive"
-        onLoad={render}
-      />
-      <div id={id} />
+  return <div className="mt-5 rounded-xl border border-[#d9b85f]/14 bg-black/10 p-2.5">
+    <Script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" strategy="afterInteractive" onLoad={() => setScriptReady(true)} onError={() => updateState("error")} />
+    <div className="mb-2 flex items-center gap-2 px-1 text-[11px] text-[#d8c69d]/70">
+      {state === "verified" ? <Check className="size-4 text-emerald-300" /> : <span className="size-3.5 rounded border border-[#d8c06c]/55" />}
+      <span>{state === "verified" ? (locale === "fa" ? "تأیید شد؛ شما ربات نیستید" : "Verified — you are human") : (locale === "fa" ? "تأیید کنید من ربات نیستم" : "Verify that you are human")}</span>
     </div>
-  );
+    <div id={id} className="min-h-[65px] w-full overflow-hidden" />
+  </div>;
 }

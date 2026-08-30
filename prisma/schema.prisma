@@ -80,52 +80,52 @@ model Collection {
 }
 
 model Product {
-  id                  String                 @id @default(uuid()) @db.Uuid
-  collectionId        String                 @db.Uuid
-  slug                String                 @unique
-  sku                 String?                @unique
+  id                  String           @id @default(uuid()) @db.Uuid
+  collectionId        String           @db.Uuid
+  slug                String           @unique
+  sku                 String?          @unique
   nameFa              String
   nameEn              String
   descriptionFa       String?
   descriptionEn       String?
-  material            MaterialType           @default(GOLD)
-  metalWeight         Decimal?               @map("goldWeight") @db.Decimal(10, 3)
+  material            MaterialType     @default(GOLD)
+  metalWeight         Decimal?         @map("goldWeight") @db.Decimal(10, 3)
   purity              String?
   purityFineness      Int?
-  pricingMode         PricingMode            @default(DYNAMIC)
-  price               Decimal?               @db.Decimal(18, 0)
-  compareAtPrice      Decimal?               @db.Decimal(18, 0)
-  makingChargeType    MakingChargeType       @default(NONE)
-  makingChargeFixed   Decimal                @default(0) @db.Decimal(18, 0)
-  makingChargePerGram Decimal                @default(0) @db.Decimal(18, 0)
-  makingChargePercent Decimal                @default(0) @db.Decimal(7, 3)
-  artisticFee         Decimal                @default(0) @db.Decimal(18, 0)
-  profitPercent       Decimal?               @db.Decimal(7, 3)
-  taxPercent          Decimal?               @db.Decimal(7, 3)
-  currency            Currency               @default(TOMAN)
+  pricingMode         PricingMode      @default(DYNAMIC)
+  price               Decimal?         @db.Decimal(18, 0)
+  compareAtPrice      Decimal?         @db.Decimal(18, 0)
+  makingChargeType    MakingChargeType @default(NONE)
+  makingChargeFixed   Decimal          @default(0) @db.Decimal(18, 0)
+  makingChargePerGram Decimal          @default(0) @db.Decimal(18, 0)
+  makingChargePercent Decimal          @default(0) @db.Decimal(7, 3)
+  artisticFee         Decimal          @default(0) @db.Decimal(18, 0)
+  profitPercent       Decimal?         @db.Decimal(7, 3)
+  taxPercent          Decimal?         @db.Decimal(7, 3)
+  currency            Currency         @default(TOMAN)
 
-  mythNameFa          String?
-  mythNameEn          String?
-  mythKey             String?                @unique
+  mythNameFa String?
+  mythNameEn String?
+  mythKey    String? @unique
 
-  legendFa            String?
-  legendEn            String?
+  legendFa String?
+  legendEn String?
 
-  stock               Int                    @default(0)
-  specifications      Json?
-  status              ProductStatus          @default(DRAFT)
-  isFeatured          Boolean                @default(false)
-  displayOrder        Int                    @default(0)
-  createdAt           DateTime               @default(now())
-  updatedAt           DateTime               @updatedAt
-  articles            ContentArticle?
-  favorites           CustomerFavorite[]
-  productWatches      CustomerProductWatch[]
-  orderItems          OrderItem[]
-  images              ProductImage[]
-  variants            ProductVariant[]
-  timelineEvents      ProductTimelineEvent[]
-  collection          Collection             @relation(fields: [collectionId], references: [id])
+  stock          Int                    @default(0)
+  specifications Json?
+  status         ProductStatus          @default(DRAFT)
+  isFeatured     Boolean                @default(false)
+  displayOrder   Int                    @default(0)
+  createdAt      DateTime               @default(now())
+  updatedAt      DateTime               @updatedAt
+  articles       ContentArticle?
+  favorites      CustomerFavorite[]
+  productWatches CustomerProductWatch[]
+  orderItems     OrderItem[]
+  images         ProductImage[]
+  variants       ProductVariant[]
+  timelineEvents ProductTimelineEvent[]
+  collection     Collection             @relation(fields: [collectionId], references: [id])
 
   @@index([collectionId, status, displayOrder])
   @@index([material, status])
@@ -327,7 +327,6 @@ model Order {
   @@index([inventoryExpiresAt])
   @@map("orders")
 }
-
 
 model Coupon {
   id                String             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
@@ -580,8 +579,8 @@ model Customer {
   id                   String                 @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   fullName             String?
   mobile               String                 @unique @db.VarChar(20)
-  email                String?   @unique
-    emailVerifiedAt      DateTime?
+  email                String?                @unique
+  emailVerifiedAt      DateTime?
   mobileVerifiedAt     DateTime?
   lastLoginAt          DateTime?
   isActive             Boolean                @default(true)
@@ -640,7 +639,7 @@ model CustomerOtpChallenge {
 model CustomerAddress {
   id            String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   customerId    String   @unique(map: "customer_addresses_one_default_per_customer_idx", where: raw("(\"isDefault\" = true)")) @db.Uuid
-  title         String   @default("ÃƒËœÃ‚Â¢ÃƒËœÃ‚Â¯ÃƒËœÃ‚Â±ÃƒËœÃ‚Â³ Ãƒâ„¢Ã¢â‚¬Â¦Ãƒâ„¢Ã¢â‚¬Â ") @db.VarChar(80)
+  title         String   @default("آدرس من") @db.VarChar(80)
   recipientName String
   mobile        String   @db.VarChar(20)
   province      String

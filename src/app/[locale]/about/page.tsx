@@ -140,8 +140,8 @@ export default async function AboutPage({ params }: AboutPageProps) {
 
           <p className="mx-auto max-w-3xl text-sm leading-9 text-[#d8caaa]/72 sm:text-base">
             {isPersian
-              ? "الوریا نام سرزمینی است که در روایت‌ها «سرزمین افسانه‌ها» خوانده می‌شد؛ جایی که زر، سنگ و بافت فقط زینت نبودند، بلکه نشانه‌هایی برای نگه‌داشتن پیمان‌ها، خاطره‌ها و رازها بودند."
-              : "Eloria is the name of a lost realm remembered as the Land of Legends, where gold, stone and woven thread were not merely ornament, but vessels for vows, memory and secrets."}
+              ? "الوریا جهان داستانیِ ویژهٔ این برند است: سرزمینی با ریشه‌های ایرانی که مردمش تاریخ، پیمان‌ها و نام عزیزانشان را در «نشان‌ها» ثبت می‌کردند. جواهرهای امروز الوریا بازمانده و ادامهٔ همان نشان‌ها هستند."
+              : "Eloria is the brand’s own story world: an Iranian-rooted realm whose people recorded history, vows and beloved names in objects called Signs. Today’s Eloria jewels continue those Signs."}
           </p>
         </header>
 
@@ -163,27 +163,27 @@ export default async function AboutPage({ params }: AboutPageProps) {
                 ].join(" ")}
               >
                 {isPersian
-                  ? "سرزمینی که از نقشه‌ها محو شد"
-                  : "The realm erased from maps"}
+                  ? "الوریا کجا بود و چرا جواهر ساخت؟"
+                  : "Where was Eloria, and why did it make jewels?"}
               </h2>
             </div>
 
             <div className="space-y-4 text-sm leading-9 text-[#d6c8aa]/70 sm:text-base">
               <p>
                 {isPersian
-                  ? "در روایت‌های قدیمی، الوریا میان کوه، کویر و دریا قرار داشت؛ سرزمینی که مردمش باور داشتند بعضی لحظه‌ها نباید فقط در حافظهٔ انسان بمانند. برای همین عهدها، سوگ‌ها، عشق‌ها و پیروزی‌ها را در طلا، سنگ و گره ثبت می‌کردند تا چیزی از آن لحظه برای نسل بعد باقی بماند."
-                  : "Old accounts place Eloria between mountain, desert and sea. Its people believed some moments should not live only in memory, so vows, grief, love and victory were bound into gold, stone and woven knots for the next generation to inherit."}
+                  ? "در افسانهٔ مادر، الوریا در گذرگاهی میان البرز، کویر مرکزی و آب‌های جنوب شکل گرفت؛ سرزمینی خیالی اما کاملاً ایرانی در پوشش، معماری، نام‌ها و آیین‌ها. پس از آن‌که یک آتش‌سوزی بزرگ بخشی از بایگانی شهر را نابود کرد، بانویی به نام آرمیتا فرمان داد هر خاطرهٔ مهم روی چیزی ماندگار ثبت شود: زر برای پیمان، سنگ برای سرزمین و گره برای پیوند آدم‌ها."
+                  : "In the mother legend, Eloria rose on a passage between Alborz, the central desert and the southern waters: a fictional realm, Iranian in dress, architecture, names and customs. After a great fire destroyed part of the city archive, a woman named Armita ordered every vital memory to be placed in something enduring: gold for vows, stone for homeland and knots for human bonds."}
               </p>
               <p className="text-[#cbbb9d]/62">
                 {isPersian
-                  ? "زرگران الوریا را «نگهبانان نشان» می‌نامیدند؛ زیرا هر قطعه پیش از ساخته‌شدن صاحب معنایی مشخص می‌شد. هیچ دو نشان قرار نبود داستان یکسانی داشته باشند."
-                  : "Eloria’s jewelers were known as Keepers of the Sign, because every piece was given a meaning before it was made. No two signs were meant to carry the same story."}
+                  ? "هفت زرگر و بافنده، «نگهبانان نشان» شدند. هر نشان به یک انسان، مکان و واقعهٔ مشخص تعلق داشت؛ به همین دلیل دو اثر هرگز داستان یکسان نداشتند. صاحب نشان می‌توانست داستان خودش را مستقل بخواند، اما جای هر نشان در بایگانی بزرگ شهر نیز معلوم بود."
+                  : "Seven jewelers and weavers became the Keepers of the Sign. Every Sign belonged to one person, one place and one event, so no two pieces carried the same story. Each story could stand alone, while its place in the city’s larger archive remained known."}
               </p>
             </div>
           </div>
         </article>
 
-        <article className="relative mx-auto mt-8 max-w-6xl overflow-hidden rounded-[2.8rem] border border-[#d8b860]/22 bg-[linear-gradient(145deg,rgba(9,45,32,0.94),rgba(2,20,14,0.99))] px-6 py-10 shadow-[0_34px_100px_rgba(0,0,0,0.4)] backdrop-blur-xl sm:px-10 sm:py-14 lg:px-16">
+        <article id="mother-legend" className="relative mx-auto mt-8 scroll-mt-28 max-w-6xl overflow-hidden rounded-[2.8rem] border border-[#d8b860]/22 bg-[linear-gradient(145deg,rgba(9,45,32,0.94),rgba(2,20,14,0.99))] px-6 py-10 shadow-[0_34px_100px_rgba(0,0,0,0.4)] backdrop-blur-xl sm:px-10 sm:py-14 lg:px-16">
           <div aria-hidden="true" className="absolute inset-x-16 top-0 h-px bg-gradient-to-r from-transparent via-[#efd17a]/65 to-transparent" />
           <div aria-hidden="true" className="absolute -start-28 top-8 size-64 rounded-full bg-[#d4b258]/[0.06] blur-[90px]" />
 
@@ -199,24 +199,24 @@ export default async function AboutPage({ params }: AboutPageProps) {
                   : "text-3xl font-semibold leading-tight sm:text-4xl",
               ].join(" ")}
             >
-              {isPersian ? "الوریا؛ سرزمین افسانه‌ها و نشان‌هایی که باقی ماندند" : "Eloria; the Land of Legends and the signs that remained"}
+              {isPersian ? "شب دروازه‌های بسته؛ اتفاقی که جهان الوریا را ساخت" : "The Night of the Sealed Gates"}
             </h2>
 
             <div className="mt-6 space-y-5 text-sm leading-9 text-[#d6c8aa]/72 sm:text-base">
               <p>
                 {isPersian
-                  ? "در الوریا، طلا را حافظهٔ خورشید، سنگ را حافظهٔ زمین و نخ را راهی میان این دو می‌دانستند. هر خاندان نشانه‌های خودش را داشت و هر نشان به یک واقعه، یک شخص یا یک پیمان تعلق می‌گرفت؛ چیزی که باید پس از فراموش‌شدن نام‌ها هم باقی می‌ماند."
-                  : "In Eloria, gold was called the memory of the sun, stone the memory of the earth, and thread the path between them. Every house kept its own signs, each tied to a person, an event or a vow meant to outlive the names of those who made it."}
+                  ? "سال‌ها بعد، هنگامی که سپاهی ناشناس به مرزهای الوریا رسید، شورای شهر فهمید نگه‌داشتن تمام بایگانی در یک مکان یعنی امکان نابودی همهٔ گذشته. آرمیتا و هفت نگهبان تصمیم گرفتند بایگانی را به صد نشان تقسیم کنند؛ هر نشان یک نام، یک واقعه و بخشی از نقشهٔ شهر را در خود داشت."
+                  : "Years later, when an unnamed army reached Eloria’s borders, the council understood that keeping the whole archive in one place risked losing the entire past. Armita and the seven Keepers divided it into one hundred Signs; each held a name, an event and a fragment of the city map."}
               </p>
               <p>
                 {isPersian
-                  ? "مشهورترین روایت از شبی آغاز می‌شود که دروازه‌های الوریا برای همیشه بسته شدند. پیش از سپیده، نگهبانان نشان، قطعات زر و سنگ‌های خاندان‌ها را میان بافت‌ها پنهان کردند تا اگر شهر سقوط کرد، تاریخش یک‌جا از بین نرود. صبح که رسید، بخشی از شهر خالی بود و بسیاری از نام‌ها برای همیشه ناپدید شده بودند."
-                  : "The best-known account begins on the night Eloria’s gates were sealed for the last time. Before dawn, the Keepers of the Sign hid family gold and stones within woven cords so the city’s history could not disappear in a single fall. By morning, part of the city stood empty and many names had vanished with it."}
+                  ? "در آخرین شب، دروازه‌ها بسته شدند تا برای خروج خانواده‌ها زمان خریده شود. نگهبانان، نشان‌ها را میان کاروان‌هایی که به شمال، شرق، غرب و جنوب می‌رفتند پخش کردند. قرار بود نسل‌های بعد با کنار هم گذاشتن آن‌ها، نام مردم و نقشهٔ الوریا را دوباره کامل کنند؛ اما آرمیتا و یکی از نگهبانان هرگز از شهر بیرون نیامدند."
+                  : "On the final night, the gates were sealed to buy time for families to leave. The Keepers distributed the Signs among caravans travelling north, east, west and south. Later generations were meant to reunite them and restore Eloria’s names and map, but Armita and one Keeper never left the city."}
               </p>
               <p>
                 {isPersian
-                  ? "سال‌ها بعد، در نقاط دور از هم، جواهرهایی با همان زبان نشانه‌ها پیدا شدند؛ هر کدام تکه‌ای از یک ماجرا و هر کدام متعلق به کسی که دیگر در هیچ سندی نامی از او نبود. آنچه امروز «الوریا» نامیده می‌شود، ادامهٔ همان زبان است: هر اثر یک نشان، و هر نشان بخشی از افسانه‌ای بزرگ‌تر که هنوز تمام حقیقتش آشکار نشده است."
-                  : "Years later, jewels bearing the same language of signs appeared far apart from one another, each holding a fragment of an event and belonging to someone whose name survived nowhere else. What is called Eloria today continues that language: every piece is a sign, and every sign belongs to a larger legend whose full truth has never been recovered."}
+                  ? "برند الوریا ادامهٔ همین مأموریت است. هر اثر تازه، شخصیت ایرانیِ خودش، زادگاه، دوره، انگیزه و ماجرایی کامل دارد؛ بنابراین داستانش به‌تنهایی قابل فهم است. در عین حال، یک سرنخ از شب دروازه‌های بسته در آن باقی می‌ماند و آن را به افسانهٔ مادر و دیگر آثار پیوند می‌دهد. با اضافه‌شدن هر اثر، بخشی تازه از نقشه و تاریخ این دنیا آشکار می‌شود."
+                  : "The Eloria brand continues that mission. Every new piece has its own Iranian character, homeland, era, motive and complete event, so its story is understandable on its own. Yet each retains one clue from the Night of the Sealed Gates, linking it to the mother legend and other pieces. Every new work reveals another part of this world’s map and history."}
               </p>
             </div>
           </div>
