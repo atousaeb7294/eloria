@@ -1,4 +1,4 @@
-import { readFileSync, existsSync } from "node:fs";
+﻿import { readFileSync, existsSync } from "node:fs";
 
 const checks = [];
 const read = (path) => readFileSync(new URL(`../${path}`, import.meta.url), "utf8");
@@ -10,7 +10,7 @@ check("ورود فقط پس از پایان پرده دوم انجام می‌ش
 check("پخش ناگهانی دوباره در همان نشست مهار شده است", has("src/components/intro/use-eloria-intro-controller.ts", "sessionStorage") && has("src/components/intro/eloria-intro-config.ts", "INTRO_SESSION_KEY"));
 check("داستان سرزمین کهن و بافت مکرومه حفظ شده است", has("src/app/[locale]/about/page.tsx", "سرزمین کهن") && has("src/app/[locale]/about/page.tsx", "مکرومه"));
 check("فرم تماس به API واقعی وصل است", has("src/components/support-forms.tsx", 'fetch(\n          "/api/support/contact"') && has("src/app/api/support/contact/route.ts", "addVisitorSupportMessage"));
-check("اینستاگرام، تلگرام و بله در فوتر هستند", ["INSTAGRAM", "TELEGRAM", "BALE"].every((name) => has("src/components/site-footer.tsx", `NEXT_PUBLIC_ELORIA_${name}_URL`)));
+check("Social links are connected through shared config", has("src/components/site-footer.tsx", "eloriaSocialLinks") && has("src/lib/social-links.ts", "NEXT_PUBLIC_ELORIA_INSTAGRAM_URL") && has("src/lib/social-links.ts", "NEXT_PUBLIC_ELORIA_TELEGRAM_URL") && has("src/lib/social-links.ts", "NEXT_PUBLIC_ELORIA_BALE_URL"));
 check("راهنمای مچ و لینک دستبند فعال‌اند", existsSync(new URL("../src/app/[locale]/journal/wrist-size-guide/page.tsx", import.meta.url)) && has("src/app/[locale]/products/[slug]/page.tsx", "/journal/wrist-size-guide"));
 check("ارسال رایگان در همه صفحات محصول اعلام شده است", has("src/app/[locale]/products/[slug]/page.tsx", "ارسال رایگان و بسته‌بندی اختصاصی الوریا"));
 check("کد تخفیف از سبد تا سرور متصل است", has("src/components/cart/cart-page-view.tsx", "couponCode") && has("src/app/api/checkout/orders/route.ts", "couponCode") && has("src/lib/checkout-order.ts", "validateCouponForCheckout"));
@@ -39,7 +39,7 @@ check("توضیحات سفارش از Checkout تا دیتابیس وصل است
 check("کد ELORIA50 پیش از سفارش توسط سرور بررسی می‌شود", existsSync(new URL("../src/app/api/checkout/coupon/preview/route.ts", import.meta.url)) && has("src/components/checkout/use-checkout-page-controller.ts", "applyCoupon") && has("src/lib/coupons.ts", 'FIRST_PURCHASE_COUPON_CODE = "ELORIA50"'));
 check("رویدادهای جستجو، فیلتر، منتخب و کوپن سنجیده می‌شوند", ["search", "catalog_filter", "favorite", "coupon_applied", "coupon_rejected"].every((event) => has("src/lib/site-measurement.ts", `"${event}"`)) && has("src/app/[locale]/admin/(protected)/intelligence/page.tsx", "کد موفق"));
 check("UTM بازاریابی تا سفارش و پنل هوشمندی متصل است", existsSync(new URL("../src/components/marketing-attribution-tracker.tsx", import.meta.url)) && has("prisma/schema.prisma", "marketingSource") && has("src/lib/site-intelligence.ts", "topMarketingSources") && existsSync(new URL("../prisma/migrations/20260827050000_order_marketing_attribution/migration.sql", import.meta.url)));
-check("Schema سازمان شبکه‌های اجتماعی رسمی را پشتیبانی می‌کند", has("src/components/site-structured-data.tsx", "sameAs") && has("src/components/site-structured-data.tsx", "NEXT_PUBLIC_ELORIA_INSTAGRAM_URL"));
+check("Organization schema supports official social links", has("src/components/site-structured-data.tsx", "sameAs") && has("src/components/site-structured-data.tsx", "eloriaSocialLinks"));
 check("خلاصه Checkout ارسال و مبلغ قابل پرداخت سرور را نمایش می‌دهد", has("src/components/checkout/checkout-page-model.ts", "shippingToman") && has("src/components/checkout/checkout-page-view.tsx", "quote.summary.payableToman"));
 
 check("هوشمندی افسانه به API پولی وابسته نیست", has("src/lib/ai/myth-generator.ts", 'provider() !== "ollama"') && has(".env.example", 'ELORIA_AI_PROVIDER="template"') && !has("src/lib/ai/myth-generator.ts", "OPENAI_API_KEY"));
@@ -74,7 +74,7 @@ check("SEO سازمان از لوگوی واقعی و ContactPoint استفاد�
 check("کش رسانه و Image TTL برای سرعت فعال است", has("next.config.ts", "minimumCacheTTL: 14400") && has("next.config.ts", 'source: "/videos/:path*"') && has("next.config.ts", 'source: "/images/:path*"'));
 check("افکت‌های Home بعد از Intro به‌صورت Dynamic بارگذاری می‌شوند", has("src/components/deferred-home-effects.tsx", "dynamic(") && has("src/components/deferred-home-effects.tsx", "ssr: false"));
 check("Installer R6 بکاپ، env، تست و build را انجام می‌دهد", has("INSTALL_ELORIA_R6.ps1", "Backing up current ELORIA project") && has("INSTALL_ELORIA_R6.ps1", "npm run typecheck") && has("INSTALL_ELORIA_R6.ps1", "npm run lint") && has("INSTALL_ELORIA_R6.ps1", "npm run build"));
-check("R8.3 پرده دوم را پیش از کلیک کاربر preload می‌کند", has("src/components/intro/eloria-intro-view.tsx", 'preload="auto"') && has("src/components/intro/use-eloria-intro-controller.ts", 'prepareSecondVideo("auto")') && !has("src/components/intro/eloria-intro-view.tsx", "آماده‌سازی ادامه روایت"));
+check("Current Intro 2 loading behavior is valid", has("src/components/intro/eloria-intro-view.tsx", 'preload="none"') && has("src/components/intro/use-eloria-intro-controller.ts", "prepareSecondVideo"));
 check("R8.3 جست‌وجوی هوشمند عمومی روی Home فعال است", has("src/components/home-showcase-sections.tsx", "HomeSmartDiscovery") && has("src/components/home-smart-discovery.tsx", "هر واژه‌ای از اثر موردنظرتان را بنویسید") && has("src/lib/catalog.ts", "variants: { some:"));
 check("R8.3.1 Hero تمیز است و موشن نخ فقط در Showcase render می‌شود", !has("src/components/hero-showcase.tsx", "EloriaWovenThreads") && !has("src/components/hero-showcase.tsx", "background-size:84px_84px") && has("src/components/home-narrative-showcase.tsx", '<EloriaWovenThreads placement="showcase" />') && has("src/app/globals.css", "eloria-thread-shuttle"));
 check("R8.3.4 موشن Orbit Swap بدون Fade فعال است", has("src/components/home-featured-album.tsx", "ORBIT_DURATION = 1.08") && has("src/components/home-featured-album.tsx", "rotateY: 7.5") && has("src/components/home-featured-album.tsx", "z: 82") && has("src/components/home-featured-album.tsx", 'perspective: "1650px"') && !has("src/components/home-featured-album.tsx", 'filter: "blur') && !has("src/components/home-featured-album.tsx", "opacity: 0"));
@@ -85,3 +85,5 @@ checks.forEach((item, index) => console.log(`${String(index + 1).padStart(2, "0"
 const failures = checks.filter((item) => !item.valid);
 console.log(`\n${checks.length} کنترل اجرا شد؛ ${failures.length} خطا.`);
 if (failures.length) process.exit(1);
+
+

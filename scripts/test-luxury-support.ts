@@ -41,9 +41,13 @@ assert.ok(widget.includes("eloria-open-support"));
 assert.ok(widget.includes("mailto:"));
 
 const selection = read("src/components/smart-selection-assistant.tsx");
+const selectionRoute = read("src/app/api/smart-selection/route.ts");
 assert.ok(selection.includes("eloria-open-selection"));
-assert.ok(selection.includes("availability: \"available\""));
-assert.ok(selection.includes("maxPrice"));
+assert.ok(selection.includes("matchText"));
+assert.ok(selectionRoute.includes('availability: "AVAILABLE"'));
+assert.ok(selectionRoute.includes("maxPriceToman"));
+assert.ok(selectionRoute.includes("seoTitle"));
+assert.ok(selectionRoute.includes("product.legendFa"));
 
 const globalStyles = read("src/app/globals.css");
 assert.ok(globalStyles.includes('@import "@fontsource-variable/vazirmatn"'));

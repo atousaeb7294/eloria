@@ -137,10 +137,10 @@ try {
 
   expect(
     Boolean(
-      sms?.required &&
-        !sms.valid,
+      sms &&
+        !sms.required,
     ),
-    "Customer Auth enabled must require SMS provider.",
+    "Email customer auth must not require an SMS provider until the SMS channel is enabled.",
   );
 } finally {
   for (

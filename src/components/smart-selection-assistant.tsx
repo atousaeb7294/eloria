@@ -21,6 +21,8 @@ type Recommendation = {
   displayPriceToman: string | null;
   image: { imageUrl: string; altFa: string | null; altEn: string | null } | null;
   reason: string;
+  matchText?: string | null;
+  seo?: { title: string; description: string };
 };
 
 type ResponsePayload = {
@@ -42,6 +44,27 @@ const fallbackImages: Record<string, string> = {
   bracelets: "/images/collections/bracelet.jpg",
   earrings: "/images/collections/earring.jpg",
 };
+
+function SelectionOption({ selected, onClick, icon, title, subtitle }: {
+  selected: boolean;
+  onClick: () => void;
+  icon?: ReactNode;
+  title: string;
+  subtitle?: string;
+}) {
+  return (
+    <button type="button" onClick={onClick} className={`relative min-h-20 rounded-2xl border p-4 text-start transition ${selected ? "border-[#efd47f]/70 bg-[#d9b85f]/[.12] shadow-[0_0_28px_rgba(217,184,95,.08)]" : "border-white/[.08] bg-white/[.025] hover:border-[#d9b85f]/30"}`}>
+      <div className="flex items-start gap-3">
+        {icon ? <span className="mt-0.5 text-[#e5ca78]">{icon}</span> : null}
+        <span className="min-w-0">
+          <span className="block text-sm text-[#f4e8cc]">{title}</span>
+          {subtitle ? <span className="mt-1 block text-[11px] leading-5 text-[#bfae8c]/58">{subtitle}</span> : null}
+        </span>
+      </div>
+      {selected ? <Check className="absolute end-3 top-3 size-4 text-[#f0d681]" /> : null}
+    </button>
+  );
+}
 
 export function SmartSelectionAssistant({ locale }: { locale: "fa" | "en" }) {
   const pathname = usePathname() ?? `/${locale}`;
@@ -131,19 +154,6 @@ export function SmartSelectionAssistant({ locale }: { locale: "fa" | "en" }) {
     }
   };
 
-  const Option = ({ selected, onClick, icon, title, subtitle }: { selected: boolean; onClick: () => void; icon?: ReactNode; title: string; subtitle?: string }) => (
-    <button type="button" onClick={onClick} className={`relative min-h-20 rounded-2xl border p-4 text-start transition ${selected ? "border-[#efd47f]/70 bg-[#d9b85f]/[.12] shadow-[0_0_28px_rgba(217,184,95,.08)]" : "border-white/[.08] bg-white/[.025] hover:border-[#d9b85f]/30"}`}>
-      <div className="flex items-start gap-3">
-        {icon ? <span className="mt-0.5 text-[#e5ca78]">{icon}</span> : null}
-        <span className="min-w-0">
-          <span className="block text-sm text-[#f4e8cc]">{title}</span>
-          {subtitle ? <span className="mt-1 block text-[11px] leading-5 text-[#bfae8c]/58">{subtitle}</span> : null}
-        </span>
-      </div>
-      {selected ? <Check className="absolute end-3 top-3 size-4 text-[#f0d681]" /> : null}
-    </button>
-  );
-
   return open ? (
     <div className="fixed inset-0 z-[100] grid place-items-center p-0 sm:p-6" role="dialog" aria-modal="true" aria-label={copy.title} dir={fa ? "rtl" : "ltr"}>
       <button type="button" aria-label={copy.close} onClick={() => setOpen(false)} className="absolute inset-0 bg-black/80 backdrop-blur-md" />
@@ -169,15 +179,15 @@ export function SmartSelectionAssistant({ locale }: { locale: "fa" | "en" }) {
             <div>
               <p className="mb-4 text-sm text-[#eadfc9]">{fa ? "این اثر برای چه کسی است؟" : "Who is this creation for?"}</p>
               <div className="grid gap-3 sm:grid-cols-2">
-                <Option selected={recipient === "self"} onClick={() => setRecipient("self")} icon={<UserRound className="size-5" />} title={fa ? "برای خودم" : "For myself"} subtitle={fa ? "انتخاب بر اساس سلیقه و حس شخصی تو" : "Based on your own taste and mood"} />
-                <Option selected={recipient === "gift"} onClick={() => setRecipient("gift")} icon={<Gift className="size-5" />} title={fa ? "برای هدیه" : "As a gift"} subtitle={fa ? "هدیه‌یاب هوشمند داخل همین تجربه فعال می‌شود" : "Gift-finder logic becomes part of the recommendation"} />
+                <SelectionOption selected={recipient === "self"} onClick={() => setRecipient("self")} icon={<UserRound className="size-5" />} title={fa ? "برای خودم" : "For myself"} subtitle={fa ? "انتخاب بر اساس سلیقه و حس شخصی تو" : "Based on your own taste and mood"} />
+                <SelectionOption selected={recipient === "gift"} onClick={() => setRecipient("gift")} icon={<Gift className="size-5" />} title={fa ? "برای هدیه" : "As a gift"} subtitle={fa ? "هدیه‌یاب هوشمند داخل همین تجربه فعال می‌شود" : "Gift-finder logic becomes part of the recommendation"} />
               </div>
               <p className="mb-4 mt-6 text-sm text-[#eadfc9]">{fa ? "حال‌وهوای نزدیک‌تر به تو کدام است؟" : "Which mood feels closest?"}</p>
               <div className="grid gap-3 sm:grid-cols-2">
-                <Option selected={style === "delicate"} onClick={() => setStyle("delicate")} title={fa ? "ظریف" : "Delicate"} />
-                <Option selected={style === "classic"} onClick={() => setStyle("classic")} title={fa ? "اصیل" : "Refined"} />
-                <Option selected={style === "mysterious"} onClick={() => setStyle("mysterious")} title={fa ? "رازآلود" : "Mysterious"} />
-                <Option selected={style === "bold"} onClick={() => setStyle("bold")} title={fa ? "جسور" : "Bold"} />
+                <SelectionOption selected={style === "delicate"} onClick={() => setStyle("delicate")} title={fa ? "ظریف" : "Delicate"} />
+                <SelectionOption selected={style === "classic"} onClick={() => setStyle("classic")} title={fa ? "اصیل" : "Refined"} />
+                <SelectionOption selected={style === "mysterious"} onClick={() => setStyle("mysterious")} title={fa ? "رازآلود" : "Mysterious"} />
+                <SelectionOption selected={style === "bold"} onClick={() => setStyle("bold")} title={fa ? "جسور" : "Bold"} />
               </div>
             </div>
           )}
@@ -186,15 +196,15 @@ export function SmartSelectionAssistant({ locale }: { locale: "fa" | "en" }) {
             <div>
               <p className="mb-4 text-sm text-[#eadfc9]">{fa ? "جنس و نوع اثر" : "Material and creation type"}</p>
               <div className="grid gap-3 sm:grid-cols-3">
-                <Option selected={material === "all"} onClick={() => setMaterial("all")} icon={<Gem className="size-5" />} title={fa ? "فرقی ندارد" : "Either"} />
-                <Option selected={material === "gold"} onClick={() => setMaterial("gold")} title={fa ? "طلا" : "Gold"} />
-                <Option selected={material === "silver"} onClick={() => setMaterial("silver")} title={fa ? "نقره" : "Silver"} />
+                <SelectionOption selected={material === "all"} onClick={() => setMaterial("all")} icon={<Gem className="size-5" />} title={fa ? "فرقی ندارد" : "Either"} />
+                <SelectionOption selected={material === "gold"} onClick={() => setMaterial("gold")} title={fa ? "طلا" : "Gold"} />
+                <SelectionOption selected={material === "silver"} onClick={() => setMaterial("silver")} title={fa ? "نقره" : "Silver"} />
               </div>
               <div className="mt-5 grid gap-3 sm:grid-cols-2">
-                <Option selected={collection === "all"} onClick={() => setCollection("all")} title={fa ? "انتخاب آزاد" : "Open choice"} />
-                <Option selected={collection === "necklaces"} onClick={() => setCollection("necklaces")} title={fa ? "گردنبند" : "Necklace"} />
-                <Option selected={collection === "bracelets"} onClick={() => setCollection("bracelets")} title={fa ? "دستبند" : "Bracelet"} />
-                <Option selected={collection === "earrings"} onClick={() => setCollection("earrings")} title={fa ? "گوشواره" : "Earrings"} />
+                <SelectionOption selected={collection === "all"} onClick={() => setCollection("all")} title={fa ? "انتخاب آزاد" : "Open choice"} />
+                <SelectionOption selected={collection === "necklaces"} onClick={() => setCollection("necklaces")} title={fa ? "گردنبند" : "Necklace"} />
+                <SelectionOption selected={collection === "bracelets"} onClick={() => setCollection("bracelets")} title={fa ? "دستبند" : "Bracelet"} />
+                <SelectionOption selected={collection === "earrings"} onClick={() => setCollection("earrings")} title={fa ? "گوشواره" : "Earrings"} />
               </div>
             </div>
           )}
@@ -250,6 +260,7 @@ export function SmartSelectionAssistant({ locale }: { locale: "fa" | "en" }) {
                           <p className="text-sm text-[#f1e4c6]">{name}</p>
                           {product.displayPriceToman ? <p className="mt-1 text-xs text-[#dfc673]/78">{Number(product.displayPriceToman).toLocaleString(fa ? "fa-IR" : "en-US")} {fa ? "تومان" : "Toman"}</p> : null}
                           <p className="mt-3 text-[11px] leading-6 text-[#bcae91]/62">{product.reason}</p>
+                          {product.matchText ? <p className="mt-2 line-clamp-2 text-[10px] leading-5 text-[#b8aa8d]/48">{product.matchText}</p> : null}
                         </div>
                       </Link>
                     );

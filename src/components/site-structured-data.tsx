@@ -1,5 +1,6 @@
 import { publicSupportPhone } from "@/lib/legal-business";
 import { siteBaseUrl } from "@/lib/site-url";
+import { eloriaSocialLinks } from "@/lib/social-links";
 
 function safeJson(value: unknown): string {
   return JSON.stringify(value).replace(/</g, "\\u003c");
@@ -27,13 +28,8 @@ export function SiteStructuredData() {
   const base = siteBaseUrl().toString().replace(/\/$/, "");
   const phone = internationalPhone(publicSupportPhone());
 
-  const sameAs = [
-    process.env.NEXT_PUBLIC_ELORIA_INSTAGRAM_URL,
-    process.env.NEXT_PUBLIC_ELORIA_TELEGRAM_URL,
-    process.env.NEXT_PUBLIC_ELORIA_BALE_URL,
-  ]
-    .map((value) => value?.trim())
-    .filter((value): value is string => Boolean(value && /^https:\/\//i.test(value)));
+  const social = eloriaSocialLinks();
+  const sameAs = [social.instagram, social.telegram, social.bale];
 
   const hasMerchantReturnPolicy = returnPolicy(base);
 

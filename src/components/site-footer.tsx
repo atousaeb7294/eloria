@@ -17,6 +17,7 @@ import {
 import Link from "next/link";
 
 import { MeasurementPreferencesButton } from "@/components/measurement-preferences-button";
+import { eloriaSocialLinks } from "@/lib/social-links";
 
 type SiteFooterProps = {
   locale: string;
@@ -83,20 +84,21 @@ export function SiteFooter({ locale }: SiteFooterProps) {
         bale: "Bale",
       };
 
+  const officialSocialLinks = eloriaSocialLinks();
   const socialLinks = [
     {
       label: copy.instagram,
-      href: process.env.NEXT_PUBLIC_ELORIA_INSTAGRAM_URL?.trim() || null,
+      href: officialSocialLinks.instagram,
       icon: Camera,
     },
     {
       label: copy.telegram,
-      href: process.env.NEXT_PUBLIC_ELORIA_TELEGRAM_URL?.trim() || null,
+      href: officialSocialLinks.telegram,
       icon: Send,
     },
     {
       label: copy.bale,
-      href: process.env.NEXT_PUBLIC_ELORIA_BALE_URL?.trim() || null,
+      href: officialSocialLinks.bale,
       icon: MessageCircle,
     },
   ];
@@ -270,7 +272,7 @@ export function SiteFooter({ locale }: SiteFooterProps) {
             <p className="text-xs font-medium text-[#ead9a7]/72">{copy.quickSocial}</p>
             <div className="flex flex-wrap items-center justify-center gap-2">
               {socialLinks.map(({ label, href, icon: SocialIcon }) =>
-                href ? (
+                (
                   <a
                     key={label}
                     href={href}
@@ -281,15 +283,6 @@ export function SiteFooter({ locale }: SiteFooterProps) {
                     <SocialIcon aria-hidden="true" className="size-4" />
                     {label}
                   </a>
-                ) : (
-                  <span
-                    key={label}
-                    title={isPersian ? "لینک این شبکه در تنظیمات سرور وارد نشده است" : "This channel URL is not configured"}
-                    className="inline-flex min-h-10 cursor-not-allowed items-center gap-2 rounded-full border border-white/10 px-4 text-xs text-white/30"
-                  >
-                    <SocialIcon aria-hidden="true" className="size-4" />
-                    {label}
-                  </span>
                 ),
               )}
             </div>

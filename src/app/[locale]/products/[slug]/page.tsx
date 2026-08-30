@@ -129,6 +129,9 @@ async function loadProductPageRecord(
       id: true,
       nameFa: true,
       nameEn: true,
+      mythNameFa: true,
+      mythNameEn: true,
+      material: true,
       descriptionFa: true,
       descriptionEn: true,
       legendFa: true,
@@ -291,10 +294,14 @@ export async function generateMetadata({
       return fallbackProductMetadata(locale, true);
     }
 
-    const title =
-      locale === "fa"
-        ? product.nameFa
-        : product.nameEn;
+    const productName = locale === "fa" ? product.nameFa : product.nameEn;
+    const mythName = locale === "fa" ? product.mythNameFa : product.mythNameEn;
+    const materialName = locale === "fa"
+      ? product.material === "GOLD" ? "طلا" : "نقره"
+      : product.material === "GOLD" ? "Gold" : "Silver";
+    const title = locale === "fa"
+      ? `${productName} ${materialName}${mythName ? `؛ افسانه ${mythName}` : ""}`
+      : `${productName} ${materialName}${mythName ? ` — ${mythName}` : ""}`;
 
     const rawDescription =
       (locale === "fa"
@@ -302,13 +309,17 @@ export async function generateMetadata({
         : product.descriptionEn
       )?.trim() ||
       (locale === "fa"
-        ? "جواهری از دل افسانه"
-        : "A jewel born from legend");
+        ? product.legendFa
+        : product.legendEn
+      )?.trim() ||
+      (locale === "fa"
+        ? `مشاهده مشخصات، روایت اختصاصی و قیمت به‌روز ${productName} ${materialName} در گالری الوریا.`
+        : `Discover the details, individual story and current price of ${productName} ${materialName} at Eloria.`);
 
     const description =
       truncateMetaDescription(
         rawDescription,
-        title,
+        productName,
       );
 
     const image =

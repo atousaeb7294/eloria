@@ -11,7 +11,7 @@ function provider(): "template" | "ollama" {
 function isMythOutput(value: unknown): value is ProductMythOutput {
   if (typeof value !== "object" || value === null) return false;
   const item = value as Record<string, unknown>;
-  return ["mythNameFa", "mythNameEn", "legendFa", "legendEn"].every((key) => typeof item[key] === "string" && (item[key] as string).trim().length > 0);
+  return ["mythKey", "mythNameFa", "mythNameEn", "legendFa", "legendEn"].every((key) => typeof item[key] === "string" && (item[key] as string).trim().length > 0);
 }
 
 export async function generateProductMyth(input: MythInput): Promise<ProductMythOutput> {

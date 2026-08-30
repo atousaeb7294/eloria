@@ -1,6 +1,6 @@
 "use server";
 
-import { generateProductMyth } from "@/lib/product-myth-generator";
+import { generateUnusedProductMyth } from "@/lib/product-myth-generator";
 
 import {
   revalidatePath,
@@ -670,11 +670,17 @@ export async function createAdminProductAction(
       );
 
     
-    const myth =
-      generateProductMyth({
+    const assignedMyths = await withDatabaseRetry(() =>
+      prisma.product.findMany({
+        where: { mythKey: { not: null } },
+        select: { mythKey: true },
+      }),
+    );
+    const myth = generateUnusedProductMyth({
         nameFa: input.nameFa,
         nameEn: input.nameEn,
-      });
+        material: input.material,
+      }, new Set(assignedMyths.flatMap(item => item.mythKey ? [item.mythKey] : [])));
 await ensureUniqueIdentity({
       slug:
         input.slug,
@@ -686,6 +692,7 @@ await ensureUniqueIdentity({
       prisma.product.create({
         data: {
           ...productData(input),
+          mythKey: myth.mythKey,
           mythNameFa: myth.mythNameFa,
           mythNameEn: myth.mythNameEn,
           legendFa: myth.legendFa,
@@ -901,7 +908,6 @@ await ensureUniqueIdentity({
     `/${input.locale}/admin/products/${productId}?saved=1`,
   );
 }
-
 
 
 

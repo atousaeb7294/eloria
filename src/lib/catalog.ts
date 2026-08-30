@@ -21,6 +21,12 @@ export type CatalogProduct = {
   sku: string | null;
   nameFa: string;
   nameEn: string;
+  mythNameFa: string | null;
+  mythNameEn: string | null;
+  descriptionFa: string | null;
+  descriptionEn: string | null;
+  legendFa: string | null;
+  legendEn: string | null;
   material: CatalogMaterial;
   collectionSlug: string;
   stock: number;
@@ -219,6 +225,12 @@ const catalogCardSelect = {
   sku: true,
   nameFa: true,
   nameEn: true,
+  mythNameFa: true,
+  mythNameEn: true,
+  descriptionFa: true,
+  descriptionEn: true,
+  legendFa: true,
+  legendEn: true,
   material: true,
   stock: true,
   status: true,
@@ -236,6 +248,12 @@ function mapCatalogProduct(product: {
   sku: string | null;
   nameFa: string;
   nameEn: string;
+  mythNameFa: string | null;
+  mythNameEn: string | null;
+  descriptionFa: string | null;
+  descriptionEn: string | null;
+  legendFa: string | null;
+  legendEn: string | null;
   material: CatalogMaterial;
   stock: number;
   status: "DRAFT" | "ACTIVE" | "OUT_OF_STOCK" | "ARCHIVED";
@@ -249,6 +267,12 @@ function mapCatalogProduct(product: {
     sku: product.sku,
     nameFa: product.nameFa,
     nameEn: product.nameEn,
+    mythNameFa: product.mythNameFa,
+    mythNameEn: product.mythNameEn,
+    descriptionFa: product.descriptionFa,
+    descriptionEn: product.descriptionEn,
+    legendFa: product.legendFa,
+    legendEn: product.legendEn,
     material: product.material,
     collectionSlug: product.collection.slug,
     stock: product.stock,

@@ -224,6 +224,7 @@ export async function addVisitorSupportMessage(input: {
     });
 
     return {
+      conversationId: conversation.id,
       tokenForCookie,
       message: messageDto(message),
     };

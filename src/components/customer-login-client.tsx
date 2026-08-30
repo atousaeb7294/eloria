@@ -65,7 +65,7 @@ export function CustomerLoginClient({
     if (nextChannel === "SMS") {
       setMessage(
         fa
-          ? "ورود پیامکی پس از فعالسازی سرویس پیامک در دسترس قرار میگیرد."
+          ? "ورود پیامکی پس از فعال‌سازی سرویس پیامک در دسترس قرار می‌گیرد."
           : "SMS login will be available after the SMS service is activated.",
       );
       return;
@@ -290,13 +290,13 @@ export function CustomerLoginClient({
           }
         >
           {fa
-            ? "حساب الاریا"
+            ? "حساب الوریا"
             : "Your Eloria account"}
         </h1>
 
         <p className="mt-4 text-sm leading-8 text-[#cdbf9d]/65">
           {fa
-            ? "با کد یکبارمصرف وارد شوید. سفارشها آدرسها علاقهمندیها و اعلانهای شما در همین حساب نگهداری میشوند."
+            ? "با کد یک‌بارمصرف وارد شوید. سفارش‌ها، آدرس‌ها، علاقه‌مندی‌ها و اعلان‌های شما در همین حساب نگهداری می‌شوند."
             : "Sign in with a one-time code. Your orders, addresses, favorites and notifications stay connected to this account."}
         </p>
 
@@ -401,7 +401,7 @@ export function CustomerLoginClient({
 
               <p className="text-[11px] leading-6 text-[#bcae8d]/45">
                 {fa
-                  ? "کد ورود به ایمیل ارسال میشود. شماره موبایل برای اتصال امن حساب به سفارشها استفاده میشود و در این مرحله پیامکی برای آن ارسال نمیشود."
+                  ? "کد ورود به ایمیل ارسال می‌شود. شماره موبایل برای اتصال امن حساب به سفارش‌ها استفاده می‌شود و در این مرحله پیامکی برای آن ارسال نمی‌شود."
                   : "The login code is sent by email. Your mobile number links the account securely to orders; no SMS is sent at this stage."}
               </p>
 

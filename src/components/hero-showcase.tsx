@@ -22,6 +22,7 @@ type HeroCopy = {
   description: string;
   primaryAction: string;
   secondaryAction: string;
+  collectionsAction: string;
   welcome: string;
 };
 
@@ -56,6 +57,9 @@ export function HeroShowcase({
           secondaryAction:
             "مشاهده تمام آثار",
 
+          collectionsAction:
+            "گنجینه‌های الوریا",
+
           welcome:
             "به جهان الوریا خوش آمدید",
         }
@@ -77,6 +81,9 @@ export function HeroShowcase({
 
           secondaryAction:
             "View all creations",
+
+          collectionsAction:
+            "Eloria collections",
 
           welcome:
             "Welcome to the World of Eloria",
@@ -301,7 +308,7 @@ export function HeroShowcase({
               delay: 0.5,
               duration: 0.85,
             }}
-            className="mt-6 flex w-full max-w-[420px] flex-col items-stretch justify-center gap-3 min-[470px]:flex-row sm:mt-7"
+            className="mt-6 grid w-full max-w-[660px] grid-cols-1 gap-3 min-[470px]:grid-cols-2 sm:mt-7 lg:grid-cols-3"
           >
             {/* دکمه اصلی */}
             <button
@@ -389,6 +396,22 @@ export function HeroShowcase({
                 <span>
                   {copy.secondaryAction}
                 </span>
+              </span>
+            </Link>
+
+            {/* مسیر مستقیم گنجینه‌ها */}
+            <Link
+              href={`/${locale}/collections`}
+              className="group relative isolate flex h-[50px] items-center justify-center overflow-hidden rounded-[13px] border border-[#dfc16f]/34 bg-[linear-gradient(140deg,rgba(30,20,5,0.78),rgba(7,48,34,0.68))] px-5 text-[12px] font-medium text-[#f8e9c8] shadow-[inset_0_1px_0_rgba(255,255,255,0.07),0_16px_38px_rgba(0,0,0,0.34)] backdrop-blur-xl transition duration-500 hover:-translate-y-1 hover:border-[#eccd77]/66 hover:text-[#ffe4a0] min-[470px]:col-span-2 lg:col-span-1 sm:text-[13px]"
+            >
+              <span className="pointer-events-none absolute inset-[3px] rounded-[10px] border border-white/[0.04]" />
+              <span className="pointer-events-none absolute inset-x-7 bottom-0 h-px bg-gradient-to-r from-transparent via-[#e5c56d]/62 to-transparent" />
+              <span className="relative z-10 flex items-center justify-center gap-2.5">
+                <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" className="size-[16px] text-[#e7c970]">
+                  <path d="M5 7.5L12 3L19 7.5V16.5L12 21L5 16.5V7.5Z" stroke="currentColor" strokeWidth="1.2" />
+                  <path d="M8.5 10L12 7.7L15.5 10V14L12 16.3L8.5 14V10Z" stroke="currentColor" strokeWidth="1" opacity=".75" />
+                </svg>
+                <span>{copy.collectionsAction}</span>
               </span>
             </Link>
           </motion.div>

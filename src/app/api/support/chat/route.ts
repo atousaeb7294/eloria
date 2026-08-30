@@ -158,6 +158,7 @@ export async function POST(request: NextRequest) {
       {
         successful: true,
         message: "پیام شما ثبت شد. پاسخ پشتیبانی در همین گفت‌وگو نمایش داده می‌شود.",
+        conversationId: saved.conversationId,
         supportMessage: saved.message,
       },
       { headers: noStoreHeaders() },

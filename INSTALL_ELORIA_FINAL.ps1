@@ -14,8 +14,8 @@ Set-Location C:\
 Get-Process node -ErrorAction SilentlyContinue | Stop-Process -Force
 
 $stamp = Get-Date -Format 'yyyyMMdd_HHmmss'
-$backup = "C:\eloria_backup_r8_3_4_$stamp"
-$safe = "C:\eloria_safe_r8_3_4_$stamp"
+$backup = "C:\eloria_backup_r10_$stamp"
+$safe = "C:\eloria_safe_r10_$stamp"
 New-Item -ItemType Directory -Path $backup -Force | Out-Null
 New-Item -ItemType Directory -Path $safe -Force | Out-Null
 
@@ -29,7 +29,7 @@ robocopy $Target $backup /E /XD node_modules .next .git /R:1 /W:1 /NFL /NDL /NP 
 if ($LASTEXITCODE -ge 8) { throw "Project backup failed with Robocopy code $LASTEXITCODE" }
 if (Test-Path "$Target\.env") { Copy-Item "$Target\.env" "$safe\.env" -Force }
 
-Write-Host "[2/7] Applying ELORIA R8.3.4..." -ForegroundColor Cyan
+Write-Host "[2/7] Applying the current ELORIA release..." -ForegroundColor Cyan
 robocopy $Source $Target /MIR /XF .env /XD node_modules .next .git /R:2 /W:1 /NFL /NDL /NP | Out-Host
 if ($LASTEXITCODE -ge 8) { throw "Project copy failed with Robocopy code $LASTEXITCODE" }
 if (Test-Path "$safe\.env") { Copy-Item "$safe\.env" "$Target\.env" -Force }
@@ -58,6 +58,8 @@ npx prisma generate
 if ($LASTEXITCODE -ne 0) { throw "prisma generate failed" }
 npx prisma migrate deploy
 if ($LASTEXITCODE -ne 0) { throw "Database migration failed. Backup remains at $backup" }
+npm run myths:assign
+if ($LASTEXITCODE -ne 0) { throw "Unique product myth assignment failed. Backup remains at $backup" }
 
 Write-Host "[6/7] Running typecheck and lint..." -ForegroundColor Cyan
 npm run typecheck
@@ -69,7 +71,7 @@ Write-Host "[7/7] Building production bundle..." -ForegroundColor Cyan
 npm run build
 if ($LASTEXITCODE -ne 0) { throw "Production build failed" }
 
-Write-Host "ELORIA R8.3.4 installed successfully." -ForegroundColor Green
+Write-Host "The current ELORIA release was installed successfully." -ForegroundColor Green
 Write-Host "Project backup: $backup"
 Write-Host "Environment backup: $safe\.env"
 Write-Host "db:seed was NOT executed." -ForegroundColor Yellow

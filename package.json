@@ -14,7 +14,7 @@
     "check:env": "tsx scripts/check-production-env.ts",
     "audit:security": "tsx scripts/security-audit.ts",
     "verify": "npm run lint && npm run build && npm run test:visual && npm run audit:security && npm run audit:quality",
-    "test:pricing": "tsx scripts/test-pricing-engine.ts && tsx scripts/test-metal-rate-freshness.ts && tsx scripts/test-metal-rate-sale-policy.ts && tsx scripts/test-brs-derived-rate-timestamp.ts && tsx scripts/test-metal-price-write-decision.ts && tsx scripts/test-metal-rate-anomaly.ts",
+    "test:pricing": "node --import tsx scripts/test-pricing-engine.ts && node --import tsx scripts/test-metal-rate-freshness.ts && node --import tsx scripts/test-metal-rate-sale-policy.ts && node --import tsx scripts/test-brs-derived-rate-timestamp.ts && node --import tsx scripts/test-metal-price-write-decision.ts && node --import tsx scripts/test-metal-rate-anomaly.ts",
     "stock:sync": "tsx scripts/sync-product-stock.ts",
     "check:inventory": "tsx scripts/check-inventory-consistency.ts",
     "db:migrate": "prisma migrate deploy",
@@ -49,7 +49,7 @@
     "test:shipping": "tsx scripts/test-shipping.ts",
     "test:catalog-guards": "node --import tsx scripts/test-catalog-guards.ts",
     "test:checkout-idempotency": "node --import tsx scripts/test-checkout-idempotency.ts",
-    "test:finance": "tsx scripts/test-finance-analytics.ts",
+    "test:finance": "node --import tsx scripts/test-finance-analytics.ts",
     "test:content-seo": "node --import tsx scripts/test-content-seo.ts",
     "test:smart-operations": "node --import tsx scripts/test-smart-operations.ts",
     "check:storefront-env": "tsx scripts/check-storefront-production-env.ts",
@@ -67,7 +67,9 @@
     "test:luxury-support": "node --import tsx scripts/test-luxury-support.ts",
     "test:payments": "tsx scripts/test-zarinpal-simulation.ts",
     "test:admin-hardening": "tsx scripts/test-admin-hardening.ts",
-    "test:supply-chain": "node scripts/check-supply-chain.mjs"
+    "test:supply-chain": "node scripts/check-supply-chain.mjs",
+    "myths:assign": "tsx scripts/assign-unique-product-myths.ts",
+    "test:myths": "node --import tsx scripts/test-product-myth-library.ts"
   },
   "dependencies": {
     "@base-ui/react": "^1.6.0",

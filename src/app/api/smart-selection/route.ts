@@ -122,10 +122,29 @@ export async function POST(request: NextRequest) {
       if (primary.products.length === 0) usedClue = false;
     }
 
-    const selected = products.slice(0, 3).map(product => ({
-      ...product,
-      reason: locale === "fa" ? reasonFa(payload, product, usedClue) : reasonEn(payload, product, usedClue),
-    }));
+    const selected = products.slice(0, 3).map(product => {
+      const name = locale === "fa" ? product.nameFa : product.nameEn;
+      const mythName = locale === "fa" ? product.mythNameFa : product.mythNameEn;
+      const narrative = (locale === "fa"
+        ? product.legendFa || product.descriptionFa
+        : product.legendEn || product.descriptionEn)?.trim() || "";
+      const materialLabel = locale === "fa"
+        ? product.material === "GOLD" ? "طلا" : "نقره"
+        : product.material === "GOLD" ? "gold" : "silver";
+      const seoTitle = locale === "fa"
+        ? `${name} ${materialLabel}${mythName ? ` با افسانه ${mythName}` : ""} | الوریا`
+        : `${name} ${materialLabel}${mythName ? ` — ${mythName}` : ""} | ELORIA`;
+      const seoDescription = (narrative || (locale === "fa"
+        ? `مشاهده مشخصات، قیمت و روایت اختصاصی ${name} در گالری جواهرات الوریا.`
+        : `Discover the details, price and individual story of ${name} at Eloria.`)).slice(0, 170);
+
+      return {
+        ...product,
+        reason: locale === "fa" ? reasonFa(payload, product, usedClue) : reasonEn(payload, product, usedClue),
+        matchText: narrative.slice(0, 220) || null,
+        seo: { title: seoTitle.slice(0, 70), description: seoDescription },
+      };
+    });
 
     return NextResponse.json(
       {

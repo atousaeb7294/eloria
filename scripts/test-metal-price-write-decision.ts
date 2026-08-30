@@ -1,8 +1,17 @@
 import assert from "node:assert/strict";
 
-import {
+// این آزمون فقط منطق تصمیم‌گیری را می‌سنجد و نباید به دیتابیس زنده وابسته باشد.
+process.env.DATABASE_URL ??=
+  "postgresql://test:test@127.0.0.1:5432/eloria_test";
+
+const {
   decideCurrentRateWrite,
-} from "../src/lib/metal-price-sync";
+} =
+// این require عمداً بعد از تنظیم DATABASE_URL اجرا می‌شود تا تست خالص، اتصال دیتابیس نسازد.
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+require(
+  "../src/lib/metal-price-sync"
+);
 
 /**
  * حالت اول:

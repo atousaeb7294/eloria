@@ -1,63 +1,77 @@
-type ProductMythInput = {
-  nameFa: string;
-  nameEn?: string;
-  material?: string;
-};
+type ProductMythInput = { nameFa: string; nameEn?: string; material?: string };
 
 export type ProductMythOutput = {
+  mythKey: string;
   mythNameFa: string;
   mythNameEn: string;
   legendFa: string;
   legendEn: string;
 };
 
-const myths = [
-  {
-    fa: "آذرگون",
-    en: "Azargoon",
-    legendFa:
-      "در روایت‌های سرزمین کهن، آذرگون نشانی از روشنایی بود که میان گره‌های دست‌بافت جای می‌گرفت و با درخشش فلز و سنگ، راه خود را پیدا می‌کرد.",
-    legendEn:
-      "In the tales of the ancient land, Azargoon was a light carried through handwoven knots, finding its path beside precious metal and stone.",
-  },
-  {
-    fa: "ماه‌تاب",
-    en: "Mahtaab",
-    legendFa:
-      "می‌گویند ماه‌تاب از رشته‌هایی شکل گرفت که هنرمندان الوریا با صبر به هم گره می‌زدند و در دل آن، قطعه‌ای درخشان را چون یادگاری از آسمان می‌نشاندند.",
-    legendEn:
-      "Mahtaab is said to have been formed from patient handwoven threads, holding a luminous piece at its heart like a memory of the sky.",
-  },
-  {
-    fa: "زرین‌فر",
-    en: "Zarrinfer",
-    legendFa:
-      "زرین‌فر در افسانه‌های الوریا نام پیوندی بود میان هنر دست و فلز گران‌بها؛ جایی که هر گره بخشی از داستان و هر درخشش مهر پایانی آن بود.",
-    legendEn:
-      "In Eloria's legends, Zarrinfer named the bond between handcraft and precious metal, where every knot carried a story and every gleam sealed it.",
-  },
-  {
-    fa: "سنگ‌آوا",
-    en: "Sangava",
-    legendFa:
-      "سنگ‌آوا از قصهٔ جواهرهایی می‌آید که میان بافت‌های مکرومه آرام می‌گرفتند؛ گویی سنگ، طلا و نخ سه زبان متفاوت برای روایت یک یادگار بودند.",
-    legendEn:
-      "Sangava comes from the tale of gems resting within macrame weaves, as if stone, gold and thread were three languages telling one keepsake.",
-  },
-];
+const roots = [
+  { fa: "آذر", en: "Azar", symbol: "آتش پاک", place: "آتشکده‌ای بر فراز کوه" },
+  { fa: "مهر", en: "Mehr", symbol: "پیمان و روشنایی", place: "دشت‌های روشن پارس" },
+  { fa: "ماه", en: "Mah", symbol: "نور آرام شب", place: "کنار چشمه‌ای زیر ماه" },
+  { fa: "خور", en: "Khor", symbol: "گرمای خورشید", place: "ایوانی رو به سپیده‌دم" },
+  { fa: "سپند", en: "Sepand", symbol: "پاکی و نگهبانی", place: "باغی پوشیده از اسپند" },
+  { fa: "باران", en: "Baran", symbol: "باروری زمین", place: "دامنه‌های سبز البرز" },
+  { fa: "دریا", en: "Darya", symbol: "ژرفای آب", place: "کرانه‌های نیلگون جنوب" },
+  { fa: "البرز", en: "Alborz", symbol: "استواری کوه", place: "گذرگاه‌های بلند البرز" },
+  { fa: "پارس", en: "Pars", symbol: "شکوه سرزمین ایران", place: "سنگ‌نگاره‌های پارس" },
+  { fa: "سروش", en: "Soroush", symbol: "پیام نیک", place: "بامداد خاموش یک نیایشگاه" },
+] as const;
+
+const endings = [
+  { fa: "دخت", en: "Dokht", gift: "دل را از فراموشی نگه می‌داشت" },
+  { fa: "آوا", en: "Ava", gift: "صدای آرزوهای نیک را بازمی‌گرداند" },
+  { fa: "گون", en: "Goon", gift: "رنگ امید را در روزهای دشوار زنده می‌کرد" },
+  { fa: "نوش", en: "Noush", gift: "شادی آرام را به خانه می‌آورد" },
+  { fa: "چهر", en: "Chehr", gift: "چهره راستین صاحبش را روشن می‌ساخت" },
+  { fa: "رخ", en: "Rokh", gift: "جرئت آغاز دوباره می‌بخشید" },
+  { fa: "تاب", en: "Tab", gift: "نور پنهان درون را آشکار می‌کرد" },
+  { fa: "بانو", en: "Banoo", gift: "نشانه خرد و وقار بود" },
+  { fa: "فر", en: "Far", gift: "فرّه نیک و سربلندی را یادآوری می‌کرد" },
+  { fa: "پر", en: "Par", gift: "راه خیال را تا آسمان می‌گشود" },
+] as const;
+
+export const ELORIA_MYTH_LIBRARY: readonly ProductMythOutput[] = roots.flatMap(
+  (root, rootIndex) => endings.map((ending, endingIndex) => {
+    const key = `iranian-myth-${String(rootIndex * 10 + endingIndex + 1).padStart(3, "0")}`;
+    const mythNameFa = `${root.fa}${ending.fa}`;
+    const mythNameEn = `${root.en}${ending.en}`;
+    return {
+      mythKey: key,
+      mythNameFa,
+      mythNameEn,
+      legendFa: `در افسانه‌های خیالی الوریا، «${mythNameFa}» یادگاری از ${root.place} بود؛ نشانی از ${root.symbol} که می‌گفتند ${ending.gift}.`,
+      legendEn: `In Eloria's imagined Persian tales, “${mythNameEn}” was a keepsake of ancient Iran, carrying a distinct blessing of light and memory.`,
+    };
+  }),
+);
 
 function stableIndex(value: string): number {
   let hash = 0;
   for (const char of value) hash = (hash * 31 + char.charCodeAt(0)) >>> 0;
-  return hash % myths.length;
+  return hash % ELORIA_MYTH_LIBRARY.length;
+}
+
+function personalize(myth: ProductMythOutput, input: ProductMythInput): ProductMythOutput {
+  return {
+    ...myth,
+    legendFa: `${myth.legendFa} این روایت یکتا برای «${input.nameFa}» در دفتر آثار الوریا ثبت شده است.`,
+    legendEn: `${myth.legendEn} This one-of-a-kind story is recorded for “${input.nameEn ?? input.nameFa}” in Eloria's book of creations.`,
+  };
 }
 
 export function generateProductMyth(input: ProductMythInput): ProductMythOutput {
-  const myth = myths[stableIndex(`${input.nameFa}|${input.nameEn ?? ""}|${input.material ?? ""}`)];
-  return {
-    mythNameFa: myth.fa,
-    mythNameEn: myth.en,
-    legendFa: `${myth.legendFa} این روایت برای «${input.nameFa}» در دفتر آثار الوریا ثبت شده است.`,
-    legendEn: `${myth.legendEn} This story is recorded in Eloria's book of creations for “${input.nameEn ?? input.nameFa}”.`,
-  };
+  return personalize(ELORIA_MYTH_LIBRARY[stableIndex(`${input.nameFa}|${input.nameEn ?? ""}|${input.material ?? ""}`)], input);
+}
+
+export function generateUnusedProductMyth(input: ProductMythInput, usedKeys: ReadonlySet<string>): ProductMythOutput {
+  const start = stableIndex(`${input.nameFa}|${input.nameEn ?? ""}|${input.material ?? ""}`);
+  for (let offset = 0; offset < ELORIA_MYTH_LIBRARY.length; offset += 1) {
+    const candidate = ELORIA_MYTH_LIBRARY[(start + offset) % ELORIA_MYTH_LIBRARY.length];
+    if (!usedKeys.has(candidate.mythKey)) return personalize(candidate, input);
+  }
+  throw new Error("ELORIA_MYTH_LIBRARY_EXHAUSTED");
 }

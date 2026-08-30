@@ -106,6 +106,7 @@ model Product {
 
   mythNameFa          String?
   mythNameEn          String?
+  mythKey             String?                @unique
 
   legendFa            String?
   legendEn            String?
@@ -920,4 +921,3 @@ enum SupportMessageAuthor {
   VISITOR
   ADMIN
 }
-

@@ -30,6 +30,7 @@ type ChatSnapshot = {
   message?: string;
   agentOnline?: boolean;
   supportEmail?: string | null;
+  conversationId?: string;
   conversation?: { id: string; status: "open" | "closed" } | null;
   messages?: ChatMessage[];
 };
@@ -196,7 +197,8 @@ export function CustomerSupportWidget({ locale }: { locale: "fa" | "en" }) {
       setMessage("");
       setTurnstileToken(null);
       setTurnstileGeneration((value) => value + 1);
-      setFeedback({ tone: "success", text: data.message || copy.success });
+      const ticketCode = data.conversationId ? `EL-${data.conversationId.slice(-8).toUpperCase()}` : null;
+      setFeedback({ tone: "success", text: !agentOnline && ticketCode ? (locale === "fa" ? `پیام شما ثبت شد. کد پیگیری: ${ticketCode}` : `Your message was saved. Tracking code: ${ticketCode}`) : (data.message || copy.success) });
       await load();
     } catch (error) {
       setFeedback({
