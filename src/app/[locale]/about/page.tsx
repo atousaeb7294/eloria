@@ -140,8 +140,8 @@ export default async function AboutPage({ params }: AboutPageProps) {
 
           <p className="mx-auto max-w-3xl text-sm leading-9 text-[#d8caaa]/72 sm:text-base">
             {isPersian
-              ? "الوریا از پیوند هنر جواهرسازی، شکوه ایران کهن و روایت‌های ماندگار شکل گرفته است؛ جهانی که در آن هر جواهر می‌تواند نشانی از هویت، خاطره و افسانه باشد."
-              : "Eloria was born from the union of jewelry artistry, the grandeur of ancient Iran and enduring narratives—a world where every jewel can become a symbol of identity, memory and legend."}
+              ? "الوریا نام سرزمینی است که در روایت‌ها «سرزمین افسانه‌ها» خوانده می‌شد؛ جایی که زر، سنگ و بافت فقط زینت نبودند، بلکه نشانه‌هایی برای نگه‌داشتن پیمان‌ها، خاطره‌ها و رازها بودند."
+              : "Eloria is the name of a lost realm remembered as the Land of Legends, where gold, stone and woven thread were not merely ornament, but vessels for vows, memory and secrets."}
           </p>
         </header>
 
@@ -152,7 +152,7 @@ export default async function AboutPage({ params }: AboutPageProps) {
           <div className="relative grid items-center gap-9 lg:grid-cols-[0.75fr_1.25fr]">
             <div>
               <p className="text-[9px] uppercase tracking-[0.4em] text-[#d3bb78]/58">
-                {isPersian ? "ریشه و روایت" : "Roots and Narrative"}
+                {isPersian ? "آغاز افسانه" : "The Beginning"}
               </p>
               <h2
                 className={[
@@ -163,21 +163,21 @@ export default async function AboutPage({ params }: AboutPageProps) {
                 ].join(" ")}
               >
                 {isPersian
-                  ? "از میراث گذشته تا جواهر امروز"
-                  : "From Ancient Heritage to Modern Jewelry"}
+                  ? "سرزمینی که از نقشه‌ها محو شد"
+                  : "The realm erased from maps"}
               </h2>
             </div>
 
             <div className="space-y-4 text-sm leading-9 text-[#d6c8aa]/70 sm:text-base">
               <p>
                 {isPersian
-                  ? "نشانه‌ها، خطوط و تناسبات در جهان الوریا از معماری، طبیعت، اسطوره و هنر ایران الهام می‌گیرند؛ اما نتیجه، بازسازی گذشته نیست. هر جواهر برای زندگی امروز شکل می‌گیرد."
-                  : "Symbols, lines and proportions in the world of Eloria draw inspiration from Iranian architecture, nature, mythology and art, yet the result is not a reproduction of the past. Every jewel is shaped for life today."}
+                  ? "در روایت‌های قدیمی، الوریا میان کوه، کویر و دریا قرار داشت؛ سرزمینی که مردمش باور داشتند بعضی لحظه‌ها نباید فقط در حافظهٔ انسان بمانند. برای همین عهدها، سوگ‌ها، عشق‌ها و پیروزی‌ها را در طلا، سنگ و گره ثبت می‌کردند تا چیزی از آن لحظه برای نسل بعد باقی بماند."
+                  : "Old accounts place Eloria between mountain, desert and sea. Its people believed some moments should not live only in memory, so vows, grief, love and victory were bound into gold, stone and woven knots for the next generation to inherit."}
               </p>
               <p className="text-[#cbbb9d]/62">
                 {isPersian
-                  ? "هدف الوریا ساختن جواهرهایی است که در نگاه نخست زیبا باشند و در همراهی طولانی، معنای شخصی‌تری پیدا کنند."
-                  : "Eloria creates jewelry that is beautiful at first sight and gains a more personal meaning through years of companionship."}
+                  ? "زرگران الوریا را «نگهبانان نشان» می‌نامیدند؛ زیرا هر قطعه پیش از ساخته‌شدن صاحب معنایی مشخص می‌شد. هیچ دو نشان قرار نبود داستان یکسانی داشته باشند."
+                  : "Eloria’s jewelers were known as Keepers of the Sign, because every piece was given a meaning before it was made. No two signs were meant to carry the same story."}
               </p>
             </div>
           </div>
@@ -189,7 +189,7 @@ export default async function AboutPage({ params }: AboutPageProps) {
 
           <div className="relative mx-auto max-w-4xl">
             <p className="text-[9px] uppercase tracking-[0.4em] text-[#d3bb78]/58">
-              {isPersian ? "افسانهٔ سرزمین افسانه‌ها" : "The Legend of the Land of Legends"}
+              {isPersian ? "افسانهٔ مادر الوریا" : "The Mother Legend of Eloria"}
             </p>
             <h2
               className={[
@@ -199,24 +199,24 @@ export default async function AboutPage({ params }: AboutPageProps) {
                   : "text-3xl font-semibold leading-tight sm:text-4xl",
               ].join(" ")}
             >
-              {isPersian ? "الوریا؛ سرزمین افسانه‌ها و جواهری که از تارِ زمان بافته شد" : "Eloria; the Land of Legends and the jewel woven from time"}
+              {isPersian ? "الوریا؛ سرزمین افسانه‌ها و نشان‌هایی که باقی ماندند" : "Eloria; the Land of Legends and the signs that remained"}
             </h2>
 
             <div className="mt-6 space-y-5 text-sm leading-9 text-[#d6c8aa]/72 sm:text-base">
               <p>
                 {isPersian
-                  ? "در روایت برند الوریا، نام این جهان به معنای «سرزمین افسانه‌ها» است؛ سرزمینی خیالی الهام‌گرفته از شکوه ایران کهن؛ جایی در مرز میان تاریخ و خیال، که زرگران، سنگ‌تراشان و بافندگان هر کدام بخشی از راز زمین را در دست داشتند. می‌گفتند طلا حافظهٔ خورشید است، سنگ‌ها خاطرهٔ کوه‌اند و نخ، راهی است که این دو را به زندگی انسان پیوند می‌دهد."
-                  : "In Eloria’s brand story, its name means “the Land of Legends”: an imagined realm inspired by the splendour of ancient Iran, a realm on the border of history and imagination, where goldsmiths, stone cutters and weavers each guarded a part of the earth’s secret. Gold was said to hold the memory of the sun, stones the memory of the mountains, and thread the path that joined both to human life."}
+                  ? "در الوریا، طلا را حافظهٔ خورشید، سنگ را حافظهٔ زمین و نخ را راهی میان این دو می‌دانستند. هر خاندان نشانه‌های خودش را داشت و هر نشان به یک واقعه، یک شخص یا یک پیمان تعلق می‌گرفت؛ چیزی که باید پس از فراموش‌شدن نام‌ها هم باقی می‌ماند."
+                  : "In Eloria, gold was called the memory of the sun, stone the memory of the earth, and thread the path between them. Every house kept its own signs, each tied to a person, an event or a vow meant to outlive the names of those who made it."}
               </p>
               <p>
                 {isPersian
-                  ? "روزی بافنده‌ای جوان در کارگاه خاموش خود رشته‌های مکرومه را گره زد؛ اما به جای آن‌که بافت را تنها با نخ ادامه دهد، میان هر گره قطعه‌ای کوچک از طلا و سنگی زینتی نشاند. عقیق، فیروزه و سنگ‌های رنگین در تارها جای گرفتند و قطعات طلا چون نشانه‌هایی از نور میان آن‌ها درخشیدند. با هر گره، جواهر نه ساخته، بلکه روایت می‌شد؛ گویی تارها نقشهٔ سرزمین افسانه‌ها را دوباره می‌بافتند."
-                  : "One day, a young artisan tied macramé cords in a quiet workshop. Instead of continuing with thread alone, the artisan placed a small piece of gold or an ornamental stone between the knots. Agate, turquoise and coloured stones settled into the weave, while fragments of gold shone like signs of light. With every knot, the jewel was not merely made but narrated, as if the cords were weaving the map of the Land of Legends anew."}
+                  ? "مشهورترین روایت از شبی آغاز می‌شود که دروازه‌های الوریا برای همیشه بسته شدند. پیش از سپیده، نگهبانان نشان، قطعات زر و سنگ‌های خاندان‌ها را میان بافت‌ها پنهان کردند تا اگر شهر سقوط کرد، تاریخش یک‌جا از بین نرود. صبح که رسید، بخشی از شهر خالی بود و بسیاری از نام‌ها برای همیشه ناپدید شده بودند."
+                  : "The best-known account begins on the night Eloria’s gates were sealed for the last time. Before dawn, the Keepers of the Sign hid family gold and stones within woven cords so the city’s history could not disappear in a single fall. By morning, part of the city stood empty and many names had vanished with it."}
               </p>
               <p>
                 {isPersian
-                  ? "آن اثر را نخستین «بافتهٔ الوریا» نامیدند؛ جواهری که ارزشش فقط در فلز یا سنگ نبود، بلکه در پیوند آن‌ها با دست، صبر و داستان نهفته بود. از آن پس گفته شد هر قطعهٔ الوریا باید چیزی از همان پیمان را با خود داشته باشد: میراثی از گذشته، ظرافتی برای امروز و فضایی خالی برای داستانی که صاحب آیندهٔ آن خواهد نوشت."
-                  : "They called the piece the first “Eloria Weave”: a jewel whose value did not live only in metal or stone, but in their bond with handwork, patience and story. From then on, every Eloria piece was said to carry part of the same covenant: a heritage from the past, refinement for the present, and an open space for the story its future owner would write."}
+                  ? "سال‌ها بعد، در نقاط دور از هم، جواهرهایی با همان زبان نشانه‌ها پیدا شدند؛ هر کدام تکه‌ای از یک ماجرا و هر کدام متعلق به کسی که دیگر در هیچ سندی نامی از او نبود. آنچه امروز «الوریا» نامیده می‌شود، ادامهٔ همان زبان است: هر اثر یک نشان، و هر نشان بخشی از افسانه‌ای بزرگ‌تر که هنوز تمام حقیقتش آشکار نشده است."
+                  : "Years later, jewels bearing the same language of signs appeared far apart from one another, each holding a fragment of an event and belonging to someone whose name survived nowhere else. What is called Eloria today continues that language: every piece is a sign, and every sign belongs to a larger legend whose full truth has never been recovered."}
               </p>
             </div>
           </div>

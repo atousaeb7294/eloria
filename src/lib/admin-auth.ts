@@ -33,7 +33,7 @@ function adminUsername(): string {
   return env("ELORIA_ADMIN_USERNAME");
 }
 function adminPassword(): string {
-  return env("ELORIA_ADMIN_PASSWORD");
+  return env("ELORIA_ADMIN_PASSWORD") || env("ELORIA_ADMIN_PASSWORD_HASH");
 }
 
 function verifyAdminPassword(password: string): boolean {

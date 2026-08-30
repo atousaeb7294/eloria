@@ -9,29 +9,29 @@ export type ProductMythOutput = {
 };
 
 const roots = [
-  { fa: "آذر", en: "Azar", symbol: "آتش پاک", place: "آتشکده‌ای بر فراز کوه" },
-  { fa: "مهر", en: "Mehr", symbol: "پیمان و روشنایی", place: "دشت‌های روشن پارس" },
-  { fa: "ماه", en: "Mah", symbol: "نور آرام شب", place: "کنار چشمه‌ای زیر ماه" },
-  { fa: "خور", en: "Khor", symbol: "گرمای خورشید", place: "ایوانی رو به سپیده‌دم" },
-  { fa: "سپند", en: "Sepand", symbol: "پاکی و نگهبانی", place: "باغی پوشیده از اسپند" },
-  { fa: "باران", en: "Baran", symbol: "باروری زمین", place: "دامنه‌های سبز البرز" },
-  { fa: "دریا", en: "Darya", symbol: "ژرفای آب", place: "کرانه‌های نیلگون جنوب" },
-  { fa: "البرز", en: "Alborz", symbol: "استواری کوه", place: "گذرگاه‌های بلند البرز" },
-  { fa: "پارس", en: "Pars", symbol: "شکوه سرزمین ایران", place: "سنگ‌نگاره‌های پارس" },
-  { fa: "سروش", en: "Soroush", symbol: "پیام نیک", place: "بامداد خاموش یک نیایشگاه" },
+  { fa: "آذر", en: "Azar", placeFa: "برج آتشِ آذر", placeEn: "the Tower of Azar", eventFa: "پس از خاموشی سه‌روزهٔ آتش مقدس", eventEn: "after the sacred fire went dark for three days", traceFa: "روی پلکان سنگی پیدا شد", traceEn: "was found on the stone stair" },
+  { fa: "مهر", en: "Mehr", placeFa: "تالار مهر", placeEn: "the Hall of Mehr", eventFa: "در شب شکستن پیمان دو خاندان", eventEn: "on the night two houses broke their covenant", traceFa: "در صندوقچهٔ مُهرشده باقی ماند", traceEn: "remained inside a sealed coffer" },
+  { fa: "ماه", en: "Mah", placeFa: "چشمهٔ ماه", placeEn: "the Moon Spring", eventFa: "وقتی آب چشمه تا سپیده‌دم از حرکت ایستاد", eventEn: "when the spring stood still until dawn", traceFa: "بر سطح آب دیده شد", traceEn: "was seen resting on the water" },
+  { fa: "خور", en: "Khor", placeFa: "ایوان خور", placeEn: "the Khor Terrace", eventFa: "در نخستین طلوع پس از محاصرهٔ شهر", eventEn: "at the first sunrise after the siege", traceFa: "میان خاکستر فانوس‌ها یافت شد", traceEn: "was found among the lantern ash" },
+  { fa: "سپند", en: "Sepand", placeFa: "باغ سپند", placeEn: "the Sepand Garden", eventFa: "پس از ناپدیدشدن نگهبان باغ", eventEn: "after the garden keeper vanished", traceFa: "به شاخهٔ سروِ دروازه بسته مانده بود", traceEn: "was left tied to the gate cypress" },
+  { fa: "باران", en: "Baran", placeFa: "درهٔ باران", placeEn: "the Valley of Rain", eventFa: "در سالی که باران هفتاد روز بند نیامد", eventEn: "in the year rain fell for seventy days", traceFa: "در خانهٔ آخرین بافندهٔ دره پیدا شد", traceEn: "was found in the last weaver’s house" },
+  { fa: "دریا", en: "Darya", placeFa: "بندر نیلگون", placeEn: "the Azure Port", eventFa: "پس از بازگشت کشتی بی‌سرنشین از جنوب", eventEn: "after an unmanned ship returned from the south", traceFa: "میان طناب‌های خیس عرشه باقی مانده بود", traceEn: "was left among the wet ropes on deck" },
+  { fa: "البرز", en: "Alborz", placeFa: "گذرگاه البرز", placeEn: "the Alborz Pass", eventFa: "پس از بسته‌شدن راه شمال برای یک زمستان کامل", eventEn: "after the northern road was sealed for an entire winter", traceFa: "زیر سنگ نشانِ گذرگاه کشف شد", traceEn: "was discovered beneath the pass marker" },
+  { fa: "پارس", en: "Pars", placeFa: "حیاط سنگی پارس", placeEn: "the Stone Court of Pars", eventFa: "در روزی که نام آخرین خاندان از دیوار پاک شد", eventEn: "the day the final house-name was erased from the wall", traceFa: "پشت سنگ‌نوشته‌ای شکسته پنهان بود", traceEn: "was hidden behind a broken inscription" },
+  { fa: "سروش", en: "Soroush", placeFa: "نیایشگاه سروش", placeEn: "the Shrine of Soroush", eventFa: "پس از شنیده‌شدن زنگی که هیچ‌کس آن را به صدا درنیاورده بود", eventEn: "after a bell rang with no hand upon it", traceFa: "کنار درِ بستهٔ نیایشگاه یافت شد", traceEn: "was found beside the sealed door" },
 ] as const;
 
 const endings = [
-  { fa: "دخت", en: "Dokht", gift: "دل را از فراموشی نگه می‌داشت" },
-  { fa: "آوا", en: "Ava", gift: "صدای آرزوهای نیک را بازمی‌گرداند" },
-  { fa: "گون", en: "Goon", gift: "رنگ امید را در روزهای دشوار زنده می‌کرد" },
-  { fa: "نوش", en: "Noush", gift: "شادی آرام را به خانه می‌آورد" },
-  { fa: "چهر", en: "Chehr", gift: "چهره راستین صاحبش را روشن می‌ساخت" },
-  { fa: "رخ", en: "Rokh", gift: "جرئت آغاز دوباره می‌بخشید" },
-  { fa: "تاب", en: "Tab", gift: "نور پنهان درون را آشکار می‌کرد" },
-  { fa: "بانو", en: "Banoo", gift: "نشانه خرد و وقار بود" },
-  { fa: "فر", en: "Far", gift: "فرّه نیک و سربلندی را یادآوری می‌کرد" },
-  { fa: "پر", en: "Par", gift: "راه خیال را تا آسمان می‌گشود" },
+  { fa: "دخت", en: "Dokht", ownerFa: "دختری از خاندان خاموش", ownerEn: "a daughter of the Silent House", clueFa: "نام او از همهٔ دفترها تراشیده شده بود", clueEn: "her name had been cut from every record" },
+  { fa: "آوا", en: "Ava", ownerFa: "خوانندهٔ بی‌نام دربار", ownerEn: "the court’s nameless singer", clueFa: "آخرین آوازش هرگز نوشته نشد", clueEn: "her final song was never written down" },
+  { fa: "گون", en: "Goon", ownerFa: "فرستاده‌ای با جامهٔ سبز", ownerEn: "a messenger in green", clueFa: "هیچ‌کس مقصد او را به یاد نداشت", clueEn: "no one remembered the destination" },
+  { fa: "نوش", en: "Noush", ownerFa: "بانوی داروخانهٔ سلطنتی", ownerEn: "the keeper of the royal apothecary", clueFa: "پس از آن شب دیگر در قصر دیده نشد", clueEn: "she was never seen in the palace again" },
+  { fa: "چهر", en: "Chehr", ownerFa: "نقاب‌دار جشن زمستان", ownerEn: "the masked guest of the winter feast", clueFa: "پیش از سپیده نقابش را کنار آتش گذاشت و رفت", clueEn: "before dawn, the mask was left beside the fire" },
+  { fa: "رخ", en: "Rokh", ownerFa: "سوارِ دروازهٔ شرقی", ownerEn: "the rider of the eastern gate", clueFa: "اسبش بازگشت اما خود او نه", clueEn: "the horse returned, but the rider did not" },
+  { fa: "تاب", en: "Tab", ownerFa: "چراغ‌دار برج جنوبی", ownerEn: "the lamp-keeper of the southern tower", clueFa: "فانوسش سه شب پس از ناپدیدشدنش روشن ماند", clueEn: "the lantern burned for three nights after the disappearance" },
+  { fa: "بانو", en: "Banoo", ownerFa: "بانوی تالار آینه", ownerEn: "the lady of the Mirror Hall", clueFa: "آخرین کسی بود که پیش از فروپاشی تالار آنجا دیده شد", clueEn: "she was the last person seen there before the hall fell" },
+  { fa: "فر", en: "Far", ownerFa: "وارثی که تاج را نپذیرفت", ownerEn: "the heir who refused the crown", clueFa: "صبح تاج‌گذاری تنها مُهر او بر تخت مانده بود", clueEn: "on coronation morning, only the heir’s seal remained on the throne" },
+  { fa: "پر", en: "Par", ownerFa: "پیغام‌رسان بلندترین برج", ownerEn: "the messenger of the highest tower", clueFa: "نامه‌ای که حمل می‌کرد هرگز پیدا نشد", clueEn: "the letter being carried was never found" },
 ] as const;
 
 export const ELORIA_MYTH_LIBRARY: readonly ProductMythOutput[] = roots.flatMap(
@@ -43,8 +43,8 @@ export const ELORIA_MYTH_LIBRARY: readonly ProductMythOutput[] = roots.flatMap(
       mythKey: key,
       mythNameFa,
       mythNameEn,
-      legendFa: `در افسانه‌های خیالی الوریا، «${mythNameFa}» یادگاری از ${root.place} بود؛ نشانی از ${root.symbol} که می‌گفتند ${ending.gift}.`,
-      legendEn: `In Eloria's imagined Persian tales, “${mythNameEn}” was a keepsake of ancient Iran, carrying a distinct blessing of light and memory.`,
+      legendFa: `${mythNameFa} به ${ending.ownerFa} تعلق داشت؛ ${root.eventFa}، در ${root.placeFa} ${root.traceFa}. ${ending.clueFa}.`,
+      legendEn: `${mythNameEn} belonged to ${ending.ownerEn}; ${root.eventEn}, it ${root.traceEn} at ${root.placeEn}. ${ending.clueEn}.`,
     };
   }),
 );
@@ -56,10 +56,12 @@ function stableIndex(value: string): number {
 }
 
 function personalize(myth: ProductMythOutput, input: ProductMythInput): ProductMythOutput {
+  const faName = input.nameFa.trim();
+  const enName = (input.nameEn ?? input.nameFa).trim();
   return {
     ...myth,
-    legendFa: `${myth.legendFa} این روایت یکتا برای «${input.nameFa}» در دفتر آثار الوریا ثبت شده است.`,
-    legendEn: `${myth.legendEn} This one-of-a-kind story is recorded for “${input.nameEn ?? input.nameFa}” in Eloria's book of creations.`,
+    legendFa: myth.legendFa.replace(myth.mythNameFa, `«${faName}»`),
+    legendEn: myth.legendEn.replace(myth.mythNameEn, `“${enName}”`),
   };
 }
 

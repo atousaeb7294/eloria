@@ -90,7 +90,7 @@ export default async function AdminLoginPage({
             </div>
             متغیرهای
             <code className="mx-1 text-[#efd37e]">ELORIA_ADMIN_USERNAME</code>،
-            <code className="mx-1 text-[#efd37e]">ELORIA_ADMIN_PASSWORD</code>
+            <code className="mx-1 text-[#efd37e]">ELORIA_ADMIN_PASSWORD</code> (یا <code className="mx-1 text-[#efd37e]">ELORIA_ADMIN_PASSWORD_HASH</code>)
             و
             <code className="mx-1 text-[#efd37e]">ELORIA_ADMIN_SESSION_SECRET</code>
             را در فایل
