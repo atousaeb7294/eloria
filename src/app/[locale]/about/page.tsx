@@ -140,8 +140,8 @@ export default async function AboutPage({ params }: AboutPageProps) {
 
           <p className="mx-auto max-w-3xl text-sm leading-9 text-[#d8caaa]/72 sm:text-base">
             {isPersian
-              ? "الوریا جهان داستانیِ ویژهٔ این برند است: سرزمینی با ریشه‌های ایرانی که مردمش تاریخ، پیمان‌ها و نام عزیزانشان را در «نشان‌ها» ثبت می‌کردند. جواهرهای امروز الوریا بازمانده و ادامهٔ همان نشان‌ها هستند."
-              : "Eloria is the brand’s own story world: an Iranian-rooted realm whose people recorded history, vows and beloved names in objects called Signs. Today’s Eloria jewels continue those Signs."}
+              ? "در کهن‌ترین نسخه‌های باقی‌مانده، الوریا را «سرزمین افسانه‌ها» خوانده‌اند؛ سرزمینی میان برف‌های البرز، دشت‌های آفتاب‌سوخته و راه‌های دریایی جنوب، که مردمش نام‌ها، پیمان‌ها و خاطرات بزرگ را به زر و سنگ و گره می‌سپردند تا چیزی از آنان در هجوم زمان گم نشود."
+              : "In the oldest surviving manuscripts, Eloria is called the Land of Legends: a realm between the snows of Alborz, sunburnt plains and the southern sea roads, where names, vows and great memories were entrusted to gold, stone and knots so time could not erase them."}
           </p>
         </header>
 
@@ -152,7 +152,7 @@ export default async function AboutPage({ params }: AboutPageProps) {
           <div className="relative grid items-center gap-9 lg:grid-cols-[0.75fr_1.25fr]">
             <div>
               <p className="text-[9px] uppercase tracking-[0.4em] text-[#d3bb78]/58">
-                {isPersian ? "آغاز افسانه" : "The Beginning"}
+                {isPersian ? "از دفتر نخست" : "From the First Chronicle"}
               </p>
               <h2
                 className={[
@@ -163,7 +163,7 @@ export default async function AboutPage({ params }: AboutPageProps) {
                 ].join(" ")}
               >
                 {isPersian
-                  ? "الوریا کجا بود و چرا جواهر ساخت؟"
+                  ? "سرزمین میان سه راه"
                   : "Where was Eloria, and why did it make jewels?"}
               </h2>
             </div>
@@ -171,13 +171,13 @@ export default async function AboutPage({ params }: AboutPageProps) {
             <div className="space-y-4 text-sm leading-9 text-[#d6c8aa]/70 sm:text-base">
               <p>
                 {isPersian
-                  ? "در افسانهٔ مادر، الوریا در گذرگاهی میان البرز، کویر مرکزی و آب‌های جنوب شکل گرفت؛ سرزمینی خیالی اما کاملاً ایرانی در پوشش، معماری، نام‌ها و آیین‌ها. پس از آن‌که یک آتش‌سوزی بزرگ بخشی از بایگانی شهر را نابود کرد، بانویی به نام آرمیتا فرمان داد هر خاطرهٔ مهم روی چیزی ماندگار ثبت شود: زر برای پیمان، سنگ برای سرزمین و گره برای پیوند آدم‌ها."
-                  : "In the mother legend, Eloria rose on a passage between Alborz, the central desert and the southern waters: a fictional realm, Iranian in dress, architecture, names and customs. After a great fire destroyed part of the city archive, a woman named Armita ordered every vital memory to be placed in something enduring: gold for vows, stone for homeland and knots for human bonds."}
+                  ? "الوریا بر سر راه سه کاروان بنا شد: راهی که از گردنه‌های البرز پایین می‌آمد، راهی که از شهرهای خشتی کویر می‌گذشت و راهی که بوی نمک دریا را از جنوب می‌آورد. گنبدهای فیروزه‌ای، حیاط‌های پرانار و بازار زرگرانش در کنار مردمانی از گوشه‌وکنار ایران، شهر را به پناهگاه نام‌ها و آیین‌ها بدل کرده بود. در سال آتش سرخ، شعله از تالار نسخه‌ها برخاست و تا سپیده، سه نسل از نامه‌ها، پیمان‌ها و شجره‌ها را بلعید. آرمیتا، بانوی نگهبان بایگانی، همان صبح گفت: «آنچه فقط بر کاغذ بماند، روزی خاکستر می‌شود.» از آن پس پیمان‌ها را به زر، یاد سرزمین‌ها را به سنگ و پیوند آدم‌ها را به گره سپردند."
+                  : "Eloria stood where three caravan roads met: one descending from the Alborz passes, one crossing the adobe cities of the desert, and one carrying the scent of salt from the southern sea. Turquoise domes, pomegranate courtyards and a goldsmiths’ bazaar made the city a sanctuary for Iranian names and customs. In the Year of the Red Fire, flames rose from the Hall of Manuscripts and consumed three generations of letters, covenants and family records. At dawn Armita, Keeper of the Archive, declared: ‘What lives only on paper will one day become ash.’ From then on, vows were entrusted to gold, homelands to stone and human bonds to knots."}
               </p>
               <p className="text-[#cbbb9d]/62">
                 {isPersian
-                  ? "هفت زرگر و بافنده، «نگهبانان نشان» شدند. هر نشان به یک انسان، مکان و واقعهٔ مشخص تعلق داشت؛ به همین دلیل دو اثر هرگز داستان یکسان نداشتند. صاحب نشان می‌توانست داستان خودش را مستقل بخواند، اما جای هر نشان در بایگانی بزرگ شهر نیز معلوم بود."
-                  : "Seven jewelers and weavers became the Keepers of the Sign. Every Sign belonged to one person, one place and one event, so no two pieces carried the same story. Each story could stand alone, while its place in the city’s larger archive remained known."}
+                  ? "هفت استاد از میان زرگران، سنگ‌تراشان و گره‌بافان برگزیده شدند و مردم آنان را «نگهبانان نشان» نامیدند. هر نشان برای یک تن و یک واقعه ساخته می‌شد: حلقه‌ای برای پیمانی که در تالار مهر بسته شد، سنگی برای مسافری که از دره باران بازنگشت، یا گره‌ای برای نامی که نباید فراموش می‌شد. پشت هر نشان، نشانه‌ای بسیار ریز از جایگاهش در بایگانی حک می‌شد؛ خطی از نقشه‌ای که تنها آرمیتا و هفت نگهبان تمامی آن را می‌شناختند."
+                  : "Seven masters were chosen from the goldsmiths, stonecutters and knot-weavers, and became known as the Keepers of the Sign. Each Sign was made for one person and one event: a ring for a covenant sworn in the Hall of Mehr, a stone for a traveller who never returned from the Valley of Rain, or a knot for a name that must not be forgotten. Each bore a tiny archive mark: one line from a map known in full only to Armita and the seven Keepers."}
               </p>
             </div>
           </div>
@@ -189,7 +189,7 @@ export default async function AboutPage({ params }: AboutPageProps) {
 
           <div className="relative mx-auto max-w-4xl">
             <p className="text-[9px] uppercase tracking-[0.4em] text-[#d3bb78]/58">
-              {isPersian ? "افسانهٔ مادر الوریا" : "The Mother Legend of Eloria"}
+              {isPersian ? "از بایگانی نشان‌ها" : "From the Archive of Signs"}
             </p>
             <h2
               className={[
@@ -199,24 +199,24 @@ export default async function AboutPage({ params }: AboutPageProps) {
                   : "text-3xl font-semibold leading-tight sm:text-4xl",
               ].join(" ")}
             >
-              {isPersian ? "شب دروازه‌های بسته؛ اتفاقی که جهان الوریا را ساخت" : "The Night of the Sealed Gates"}
+              {isPersian ? "شب دروازه‌های بسته" : "The Night of the Sealed Gates"}
             </h2>
 
             <div className="mt-6 space-y-5 text-sm leading-9 text-[#d6c8aa]/72 sm:text-base">
               <p>
                 {isPersian
-                  ? "سال‌ها بعد، هنگامی که سپاهی ناشناس به مرزهای الوریا رسید، شورای شهر فهمید نگه‌داشتن تمام بایگانی در یک مکان یعنی امکان نابودی همهٔ گذشته. آرمیتا و هفت نگهبان تصمیم گرفتند بایگانی را به صد نشان تقسیم کنند؛ هر نشان یک نام، یک واقعه و بخشی از نقشهٔ شهر را در خود داشت."
-                  : "Years later, when an unnamed army reached Eloria’s borders, the council understood that keeping the whole archive in one place risked losing the entire past. Armita and the seven Keepers divided it into one hundred Signs; each held a name, an event and a fragment of the city map."}
+                  ? "چهل‌وهفت سال پس از آتش سرخ، دیده‌بانان برج آذر غباری سیاه بر راه شرقی دیدند. پیش از غروب، زنگ‌های شهر به صدا درآمد و دروازه‌ها بسته شد. آرمیتا می‌دانست مهاجمان تنها به دنبال زر نبودند؛ اگر تالار نشان‌ها سقوط می‌کرد، نام خاندان‌ها، مرز آبادی‌ها و پیمان‌های میان مردم نیز برای همیشه از میان می‌رفت. آن شب، هفت نگهبان صد نشان مهم بایگانی را بر فرش بزرگ تالار چیدند. هر کدام نام یک انسان، شاهد یک واقعه و تکه‌ای از نقشه پنهان الوریا را با خود داشت."
+                  : "Forty-seven years after the Red Fire, watchers in the Tower of Azar saw black dust rising on the eastern road. Before sunset the city bells sounded and the gates were sealed. Armita knew the invaders sought more than gold: if the Hall of Signs fell, family names, village borders and the covenants between people would vanish with it. That night the seven Keepers laid the archive’s one hundred great Signs across the hall carpet. Each carried a person’s name, the witness of an event and one fragment of Eloria’s hidden map."}
               </p>
               <p>
                 {isPersian
-                  ? "در آخرین شب، دروازه‌ها بسته شدند تا برای خروج خانواده‌ها زمان خریده شود. نگهبانان، نشان‌ها را میان کاروان‌هایی که به شمال، شرق، غرب و جنوب می‌رفتند پخش کردند. قرار بود نسل‌های بعد با کنار هم گذاشتن آن‌ها، نام مردم و نقشهٔ الوریا را دوباره کامل کنند؛ اما آرمیتا و یکی از نگهبانان هرگز از شهر بیرون نیامدند."
-                  : "On the final night, the gates were sealed to buy time for families to leave. The Keepers distributed the Signs among caravans travelling north, east, west and south. Later generations were meant to reunite them and restore Eloria’s names and map, but Armita and one Keeper never left the city."}
+                  ? "تا نیمه‌شب، نشان‌ها در کیسه‌های نیلی دوخته و میان چهار کاروان پنهان شد؛ کاروان سرو به سوی شمال، کاروان انار به غرب، کاروان آفتاب به شرق و کاروان موج به جنوب رفت. بر دهانه هر کیسه هفت گره زده بودند و مُهری شکسته از دروازه شرقی در آن گذاشته بودند تا وارثانشان روزی یکدیگر را بشناسند. سپیده که رسید، آخرین خانواده‌ها از گذرگاه زیر باغ بیرون رفتند؛ اما آرمیتا و به‌آذین، جوان‌ترین نگهبان، در تالار ماندند. هیچ نوشته‌ای نمی‌گوید در واپسین ساعت چه بر آنان گذشت. تنها آمده است که پس از گشوده‌شدن شهر، چراغ تالار تا هفت شب روشن بود."
+                  : "Before midnight the Signs were sewn into indigo pouches and hidden among four caravans: Cypress rode north, Pomegranate west, Sun east and Wave south. Seven knots closed every pouch, with a fragment of the eastern gate’s broken seal placed inside so their heirs might one day recognize one another. At dawn the last families escaped beneath the gardens, but Armita and Behazin, the youngest Keeper, remained in the hall. No record tells what happened in the final hour. It says only that after the city was taken, the hall lamp burned for seven nights."}
               </p>
               <p>
                 {isPersian
-                  ? "برند الوریا ادامهٔ همین مأموریت است. هر اثر تازه، شخصیت ایرانیِ خودش، زادگاه، دوره، انگیزه و ماجرایی کامل دارد؛ بنابراین داستانش به‌تنهایی قابل فهم است. در عین حال، یک سرنخ از شب دروازه‌های بسته در آن باقی می‌ماند و آن را به افسانهٔ مادر و دیگر آثار پیوند می‌دهد. با اضافه‌شدن هر اثر، بخشی تازه از نقشه و تاریخ این دنیا آشکار می‌شود."
-                  : "The Eloria brand continues that mission. Every new piece has its own Iranian character, homeland, era, motive and complete event, so its story is understandable on its own. Yet each retains one clue from the Night of the Sealed Gates, linking it to the mother legend and other pieces. Every new work reveals another part of this world’s map and history."}
+                  ? "سال‌ها گذشت و نشان‌ها در صندوق‌های خانوادگی، دیوار کاروان‌سراها، زیر سنگ پل‌ها و میان جهیزیه دختران پراکنده ماندند. بعضی هنوز رشته نیلی یا یکی از هفت گره را دارند؛ روی بعضی نیمه‌ای از مُهر دروازه دیده می‌شود و بعضی تنها نامی را حفظ کرده‌اند که در هیچ دفتر دیگری نیست. هر نشان روایتی کامل از صاحب خود دارد، اما خطوط ریز پشت آن، ادامه همان نقشه ناتمام است. می‌گویند وقتی صد نشان بار دیگر کنار هم قرار گیرند، راه تالار بسته و سرنوشت آرمیتا آشکار خواهد شد."
+                  : "Years passed, and the Signs remained scattered in family chests, caravanserai walls, beneath bridge stones and among daughters’ dowries. Some still carry indigo thread or one of the seven knots; some bear half of the gate seal, and some preserve a name found in no other record. Every Sign holds the complete account of its owner, while the fine lines on its reverse continue the same unfinished map. It is said that when all one hundred Signs are reunited, the road to the sealed hall and Armita’s fate will be revealed."}
               </p>
             </div>
           </div>

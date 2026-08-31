@@ -59,11 +59,25 @@ const iranianAttire = [
   { fa: "جامهٔ سواره‌نظام اشکانی با یقهٔ بسته، شلوار چین‌دار و چکمهٔ چرمی", en: "a high-collared Parthian riding coat, pleated trousers and leather boots" },
 ] as const;
 
+const archiveTraces = [
+  { fa: "به رشته‌ای نیلی با هفت گره بسته بود؛ همان نشانی که بر کیسه‌های کاروان سرو دیده می‌شد", en: "it was tied to an indigo cord with seven knots, the mark carried by the Cypress caravan" },
+  { fa: "پشت آن نیمهٔ شکستهٔ مُهر دروازهٔ شرقی دیده می‌شد", en: "the broken half of the eastern gate seal was visible on its reverse" },
+  { fa: "بر لبه‌اش خطی باریک از نقشهٔ تالار نشان‌ها حک شده بود", en: "a fine line from the map of the Hall of Signs was engraved along its edge" },
+  { fa: "در پارچه‌ای با نقش انار پیچیده شده بود؛ نشان کاروانی که شب آخر به غرب رفت", en: "it was wrapped in pomegranate-patterned cloth, the sign of the caravan that rode west on the final night" },
+  { fa: "کنارش مهره‌ای فیروزه‌ای و یادداشتی با دست‌خط آرمیتا باقی مانده بود", en: "beside it lay a turquoise bead and a note in Armita’s hand" },
+  { fa: "یک گره سوخته بر آن مانده بود که نگهبانان تنها در شب بسته‌شدن دروازه‌ها به کار بردند", en: "it retained a scorched knot used by the Keepers only on the night the gates were sealed" },
+  { fa: "نام صاحبش در دفترها نبود، اما شمارهٔ بایگانی صد نشان هنوز بر پشت آن خوانده می‌شد", en: "its owner’s name was absent from the books, but its number among the Hundred Signs remained legible" },
+  { fa: "غبار آبیِ سنگ‌های تالار بسته هنوز در شیارهای آن مانده بود", en: "blue dust from the sealed hall’s stones still rested in its grooves" },
+  { fa: "نشان موج بر بست آن حک شده بود؛ علامت کاروانی که به آب‌های جنوب رسید", en: "the Wave mark was cut into its clasp, sign of the caravan that reached the southern waters" },
+  { fa: "آخرین سطر لوح همراهش با این واژه‌ها پایان می‌یافت: «چراغ هنوز روشن است»", en: "the final line of its tablet ended with the words: ‘The lamp is still burning’" },
+] as const;
+
 function worldProfile(mythKey: string, input: ProductMythInput): ProductWorldProfile {
   const numeric = Math.max(0, Number.parseInt(mythKey.slice(-3), 10) - 1);
   const root = roots[Math.floor(numeric / endings.length) % roots.length];
   const ending = endings[numeric % endings.length];
   const attire = iranianAttire[numeric % iranianAttire.length];
+  const archiveTrace = archiveTraces[numeric % archiveTraces.length];
   const characterNameFa = `${root.fa}${ending.fa}`;
   const characterNameEn = `${root.en}${ending.en}`;
   const piece = input.nameFa.trim();
@@ -78,8 +92,8 @@ function worldProfile(mythKey: string, input: ProductMythInput): ProductWorldPro
     eraEn: ["late Achaemenid age", "Parthian age", "Sasanian age", "Eloria's final years"][numeric % 4],
     appearanceFa: `چهره‌ای ایرانی با مو و چشم تیره؛ ${attire.fa}`,
     appearanceEn: `Iranian features with dark hair and eyes; ${attire.en}`,
-    relicMeaningFa: `«${piece}» نشان شخصی او و شاهد واقعهٔ ${root.placeFa} است؛ روایت این اثر مستقل خوانده می‌شود و یکی از نشانه‌های پراکنده‌شده در شب بسته‌شدن دروازه‌های الوریاست.`,
-    relicMeaningEn: `“${(input.nameEn ?? input.nameFa).trim()}” is this character's personal sign and a witness to the event at ${root.placeEn}; its story stands alone while belonging to the signs scattered on the night Eloria's gates closed.`,
+    relicMeaningFa: `«${piece}» نشان شخصی او و شاهد واقعهٔ ${root.placeFa} است؛ ${archiveTrace.fa}.`,
+    relicMeaningEn: `“${(input.nameEn ?? input.nameFa).trim()}” is this character's personal sign and a witness to the event at ${root.placeEn}; ${archiveTrace.en}.`,
     motherLegendAnchor: "night-of-the-sealed-gates",
     visualPromptFa: `پرتره سینمایی و واقع‌گرایانه از ${characterNameFa}، ${ending.ownerFa}، با چهره و آناتومی ایرانی، ${attire.fa}، زیور ${piece}، معماری و نقوش ایران باستان؛ بدون عناصر رومی، یونانی، عربی، اروپایی یا فانتزی غربی.`,
   };
@@ -90,12 +104,13 @@ export const ELORIA_MYTH_LIBRARY: readonly ProductMythOutput[] = roots.flatMap(
     const key = `iranian-myth-${String(rootIndex * 10 + endingIndex + 1).padStart(3, "0")}`;
     const mythNameFa = `${root.fa}${ending.fa}`;
     const mythNameEn = `${root.en}${ending.en}`;
+    const trace = archiveTraces[(rootIndex * endings.length + endingIndex) % archiveTraces.length];
     return {
       mythKey: key,
       mythNameFa,
       mythNameEn,
-      legendFa: `${mythNameFa} به ${ending.ownerFa} تعلق داشت؛ ${root.eventFa}، در ${root.placeFa} ${root.traceFa}. ${ending.clueFa}.`,
-      legendEn: `${mythNameEn} belonged to ${ending.ownerEn}; ${root.eventEn}, it ${root.traceEn} at ${root.placeEn}. ${ending.clueEn}.`,
+      legendFa: `${mythNameFa} نشانِ ${ending.ownerFa} بود. ${root.eventFa}، در ${root.placeFa} ${root.traceFa}؛ ${trace.fa}. ${ending.clueFa}.`,
+      legendEn: `${mythNameEn} was the Sign of ${ending.ownerEn}. ${root.eventEn}, it ${root.traceEn} at ${root.placeEn}; ${trace.en}. ${ending.clueEn}.`,
       worldProfile: worldProfile(key, { nameFa: mythNameFa, nameEn: mythNameEn }),
     };
   }),
@@ -120,6 +135,11 @@ function personalize(myth: ProductMythOutput, input: ProductMythInput): ProductM
 
 export function generateProductMyth(input: ProductMythInput): ProductMythOutput {
   return personalize(ELORIA_MYTH_LIBRARY[stableIndex(`${input.nameFa}|${input.nameEn ?? ""}|${input.material ?? ""}`)], input);
+}
+
+export function getProductMythByKey(mythKey: string, input: ProductMythInput): ProductMythOutput | null {
+  const myth = ELORIA_MYTH_LIBRARY.find(item => item.mythKey === mythKey);
+  return myth ? personalize(myth, input) : null;
 }
 
 export function generateUnusedProductMyth(input: ProductMythInput, usedKeys: ReadonlySet<string>): ProductMythOutput {

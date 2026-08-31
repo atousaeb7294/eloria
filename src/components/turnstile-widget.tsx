@@ -1,7 +1,7 @@
 "use client";
 
 import Script from "next/script";
-import { Check, LoaderCircle, ShieldAlert } from "lucide-react";
+import { Check, LoaderCircle, RefreshCw, ShieldAlert } from "lucide-react";
 import { useCallback, useEffect, useId, useRef, useState } from "react";
 
 type TurnstileState = "loading" | "ready" | "verified" | "error" | "disabled";
@@ -31,6 +31,7 @@ export function TurnstileWidget({
   const [required, setRequired] = useState(true);
   const [scriptReady, setScriptReady] = useState(false);
   const [state, setState] = useState<TurnstileState>("loading");
+  const [scriptGeneration, setScriptGeneration] = useState(0);
   const id = `eloria-turnstile-${useId().replace(/:/g, "")}`;
   const widgetId = useRef<string | null>(null);
 
@@ -67,6 +68,16 @@ export function TurnstileWidget({
   }, [onTokenChange, updateState]);
 
   useEffect(() => {
+    if (!siteKey || scriptReady) return;
+    if (window.turnstile) {
+      queueMicrotask(() => setScriptReady(true));
+      return;
+    }
+    const timeout = window.setTimeout(() => updateState("error"), 15_000);
+    return () => window.clearTimeout(timeout);
+  }, [scriptReady, siteKey, updateState]);
+
+  useEffect(() => {
     if (!siteKey || !scriptReady || !window.turnstile || widgetId.current) return;
     try {
       widgetId.current = window.turnstile.render(`#${id}`, {
@@ -76,8 +87,6 @@ export function TurnstileWidget({
         language: locale === "fa" ? "fa" : "en",
         action,
         appearance: "always",
-        "feedback-enabled": false,
-        "offlabel-show-help": false,
         callback: (token: string) => { onTokenChange(token); updateState("verified"); },
         "expired-callback": () => { onTokenChange(null); updateState("ready"); },
         "error-callback": () => { onTokenChange(null); updateState("error"); },
@@ -107,12 +116,21 @@ export function TurnstileWidget({
     return <div className="mt-5 flex items-start gap-3 rounded-xl border border-amber-300/20 bg-amber-950/20 p-3 text-xs leading-6 text-amber-100" role="alert"><ShieldAlert className="mt-0.5 size-4 shrink-0" /><span>{locale === "fa" ? "تأیید «من ربات نیستم» بارگذاری نشد. اتصال اینترنت را بررسی و صفحه را تازه‌سازی کنید." : "The human verification could not load. Check your connection and refresh the page."}</span></div>;
   }
 
+  const retry = () => {
+    onTokenChange(null);
+    widgetId.current = null;
+    setScriptReady(Boolean(window.turnstile));
+    setScriptGeneration(value => value + 1);
+    updateState("loading");
+  };
+
   return <div className="mt-5 rounded-xl border border-[#d9b85f]/14 bg-black/10 p-2.5">
-    <Script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" strategy="afterInteractive" onLoad={() => setScriptReady(true)} onError={() => updateState("error")} />
+    <Script key={scriptGeneration} src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" strategy="afterInteractive" onReady={() => setScriptReady(true)} onLoad={() => setScriptReady(true)} onError={() => updateState("error")} />
     <div className="mb-2 flex items-center gap-2 px-1 text-[11px] text-[#d8c69d]/70">
       {state === "verified" ? <Check className="size-4 text-emerald-300" /> : <span className="size-3.5 rounded border border-[#d8c06c]/55" />}
       <span>{state === "verified" ? (locale === "fa" ? "تأیید شد؛ شما ربات نیستید" : "Verified — you are human") : (locale === "fa" ? "تأیید کنید من ربات نیستم" : "Verify that you are human")}</span>
     </div>
     <div id={id} className="min-h-[65px] w-full overflow-hidden" />
+    {state === "error" ? <button type="button" onClick={retry} className="mt-2 flex w-full items-center justify-center gap-2 rounded-lg border border-amber-300/20 px-3 py-2 text-[11px] text-amber-100"><RefreshCw className="size-3.5" />{locale === "fa" ? "بارگذاری دوباره تأیید امنیتی" : "Reload security verification"}</button> : null}
   </div>;
 }

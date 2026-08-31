@@ -202,6 +202,8 @@ export function productionEnvironmentChecks(): Check[] {
     { key: "ELORIA_CUSTOMER_WATCHES_ENABLED", required: true, valid: isExplicitBoolean("ELORIA_CUSTOMER_WATCHES_ENABLED"), message: "فعال/غیرفعال بودن پیگیری قیمت و موجودی باید صریح باشد" },
     { key: "ELORIA_CONTENT_AUTOPILOT_ENABLED", required: true, valid: isExplicitBoolean("ELORIA_CONTENT_AUTOPILOT_ENABLED"), message: "فعال/غیرفعال بودن پیش‌نویس خودکار محتوا باید صریح باشد" },
     { key: "ELORIA_CONTENT_AUTOPILOT_DAILY_LIMIT", required: true, valid: isIntegerInRange("ELORIA_CONTENT_AUTOPILOT_DAILY_LIMIT", 0, 3), message: "سقف روزانهٔ پیش‌نویس خودکار باید بین صفر تا سه باشد" },
+    { key: "ELORIA_EMBEDDED_METAL_SYNC_ENABLED", required: dynamicPricingEnabled, valid: !dynamicPricingEnabled || value("ELORIA_EMBEDDED_METAL_SYNC_ENABLED").toLowerCase() === "true", message: "در پارس‌پک، قیمت‌گذاری پویا به همگام‌سازی داخلی فعال نیاز دارد" },
+    { key: "ELORIA_EMBEDDED_METAL_SYNC_INTERVAL_MINUTES", required: dynamicPricingEnabled, valid: !dynamicPricingEnabled || isIntegerInRange("ELORIA_EMBEDDED_METAL_SYNC_INTERVAL_MINUTES", 2, 60), message: "فاصله همگام‌سازی نرخ باید بین ۲ تا ۶۰ دقیقه باشد" },
 
     { key: "ELORIA_ADMIN_USERNAME", required: true, valid: present("ELORIA_ADMIN_USERNAME", 3), message: "نام کاربری مدیر" },
     { key: "ELORIA_ADMIN_PASSWORD_HASH", required: true, valid: adminPasswordPresent(20), message: "هش scrypt معتبر مدیر (متغیر قدیمی رمز فقط برای سازگاری پذیرفته می‌شود)" },

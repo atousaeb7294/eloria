@@ -49,7 +49,7 @@ export default async function AdminWorldPage({ params }: { params: Promise<{ loc
     </section>
 
     <section className="grid gap-4 sm:grid-cols-3">
-      <div className="rounded-2xl border border-[#d7b95f]/16 bg-[#061c15]/86 p-5"><Sparkles className="size-5 text-[#e4c673]" /><strong className="mt-4 block text-2xl text-[#f0db9b]">{new Intl.NumberFormat("fa-IR").format(profiles.length)}</strong><span className="text-xs text-[#c5b694]/55">اثر در جهان داستانی</span></div>
+      <div className="rounded-2xl border border-[#d7b95f]/16 bg-[#061c15]/86 p-5"><Sparkles className="size-5 text-[#e4c673]" /><strong className="mt-4 block text-2xl text-[#f0db9b]">{new Intl.NumberFormat("fa-IR").format(profiles.length)}</strong><span className="text-xs text-[#c5b694]/55">نشان ثبت‌شده در بایگانی</span></div>
       <div className="rounded-2xl border border-[#d7b95f]/16 bg-[#061c15]/86 p-5"><UserRound className="size-5 text-[#e4c673]" /><strong className="mt-4 block text-2xl text-[#f0db9b]">{new Intl.NumberFormat("fa-IR").format(new Set(profiles.map(item => item.myth.worldProfile.characterNameFa)).size)}</strong><span className="text-xs text-[#c5b694]/55">شخصیت یکتا</span></div>
       <div className="rounded-2xl border border-[#d7b95f]/16 bg-[#061c15]/86 p-5"><MapPinned className="size-5 text-[#e4c673]" /><strong className="mt-4 block text-2xl text-[#f0db9b]">{new Intl.NumberFormat("fa-IR").format(new Set(profiles.map(item => item.myth.worldProfile.homelandFa)).size)}</strong><span className="text-xs text-[#c5b694]/55">خاستگاه در نقشهٔ الوریا</span></div>
     </section>

@@ -67,6 +67,8 @@ export default async function NewAdminProductPage({
     descriptionEn: "",
     legendFa: "",
     legendEn: "",
+    characterImageUrl: "",
+    worldSceneImageUrl: "",
     material: "GOLD",
     pricingMode: "DYNAMIC",
     price: "",

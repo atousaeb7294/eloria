@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import Image from "next/image";
 import {
   notFound,
 } from "next/navigation";
@@ -137,6 +138,8 @@ async function loadProductPageRecord(
       descriptionEn: true,
       legendFa: true,
       legendEn: true,
+      characterImageUrl: true,
+      worldSceneImageUrl: true,
 
       collection: {
         select: {
@@ -1325,6 +1328,11 @@ export default async function ProductPage({
                 {legendText}
               </p>
 
+              {productRecord.characterImageUrl || productRecord.worldSceneImageUrl ? <div className="mt-5 grid gap-3 sm:grid-cols-2">
+                {productRecord.characterImageUrl ? <figure className="overflow-hidden rounded-2xl border border-[#d8bd72]/15 bg-black/15"><div className="relative aspect-[4/5]"><Image src={productRecord.characterImageUrl} alt={isPersian ? `شخصیت افسانهٔ ${legendName}` : `Character of ${legendName}`} fill sizes="(max-width: 640px) 100vw, 40vw" className="object-cover" /></div><figcaption className="px-3 py-2 text-[10px] text-[#d8c69d]/65">{isPersian ? "چهرهٔ این افسانه" : "The face of this legend"}</figcaption></figure> : null}
+                {productRecord.worldSceneImageUrl ? <figure className="overflow-hidden rounded-2xl border border-[#d8bd72]/15 bg-black/15"><div className="relative aspect-[4/5]"><Image src={productRecord.worldSceneImageUrl} alt={isPersian ? `جهان افسانهٔ ${legendName}` : `World of ${legendName}`} fill sizes="(max-width: 640px) 100vw, 40vw" className="object-cover" /></div><figcaption className="px-3 py-2 text-[10px] text-[#d8c69d]/65">{isPersian ? "فضای این افسانه" : "The world of this legend"}</figcaption></figure> : null}
+              </div> : null}
+
               <div className="mt-5 grid gap-2 text-xs leading-6 text-[#cdbf9f]/65 sm:grid-cols-3">
                 <div className="rounded-xl border border-white/[0.07] bg-black/10 px-3 py-2">
                   <span className="block text-[9px] text-[#d8bd72]/60">{isPersian ? "شخصیت این اثر" : "Character"}</span>
@@ -1346,7 +1354,7 @@ export default async function ProductPage({
 
               <Link href={`/${locale}/about#mother-legend`} className="mt-4 inline-flex items-center gap-2 rounded-full border border-[#d9b85f]/24 px-4 py-2 text-[10px] text-[#e5cd86] transition hover:border-[#e8cf7c]/55">
                 <WorldRuneIcon className="size-4" />
-                {isPersian ? "پیوند این اثر با افسانهٔ مادر" : "How this piece connects to the mother legend"}
+                {isPersian ? "رد این نشان در تاریخ الوریا" : "This Sign in Eloria’s history"}
               </Link>
             </div>
           </div>

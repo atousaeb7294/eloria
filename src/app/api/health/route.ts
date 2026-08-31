@@ -4,6 +4,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { isAdminConfigured } from "@/lib/admin-auth";
 import { productionEnvironmentChecks } from "@/lib/env-validation";
 import { isKavenegarConfigured } from "@/lib/notifications/kavenegar";
+import { isEmailOtpConfigured } from "@/lib/notifications/email-otp";
 import { isZarinpalConfigured } from "@/lib/payment/zarinpal";
 import { prisma } from "@/lib/prisma";
 
@@ -67,6 +68,10 @@ export async function GET(request: NextRequest) {
             database,
             environment: requiredEnvironment,
             admin: isAdminConfigured(),
+            customerEmailOtp: isEmailOtpConfigured(),
+            turnstile: Boolean(process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY?.trim() && process.env.TURNSTILE_SECRET_KEY?.trim()),
+            dynamicPricing: process.env.ELORIA_DYNAMIC_PRICING_ENABLED?.trim().toLowerCase() === "true",
+            embeddedMetalSync: process.env.ELORIA_EMBEDDED_METAL_SYNC_ENABLED?.trim().toLowerCase() === "true",
             payment: isZarinpalConfigured(),
             sms: isKavenegarConfigured(),
           },

@@ -1,83 +1,104 @@
 param(
-  [string]$Target = "C:\eloria",
-  [switch]$StartDev
+  [string]$InstallPath = "C:\eloria",
+  [switch]$RunDatabaseMigration,
+  [switch]$RefreshExistingMyths,
+  [switch]$PushGitHub
 )
 
 $ErrorActionPreference = "Stop"
-$Source = (Resolve-Path $PSScriptRoot).Path
+$SourcePath = $PSScriptRoot
+$TimeStamp = Get-Date -Format "yyyyMMdd_HHmmss"
 
-if (-not (Test-Path $Target)) { throw "Target project was not found: $Target" }
-$TargetResolved = (Resolve-Path $Target).Path
-if ($Source -eq $TargetResolved) { throw "Extract the ZIP outside C:\eloria and run this installer from the extracted folder." }
-
-Set-Location C:\
-Get-Process node -ErrorAction SilentlyContinue | Stop-Process -Force
-
-$stamp = Get-Date -Format 'yyyyMMdd_HHmmss'
-$backup = "C:\eloria_backup_r10_$stamp"
-$safe = "C:\eloria_safe_r10_$stamp"
-New-Item -ItemType Directory -Path $backup -Force | Out-Null
-New-Item -ItemType Directory -Path $safe -Force | Out-Null
-
-$oldLockHash = $null
-if (Test-Path "$Target\package-lock.json") {
-  $oldLockHash = (Get-FileHash "$Target\package-lock.json" -Algorithm SHA256).Hash
+function Step([string]$Text) {
+  Write-Host "`n============================================================" -ForegroundColor DarkYellow
+  Write-Host $Text -ForegroundColor Yellow
+  Write-Host "============================================================" -ForegroundColor DarkYellow
 }
 
-Write-Host "[1/7] Backing up current ELORIA project..." -ForegroundColor Cyan
-robocopy $Target $backup /E /XD node_modules .next .git /R:1 /W:1 /NFL /NDL /NP | Out-Host
-if ($LASTEXITCODE -ge 8) { throw "Project backup failed with Robocopy code $LASTEXITCODE" }
-if (Test-Path "$Target\.env") { Copy-Item "$Target\.env" "$safe\.env" -Force }
-
-Write-Host "[2/7] Applying the current ELORIA release..." -ForegroundColor Cyan
-robocopy $Source $Target /MIR /XF .env /XD node_modules .next .git /R:2 /W:1 /NFL /NDL /NP | Out-Host
-if ($LASTEXITCODE -ge 8) { throw "Project copy failed with Robocopy code $LASTEXITCODE" }
-if (Test-Path "$safe\.env") { Copy-Item "$safe\.env" "$Target\.env" -Force }
-if (Test-Path "$Target\.next") { Remove-Item "$Target\.next" -Recurse -Force }
-
-Set-Location $Target
-Write-Host "[3/7] Verifying release files..." -ForegroundColor Cyan
-node scripts/verify-final-release.mjs
-if ($LASTEXITCODE -ne 0) { throw "Release verification failed" }
-
-$newLockHash = $null
-if (Test-Path "$Target\package-lock.json") {
-  $newLockHash = (Get-FileHash "$Target\package-lock.json" -Algorithm SHA256).Hash
+function Run([string]$Command, [string[]]$Arguments) {
+  & $Command @Arguments
+  if ($LASTEXITCODE -ne 0) { throw "Command failed: $Command $($Arguments -join ' ')" }
 }
-$depsReady = (Test-Path "$Target\node_modules\.bin\next.cmd") -and (Test-Path "$Target\node_modules\.bin\prisma.cmd")
-if ((-not $depsReady) -or ($oldLockHash -ne $newLockHash)) {
-  Write-Host "[4/7] Installing project dependencies..." -ForegroundColor Cyan
-  npm ci --no-audit --no-fund --prefer-offline
-  if ($LASTEXITCODE -ne 0) { throw "npm ci failed. Check npm connectivity and rerun the installer." }
+
+Step "1/8 - Checking the release package"
+$RequiredFiles = @(
+  "package.json", "package-lock.json", "prisma\schema.prisma",
+  "prisma.config.ts", "postcss.config.mjs", "next.config.ts"
+)
+foreach ($File in $RequiredFiles) {
+  if (-not (Test-Path (Join-Path $SourcePath $File))) { throw "Missing file: $File" }
+}
+
+$NodeVersion = (& node --version 2>$null)
+if (-not $NodeVersion) { throw "Node.js is not installed. Install Node.js 24 LTS first." }
+Write-Host "Node: $NodeVersion"
+
+$SourceFull = [IO.Path]::GetFullPath($SourcePath).TrimEnd('\')
+$TargetFull = [IO.Path]::GetFullPath($InstallPath).TrimEnd('\')
+
+if ($SourceFull -ne $TargetFull) {
+  Step "2/8 - Backing up and installing into $InstallPath"
+  if (Test-Path $InstallPath) {
+    $BackupPath = "${InstallPath}_backup_$TimeStamp"
+    New-Item -ItemType Directory -Path $BackupPath -Force | Out-Null
+    & robocopy $InstallPath $BackupPath /E /XD node_modules .next .git /XF .env.local | Out-Host
+    if ($LASTEXITCODE -ge 8) { throw "Backup failed with Robocopy code $LASTEXITCODE" }
+    Write-Host "Backup: $BackupPath" -ForegroundColor Green
+  } else {
+    New-Item -ItemType Directory -Path $InstallPath -Force | Out-Null
+  }
+  & robocopy $SourcePath $InstallPath /E /XD node_modules .next .git src\generated /XF .env .env.local *.tsbuildinfo | Out-Host
+  if ($LASTEXITCODE -ge 8) { throw "Install copy failed with Robocopy code $LASTEXITCODE" }
 } else {
-  Write-Host "[4/7] Existing dependencies match this release; reinstall skipped." -ForegroundColor DarkGray
+  Step "2/8 - Project is already installed in $InstallPath"
 }
 
-Write-Host "[5/7] Preparing Prisma and database migrations..." -ForegroundColor Cyan
-npx prisma generate
-if ($LASTEXITCODE -ne 0) { throw "prisma generate failed" }
-npx prisma migrate deploy
-if ($LASTEXITCODE -ne 0) { throw "Database migration failed. Backup remains at $backup" }
-npm run myths:assign
-if ($LASTEXITCODE -ne 0) { throw "Unique product myth assignment failed. Backup remains at $backup" }
+Set-Location $InstallPath
 
-Write-Host "[6/7] Running typecheck and lint..." -ForegroundColor Cyan
-npm run typecheck
-if ($LASTEXITCODE -ne 0) { throw "Typecheck failed" }
-npm run lint
-if ($LASTEXITCODE -ne 0) { throw "Lint failed" }
+Step "3/8 - Installing exact dependencies"
+Run "npm.cmd" @("ci")
 
-Write-Host "[7/7] Building production bundle..." -ForegroundColor Cyan
-npm run build
-if ($LASTEXITCODE -ne 0) { throw "Production build failed" }
+Step "4/8 - Generating Prisma Client"
+if (-not (Test-Path ".env")) {
+  throw "C:\eloria\.env is missing. Copy .env.example to .env and enter the real values before continuing."
+}
+Run "npx.cmd" @("prisma", "generate")
 
-Write-Host "The current ELORIA release was installed successfully." -ForegroundColor Green
-Write-Host "Project backup: $backup"
-Write-Host "Environment backup: $safe\.env"
-Write-Host "db:seed was NOT executed." -ForegroundColor Yellow
+Step "5/8 - TypeScript, ESLint and production build"
+Run "npm.cmd" @("run", "typecheck")
+Run "npm.cmd" @("run", "lint")
+Run "npm.cmd" @("run", "build")
 
-if ($StartDev) {
-  npm run dev
+Step "6/8 - Checking environment variables without printing secrets"
+& powershell -ExecutionPolicy Bypass -File ".\scripts\audit-parspack-env.ps1" -ProjectPath $InstallPath -EnvFile ".env" -SiteUrl "https://eloriagallery.ir" -SkipLive
+if ($LASTEXITCODE -ne 0) { throw "Environment audit failed. Correct the ERROR rows and run this installer again." }
+
+Step "7/8 - Database"
+if ($RunDatabaseMigration) {
+  Run "npx.cmd" @("prisma", "migrate", "deploy")
+  Run "npm.cmd" @("run", "myths:assign")
+  if ($RefreshExistingMyths) { Run "npm.cmd" @("run", "myths:refresh") }
 } else {
-  Write-Host "Start development: Set-Location C:\eloria; npm run dev" -ForegroundColor Green
+  Write-Host "Migration was not run. After checking DATABASE_URL and DIRECT_URL, rerun with -RunDatabaseMigration." -ForegroundColor Cyan
 }
+
+Step "8/8 - GitHub"
+if ($PushGitHub) {
+  if (-not (Test-Path ".git")) { Run "git.exe" @("init") }
+  $Remote = (& git remote get-url origin 2>$null)
+  if ($LASTEXITCODE -ne 0 -or -not $Remote) {
+    Run "git.exe" @("remote", "add", "origin", "https://github.com/atousaeb7294/eloria.git")
+  } else {
+    Run "git.exe" @("remote", "set-url", "origin", "https://github.com/atousaeb7294/eloria.git")
+  }
+  Run "git.exe" @("add", ".")
+  & git diff --cached --quiet
+  if ($LASTEXITCODE -ne 0) { Run "git.exe" @("commit", "-m", "release: final Eloria production") }
+  Run "git.exe" @("branch", "-M", "main")
+  Run "git.exe" @("push", "-u", "origin", "main")
+} else {
+  Write-Host "GitHub push was not run. Rerun with -PushGitHub after signing in to GitHub." -ForegroundColor Cyan
+}
+
+Write-Host "`nELORIA LOCAL RELEASE IS READY." -ForegroundColor Green
+Write-Host "Detailed next steps: $InstallPath\ELORIA_FINAL_INSTALL_FA.md"

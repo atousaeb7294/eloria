@@ -27,6 +27,8 @@ export type AdminProductFormValue = {
   descriptionEn: string;
   legendFa: string;
   legendEn: string;
+  characterImageUrl: string;
+  worldSceneImageUrl: string;
   material: "GOLD" | "SILVER";
   pricingMode: "DYNAMIC" | "MANUAL";
   price: string;
@@ -310,6 +312,12 @@ export function AdminProductForm({
               dir="ltr"
               name="legendEn"
             />
+          </Field>
+          <Field label="تصویر شخصیت این اثر" hint="نشانی تصویر ایرانی که خودتان طراحی و در فضای تصاویر بارگذاری کرده‌اید">
+            <input className={inputClassName} defaultValue={value.characterImageUrl} dir="ltr" name="characterImageUrl" type="url" placeholder="https://..." />
+          </Field>
+          <Field label="تصویر فضای افسانه" hint="منظره، شهر یا صحنه‌ای از دنیای همین اثر">
+            <input className={inputClassName} defaultValue={value.worldSceneImageUrl} dir="ltr" name="worldSceneImageUrl" type="url" placeholder="https://..." />
           </Field>
         </div>
       </FormSection>

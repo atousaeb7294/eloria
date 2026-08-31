@@ -57,6 +57,8 @@ type ParsedProductInput = {
   descriptionEn: string | null;
   legendFa: string | null;
   legendEn: string | null;
+  characterImageUrl: string | null;
+  worldSceneImageUrl: string | null;
   material: "GOLD" | "SILVER";
   pricingMode: "DYNAMIC" | "MANUAL";
   price: string | null;
@@ -131,6 +133,14 @@ function readText(
   }
 
   return normalized || null;
+}
+
+function readProductImageUrl(formData: FormData, key: string): string | null {
+  const imageUrl = readText(formData, key, 2_048);
+  if (imageUrl && !isAllowedProductImageUrl(imageUrl)) {
+    throw new AdminProductActionError("نشانی تصویر باید HTTPS و متعلق به فضای تصاویر مجاز الوریا باشد.");
+  }
+  return imageUrl;
 }
 
 function normalizeDigits(
@@ -424,6 +434,8 @@ function parseProductInput(
         "legendEn",
         5_000,
       ),
+    characterImageUrl: readProductImageUrl(formData, "characterImageUrl"),
+    worldSceneImageUrl: readProductImageUrl(formData, "worldSceneImageUrl"),
     material:
       readEnum(
         formData,
@@ -612,6 +624,8 @@ function productData(
       input.legendFa,
     legendEn:
       input.legendEn,
+    characterImageUrl: input.characterImageUrl,
+    worldSceneImageUrl: input.worldSceneImageUrl,
     material:
       input.material,
     pricingMode:
@@ -908,8 +922,6 @@ await ensureUniqueIdentity({
     `/${input.locale}/admin/products/${productId}?saved=1`,
   );
 }
-
-
 
 
 

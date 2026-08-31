@@ -132,6 +132,11 @@ function productImageConfiguration(): {
 const imageConfig =
   productImageConfiguration();
 
+const serverActionOrigins = Array.from(new Set([
+  process.env.NEXT_PUBLIC_SITE_URL,
+  ...(process.env.ELORIA_ALLOWED_ORIGINS ?? "").split(","),
+].map(value => httpsHostname(value)).filter((value): value is string => Boolean(value))));
+
 const imageSourceDirective =
   isProduction
     ? [
@@ -192,6 +197,7 @@ const nextConfig:
     serverActions: {
       bodySizeLimit:
         "10mb",
+      ...(serverActionOrigins.length ? { allowedOrigins: serverActionOrigins } : {}),
     },
   },
 

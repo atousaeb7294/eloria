@@ -70,6 +70,7 @@
     "test:admin-hardening": "tsx scripts/test-admin-hardening.ts",
     "test:supply-chain": "node scripts/check-supply-chain.mjs",
     "myths:assign": "tsx scripts/assign-unique-product-myths.ts",
+    "myths:refresh": "tsx scripts/refresh-product-myths.ts --confirm-overwrite",
     "test:myths": "node --import tsx scripts/test-product-myth-library.ts"
   },
   "dependencies": {

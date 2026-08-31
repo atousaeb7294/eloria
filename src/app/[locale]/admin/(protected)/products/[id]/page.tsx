@@ -205,6 +205,8 @@ export default async function EditAdminProductPage({
     descriptionEn: product.descriptionEn ?? "",
     legendFa: product.legendFa ?? "",
     legendEn: product.legendEn ?? "",
+    characterImageUrl: product.characterImageUrl ?? "",
+    worldSceneImageUrl: product.worldSceneImageUrl ?? "",
     material: product.material,
     pricingMode: product.pricingMode,
     price: product.price?.toString() ?? "",
