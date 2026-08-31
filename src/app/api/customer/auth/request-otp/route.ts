@@ -6,6 +6,7 @@ import {
   normalizeIranMobile,
   type CustomerOtpChannel,
 } from "@/lib/customer-auth";
+import { isCustomerOtpChannelEnabled } from "@/lib/customer-auth-channels";
 import { sendEmailOtp } from "@/lib/notifications/email-otp";
 import { sendSms } from "@/lib/notifications/kavenegar";
 import { prisma } from "@/lib/prisma";
@@ -162,6 +163,22 @@ export async function POST(
 
   const channel =
     normalizeChannel(body.channel);
+
+  if (!isCustomerOtpChannelEnabled(channel)) {
+    return NextResponse.json(
+      {
+        successful: false,
+        message:
+          channel === "EMAIL"
+            ? "ورود ایمیلی در حال حاضر پیکربندی نشده است."
+            : "ورود پیامکی در حال حاضر پیکربندی نشده است.",
+      },
+      {
+        status: 503,
+        headers: headers(),
+      },
+    );
+  }
 
   if (
     typeof body.mobile !== "string"

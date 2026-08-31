@@ -7,7 +7,6 @@ import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 
 import {
   type ComponentType,
-  type FocusEvent,
   type ReactNode,
   useEffect,
   useRef,
@@ -153,7 +152,7 @@ export function SiteHeader({ locale }: SiteHeaderProps) {
 
   const [worldOpen, setWorldOpen] = useState(false);
 
-  const closeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const worldMenuRef = useRef<HTMLDivElement | null>(null);
 
   const homeHref = `/${resolvedLocale}#hero`;
 
@@ -192,43 +191,36 @@ export function SiteHeader({ locale }: SiteHeaderProps) {
     },
   ];
 
-  const cancelScheduledClose = () => {
-    if (closeTimerRef.current) {
-      clearTimeout(closeTimerRef.current);
-
-      closeTimerRef.current = null;
-    }
-  };
-
-  const openWorldMenu = () => {
-    cancelScheduledClose();
-
-    setWorldOpen(true);
-  };
-
-  const scheduleWorldClose = () => {
-    cancelScheduledClose();
-
-    closeTimerRef.current = setTimeout(() => {
-      setWorldOpen(false);
-    }, 170);
-  };
-
   useEffect(() => {
-    return () => {
-      if (closeTimerRef.current) {
-        clearTimeout(closeTimerRef.current);
+    if (!worldOpen) {
+      return;
+    }
+
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setWorldOpen(false);
       }
     };
-  }, []);
 
-  const handleWorldBlur = (event: FocusEvent<HTMLDivElement>) => {
-    const nextElement = event.relatedTarget as Node | null;
+    const closeOnOutsidePointer = (event: PointerEvent) => {
+      const target = event.target;
 
-    if (!nextElement || !event.currentTarget.contains(nextElement)) {
-      scheduleWorldClose();
-    }
-  };
+      if (
+        target instanceof Node &&
+        !worldMenuRef.current?.contains(target)
+      ) {
+        setWorldOpen(false);
+      }
+    };
+
+    document.addEventListener("keydown", closeOnEscape);
+    document.addEventListener("pointerdown", closeOnOutsidePointer);
+
+    return () => {
+      document.removeEventListener("keydown", closeOnEscape);
+      document.removeEventListener("pointerdown", closeOnOutsidePointer);
+    };
+  }, [worldOpen]);
 
   const normalButtonClass =
     "group relative inline-flex size-10 items-center justify-center gap-2 overflow-hidden rounded-xl sm:size-11 sm:rounded-2xl border border-white/10 bg-white/[0.045] text-white/70 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] transition duration-500 hover:-translate-y-0.5 hover:border-[#dfbd68]/55 hover:bg-[#168461]/15 hover:text-[#f7dda0] lg:h-11 lg:w-auto lg:min-w-28 lg:px-3";
@@ -300,11 +292,8 @@ export function SiteHeader({ locale }: SiteHeaderProps) {
               </Link>
 
               <div
+                ref={worldMenuRef}
                 className="relative"
-                onMouseEnter={openWorldMenu}
-                onMouseLeave={scheduleWorldClose}
-                onFocusCapture={openWorldMenu}
-                onBlurCapture={handleWorldBlur}
               >
                 <div
                   className={[
@@ -317,8 +306,7 @@ export function SiteHeader({ locale }: SiteHeaderProps) {
                   <Link
                     href={collectionsHref}
                     title={labels.world}
-                    aria-haspopup="menu"
-                    aria-expanded={worldOpen}
+                    onClick={() => setWorldOpen(false)}
                     className="flex h-full items-center gap-2 px-1.5 lg:min-w-24 lg:px-3"
                   >
                     <MagicIconFrame active={isWorldActive} reverse>
@@ -337,9 +325,9 @@ export function SiteHeader({ locale }: SiteHeaderProps) {
                         ? "نمایش منوی گنجینه‌ها"
                         : "Open collections menu"
                     }
+                    aria-haspopup="menu"
+                    aria-expanded={worldOpen}
                     onClick={() => {
-                      cancelScheduledClose();
-
                       setWorldOpen((current) => !current);
                     }}
                     className="flex h-full w-7 items-center justify-center border-s border-white/[0.08] text-[#d9bd78]/70 transition hover:bg-white/[0.04] hover:text-[#f0d586]"

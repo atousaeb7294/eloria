@@ -1,9 +1,10 @@
 import "dotenv/config";
-import { isEmailOtpConfigured } from "../src/lib/notifications/email-otp";
+import { getCustomerAuthChannelAvailability } from "../src/lib/customer-auth-channels";
 
 type Check = { label: string; ok: boolean; note: string };
 
 const value = (key: string) => process.env[key]?.trim() ?? "";
+const customerChannels = getCustomerAuthChannelAvailability();
 const checks: Check[] = [
   {
     label: "Admin password hash",
@@ -26,9 +27,9 @@ const checks: Check[] = [
     note: "Add the Base32 secret to an authenticator and keep server time synchronized.",
   },
   {
-    label: "Customer email OTP",
-    ok: isEmailOtpConfigured() && /^.+@.+\..+$/.test(value("ELORIA_EMAIL_FROM")),
-    note: "RESEND_API_KEY and a verified ELORIA_EMAIL_FROM are required.",
+    label: "Customer OTP delivery",
+    ok: customerChannels.preferredChannel !== null,
+    note: "Enable and configure at least one verified email or SMS provider.",
   },
   {
     label: "Turnstile keys",

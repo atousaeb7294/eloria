@@ -119,7 +119,7 @@ productPageCacheGlobal.__eloriaProductPageInflight =
 async function loadProductPageRecord(
   slug: string,
 ) {
-  return prisma.product.findFirst({
+  const product = await prisma.product.findFirst({
     where: {
       slug,
       status: {
@@ -129,17 +129,25 @@ async function loadProductPageRecord(
 
     select: {
       id: true,
+      slug: true,
+      sku: true,
       nameFa: true,
       nameEn: true,
       mythNameFa: true,
       mythNameEn: true,
       material: true,
+      status: true,
+      stock: true,
+      pricingMode: true,
+      currency: true,
+      price: true,
+      metalWeight: true,
+      purity: true,
+      purityFineness: true,
       descriptionFa: true,
       descriptionEn: true,
       legendFa: true,
       legendEn: true,
-      characterImageUrl: true,
-      worldSceneImageUrl: true,
 
       collection: {
         select: {
@@ -184,13 +192,57 @@ async function loadProductPageRecord(
           id: true,
           titleFa: true,
           titleEn: true,
+          sku: true,
+          price: true,
           stock: true,
           metalWeight: true,
           purity: true,
+          purityFineness: true,
         },
       },
     },
   });
+
+  if (!product) {
+    return null;
+  }
+
+  // Myth media was added after the original production schema. Reading the
+  // optional values through row JSON keeps product pages operational during a
+  // rolling deployment even before the idempotent media migration is applied.
+  let mythMedia: {
+    characterImageUrl: string | null;
+    worldSceneImageUrl: string | null;
+  } | null = null;
+
+  try {
+    const rows = await prisma.$queryRaw<
+      Array<{
+        characterImageUrl: string | null;
+        worldSceneImageUrl: string | null;
+      }>
+    >`
+      SELECT
+        to_jsonb(product_row) ->> 'characterImageUrl' AS "characterImageUrl",
+        to_jsonb(product_row) ->> 'worldSceneImageUrl' AS "worldSceneImageUrl"
+      FROM "products" AS product_row
+      WHERE product_row."id" = ${product.id}::uuid
+      LIMIT 1
+    `;
+
+    mythMedia = rows[0] ?? null;
+  } catch (error) {
+    console.warn(
+      `[Eloria Product Page] Optional myth media is unavailable for ${slug}.`,
+      error,
+    );
+  }
+
+  return {
+    ...product,
+    characterImageUrl: mythMedia?.characterImageUrl ?? null,
+    worldSceneImageUrl: mythMedia?.worldSceneImageUrl ?? null,
+  };
 }
 
 function refreshProductPageRecord(
@@ -458,7 +510,7 @@ export default async function ProductPage({
         productRecord.variants[0]
           ?.id ?? null;
 
-  let result;
+  let result: Awaited<ReturnType<typeof getProductDisplayPrice>> | null = null;
 
   try {
     result =
@@ -479,14 +531,22 @@ export default async function ProductPage({
       notFound();
     }
 
-    throw error;
+    console.error(
+      `[Eloria Product Page] Pricing is unavailable for ${slug}.`,
+      error,
+    );
   }
 
   const collection =
     productRecord.collection;
 
+  const selectedVariant =
+    selectedVariantId
+      ? productRecord.variants.find(variant => variant.id === selectedVariantId) ?? null
+      : null;
+
   const isGold =
-    result.product.material ===
+    productRecord.material ===
     "GOLD";
 
   const MaterialIcon =
@@ -528,13 +588,13 @@ export default async function ProductPage({
 
   const productName =
     isPersian
-      ? result.product.nameFa
-      : result.product.nameEn;
+      ? productRecord.nameFa
+      : productRecord.nameEn;
 
   const secondaryName =
     isPersian
-      ? result.product.nameEn
-      : result.product.nameFa;
+      ? productRecord.nameEn
+      : productRecord.nameFa;
 
   const collectionSlug =
     collection?.slug ??
@@ -574,9 +634,9 @@ export default async function ProductPage({
             alt:
               isPersian
                 ? productImage.altFa ??
-                  result.product.nameFa
+                  productRecord.nameFa
                 : productImage.altEn ??
-                  result.product.nameEn,
+                  productRecord.nameEn,
           }),
         )
       : [
@@ -590,41 +650,61 @@ export default async function ProductPage({
         ];
 
   const weight =
-    result.variant
+    result?.variant
       ?.weightGrams ??
-    result.product.weightGrams;
+    selectedVariant?.metalWeight?.toString() ??
+    productRecord.metalWeight?.toString() ??
+    null;
 
   const purity =
-    result.variant
+    result?.variant
       ?.purity ??
-    result.product.purity;
+    selectedVariant?.purity ??
+    productRecord.purity;
 
   const purityFineness =
-    result.variant
+    result?.variant
       ?.purityFineness ??
-    result.product
-      .purityFineness;
+    selectedVariant?.purityFineness ??
+    productRecord.purityFineness;
 
   const stock =
-    result.variant
+    result?.variant
       ?.stock ??
-    result.product.stock;
+    selectedVariant?.stock ??
+    productRecord.stock;
 
   const sku =
-    result.variant
+    result?.variant
       ?.sku ??
-    result.product.sku;
+    selectedVariant?.sku ??
+    productRecord.sku;
+
+  const baseProductPurchasable =
+    productRecord.status === "ACTIVE" && stock > 0;
+
+  const rateUsableForSale =
+    Boolean(
+      result?.pricing.mode === "MANUAL" ||
+      result?.liveRate?.isUsableForSale === true,
+    );
+
+  const canPurchase =
+    Boolean(
+      result?.product.isPurchasable &&
+      baseProductPurchasable &&
+      rateUsableForSale,
+    );
 
   const finalPrice =
-    `${formatToman(
-      result.pricing
-        .finalPriceToman,
-      locale,
-    )} ${
-      isPersian
-        ? "تومان"
-        : "Toman"
-    }`;
+    result
+      ? `${formatToman(
+          result.pricing.finalPriceToman,
+          locale,
+        )} ${isPersian ? "تومان" : "Toman"}`
+      : isPersian
+        ? "قیمت موقتاً در دسترس نیست"
+        : "Price temporarily unavailable";
 
   const formattedWeight =
     weight
@@ -639,7 +719,7 @@ export default async function ProductPage({
       : "—";
 
   const formattedLiveRate =
-    result.liveRate
+    result?.liveRate
       ? `${formatToman(
           result.liveRate
             .originalPricePerGramToman,
@@ -649,9 +729,13 @@ export default async function ProductPage({
             ? "تومان"
             : "Toman"
         }`
-      : isPersian
-        ? "قیمت ثابت"
-        : "Manual price";
+      : result?.pricing.mode === "MANUAL"
+        ? isPersian
+          ? "قیمت ثابت"
+          : "Manual price"
+        : isPersian
+          ? "نرخ در دسترس نیست"
+          : "Rate unavailable";
 
   const productDescription =
     (isPersian
@@ -685,13 +769,14 @@ export default async function ProductPage({
   const worldProfile = generatedLegend.worldProfile;
 
   let relatedProducts: Awaited<ReturnType<typeof getPricedProductsCatalog>>["products"] = [];
-  try {
-    const relatedCatalog = await getPricedProductsCatalog({
-      material: result.product.material,
-      availability: "AVAILABLE",
-      page: 1,
-      pageSize: 32,
-    });
+  if (result) {
+    try {
+      const relatedCatalog = await getPricedProductsCatalog({
+        material: result.product.material,
+        availability: "AVAILABLE",
+        page: 1,
+        pageSize: 32,
+      });
 
     const candidates = relatedCatalog.products.filter(
       item => item.slug !== result.product.slug && item.displayPriceToman,
@@ -728,44 +813,47 @@ export default async function ProductPage({
     const sales = new Map(saleRows.map(row => [row.productSlug, row._sum.quantity ?? 0]));
     const currentPrice = BigInt(result.pricing.finalPriceToman);
 
-    relatedProducts = candidates
-      .map(item => {
-        const itemPrice = BigInt(item.displayPriceToman ?? "0");
-        const distance = currentPrice > 0n
-          ? Number((itemPrice > currentPrice ? itemPrice - currentPrice : currentPrice - itemPrice) * 10_000n / currentPrice) / 100
-          : 100;
-        const priceScore = Math.max(0, 28 - Math.min(28, distance * 0.35));
-        const collectionScore = item.collectionSlug === collectionSlug ? 32 : 0;
-        const behaviorScore = Math.min(views.get(item.slug) ?? 0, 50) * 0.35 + Math.min(sales.get(item.slug) ?? 0, 12) * 3.5;
-        return { item, score: collectionScore + priceScore + behaviorScore };
-      })
-      .sort((a, b) => b.score - a.score)
-      .slice(0, 4)
-      .map(entry => entry.item);
-  } catch (error) {
-    console.warn(`[Eloria Recommendations] Smart related products unavailable for ${result.product.slug}.`, error);
+      relatedProducts = candidates
+        .map(item => {
+          const itemPrice = BigInt(item.displayPriceToman ?? "0");
+          const distance = currentPrice > 0n
+            ? Number((itemPrice > currentPrice ? itemPrice - currentPrice : currentPrice - itemPrice) * 10_000n / currentPrice) / 100
+            : 100;
+          const priceScore = Math.max(0, 28 - Math.min(28, distance * 0.35));
+          const collectionScore = item.collectionSlug === collectionSlug ? 32 : 0;
+          const behaviorScore = Math.min(views.get(item.slug) ?? 0, 50) * 0.35 + Math.min(sales.get(item.slug) ?? 0, 12) * 3.5;
+          return { item, score: collectionScore + priceScore + behaviorScore };
+        })
+        .sort((a, b) => b.score - a.score)
+        .slice(0, 4)
+        .map(entry => entry.item);
+    } catch (error) {
+      console.warn(`[Eloria Recommendations] Smart related products unavailable for ${productRecord.slug}.`, error);
+    }
   }
 
   return (
     <InternalPageShell
       locale={locale}
     >
-      <ProductStructuredData
-        locale={locale}
-        slug={result.product.slug}
-        name={productName}
-        description={productDescription}
-        images={galleryImages.map(image => image.imageUrl)}
-        sku={sku}
-        collectionSlug={collection?.slug ?? null}
-        collectionName={collectionLabel}
-        finalPriceToman={result.pricing.finalPriceToman}
-        stock={stock}
-        purchasable={result.product.isPurchasable && stock > 0}
-        material={materialLabel}
-        weightGrams={weight?.toString() ?? null}
-        purity={purity ?? (purityFineness ? purityFineness.toString() : null)}
-      />
+      {result ? (
+        <ProductStructuredData
+          locale={locale}
+          slug={productRecord.slug}
+          name={productName}
+          description={productDescription}
+          images={galleryImages.map(image => image.imageUrl)}
+          sku={sku}
+          collectionSlug={collection?.slug ?? null}
+          collectionName={collectionLabel}
+          finalPriceToman={result.pricing.finalPriceToman}
+          stock={stock}
+          purchasable={canPurchase}
+          material={materialLabel}
+          weightGrams={weight?.toString() ?? null}
+          purity={purity ?? (purityFineness ? purityFineness.toString() : null)}
+        />
+      ) : null}
       <section className="relative z-10 mx-auto w-full max-w-[1450px] px-4 pb-28 pt-[130px] sm:px-6 sm:pt-[142px] lg:px-10">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <Link
@@ -832,10 +920,7 @@ export default async function ProductPage({
               materialLabel={materialLabel}
               collectionLabel={collectionLabel}
               isGold={isGold}
-              unavailable={
-                !result.product
-                  .isPurchasable
-              }
+              unavailable={!baseProductPurchasable}
             />
           </div>
 
@@ -914,23 +999,21 @@ export default async function ProductPage({
               <ProductVariantSelector
                 locale={locale}
                 productSlug={
-                  result.product.slug
+                  productRecord.slug
                 }
                 variants={
                   productRecord.variants.map(
                     (variant) => ({
-                      ...variant,
-                      metalWeight:
-                        variant.metalWeight
-                          ?.toString() ??
-                        null,
+                      id: variant.id,
+                      titleFa: variant.titleFa,
+                      titleEn: variant.titleEn,
+                      stock: variant.stock,
+                      metalWeight: variant.metalWeight?.toString() ?? null,
+                      purity: variant.purity,
                     }),
                   )
                 }
-                activeVariantId={
-                  result.variant?.id ??
-                  null
-                }
+                activeVariantId={selectedVariantId}
                 isGold={isGold}
               />
 
@@ -961,27 +1044,39 @@ export default async function ProductPage({
                   <span
                     className={[
                       "inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-[10px]",
-                      stock > 0 && result.product.isPurchasable
-                        ? "border-emerald-200/15 bg-emerald-950/35 text-emerald-100/75"
-                        : "border-rose-200/18 bg-rose-950/35 text-rose-100/75",
+                      !result || (baseProductPurchasable && !rateUsableForSale)
+                        ? "border-amber-200/18 bg-amber-950/30 text-amber-100/75"
+                        : canPurchase
+                          ? "border-emerald-200/15 bg-emerald-950/35 text-emerald-100/75"
+                          : "border-rose-200/18 bg-rose-950/35 text-rose-100/75",
                     ].join(" ")}
                   >
                     <span
                       className={[
                         "h-1.5 w-1.5 rounded-full",
-                        stock > 0 && result.product.isPurchasable
-                          ? "bg-emerald-300"
-                          : "bg-rose-300",
+                        !result || (baseProductPurchasable && !rateUsableForSale)
+                          ? "bg-amber-300"
+                          : canPurchase
+                            ? "bg-emerald-300"
+                            : "bg-rose-300",
                       ].join(" ")}
                     />
 
-                    {stock > 0 && result.product.isPurchasable
+                    {!result
                       ? isPersian
-                        ? "آماده سفارش"
-                        : "Ready to order"
-                      : isPersian
-                        ? "ناموجود"
-                        : "Unavailable"}
+                        ? "قیمت در حال بازیابی"
+                        : "Price recovery in progress"
+                      : canPurchase
+                        ? isPersian
+                          ? "آماده سفارش"
+                          : "Ready to order"
+                        : baseProductPurchasable
+                          ? isPersian
+                            ? "خرید موقتاً متوقف"
+                            : "Purchasing temporarily paused"
+                          : isPersian
+                            ? "ناموجود"
+                            : "Unavailable"}
                   </span>
                 </div>
 
@@ -996,6 +1091,20 @@ export default async function ProductPage({
                 >
                   {finalPrice}
                 </strong>
+
+                {!result ? (
+                  <p role="status" className="mt-3 rounded-xl border border-amber-300/15 bg-amber-950/20 px-3 py-2 text-[11px] leading-6 text-amber-100/75">
+                    {isPersian
+                      ? "اطلاعات محصول در دسترس است، اما منبع قیمت لحظه‌ای موقتاً پاسخ نمی‌دهد. خرید تا دریافت نرخ معتبر غیرفعال شده است."
+                      : "Product details are available, but the live pricing source is temporarily unavailable. Purchasing is paused until a valid rate is restored."}
+                  </p>
+                ) : result.liveRate && !result.liveRate.isUsableForSale ? (
+                  <p role="status" className="mt-3 rounded-xl border border-amber-300/15 bg-amber-950/20 px-3 py-2 text-[11px] leading-6 text-amber-100/75">
+                    {isPersian
+                      ? "این نرخ فقط برای اطلاع نمایش داده می‌شود و تا تازه‌شدن نرخ، خرید غیرفعال است."
+                      : "This rate is display-only. Purchasing remains disabled until the market rate is refreshed."}
+                  </p>
+                ) : null}
 
                 <div className="mt-5 grid gap-2 sm:grid-cols-2">
                   <PriceInformationItem
@@ -1041,37 +1150,16 @@ export default async function ProductPage({
               <div className="mt-5">
                 <AddToCartButton
                   locale={locale}
-                  slug={
-                    result.product
-                      .slug
-                  }
-                  variantId={
-                    result.variant
-                      ?.id ??
-                    null
-                  }
-                  maxQuantity={
-                    result.variant
-                      ?.stock ??
-                    result.product
-                      .stock
-                  }
-                  disabled={
-                    !result.product
-                      .isPurchasable ||
-                    (
-                      result.variant
-                        ?.stock ??
-                      result.product
-                        .stock
-                    ) <= 0
-                  }
+                  slug={productRecord.slug}
+                  variantId={selectedVariantId}
+                  maxQuantity={stock}
+                  disabled={!canPurchase}
                 />
                 <ProductWatchButton
                   locale={locale}
-                  slug={result.product.slug}
+                  slug={productRecord.slug}
                 />
-                <ProductShareActions locale={locale} slug={result.product.slug} title={productName} />
+                <ProductShareActions locale={locale} slug={productRecord.slug} title={productName} />
               <div className="mt-3">
                 <TreasuryButton
                   locale={locale}

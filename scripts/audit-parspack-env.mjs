@@ -13,19 +13,24 @@ const fileEnv = existsSync(envPath) ? parse(readFileSync(envPath, "utf8")) : {};
 const env = { ...fileEnv, ...process.env };
 const value = key => String(env[key] || "").trim();
 const bool = key => value(key).toLowerCase() === "true";
+const emailOtpEnabled = bool("ELORIA_CUSTOMER_EMAIL_OTP_ENABLED");
+const smsOtpEnabled = bool("ELORIA_CUSTOMER_SMS_OTP_ENABLED");
 const secret = new Set([
   "DATABASE_URL", "DIRECT_URL", "ELORIA_ADMIN_PASSWORD_HASH", "ELORIA_ADMIN_SESSION_SECRET",
   "ELORIA_ADMIN_TOTP_SECRET", "CRON_SECRET", "ELORIA_HEALTH_SECRET", "ELORIA_TRACKING_SECRET",
   "ELORIA_PAYMENT_RECEIPT_SECRET", "ELORIA_PAYMENT_START_SECRET", "ELORIA_CUSTOMER_AUTH_SECRET",
   "ELORIA_SUPPORT_CHAT_SECRET", "NEXT_SERVER_ACTIONS_ENCRYPTION_KEY", "SUPABASE_SERVICE_ROLE_KEY",
-  "RESEND_API_KEY", "TURNSTILE_SECRET_KEY", "BRS_API_KEY", "ZARINPAL_MERCHANT_ID",
+  "RESEND_API_KEY", "KAVENEGAR_API_KEY", "TURNSTILE_SECRET_KEY", "BRS_API_KEY", "ZARINPAL_MERCHANT_ID",
   "ELORIA_SECURITY_ALERT_WEBHOOK_URL",
 ]);
 const required = [
   "DATABASE_URL", "DIRECT_URL", "NEXT_PUBLIC_SITE_URL", "ELORIA_CUSTOMER_AUTH_ENABLED",
+  "ELORIA_CUSTOMER_EMAIL_OTP_ENABLED", "ELORIA_CUSTOMER_SMS_OTP_ENABLED",
   "ELORIA_DYNAMIC_PRICING_ENABLED", "ELORIA_ADMIN_USERNAME", "ELORIA_ADMIN_PASSWORD_HASH",
   "ELORIA_ADMIN_SESSION_SECRET", "ELORIA_ADMIN_TOTP_SECRET", "ELORIA_CUSTOMER_AUTH_SECRET",
-  "RESEND_API_KEY", "ELORIA_EMAIL_FROM", "NEXT_PUBLIC_TURNSTILE_SITE_KEY", "TURNSTILE_SECRET_KEY",
+  ...(emailOtpEnabled ? ["RESEND_API_KEY", "ELORIA_EMAIL_FROM"] : []),
+  ...(smsOtpEnabled ? ["KAVENEGAR_API_KEY"] : []),
+  "NEXT_PUBLIC_TURNSTILE_SITE_KEY", "TURNSTILE_SECRET_KEY",
   "SUPABASE_URL", "SUPABASE_SERVICE_ROLE_KEY", "ELORIA_STORAGE_BUCKET", "BRS_API_KEY", "CRON_SECRET",
   "ELORIA_HEALTH_SECRET", "NEXT_SERVER_ACTIONS_ENCRYPTION_KEY", "ELORIA_EMBEDDED_METAL_SYNC_ENABLED",
   "ELORIA_EMBEDDED_METAL_SYNC_INTERVAL_MINUTES",
@@ -45,6 +50,9 @@ const contracts = [
   ["Admin password hash", /^scrypt\$[a-f0-9]{32}\$[a-f0-9]{128}$/i.test(value("ELORIA_ADMIN_PASSWORD_HASH"))],
   ["Admin TOTP Base32", /^[A-Z2-7]+=*$/i.test(value("ELORIA_ADMIN_TOTP_SECRET")) && value("ELORIA_ADMIN_TOTP_SECRET").length >= 16],
   ["Customer auth enabled", bool("ELORIA_CUSTOMER_AUTH_ENABLED")],
+  ["Customer OTP delivery channel", emailOtpEnabled || smsOtpEnabled],
+  ["Email OTP provider", !emailOtpEnabled || (value("RESEND_API_KEY").length >= 16 && value("ELORIA_EMAIL_FROM").length >= 5)],
+  ["SMS OTP provider", !smsOtpEnabled || value("KAVENEGAR_API_KEY").length >= 16],
   ["Dynamic pricing enabled", bool("ELORIA_DYNAMIC_PRICING_ENABLED")],
   ["Embedded metal sync enabled", bool("ELORIA_EMBEDDED_METAL_SYNC_ENABLED")],
   ["Canonical URL", value("NEXT_PUBLIC_SITE_URL") === "https://eloriagallery.ir"],

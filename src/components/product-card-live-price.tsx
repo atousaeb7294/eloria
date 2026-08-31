@@ -33,10 +33,6 @@ export function ProductCardLivePrice({
   const isPersian = locale === "fa";
 
   useEffect(() => {
-    if (initialPriceToman) {
-      return;
-    }
-
     const controller = new AbortController();
 
     async function loadPrice() {
@@ -45,7 +41,7 @@ export function ProductCardLivePrice({
           `/api/products/${encodeURIComponent(slug)}/price?display=1`,
           {
             signal: controller.signal,
-            cache: "default",
+            cache: "no-store",
           },
         );
 
@@ -61,6 +57,7 @@ export function ProductCardLivePrice({
         }
 
         setPrice(finalPrice);
+        setFailed(false);
       } catch (error) {
         if (error instanceof DOMException && error.name === "AbortError") {
           return;
@@ -72,10 +69,19 @@ export function ProductCardLivePrice({
 
     void loadPrice();
 
-    return () => controller.abort();
-  }, [initialPriceToman, slug]);
+    const intervalId = window.setInterval(() => {
+      if (document.visibilityState === "visible") {
+        void loadPrice();
+      }
+    }, 60_000);
 
-  if (failed) {
+    return () => {
+      window.clearInterval(intervalId);
+      controller.abort();
+    };
+  }, [slug]);
+
+  if (failed && !price) {
     return (
       <p className="text-sm text-[#d8c79e]/75">
         {isPersian ? "قیمت در صفحه محصول" : "Price on product page"}

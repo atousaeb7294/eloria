@@ -4,7 +4,12 @@ import Script from "next/script";
 import { Check, LoaderCircle, RefreshCw, ShieldAlert } from "lucide-react";
 import { useCallback, useEffect, useId, useRef, useState } from "react";
 
-type TurnstileState = "loading" | "ready" | "verified" | "error" | "disabled";
+export type TurnstileState =
+  | "loading"
+  | "ready"
+  | "verified"
+  | "error"
+  | "disabled";
 
 declare global {
   interface Window {
@@ -99,7 +104,7 @@ export function TurnstileWidget({
       onTokenChange(null);
       queueMicrotask(() => updateState("error"));
     }
-  }, [action, id, locale, onTokenChange, scriptReady, siteKey, updateState]);
+  }, [action, id, locale, onTokenChange, scriptGeneration, scriptReady, siteKey, updateState]);
 
   useEffect(() => () => {
     if (widgetId.current && window.turnstile) {
@@ -118,6 +123,11 @@ export function TurnstileWidget({
 
   const retry = () => {
     onTokenChange(null);
+
+    if (widgetId.current && window.turnstile) {
+      window.turnstile.remove(widgetId.current);
+    }
+
     widgetId.current = null;
     setScriptReady(Boolean(window.turnstile));
     setScriptGeneration(value => value + 1);

@@ -1,3 +1,3 @@
 alter table "products"
-add column "legendFa" text,
-add column "legendEn" text;
+add column if not exists "legendFa" text,
+add column if not exists "legendEn" text;

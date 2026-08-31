@@ -15,15 +15,52 @@ function configuredSecret(): string {
   return process.env.TURNSTILE_SECRET_KEY?.trim() ?? "";
 }
 
-function expectedHostname(): string | null {
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL?.trim();
-  if (!siteUrl) return null;
+export function getAllowedTurnstileHostnames(
+  siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "",
+  allowedOrigins = process.env.ELORIA_ALLOWED_ORIGINS ?? "",
+): string[] {
+  const hostnames = new Set<string>();
 
-  try {
-    return new URL(siteUrl).hostname.toLowerCase();
-  } catch {
-    return null;
+  for (const rawUrl of [siteUrl, ...allowedOrigins.split(",")]) {
+    const normalized = rawUrl.trim();
+    if (!normalized) {
+      continue;
+    }
+
+    try {
+      const url = new URL(normalized);
+      if (url.protocol === "http:" || url.protocol === "https:") {
+        hostnames.add(url.hostname.toLowerCase());
+      }
+    } catch {
+      // Invalid origins are rejected by the production environment audit. They
+      // must never widen the Turnstile hostname allowlist at runtime.
+    }
   }
+
+  return [...hostnames];
+}
+
+export function isTurnstileHostnameAllowed(
+  returnedHostname: string,
+  allowedHostnames: readonly string[],
+  strict: boolean,
+): boolean {
+  const returned = returnedHostname.trim().toLowerCase();
+
+  if (strict) {
+    return Boolean(
+      returned &&
+      allowedHostnames.length > 0 &&
+      allowedHostnames.includes(returned),
+    );
+  }
+
+  return (
+    allowedHostnames.length === 0 ||
+    !returned ||
+    allowedHostnames.includes(returned)
+  );
 }
 
 function cleanAction(action: string | undefined): string | null {
@@ -98,22 +135,18 @@ export async function verifyTurnstileToken(input: {
       };
     }
 
-    const configuredHostname = expectedHostname();
+    const allowedHostnames = getAllowedTurnstileHostnames();
     const returnedHostname = payload.hostname?.trim().toLowerCase() ?? "";
     const expectedAction = cleanAction(input.expectedAction);
     const returnedAction = cleanAction(payload.action);
 
     const strictProduction = process.env.NODE_ENV === "production";
 
-    const hostnameMatches = strictProduction
-      ? Boolean(
-          configuredHostname &&
-            returnedHostname &&
-            returnedHostname === configuredHostname,
-        )
-      : !configuredHostname ||
-        !returnedHostname ||
-        returnedHostname === configuredHostname;
+    const hostnameMatches = isTurnstileHostnameAllowed(
+      returnedHostname,
+      allowedHostnames,
+      strictProduction,
+    );
 
     const actionMatches = expectedAction
       ? returnedAction === expectedAction

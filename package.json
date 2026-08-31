@@ -71,7 +71,8 @@
     "test:supply-chain": "node scripts/check-supply-chain.mjs",
     "myths:assign": "tsx scripts/assign-unique-product-myths.ts",
     "myths:refresh": "tsx scripts/refresh-product-myths.ts --confirm-overwrite",
-    "test:myths": "node --import tsx scripts/test-product-myth-library.ts"
+    "test:myths": "node --import tsx scripts/test-product-myth-library.ts",
+    "test:critical": "node --import tsx scripts/test-critical-regressions.ts"
   },
   "dependencies": {
     "@base-ui/react": "^1.6.0",

@@ -3,6 +3,7 @@ import { notFound, redirect } from "next/navigation";
 import { InternalPageShell } from "@/components/internal-page-shell";
 import { CustomerLoginClient } from "@/components/customer-login-client";
 import { getCurrentCustomer } from "@/lib/customer-auth";
+import { getCustomerAuthChannelAvailability } from "@/lib/customer-auth-channels";
 
 export const metadata: Metadata = { robots: { index: false, follow: false } };
 export const dynamic = "force-dynamic";
@@ -16,5 +17,6 @@ export default async function CustomerLoginPage({ params, searchParams }: Props)
   const auth = await getCurrentCustomer();
   if (auth) redirect(`/${locale}/profile`);
   const nextPath = typeof query.next === "string" && query.next.startsWith(`/${locale}/`) ? query.next : null;
-  return <InternalPageShell locale={locale}><CustomerLoginClient locale={locale} nextPath={nextPath} /></InternalPageShell>;
+  const channelAvailability = getCustomerAuthChannelAvailability();
+  return <InternalPageShell locale={locale}><CustomerLoginClient locale={locale} nextPath={nextPath} channelAvailability={channelAvailability} /></InternalPageShell>;
 }

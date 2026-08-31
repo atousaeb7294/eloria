@@ -10,7 +10,11 @@ import {
   Phone,
   ShieldCheck,
 } from "lucide-react";
-import { TurnstileWidget } from "@/components/turnstile-widget";
+import {
+  TurnstileWidget,
+  type TurnstileState,
+} from "@/components/turnstile-widget";
+import type { CustomerAuthChannelAvailability } from "@/lib/customer-auth-channels";
 import { readTreasury } from "@/lib/treasury-storage";
 
 type LoginChannel = "EMAIL" | "SMS";
@@ -18,15 +22,17 @@ type LoginChannel = "EMAIL" | "SMS";
 export function CustomerLoginClient({
   locale,
   nextPath,
+  channelAvailability,
 }: {
   locale: "fa" | "en";
   nextPath?: string | null;
+  channelAvailability: CustomerAuthChannelAvailability;
 }) {
   const fa = locale === "fa";
   const router = useRouter();
 
   const [channel, setChannel] =
-    useState<LoginChannel>("EMAIL");
+    useState<LoginChannel>(channelAvailability.preferredChannel ?? "EMAIL");
 
   const [email, setEmail] =
     useState("");
@@ -42,7 +48,15 @@ export function CustomerLoginClient({
 
   const [turnstileToken, setTurnstileToken] =
     useState<string | null>(null);
+  const [turnstileState, setTurnstileState] =
+    useState<TurnstileState>("loading");
   const [turnstileGeneration, setTurnstileGeneration] = useState(0);
+  const securityCheckComplete =
+    turnstileState === "disabled" || Boolean(turnstileToken);
+  const selectedChannelEnabled =
+    channel === "EMAIL"
+      ? channelAvailability.emailEnabled
+      : channelAvailability.smsEnabled;
 
   const [loading, setLoading] =
     useState(false);
@@ -63,11 +77,16 @@ export function CustomerLoginClient({
   function changeChannel(
     nextChannel: LoginChannel,
   ) {
-    if (nextChannel === "SMS") {
+    const enabled =
+      nextChannel === "EMAIL"
+        ? channelAvailability.emailEnabled
+        : channelAvailability.smsEnabled;
+
+    if (!enabled) {
       setMessage(
         fa
-          ? "ورود پیامکی پس از فعال‌سازی سرویس پیامک در دسترس قرار می‌گیرد."
-          : "SMS login will be available after the SMS service is activated.",
+          ? "این روش ورود هنوز از سمت مدیر سایت فعال نشده است."
+          : "This sign-in method has not been enabled by the site administrator.",
       );
       return;
     }
@@ -310,12 +329,13 @@ export function CustomerLoginClient({
             <div className="mt-7 grid grid-cols-2 gap-2 rounded-2xl border border-[#d8b967]/12 bg-black/15 p-1.5">
               <button
                 type="button"
+                disabled={!channelAvailability.emailEnabled}
                 onClick={() =>
                   changeChannel(
                     "EMAIL",
                   )
                 }
-                className={`flex h-11 items-center justify-center gap-2 rounded-xl text-xs transition ${
+                className={`flex h-11 items-center justify-center gap-2 rounded-xl text-xs transition disabled:cursor-not-allowed disabled:opacity-35 ${
                   channel ===
                   "EMAIL"
                     ? "bg-[#173e30] text-[#efd991]"
@@ -330,24 +350,37 @@ export function CustomerLoginClient({
 
               <button
                 type="button"
+                disabled={!channelAvailability.smsEnabled}
                 onClick={() =>
                   changeChannel(
                     "SMS",
                   )
                 }
-                className="flex h-11 items-center justify-center gap-2 rounded-xl text-xs text-[#baa982]/35"
+                className={`flex h-11 items-center justify-center gap-2 rounded-xl text-xs transition disabled:cursor-not-allowed disabled:opacity-35 ${
+                  channel === "SMS"
+                    ? "bg-[#173e30] text-[#efd991]"
+                    : "text-[#baa982]/55"
+                }`}
               >
                 <Phone className="h-4 w-4" />
                 {fa
                   ? "ورود با موبایل"
                   : "Mobile"}
-                <span className="text-[9px] opacity-70">
-                  {fa
-                    ? "بهزودی"
-                    : "Soon"}
-                </span>
+                {!channelAvailability.smsEnabled ? (
+                  <span className="text-[9px] opacity-70">
+                    {fa ? "غیرفعال" : "Disabled"}
+                  </span>
+                ) : null}
               </button>
             </div>
+
+            {!channelAvailability.preferredChannel ? (
+              <p role="alert" className="mt-4 rounded-xl border border-amber-300/20 bg-amber-950/20 p-3 text-xs leading-6 text-amber-100">
+                {fa
+                  ? "هیچ سرویس ارسال کد ورود پیکربندی نشده است. مدیر سایت باید تنظیمات ایمیل یا پیامک را کامل کند."
+                  : "No login-code delivery service is configured. The site administrator must finish the email or SMS setup."}
+              </p>
+            ) : null}
 
             <form
               onSubmit={
@@ -355,30 +388,28 @@ export function CustomerLoginClient({
               }
               className="mt-6 space-y-4"
             >
-              <label className="block text-xs text-[#d9c79e]/65">
-                {fa
-                  ? "ایمیل"
-                  : "Email"}
-              </label>
+              {channel === "EMAIL" ? (
+                <>
+                  <label className="block text-xs text-[#d9c79e]/65">
+                    {fa ? "ایمیل" : "Email"}
+                  </label>
 
-              <div className="relative">
-                <Mail className="absolute start-4 top-1/2 h-4 w-4 -translate-y-1/2 text-[#d7bd72]/50" />
+                  <div className="relative">
+                    <Mail className="absolute start-4 top-1/2 h-4 w-4 -translate-y-1/2 text-[#d7bd72]/50" />
 
-                <input
-                  value={email}
-                  onChange={e =>
-                    setEmail(
-                      e.target.value,
-                    )
-                  }
-                  type="email"
-                  inputMode="email"
-                  autoComplete="email"
-                  placeholder="name@example.com"
-                  required
-                  className="h-13 w-full rounded-2xl border border-[#d8b967]/14 bg-black/20 ps-11 pe-4 text-sm text-[#f1e5c9] outline-none focus:border-[#e2c779]/40"
-                />
-              </div>
+                    <input
+                      value={email}
+                      onChange={e => setEmail(e.target.value)}
+                      type="email"
+                      inputMode="email"
+                      autoComplete="email"
+                      placeholder="name@example.com"
+                      required
+                      className="h-13 w-full rounded-2xl border border-[#d8b967]/14 bg-black/20 ps-11 pe-4 text-sm text-[#f1e5c9] outline-none focus:border-[#e2c779]/40"
+                    />
+                  </div>
+                </>
+              ) : null}
 
               <label className="block text-xs text-[#d9c79e]/65">
                 {fa
@@ -405,9 +436,13 @@ export function CustomerLoginClient({
               </div>
 
               <p className="text-[11px] leading-6 text-[#bcae8d]/45">
-                {fa
-                  ? "کد ورود به ایمیل ارسال می‌شود. شماره موبایل برای اتصال امن حساب به سفارش‌ها استفاده می‌شود و در این مرحله پیامکی برای آن ارسال نمی‌شود."
-                  : "The login code is sent by email. Your mobile number links the account securely to orders; no SMS is sent at this stage."}
+                {channel === "EMAIL"
+                  ? fa
+                    ? "کد ورود به ایمیل ارسال می‌شود. شماره موبایل برای اتصال امن حساب به سفارش‌ها استفاده می‌شود و در این مرحله پیامکی برای آن ارسال نمی‌شود."
+                    : "The login code is sent by email. Your mobile number links the account securely to orders; no SMS is sent at this stage."
+                  : fa
+                    ? "کد ورود مستقیماً به همین شماره موبایل پیامک می‌شود."
+                    : "The login code is sent directly to this mobile number by SMS."}
               </p>
 
               <TurnstileWidget
@@ -417,9 +452,10 @@ export function CustomerLoginClient({
                 onTokenChange={
                   onTokenChange
                 }
+                onStateChange={setTurnstileState}
               />
 
-              {!turnstileToken ? (
+              {!securityCheckComplete ? (
                 <p className="text-center text-[11px] leading-6 text-[#bcae8d]/45">
                   {fa
                     ? "پس از تکمیل بررسی امنیتی، دکمه ارسال کد فعال می‌شود."
@@ -428,7 +464,7 @@ export function CustomerLoginClient({
               ) : null}
 
               <button
-                disabled={loading || !turnstileToken}
+                disabled={loading || !selectedChannelEnabled || !securityCheckComplete}
                 className="flex h-13 w-full items-center justify-center gap-2 rounded-2xl border border-[#e3c873]/30 bg-[#143c2d] text-sm text-[#efd991] disabled:opacity-50"
               >
                 {loading ? (
@@ -452,13 +488,17 @@ export function CustomerLoginClient({
           >
             <div className="rounded-2xl border border-[#d8b967]/10 bg-black/15 p-4">
               <p className="text-xs text-[#d8c59a]/55">
-                {fa
-                  ? "کد به این ایمیل ارسال شد:"
-                  : "Code sent to:"}
+                {channel === "EMAIL"
+                  ? fa
+                    ? "کد به این ایمیل ارسال شد:"
+                    : "Code sent to this email:"
+                  : fa
+                    ? "کد به این شماره ارسال شد:"
+                    : "Code sent to this mobile number:"}
               </p>
 
               <p className="mt-2 break-all text-sm text-[#efd991]">
-                {email}
+                {channel === "EMAIL" ? email : mobile}
               </p>
             </div>
 
