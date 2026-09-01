@@ -7,6 +7,7 @@ import { useCallback, useEffect, useId, useRef, useState } from "react";
 export type TurnstileState =
   | "loading"
   | "ready"
+  | "verifying"
   | "verified"
   | "error"
   | "disabled";
@@ -15,6 +16,7 @@ declare global {
   interface Window {
     turnstile?: {
       render: (container: string | HTMLElement, options: Record<string, unknown>) => string;
+      execute: (container: string | HTMLElement) => void;
       remove: (widgetId: string) => void;
       reset: (widgetId: string) => void;
     };
@@ -91,7 +93,12 @@ export function TurnstileWidget({
         size: "flexible",
         language: locale === "fa" ? "fa" : "en",
         action,
-        appearance: "always",
+        // Cloudflare's default execution mode may issue a token as soon as the
+        // widget renders. ELORIA requires an explicit visitor gesture first so
+        // login buttons never become active merely because the page loaded.
+        appearance: "execute",
+        execution: "execute",
+        retry: "never",
         callback: (token: string) => { onTokenChange(token); updateState("verified"); },
         "expired-callback": () => { onTokenChange(null); updateState("ready"); },
         "error-callback": () => { onTokenChange(null); updateState("error"); },
@@ -134,12 +141,59 @@ export function TurnstileWidget({
     updateState("loading");
   };
 
+  const startVerification = () => {
+    if (
+      !widgetId.current ||
+      !window.turnstile ||
+      state !== "ready"
+    ) {
+      return;
+    }
+
+    onTokenChange(null);
+    updateState("verifying");
+
+    try {
+      window.turnstile.execute(`#${id}`);
+    } catch {
+      updateState("error");
+    }
+  };
+
   return <div className="mt-5 rounded-xl border border-[#d9b85f]/14 bg-black/10 p-2.5">
     <Script key={scriptGeneration} src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" strategy="afterInteractive" onReady={() => setScriptReady(true)} onLoad={() => setScriptReady(true)} onError={() => updateState("error")} />
-    <div className="mb-2 flex items-center gap-2 px-1 text-[11px] text-[#d8c69d]/70">
-      {state === "verified" ? <Check className="size-4 text-emerald-300" /> : <span className="size-3.5 rounded border border-[#d8c06c]/55" />}
-      <span>{state === "verified" ? (locale === "fa" ? "تأیید شد؛ شما ربات نیستید" : "Verified — you are human") : (locale === "fa" ? "تأیید کنید من ربات نیستم" : "Verify that you are human")}</span>
-    </div>
+    <button
+      type="button"
+      onClick={startVerification}
+      disabled={state !== "ready"}
+      aria-pressed={state === "verified"}
+      className="mb-2 flex w-full items-center gap-2 rounded-lg px-1 py-1 text-start text-[11px] text-[#d8c69d]/70 transition enabled:hover:text-[#f2dfaa] disabled:cursor-default"
+    >
+      {state === "verified" ? (
+        <Check className="size-4 text-emerald-300" />
+      ) : state === "loading" || state === "verifying" ? (
+        <LoaderCircle className="size-4 animate-spin" />
+      ) : (
+        <span className="size-3.5 rounded border border-[#d8c06c]/55" />
+      )}
+      <span>
+        {state === "verified"
+          ? locale === "fa"
+            ? "تأیید شد؛ شما ربات نیستید"
+            : "Verified — you are human"
+          : state === "verifying"
+            ? locale === "fa"
+              ? "در حال انجام تأیید امنیتی…"
+              : "Running security verification…"
+            : state === "loading"
+              ? locale === "fa"
+                ? "در حال آماده‌سازی تأیید امنیتی…"
+                : "Preparing security verification…"
+              : locale === "fa"
+                ? "برای تأیید «من ربات نیستم» کلیک کنید"
+                : "Click to verify that you are human"}
+      </span>
+    </button>
     <div id={id} className="min-h-[65px] w-full overflow-hidden" />
     {state === "error" ? <button type="button" onClick={retry} className="mt-2 flex w-full items-center justify-center gap-2 rounded-lg border border-amber-300/20 px-3 py-2 text-[11px] text-amber-100"><RefreshCw className="size-3.5" />{locale === "fa" ? "بارگذاری دوباره تأیید امنیتی" : "Reload security verification"}</button> : null}
   </div>;

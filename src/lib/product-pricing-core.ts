@@ -365,7 +365,35 @@ async function loadProductRecord(normalizedSlug: string) {
       slug: normalizedSlug,
       status: { in: ["ACTIVE", "OUT_OF_STOCK"] },
     },
-    include: {
+
+    // Keep pricing available during rolling database deployments. A bare
+    // `include` selects every scalar Product column, including optional fields
+    // added by newer migrations. Selecting only the financial contract below
+    // prevents an unrelated pending content/media column from taking the
+    // pricing engine, checkout and product pages offline.
+    select: {
+      id: true,
+      slug: true,
+      sku: true,
+      nameFa: true,
+      nameEn: true,
+      material: true,
+      purity: true,
+      purityFineness: true,
+      metalWeight: true,
+      pricingMode: true,
+      currency: true,
+      price: true,
+      makingChargeType: true,
+      makingChargeFixed: true,
+      makingChargePerGram: true,
+      makingChargePercent: true,
+      artisticFee: true,
+      profitPercent: true,
+      taxPercent: true,
+      status: true,
+      stock: true,
+
       variants: {
         where: { isActive: true },
         orderBy: { displayOrder: "asc" },
