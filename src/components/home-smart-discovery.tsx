@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { ArrowUpLeft, Search, Sparkles } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
@@ -8,10 +8,10 @@ import { motion, useReducedMotion } from "motion/react";
 import { recordClientMeasurement } from "@/lib/site-measurement-client";
 
 const FA_SUGGESTIONS = [
-  "دستبند ظریف",
-  "گردنبند طلا زیر ۳۰ میلیون",
-  "هدیه مینیمال",
-  "سنگ سبز",
+  "Ø¯Ø³ØªØ¨Ù†Ø¯ Ø¸Ø±ÛŒÙ",
+  "Ú¯Ø±Ø¯Ù†Ø¨Ù†Ø¯ Ø·Ù„Ø§ Ø²ÛŒØ± Û³Û° Ù…ÛŒÙ„ÛŒÙˆÙ†",
+  "Ù‡Ø¯ÛŒÙ‡ Ù…ÛŒÙ†ÛŒÙ…Ø§Ù„",
+  "Ø³Ù†Ú¯ Ø³Ø¨Ø²",
 ];
 
 const EN_SUGGESTIONS = [
@@ -75,12 +75,12 @@ export function HomeSmartDiscovery({ locale }: { locale: string }) {
             <span className="h-px w-10 bg-current/40" />
           </div>
           <h2 id="eloria-smart-discovery-title" className={isPersian ? "font-persian-title mt-4 text-2xl text-[#f4e8cd] sm:text-3xl" : "mt-4 font-serif text-3xl text-[#f4e8cd] sm:text-4xl"}>
-            {isPersian ? "آنچه در ذهن دارید، جست‌وجو کنید" : "Search the idea already in your mind"}
+            {isPersian ? "Ø¢Ù†Ú†Ù‡ Ø¯Ø± Ø°Ù‡Ù† Ø¯Ø§Ø±ÛŒØ¯ØŒ Ø¬Ø³Øªâ€ŒÙˆØ¬Ùˆ Ú©Ù†ÛŒØ¯" : "Search the idea already in your mind"}
           </h2>
           <p className="mx-auto mt-4 max-w-xl text-xs leading-7 text-[#c9bb9a]/58 sm:text-[13px]">
             {isPersian
-              ? "هر واژه‌ای از اثر موردنظرتان را بنویسید؛ نام، رنگ، سنگ، جنس، نوع اثر یا بودجه. جست‌وجو همهٔ اطلاعات ثبت‌شدهٔ آثار را بررسی می‌کند."
-              : "Type any detail you remember—name, color, stone, material, piece type, or budget. Search checks the catalog details to find matching creations."}
+              ? "Ù‡Ø± ÙˆØ§Ú˜Ù‡â€ŒØ§ÛŒ Ø§Ø² Ø§Ø«Ø± Ù…ÙˆØ±Ø¯Ù†Ø¸Ø±ØªØ§Ù† Ø±Ø§ Ø¨Ù†ÙˆÛŒØ³ÛŒØ¯Ø› Ù†Ø§Ù…ØŒ Ø±Ù†Ú¯ØŒ Ø³Ù†Ú¯ØŒ Ø¬Ù†Ø³ØŒ Ù†ÙˆØ¹ Ø§Ø«Ø± ÛŒØ§ Ø¨ÙˆØ¯Ø¬Ù‡. Ø¬Ø³Øªâ€ŒÙˆØ¬Ùˆ Ù‡Ù…Ù‡Ù” Ø§Ø·Ù„Ø§Ø¹Ø§Øª Ø«Ø¨Øªâ€ŒØ´Ø¯Ù‡Ù” Ø¢Ø«Ø§Ø± Ø±Ø§ Ø¨Ø±Ø±Ø³ÛŒ Ù…ÛŒâ€ŒÚ©Ù†Ø¯."
+              : "Type any detail you rememberâ€”name, color, stone, material, piece type, or budget. Search checks the catalog details to find matching creations."}
           </p>
         </div>
 
@@ -90,8 +90,8 @@ export function HomeSmartDiscovery({ locale }: { locale: string }) {
             <input
               value={query}
               onChange={(event) => setQuery(event.target.value)}
-              onFocus={() => router.prefetch(`/${locale}/products`)}
-              placeholder={isPersian ? "مثلاً: سنگ سبز، دستبند ظریف، گردنبند زیر ۳۰ میلیون..." : "e.g. green stone, delicate bracelet, necklace under 30 million..."}
+              
+              placeholder={isPersian ? "Ù…Ø«Ù„Ø§Ù‹: Ø³Ù†Ú¯ Ø³Ø¨Ø²ØŒ Ø¯Ø³ØªØ¨Ù†Ø¯ Ø¸Ø±ÛŒÙØŒ Ú¯Ø±Ø¯Ù†Ø¨Ù†Ø¯ Ø²ÛŒØ± Û³Û° Ù…ÛŒÙ„ÛŒÙˆÙ†..." : "e.g. green stone, delicate bracelet, necklace under 30 million..."}
               className="h-12 w-full rounded-full bg-transparent pe-28 ps-12 text-sm text-[#f3e6ca] outline-none placeholder:text-[#b9aa89]/34 sm:h-14 sm:pe-36"
             />
             <button
@@ -99,7 +99,7 @@ export function HomeSmartDiscovery({ locale }: { locale: string }) {
               disabled={!query.trim()}
               className="absolute end-1.5 top-1/2 inline-flex h-9 -translate-y-1/2 items-center gap-2 rounded-full border border-[#e6ca76]/32 bg-[#d7b85e]/[.09] px-4 text-[10px] font-medium text-[#f0d98f] transition hover:border-[#f0d784]/68 hover:bg-[#d7b85e]/[.14] disabled:cursor-not-allowed disabled:opacity-35 sm:h-11 sm:px-5 sm:text-[11px]"
             >
-              {isPersian ? "جست‌وجو" : "Search"}
+              {isPersian ? "Ø¬Ø³Øªâ€ŒÙˆØ¬Ùˆ" : "Search"}
               <ArrowUpLeft className="size-3.5" />
             </button>
           </div>
