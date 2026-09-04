@@ -38,8 +38,13 @@ function intEnv(name: string, fallback: number, minimum: number, maximum: number
 function configuredChannels(): SecurityAlertChannel[] {
   const channels: SecurityAlertChannel[] = [];
   const mobile = process.env.ELORIA_SECURITY_ALERT_MOBILE?.trim() ?? "";
-  const apiKey = process.env.KAVENEGAR_API_KEY?.trim() ?? "";
-  if (/^09\d{9}$/.test(mobile) && apiKey.length >= 16) channels.push("SMS");
+  const apiKey = process.env.SMS_IR_API_KEY?.trim() ?? "";
+  const lineNumber = process.env.SMS_IR_LINE_NUMBER?.trim() ?? "";
+  if (
+    /^09\d{9}$/.test(mobile) &&
+    apiKey.length >= 16 &&
+    /^\d+$/.test(lineNumber)
+  ) channels.push("SMS");
 
   const rawWebhook = process.env.ELORIA_SECURITY_ALERT_WEBHOOK_URL?.trim() ?? "";
   if (rawWebhook) {

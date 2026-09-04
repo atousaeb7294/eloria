@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
@@ -27,7 +27,7 @@ const FALLBACK_IMAGES = ["/images/collections/bracelet.jpg", "/images/collection
 
 function fallbackItems(locale: string): FeaturedAlbumItem[] {
   const names = locale === "fa"
-    ? ["Ø¯Ø³Øªâ€ŒØ¨Ù†Ø¯Ù‡Ø§ÛŒ Ø¯Ø³Øªâ€ŒØ³Ø§Ø²", "Ú¯ÙˆØ´ÙˆØ§Ø±Ù‡â€ŒÙ‡Ø§ÛŒ Ù…Ù†ØªØ®Ø¨", "Ú¯Ø±Ø¯Ù†â€ŒØ¢ÙˆÛŒØ²Ù‡Ø§ÛŒ Ø±ÙˆØ§ÛŒÛŒ"]
+    ? ["دست‌بندهای دست‌ساز", "گوشواره‌های منتخب", "گردن‌آویزهای روایی"]
     : ["Artisan bracelets", "Curated earrings", "Narrative necklaces"];
   return FALLBACK_IMAGES.map((imageUrl, index) => ({
     slug: `carousel-fallback-${index}`,
@@ -87,10 +87,10 @@ export function HomeFeaturedAlbum({ locale }: { locale: string }) {
         const nextItems = payload.items.slice(0, 8);
         setItems(nextItems);
         setActive(0);
-        const prefetchDisabled = () => undefined;
+        const prefetch = () => nextItems.slice(0, 4).forEach((item) => router.prefetch(item.href));
         const browser = window as Window & { requestIdleCallback?: (callback: () => void, options?: { timeout: number }) => number };
-        if (false) browser.requestIdleCallback(prefetchDisabled, { timeout: 1400 });
-        else globalThis.setTimeout(prefetchDisabled, 200);
+        if (browser.requestIdleCallback) browser.requestIdleCallback(prefetch, { timeout: 1400 });
+        else globalThis.setTimeout(prefetch, 200);
       })
       .catch(() => undefined)
       .finally(() => window.clearTimeout(timeout));
@@ -135,7 +135,7 @@ export function HomeFeaturedAlbum({ locale }: { locale: string }) {
       dir={isPersian ? "rtl" : "ltr"}
       role="region"
       aria-roledescription="carousel"
-      aria-label={isPersian ? "ÙˆÛŒØªØ±ÛŒÙ† Ú†Ø±Ø®Ø§Ù† Ø¢Ø«Ø§Ø± Ø§Ù„ÙˆØ±ÛŒØ§" : "Eloria revolving creations showcase"}
+      aria-label={isPersian ? "ویترین چرخان آثار الوریا" : "Eloria revolving creations showcase"}
       className="relative mx-auto max-w-[1320px]"
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
@@ -181,10 +181,10 @@ export function HomeFeaturedAlbum({ locale }: { locale: string }) {
                       />
                       <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(1,8,6,.02)_32%,rgba(1,8,6,.12)_62%,rgba(1,8,6,.93)_100%)]" />
                       <div className="absolute inset-x-0 bottom-0 p-6 text-center sm:p-9">
-                        <p className="text-[9px] font-semibold tracking-[.22em] text-[#e2c674]/68">ELORIA Â· {String(active + 1).padStart(2, "0")}</p>
+                        <p className="text-[9px] font-semibold tracking-[.22em] text-[#e2c674]/68">ELORIA · {String(active + 1).padStart(2, "0")}</p>
                         <h3 className={isPersian ? "font-persian-title mt-3 text-2xl text-[#fff1cf] sm:text-3xl" : "mt-3 font-serif text-3xl text-[#fff1cf] sm:text-4xl"}>{item.name}</h3>
                         <span className="mx-auto mt-5 inline-flex items-center gap-2 border-b border-[#e5c978]/36 pb-1.5 text-[11px] text-[#efd994] transition group-hover:border-[#efd994]/80">
-                          {isPersian ? "Ù…Ø´Ø§Ù‡Ø¯Ù‡ Ø§Ø«Ø±" : "View creation"}<ArrowUpLeft className="size-3.5" />
+                          {isPersian ? "مشاهده اثر" : "View creation"}<ArrowUpLeft className="size-3.5" />
                         </span>
                       </div>
                       <span className="absolute inset-x-[12%] top-0 h-px bg-gradient-to-r from-transparent via-[#ffe6a0]/70 to-transparent" />
@@ -193,7 +193,7 @@ export function HomeFeaturedAlbum({ locale }: { locale: string }) {
                     <button
                       type="button"
                       onClick={item.relative < 0 ? previous : next}
-                      aria-label={item.relative < 0 ? (isPersian ? "Ø§Ø«Ø± Ù‚Ø¨Ù„ÛŒ" : "Previous creation") : (isPersian ? "Ø§Ø«Ø± Ø¨Ø¹Ø¯ÛŒ" : "Next creation")}
+                      aria-label={item.relative < 0 ? (isPersian ? "اثر قبلی" : "Previous creation") : (isPersian ? "اثر بعدی" : "Next creation")}
                       tabIndex={isAdjacent ? 0 : -1}
                       className={`absolute inset-0 text-start ${isAdjacent ? "cursor-pointer" : "pointer-events-none"}`}
                     >
@@ -212,23 +212,23 @@ export function HomeFeaturedAlbum({ locale }: { locale: string }) {
       </div>
 
       <div className="relative z-20 mx-auto mt-2 flex w-fit items-center gap-2 rounded-full border border-[#dfc16f]/16 bg-[#031710]/82 p-1.5 shadow-[0_20px_60px_rgba(0,0,0,.32)] backdrop-blur-xl sm:gap-3">
-        <button type="button" onClick={previous} aria-label={isPersian ? "Ø§Ø«Ø± Ù‚Ø¨Ù„ÛŒ" : "Previous creation"} className="grid size-11 place-items-center rounded-full border border-[#dfc16f]/14 text-[#e5ca7c] transition hover:border-[#e7cc7e]/45 hover:bg-[#d7b85e]/[.08]">
+        <button type="button" onClick={previous} aria-label={isPersian ? "اثر قبلی" : "Previous creation"} className="grid size-11 place-items-center rounded-full border border-[#dfc16f]/14 text-[#e5ca7c] transition hover:border-[#e7cc7e]/45 hover:bg-[#d7b85e]/[.08]">
           {isPersian ? <ArrowRight className="size-4" /> : <ArrowLeft className="size-4" />}
         </button>
         <div className="flex min-w-28 items-center justify-center gap-2 px-3 text-[10px] tracking-[.16em] text-[#d8c28a]/52">
           <span className="text-sm font-semibold text-[#efd78b]">{String(active + 1).padStart(2, "0")}</span><span>/</span><span>{String(items.length).padStart(2, "0")}</span>
         </div>
-        <button type="button" onClick={() => setPaused((value) => !value)} aria-label={paused ? (isPersian ? "Ø§Ø¯Ø§Ù…Ù‡ Ù¾Ø®Ø´" : "Resume slideshow") : (isPersian ? "ØªÙˆÙ‚Ù Ù¾Ø®Ø´" : "Pause slideshow")} className="grid size-9 place-items-center rounded-full text-[#d9c381]/64 transition hover:text-[#f1d88d]">
+        <button type="button" onClick={() => setPaused((value) => !value)} aria-label={paused ? (isPersian ? "ادامه پخش" : "Resume slideshow") : (isPersian ? "توقف پخش" : "Pause slideshow")} className="grid size-9 place-items-center rounded-full text-[#d9c381]/64 transition hover:text-[#f1d88d]">
           {paused ? <Play className="size-3.5" /> : <Pause className="size-3.5" />}
         </button>
-        <button type="button" onClick={next} aria-label={isPersian ? "Ø§Ø«Ø± Ø¨Ø¹Ø¯ÛŒ" : "Next creation"} className="grid size-11 place-items-center rounded-full border border-[#dfc16f]/14 text-[#e5ca7c] transition hover:border-[#e7cc7e]/45 hover:bg-[#d7b85e]/[.08]">
+        <button type="button" onClick={next} aria-label={isPersian ? "اثر بعدی" : "Next creation"} className="grid size-11 place-items-center rounded-full border border-[#dfc16f]/14 text-[#e5ca7c] transition hover:border-[#e7cc7e]/45 hover:bg-[#d7b85e]/[.08]">
           {isPersian ? <ArrowLeft className="size-4" /> : <ArrowRight className="size-4" />}
         </button>
       </div>
 
-      <div className="mx-auto mt-7 flex max-w-sm gap-1.5" aria-label={isPersian ? "Ø§Ù†ØªØ®Ø§Ø¨ Ø§Ø³Ù„Ø§ÛŒØ¯" : "Choose a slide"}>
+      <div className="mx-auto mt-7 flex max-w-sm gap-1.5" aria-label={isPersian ? "انتخاب اسلاید" : "Choose a slide"}>
         {items.map((item, index) => (
-          <button key={item.slug} type="button" onClick={() => setActive(index)} aria-label={`${isPersian ? "Ø§Ø³Ù„Ø§ÛŒØ¯" : "Slide"} ${index + 1}`} className="h-1 flex-1 overflow-hidden rounded-full bg-[#dfc16f]/12">
+          <button key={item.slug} type="button" onClick={() => setActive(index)} aria-label={`${isPersian ? "اسلاید" : "Slide"} ${index + 1}`} className="h-1 flex-1 overflow-hidden rounded-full bg-[#dfc16f]/12">
             <span className={`block h-full origin-start rounded-full bg-[#e3c675] transition-transform duration-500 ${index === active ? "scale-x-100" : "scale-x-0"}`} />
           </button>
         ))}
@@ -236,7 +236,7 @@ export function HomeFeaturedAlbum({ locale }: { locale: string }) {
 
       <div className="mt-9 text-center">
         <Link href={`/${locale}/products`} prefetch className="inline-flex items-center gap-3 text-xs font-semibold text-[#ead18a] transition hover:text-[#ffe4a0]">
-          {isPersian ? "Ù…Ø´Ø§Ù‡Ø¯Ù‡ ØªÙ…Ø§Ù… Ø¢Ø«Ø§Ø±" : "View every creation"}<span className="h-px w-12 bg-current/45" />
+          {isPersian ? "مشاهده تمام آثار" : "View every creation"}<span className="h-px w-12 bg-current/45" />
         </Link>
       </div>
     </div>

@@ -32,7 +32,14 @@ export function TurnstileWidget({
   onTokenChange: (token: string | null) => void;
   onStateChange?: (state: TurnstileState) => void;
   locale: "fa" | "en";
-  action?: "checkout" | "customer-login" | "admin-login" | "support-contact" | "support-chat";
+  action?:
+    | "checkout"
+    | "customer-login"
+    | "customer-password-login"
+    | "customer-password-recovery"
+    | "admin-login"
+    | "support-contact"
+    | "support-chat";
 }) {
   const [siteKey, setSiteKey] = useState<string | null>(null);
   const [required, setRequired] = useState(true);

@@ -94,7 +94,6 @@ export async function updateCustomerProfile(
   customerId: string,
   input: {
     fullName: unknown;
-    email: unknown;
   },
 ) {
   return prisma.customer.update({
@@ -106,16 +105,11 @@ export async function updateCustomerProfile(
         normalizeCustomerName(
           input.fullName,
         ),
-      email:
-        normalizeCustomerEmail(
-          input.email,
-        ),
     },
     select: {
       id: true,
       mobile: true,
       fullName: true,
-      email: true,
       mobileVerifiedAt:
         true,
       createdAt: true,
@@ -440,7 +434,7 @@ export async function getCustomerDashboard(
           id: true,
           mobile: true,
           fullName: true,
-          email: true,
+          passwordHash: true,
           mobileVerifiedAt:
             true,
           createdAt: true,
@@ -546,7 +540,9 @@ export async function getCustomerDashboard(
 
   return {
     customer: {
-      ...customer,
+      id: customer.id,
+      mobile: customer.mobile,
+      fullName: customer.fullName,
       mobileVerifiedAt:
         customer
           .mobileVerifiedAt
@@ -555,6 +551,7 @@ export async function getCustomerDashboard(
       createdAt:
         customer.createdAt
           .toISOString(),
+      hasPassword: Boolean(customer.passwordHash),
     },
 
     orders:

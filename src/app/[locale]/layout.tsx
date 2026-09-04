@@ -124,7 +124,7 @@ export default async function LocaleLayout({
       dir={locale === "fa" ? "rtl" : "ltr"}
       suppressHydrationWarning
     >
-<body className="min-h-screen">
+      <body className="min-h-screen">
         <NextIntlClientProvider locale={locale} messages={messages}>
           <PageBackgroundProvider>
             <SiteStructuredData />

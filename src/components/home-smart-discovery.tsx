@@ -79,8 +79,8 @@ export function HomeSmartDiscovery({ locale }: { locale: string }) {
           </h2>
           <p className="mx-auto mt-4 max-w-xl text-xs leading-7 text-[#c9bb9a]/58 sm:text-[13px]">
             {isPersian
-              ? "نام، جنس، رنگ یا بودجه‌ای که در ذهن دارید بنویسید؛ اثر مناسب شما نزدیک‌تر از آن است که فکر می‌کنید."
-              : "Describe the piece, material, color, or budget you have in mind—and discover an Eloria creation made for you."}
+              ? "هر واژه‌ای از اثر موردنظرتان را بنویسید؛ نام، رنگ، سنگ، جنس، نوع اثر یا بودجه. جست‌وجو همهٔ اطلاعات ثبت‌شدهٔ آثار را بررسی می‌کند."
+              : "Type any detail you remember—name, color, stone, material, piece type, or budget. Search checks the catalog details to find matching creations."}
           </p>
         </div>
 
@@ -90,7 +90,8 @@ export function HomeSmartDiscovery({ locale }: { locale: string }) {
             <input
               value={query}
               onChange={(event) => setQuery(event.target.value)}
-              placeholder={isPersian ? "مثلاً: دستبند ظریف با سنگ سبز" : "e.g. delicate bracelet with green stone"}
+              onFocus={() => router.prefetch(`/${locale}/products`)}
+              placeholder={isPersian ? "مثلاً: سنگ سبز، دستبند ظریف، گردنبند زیر ۳۰ میلیون..." : "e.g. green stone, delicate bracelet, necklace under 30 million..."}
               className="h-12 w-full rounded-full bg-transparent pe-28 ps-12 text-sm text-[#f3e6ca] outline-none placeholder:text-[#b9aa89]/34 sm:h-14 sm:pe-36"
             />
             <button

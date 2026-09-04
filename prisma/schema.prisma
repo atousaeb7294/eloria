@@ -582,8 +582,11 @@ model Customer {
   fullName             String?
   mobile               String                 @unique @db.VarChar(20)
   email                String?                @unique
+  passwordHash         String?                @db.VarChar(255)
   emailVerifiedAt      DateTime?
   mobileVerifiedAt     DateTime?
+  failedLoginAttempts  Int                    @default(0)
+  lockedUntil          DateTime?
   lastLoginAt          DateTime?
   isActive             Boolean                @default(true)
   createdAt            DateTime               @default(now())
@@ -597,6 +600,7 @@ model Customer {
   supportConversations SupportConversation[]
 
   @@index([isActive, createdAt])
+  @@index([lockedUntil])
   @@map("customers")
 }
 

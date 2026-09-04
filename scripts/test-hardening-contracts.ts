@@ -91,7 +91,9 @@ try {
   delete process.env
     .NEXT_PUBLIC_TURNSTILE_SITE_KEY;
   delete process.env
-    .KAVENEGAR_API_KEY;
+    .SMS_IR_API_KEY;
+  delete process.env
+    .SMS_IR_VERIFY_TEMPLATE_ID;
 
   const checks =
     productionEnvironmentChecks();
@@ -114,7 +116,7 @@ try {
     checks.find(
       check =>
         check.key ===
-        "KAVENEGAR_API_KEY",
+        "SMS_IR_API_KEY",
     );
 
   expect(
@@ -137,10 +139,10 @@ try {
 
   expect(
     Boolean(
-      sms &&
-        !sms.required,
+      sms?.required &&
+        !sms.valid,
     ),
-    "Email customer auth must not require an SMS provider until the SMS channel is enabled.",
+    "Customer auth must require the SMS.ir provider.",
   );
 } finally {
   for (

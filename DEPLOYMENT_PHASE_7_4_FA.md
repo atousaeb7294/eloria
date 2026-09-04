@@ -21,8 +21,10 @@ npm run check:env
 برای پرداخت و پیامک:
 
 - `ZARINPAL_MERCHANT_ID`
-- `KAVENEGAR_API_KEY`
-- `KAVENEGAR_SENDER`
+- `SMS_IR_API_KEY`
+- `SMS_IR_VERIFY_TEMPLATE_ID`
+- `SMS_IR_VERIFY_PARAMETER`
+- `SMS_IR_LINE_NUMBER` برای پیامک‌های عادی پشتیبانی و هشدار
 
 ## ۲. آماده‌سازی دیتابیس و Build
 

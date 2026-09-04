@@ -174,16 +174,6 @@ test.describe(
           mobile,
         );
 
-        const unique =
-          randomUUID()
-            .replace(
-              /-/g,
-              "",
-            );
-
-        const email =
-          `e2e+${unique}@eloria.invalid`;
-
         const otpRequest =
           await request.post(
             "/api/customer/auth/request-otp",
@@ -301,7 +291,6 @@ test.describe(
                 fullName:
                   "Eloria E2E User",
 
-                email,
               },
             },
           );
@@ -368,8 +357,6 @@ test.describe(
               "Eloria E2E User",
 
             mobile,
-
-            email,
 
             province:
               "Tehran",
@@ -706,6 +693,30 @@ test.describe(
         ).toHaveCount(
           0,
         );
+      },
+    );
+
+    test(
+      "customer authentication UI is mobile-only and supports passwords",
+      async ({
+        page,
+      }) => {
+        await page.goto(
+          "/fa/login",
+          {
+            waitUntil: "domcontentloaded",
+          },
+        );
+
+        await expect(
+          page.locator('input[type="email"]'),
+        ).toHaveCount(0);
+        await expect(
+          page.locator('input[autocomplete="tel"]'),
+        ).toHaveCount(1);
+        await expect(
+          page.locator('input[type="password"]'),
+        ).toHaveCount(1);
       },
     );
 
