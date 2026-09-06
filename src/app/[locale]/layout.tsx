@@ -65,7 +65,10 @@ export async function generateMetadata({
   return {
     metadataBase: baseUrl,
     title,
-    description,
+    description, 
+ other: {
+    enamad: "26263305",
+  },
 
     alternates: {
       canonical: `/${locale}`,
