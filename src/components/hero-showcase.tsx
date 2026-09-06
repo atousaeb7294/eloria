@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import Link from "next/link";
 import {
@@ -40,28 +40,28 @@ export function HeroShowcase({
     isPersian
       ? {
           eyebrow:
-            "Ø§Ù„Ù‡Ø§Ù…â€ŒÚ¯Ø±ÙØªÙ‡ Ø§Ø² Ø´Ú©ÙˆÙ‡ Ø§ÛŒØ±Ø§Ù† Ú©Ù‡Ù†",
+            "الهام‌گرفته از شکوه ایران کهن",
 
           titleFirst:
-            "Ù‡Ø± Ù‚Ø·Ø¹Ù‡ØŒ",
+            "هر قطعه،",
 
           titleHighlight:
-            "Ø±ÙˆØ§ÛŒØªÛŒ Ù…Ø§Ù†Ø¯Ú¯Ø§Ø±",
+            "روایتی ماندگار",
 
           description:
-            "Ø¯Ø± Ø§Ù„ÙˆØ±ÛŒØ§ ÙÙ‚Ø· Ø²ÛŒÙˆØ± Ø§Ù†ØªØ®Ø§Ø¨ Ù†Ù…ÛŒâ€ŒÚ©Ù†ÛŒØ¯Ø› Ø§Ø«Ø± Ù…ØªÙ†Ø§Ø³Ø¨ Ø¨Ø§ Ø¯Ø§Ø³ØªØ§Ù† Ø®ÙˆØ¯ØªØ§Ù† Ø±Ø§ Ù¾ÛŒØ¯Ø§ Ù…ÛŒâ€ŒÚ©Ù†ÛŒØ¯.",
+            "در الوریا فقط زیور انتخاب نمی‌کنید؛ اثر متناسب با داستان خودتان را پیدا می‌کنید.",
 
           primaryAction:
-            "Ø§Ø«Ø± Ù…Ù† Ø±Ø§ Ù¾ÛŒØ¯Ø§ Ú©Ù†",
+            "اثر من را پیدا کن",
 
           secondaryAction:
-            "Ù…Ø´Ø§Ù‡Ø¯Ù‡ ØªÙ…Ø§Ù… Ø¢Ø«Ø§Ø±",
+            "مشاهده تمام آثار",
 
           collectionsAction:
-            "Ú¯Ù†Ø¬ÛŒÙ†Ù‡â€ŒÙ‡Ø§ÛŒ Ø§Ù„ÙˆØ±ÛŒØ§",
+            "گنجینه‌های الوریا",
 
           welcome:
-            "Ø¨Ù‡ Ø¬Ù‡Ø§Ù† Ø§Ù„ÙˆØ±ÛŒØ§ Ø®ÙˆØ´ Ø¢Ù…Ø¯ÛŒØ¯",
+            "به جهان الوریا خوش آمدید",
         }
       : {
           eyebrow:
@@ -91,10 +91,8 @@ export function HeroShowcase({
 
   const titleFontClass =
     isPersian
-      ? [
-          "font-persian-calligraphy",
-          persianTitleClassName ?? "",
-        ].join(" ")
+      ? persianTitleClassName ??
+        ""
       : "font-serif";
 
   return (
@@ -119,19 +117,19 @@ export function HeroShowcase({
         />
 
 
-        {/* Ù¾ÙˆØ´Ø´ ØªØµÙˆÛŒØ± */}
+        {/* پوشش تصویر */}
         <div
           aria-hidden="true"
           className="pointer-events-none absolute inset-0 z-[2] bg-[linear-gradient(180deg,rgba(1,11,7,0.22)_0%,rgba(1,20,13,0.08)_32%,rgba(1,16,10,0.4)_70%,rgba(1,9,6,0.9)_100%)]"
         />
 
-        {/* ØªÛŒØ±Ú¯ÛŒ Ú©Ù†Ø§Ø±Ù‡â€ŒÙ‡Ø§ */}
+        {/* تیرگی کناره‌ها */}
         <div
           aria-hidden="true"
           className="pointer-events-none absolute inset-0 z-[3] bg-[radial-gradient(ellipse_at_center,transparent_13%,rgba(1,19,12,0.13)_47%,rgba(0,7,4,0.82)_100%)]"
         />
 
-        {/* Ù†ÙˆØ± Ø·Ù„Ø§ÛŒÛŒ Ù…Ø±Ú©Ø²ÛŒ */}
+        {/* نور طلایی مرکزی */}
         <motion.div
           aria-hidden="true"
           className="pointer-events-none absolute left-1/2 top-[43%] z-[4] size-[45rem] max-h-[86vw] max-w-[86vw] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[radial-gradient(circle,rgba(255,230,161,0.17),rgba(208,164,61,0.065)_35%,rgba(16,105,75,0.055)_58%,transparent_74%)] blur-[42px]"
@@ -158,20 +156,20 @@ export function HeroShowcase({
           }}
         />
 
-        {/* Ù†ÙˆØ± Ø¹Ù…ÙˆØ¯ÛŒ */}
+        {/* نور عمودی */}
         <div
           aria-hidden="true"
           className="pointer-events-none absolute inset-y-0 left-1/2 z-[4] w-[34rem] max-w-[76vw] -translate-x-1/2 bg-[linear-gradient(90deg,transparent,rgba(248,219,145,0.045),rgba(255,235,181,0.085),rgba(248,219,145,0.045),transparent)] blur-[46px]"
         />
 
 
-        {/* Ø®Ø· Ø·Ù„Ø§ÛŒÛŒ Ø¨Ø§Ù„Ø§ */}
+        {/* خط طلایی بالا */}
         <div
           aria-hidden="true"
           className="pointer-events-none absolute inset-x-12 top-0 z-[8] h-px bg-gradient-to-r from-transparent via-[#ffe6a1]/74 to-transparent"
         />
 
-        {/* ØªØ²Ø¦ÛŒÙ† Ú¯ÙˆØ´Ù‡ Ø¨Ø§Ù„Ø§ */}
+        {/* تزئین گوشه بالا */}
         <div
           aria-hidden="true"
           className="pointer-events-none absolute end-7 top-7 z-[8] hidden size-28 opacity-40 sm:block"
@@ -183,7 +181,7 @@ export function HeroShowcase({
           <span className="absolute end-2 top-2 size-2 rotate-45 border border-[#f5db91]/65" />
         </div>
 
-        {/* ØªØ²Ø¦ÛŒÙ† Ú¯ÙˆØ´Ù‡ Ù¾Ø§ÛŒÛŒÙ† */}
+        {/* تزئین گوشه پایین */}
         <div
           aria-hidden="true"
           className="pointer-events-none absolute bottom-7 start-7 z-[8] hidden size-28 rotate-180 opacity-30 sm:block"
@@ -195,9 +193,9 @@ export function HeroShowcase({
           <span className="absolute end-2 top-2 size-2 rotate-45 border border-[#f5db91]/58" />
         </div>
 
-        {/* Ù…Ø­ØªÙˆØ§ÛŒ Ø§ØµÙ„ÛŒØ› Ú©Ù…ÛŒ Ø¨Ø§Ù„Ø§ØªØ± Ø§Ø² Ù…Ø±Ú©Ø² */}
+        {/* محتوای اصلی؛ کمی بالاتر از مرکز */}
         <div className="relative z-20 mx-auto flex w-full max-w-6xl -translate-y-[1.5vh] flex-col items-center justify-center px-5 pb-24 pt-28 text-center sm:-translate-y-[5vh] sm:px-10 sm:pb-20 sm:pt-24">
-          {/* Ø¹Ù†ÙˆØ§Ù† Ú©ÙˆÚ†Ú© */}
+          {/* عنوان کوچک */}
           <motion.div
             initial={
               reducedMotion
@@ -226,7 +224,7 @@ export function HeroShowcase({
             <span className="h-px w-8 bg-gradient-to-r from-[#e8c875]/70 to-transparent sm:w-12" />
           </motion.div>
 
-          {/* ØªÛŒØªØ± Ù†Ø³ØªØ¹Ù„ÛŒÙ‚ */}
+          {/* تیتر نستعلیق */}
           <motion.h1
             id="eloria-hero-title"
             initial={
@@ -269,7 +267,7 @@ export function HeroShowcase({
             </span>
           </motion.h1>
 
-          {/* ØªÙˆØ¶ÛŒØ­ */}
+          {/* توضیح */}
           <motion.p
             initial={
               reducedMotion
@@ -292,7 +290,7 @@ export function HeroShowcase({
             {copy.description}
           </motion.p>
 
-          {/* Ø¯Ú©Ù…Ù‡â€ŒÙ‡Ø§ */}
+          {/* دکمه‌ها */}
           <motion.div
             initial={
               reducedMotion
@@ -312,7 +310,7 @@ export function HeroShowcase({
             }}
             className="mt-6 grid w-full max-w-[660px] grid-cols-1 gap-3 min-[470px]:grid-cols-2 sm:mt-7 lg:grid-cols-3"
           >
-            {/* Ø¯Ú©Ù…Ù‡ Ø§ØµÙ„ÛŒ */}
+            {/* دکمه اصلی */}
             <button
               type="button"
               onClick={() => window.dispatchEvent(new Event("eloria-open-selection"))}
@@ -358,7 +356,7 @@ export function HeroShowcase({
               </span>
             </button>
 
-            {/* Ø¯Ú©Ù…Ù‡ Ø¯ÙˆÙ… */}
+            {/* دکمه دوم */}
             <Link
               href={`/${locale}/products`}
               className="group relative isolate flex h-[50px] flex-1 items-center justify-center overflow-hidden rounded-[13px] border border-[#dfc16f]/34 bg-[linear-gradient(140deg,rgba(2,24,17,0.8),rgba(8,67,47,0.62))] px-5 text-[12px] font-medium text-[#f8e9c8] shadow-[inset_0_1px_0_rgba(255,255,255,0.07),0_16px_38px_rgba(0,0,0,0.34)] backdrop-blur-xl transition duration-500 hover:-translate-y-1 hover:border-[#eccd77]/66 hover:bg-[linear-gradient(140deg,rgba(3,36,25,0.92),rgba(12,88,62,0.72))] hover:text-[#ffe4a0] sm:text-[13px]"
@@ -401,7 +399,7 @@ export function HeroShowcase({
               </span>
             </Link>
 
-            {/* Ù…Ø³ÛŒØ± Ù…Ø³ØªÙ‚ÛŒÙ… Ú¯Ù†Ø¬ÛŒÙ†Ù‡â€ŒÙ‡Ø§ */}
+            {/* مسیر مستقیم گنجینه‌ها */}
             <Link
               href={`/${locale}/collections`}
               className="group relative isolate flex h-[50px] items-center justify-center overflow-hidden rounded-[13px] border border-[#dfc16f]/34 bg-[linear-gradient(140deg,rgba(30,20,5,0.78),rgba(7,48,34,0.68))] px-5 text-[12px] font-medium text-[#f8e9c8] shadow-[inset_0_1px_0_rgba(255,255,255,0.07),0_16px_38px_rgba(0,0,0,0.34)] backdrop-blur-xl transition duration-500 hover:-translate-y-1 hover:border-[#eccd77]/66 hover:text-[#ffe4a0] min-[470px]:col-span-2 lg:col-span-1 sm:text-[13px]"
@@ -419,7 +417,7 @@ export function HeroShowcase({
           </motion.div>
         </div>
 
-        {/* Ù…ØªÙ† Ø®ÙˆØ´â€ŒØ¢Ù…Ø¯ Ù¾Ø§ÛŒÛŒÙ† Hero */}
+        {/* متن خوش‌آمد پایین Hero */}
         <motion.div
           initial={
             reducedMotion
@@ -468,4 +466,3 @@ export function HeroShowcase({
     </section>
   );
 }
-

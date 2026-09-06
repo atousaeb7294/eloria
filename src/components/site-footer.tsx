@@ -1,4 +1,4 @@
-﻿import type { LucideIcon } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 import {
   ArrowUp,
   BookOpen,
@@ -42,26 +42,26 @@ export function SiteFooter({ locale }: SiteFooterProps) {
 
   const copy = isPersian
     ? {
-        shopTitle: "ÙØ±ÙˆØ´Ú¯Ø§Ù‡",
-        brandTitle: "Ø§Ù„ÙˆØ±ÛŒØ§",
-        categoryTitle: "Ø¯Ø³ØªÙ‡â€ŒØ¨Ù†Ø¯ÛŒâ€ŒÙ‡Ø§",
-        products: "ØªÙ…Ø§Ù… Ø¢Ø«Ø§Ø±",
-        collections: "Ù…Ø´Ø§Ù‡Ø¯Ù‡ Ø¯Ø³ØªÙ‡â€ŒØ¨Ù†Ø¯ÛŒâ€ŒÙ‡Ø§",
-        cart: "Ø³Ø¨Ø¯ Ø®Ø±ÛŒØ¯",
-        about: "Ø¯Ø§Ø³ØªØ§Ù† Ø§Ù„ÙˆØ±ÛŒØ§",
-        journal: "Ù…Ø¬Ù„Ù‡Ù” Ø§Ù„ÙˆØ±ÛŒØ§",
-        home: "Ø®Ø§Ù†Ù‡",
-        contact: "ØªÙ…Ø§Ø³ Ø¨Ø§ Ù…Ø§",
-        necklaces: "Ú¯Ø±Ø¯Ù†Ø¨Ù†Ø¯Ù‡Ø§",
-        bracelets: "Ø¯Ø³ØªØ¨Ù†Ø¯Ù‡Ø§",
-        earrings: "Ú¯ÙˆØ´ÙˆØ§Ø±Ù‡â€ŒÙ‡Ø§",
-        rights: "ØªÙ…Ø§Ù… Ø­Ù‚ÙˆÙ‚ Ø¨Ø±Ø§ÛŒ ELORIA Ù…Ø­ÙÙˆØ¸ Ø§Ø³Øª.",
-        top: "Ø¨Ø§Ø²Ú¯Ø´Øª Ø¨Ù‡ Ø¢ØºØ§Ø²",
-        signature: "Ø¬ÙˆØ§Ù‡Ø±Ø§ØªÛŒ Ø¨Ø§ Ø±ÙˆØ§ÛŒØª Ø§ÛŒØ±Ø§Ù† Ú©Ù‡Ù†",
-        quickSocial: "Ø¯Ø³ØªØ±Ø³ÛŒ Ø³Ø±ÛŒØ¹ Ùˆ Ø´Ø¨Ú©Ù‡â€ŒÙ‡Ø§ÛŒ Ø±Ø³Ù…ÛŒ",
-        instagram: "Ø§ÛŒÙ†Ø³ØªØ§Ú¯Ø±Ø§Ù…",
-        telegram: "ØªÙ„Ú¯Ø±Ø§Ù…",
-        bale: "Ø¨Ù„Ù‡",
+        shopTitle: "فروشگاه",
+        brandTitle: "الوریا",
+        categoryTitle: "دسته‌بندی‌ها",
+        products: "تمام آثار",
+        collections: "مشاهده دسته‌بندی‌ها",
+        cart: "سبد خرید",
+        about: "داستان الوریا",
+        journal: "مجلهٔ الوریا",
+        home: "خانه",
+        contact: "تماس با ما",
+        necklaces: "گردنبندها",
+        bracelets: "دستبندها",
+        earrings: "گوشواره‌ها",
+        rights: "تمام حقوق برای ELORIA محفوظ است.",
+        top: "بازگشت به آغاز",
+        signature: "جواهراتی با روایت ایران کهن",
+        quickSocial: "دسترسی سریع و شبکه‌های رسمی",
+        instagram: "اینستاگرام",
+        telegram: "تلگرام",
+        bale: "بله",
       }
     : {
         shopTitle: "Shop",
@@ -325,23 +325,6 @@ export function SiteFooter({ locale }: SiteFooterProps) {
           </div>
         </div>
 
-
-            <a
-              href="https://trustseal.enamad.ir/?id=7632947&Code=TKWqLb98pevDEO1yEhZaHGCVgpfLlxKr"
-              target="_blank"
-              rel="noopener noreferrer"
-              referrerPolicy="origin"
-              aria-label={isPersian ? "مشاهده نماد اعتماد الکترونیکی" : "View eNamad trust seal"}
-              className="mt-2 flex justify-center"
-            >
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src="https://trustseal.enamad.ir/logo.aspx?id=7632947&Code=TKWqLb98pevDEO1yEhZaHGCVgpfLlxKr"
-                alt={isPersian ? "نماد اعتماد الکترونیکی" : "eNamad trust seal"}
-                referrerPolicy="origin"
-                className="h-auto w-[112px] cursor-pointer"
-              />
-            </a>
         <div className="flex flex-col items-center justify-between gap-4 pt-6 text-center text-xs text-[#c8b993]/52 sm:flex-row sm:text-start">
           <p>{copy.rights}</p>
 
@@ -359,7 +342,7 @@ export function SiteFooter({ locale }: SiteFooterProps) {
               className="hidden h-4 w-px bg-[#d8ba62]/18 sm:block"
             />
             <p className="font-eloria-brand tracking-[0.2em] text-[#d6bf79]/58">
-              ELORIA Â· 2026
+              ELORIA · 2026
             </p>
           </div>
         </div>
@@ -367,4 +350,3 @@ export function SiteFooter({ locale }: SiteFooterProps) {
     </footer>
   );
 }
-
