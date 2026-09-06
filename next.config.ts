@@ -161,7 +161,7 @@ const contentSecurityPolicy = [
   `img-src ${imageSourceDirective}`,
   "font-src 'self' data:",
   "media-src 'self' blob:",
-  "connect-src 'self' https://payment.zarinpal.com https://api.kavenegar.com https://*.supabase.co https://challenges.cloudflare.com",
+  "connect-src 'self' https://payment.zarinpal.com https://api.sms.ir https://*.supabase.co https://challenges.cloudflare.com",
   "frame-src https://payment.zarinpal.com https://challenges.cloudflare.com",
   "object-src 'none'",
   "base-uri 'self'",

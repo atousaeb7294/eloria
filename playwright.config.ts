@@ -224,6 +224,17 @@ export default defineConfig({
       ELORIA_CUSTOMER_OTP_DEV_CODE:
         "246810",
 
+      // Development OTPs do not call the provider, but the channel gate still
+      // needs a structurally valid SMS.ir configuration in the test server.
+      SMS_IR_API_KEY:
+        "e2e-sms-ir-api-key-012345678901234567890123",
+
+      SMS_IR_VERIFY_TEMPLATE_ID:
+        "123456",
+
+      SMS_IR_VERIFY_PARAMETER:
+        "Code",
+
       TURNSTILE_SECRET_KEY:
         "",
 

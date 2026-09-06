@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 import { BookOpenText, MapPinned, Sparkles, UserRound } from "lucide-react";
 
 import { InternalPageShell } from "@/components/internal-page-shell";
-import { generateProductMyth } from "@/lib/product-myth-generator";
+import { generateProductMyth, getProductMythByKey } from "@/lib/product-myth-generator";
 import { prisma, withDatabaseRetry } from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
@@ -43,7 +43,7 @@ export default async function EloriaWorldPage({ params }: { params: Promise<{ lo
 
       <section className="mt-14 grid gap-5 md:grid-cols-2 xl:grid-cols-3">
         {products.map(product => {
-          const myth = generateProductMyth({ nameFa: product.nameFa, nameEn: product.nameEn, material: product.material });
+          const myth = (product.mythKey ? getProductMythByKey(product.mythKey, { nameFa: product.nameFa, nameEn: product.nameEn, material: product.material }) : null) ?? generateProductMyth({ nameFa: product.nameFa, nameEn: product.nameEn, material: product.material });
           const profile = myth.worldProfile;
           const image = product.images[0];
           return <article key={product.id} className="group overflow-hidden rounded-[2rem] border border-[#d8ba64]/18 bg-[#061c15]/88 shadow-[0_28px_75px_rgba(0,0,0,.32)]">
@@ -57,7 +57,7 @@ export default async function EloriaWorldPage({ params }: { params: Promise<{ lo
                 <h2 className="mt-2 text-xl text-[#f1e0b9]">{fa ? product.nameFa : product.nameEn}</h2>
                 <p className="mt-4 text-sm leading-8 text-[#d0c09f]/68">{(fa ? product.legendFa : product.legendEn) || (fa ? myth.legendFa : myth.legendEn)}</p>
                 <div className="mt-5 grid gap-2 text-[11px] text-[#c8b995]/58 sm:grid-cols-2">
-                  <span className="flex items-center gap-2 rounded-xl border border-white/[.05] p-3"><UserRound className="size-4 text-[#ddc16e]" />{fa ? profile.characterNameFa : profile.characterNameEn}</span>
+                  <span className="flex items-center gap-2 rounded-xl border border-white/[.05] p-3"><UserRound className="size-4 text-[#ddc16e]" />{fa ? `${profile.guardianNameFa} · ${profile.characterNameFa}` : `${profile.guardianNameEn} · ${profile.characterNameEn}`}</span>
                   <span className="flex items-center gap-2 rounded-xl border border-white/[.05] p-3"><MapPinned className="size-4 text-[#ddc16e]" />{fa ? profile.homelandFa : profile.homelandEn}</span>
                 </div>
               </div>

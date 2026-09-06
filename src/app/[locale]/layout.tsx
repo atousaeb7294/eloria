@@ -65,7 +65,10 @@ export async function generateMetadata({
   return {
     metadataBase: baseUrl,
     title,
-    description,
+    description, 
+ other: {
+    enamad: "26263305",
+  },
 
     alternates: {
       canonical: `/${locale}`,
@@ -124,7 +127,7 @@ export default async function LocaleLayout({
       dir={locale === "fa" ? "rtl" : "ltr"}
       suppressHydrationWarning
     >
-<body className="min-h-screen">
+      <body className="min-h-screen">
         <NextIntlClientProvider locale={locale} messages={messages}>
           <PageBackgroundProvider>
             <SiteStructuredData />

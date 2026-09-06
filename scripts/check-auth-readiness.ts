@@ -29,7 +29,7 @@ const checks: Check[] = [
   {
     label: "Customer OTP delivery",
     ok: customerChannels.preferredChannel !== null,
-    note: "Enable and configure at least one verified email or SMS provider.",
+    note: "Enable the SMS.ir Verify provider and configure its API key and template.",
   },
   {
     label: "Turnstile keys",

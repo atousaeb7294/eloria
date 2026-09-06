@@ -21,23 +21,9 @@ assert.equal(isTurnstileHostnameAllowed("", exactHosts, true), false);
 
 assert.deepEqual(
   getCustomerAuthChannelAvailability({
-    ELORIA_CUSTOMER_EMAIL_OTP_ENABLED: "true",
-    RESEND_API_KEY: "re_1234567890123456",
-    ELORIA_EMAIL_FROM: "Eloria <login@eloriagallery.ir>",
-    ELORIA_CUSTOMER_SMS_OTP_ENABLED: "false",
-  }),
-  {
-    emailEnabled: true,
-    smsEnabled: false,
-    preferredChannel: "EMAIL",
-  },
-);
-
-assert.deepEqual(
-  getCustomerAuthChannelAvailability({
-    ELORIA_CUSTOMER_EMAIL_OTP_ENABLED: "false",
     ELORIA_CUSTOMER_SMS_OTP_ENABLED: "true",
-    KAVENEGAR_API_KEY: "1234567890123456",
+    SMS_IR_API_KEY: "1234567890123456",
+    SMS_IR_VERIFY_TEMPLATE_ID: "123456",
   }),
   {
     emailEnabled: false,
@@ -46,9 +32,21 @@ assert.deepEqual(
   },
 );
 
+assert.deepEqual(
+  getCustomerAuthChannelAvailability({
+    ELORIA_CUSTOMER_SMS_OTP_ENABLED: "false",
+    SMS_IR_API_KEY: "1234567890123456",
+    SMS_IR_VERIFY_TEMPLATE_ID: "123456",
+  }),
+  {
+    emailEnabled: false,
+    smsEnabled: false,
+    preferredChannel: null,
+  },
+);
+
 assert.equal(
   getCustomerAuthChannelAvailability({
-    ELORIA_CUSTOMER_EMAIL_OTP_ENABLED: "true",
     ELORIA_CUSTOMER_SMS_OTP_ENABLED: "true",
   }).preferredChannel,
   null,

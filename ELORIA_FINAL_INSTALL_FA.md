@@ -61,7 +61,10 @@ ELORIA_EMBEDDED_METAL_SYNC_INTERVAL_MINUTES="5"
 ELORIA_TRUST_PROXY="true"
 ELORIA_PROXY_PROVIDER="generic"
 ELORIA_RATE_LIMIT_FAILURE_MODE="closed"
-ELORIA_EMAIL_FROM="Eloria <login@eloriagallery.ir>"
+ELORIA_CUSTOMER_SMS_OTP_ENABLED="true"
+SMS_IR_API_KEY="PASTE_SMS_IR_API_KEY"
+SMS_IR_VERIFY_TEMPLATE_ID="PASTE_SMS_IR_VERIFY_TEMPLATE_ID"
+SMS_IR_VERIFY_PARAMETER="Code"
 ELORIA_STORAGE_BUCKET="product-images"
 DATABASE_SSL_MODE="require"
 DATABASE_POOL_MAX="5"
@@ -88,7 +91,9 @@ ELORIA_TRACKING_SECRET
 ELORIA_PAYMENT_RECEIPT_SECRET
 ELORIA_PAYMENT_START_SECRET
 NEXT_SERVER_ACTIONS_ENCRYPTION_KEY
-RESEND_API_KEY
+SMS_IR_API_KEY
+SMS_IR_VERIFY_TEMPLATE_ID
+SMS_IR_VERIFY_PARAMETER
 NEXT_PUBLIC_TURNSTILE_SITE_KEY
 TURNSTILE_SECRET_KEY
 SUPABASE_URL
@@ -106,7 +111,7 @@ npm run secrets:generate
 
 خروجی را فقط در `.env` و متغیرهای پارس‌پک بگذارید؛ داخل GitHub نگذارید.
 
-در تصویر شما `ELORIA_SECURITY_ALERT_WEBHOOK_URL` روی آدرس اصلی Supabase قرار گرفته بود. این آدرس Webhook واقعی نیست و باید حذف یا با یک HTTPS Webhook واقعی جایگزین شود. راه دیگر، تنظیم `ELORIA_SECURITY_ALERT_MOBILE` همراه `KAVENEGAR_API_KEY` است. حداقل یکی از این دو کانال باید واقعاً کار کند.
+در تصویر شما `ELORIA_SECURITY_ALERT_WEBHOOK_URL` روی آدرس اصلی Supabase قرار گرفته بود. این آدرس Webhook واقعی نیست و باید حذف یا با یک HTTPS Webhook واقعی جایگزین شود. راه دیگر، تنظیم `ELORIA_SECURITY_ALERT_MOBILE` همراه `SMS_IR_API_KEY` و `SMS_IR_LINE_NUMBER` است. حداقل یکی از این دو کانال باید واقعاً کار کند.
 
 ## ۵. رمز و ورود مدیریت
 
@@ -156,19 +161,21 @@ www.eloriagallery.ir
 
 این دو کلید حتماً باید متعلق به یک Widget باشند. پس از تغییر، پارس‌پک را Redeploy کنید.
 
-## ۷. Resend و ورود ایمیلی مشتری
+## ۷. SMS.ir و ورود موبایلی مشتری
 
-1. وارد Resend و سپس `Domains` شوید.
-2. `eloriagallery.ir` باید وضعیت `Verified` داشته باشد.
-3. اگر Pending/Failed است، DKIM، SPF و DMARC همان صفحه را در DNS پارس‌پک اصلاح و دوباره Verify کنید.
-4. در `API Keys` یک کلید Sending بسازید و در `RESEND_API_KEY` بگذارید.
-5. فرستنده را تنظیم کنید:
+1. در پنل SMS.ir یک الگوی Verify بسازید و نام پارامتر آن را در `SMS_IR_VERIFY_PARAMETER` بگذارید.
+2. شناسهٔ عددی الگو را در `SMS_IR_VERIFY_TEMPLATE_ID` و کلید API را در `SMS_IR_API_KEY` بگذارید.
+3. برای پیامک‌های عادی پشتیبانی و هشدار، شمارهٔ خط ارسال را در `SMS_IR_LINE_NUMBER` تنظیم کنید.
+4. پس از تغییر ENV، سرویس را Redeploy/Restart کنید و یک ورود، عضویت و بازیابی رمز آزمایشی انجام دهید.
 
 ```env
-ELORIA_EMAIL_FROM="Eloria <login@eloriagallery.ir>"
+ELORIA_CUSTOMER_SMS_OTP_ENABLED="true"
+SMS_IR_API_KEY="..."
+SMS_IR_VERIFY_TEMPLATE_ID="..."
+SMS_IR_VERIFY_PARAMETER="Code"
 ```
 
-اگر در Resend یک Subdomain مانند `send.eloriagallery.ir` را Verify کرده‌اید، ایمیل From نیز باید دقیقاً روی همان Subdomain باشد.
+نام `SMS_IR_VERIFY_PARAMETER` باید دقیقاً با پارامتر تعریف‌شده در الگوی Verify یکی باشد.
 
 ## ۸. قیمت لحظه‌ای
 
@@ -287,7 +294,7 @@ Port را ثابت نکنید؛ برنامه `PORT` پارس‌پک را می‌
 ```env
 ELORIA_EMBEDDED_METAL_SYNC_ENABLED=true
 ELORIA_PROXY_PROVIDER=generic
-ELORIA_EMAIL_FROM=Eloria <login@eloriagallery.ir>
+SMS_IR_VERIFY_PARAMETER=Code
 ```
 
 در بخش `متغیرهای Build` این موارد را نیز قرار دهید:
@@ -352,7 +359,7 @@ https://eloriagallery.ir/fa/login
 https://eloriagallery.ir/fa/admin/login
 ```
 
-مدیر باید با Username، رمز معمولی، کد Authenticator و Turnstile وارد `/fa/admin` شود. مشتری باید کد ایمیلی بگیرد و وارد `/fa/profile` شود.
+مدیر باید با Username، رمز معمولی، کد Authenticator و Turnstile وارد `/fa/admin` شود. مشتری می‌تواند با رمز عبور وارد شود یا کد پیامکی SMS.ir بگیرد و سپس وارد `/fa/profile` شود.
 
 تست‌های نهایی:
 
@@ -377,7 +384,7 @@ powershell -ExecutionPolicy Bypass -File .\scripts\audit-parspack-env.ps1 -Proje
 | Turnstile باز نمی‌شود | دامنه مجاز نیست یا کلیدها جفت نیستند | Hostname و کلیدهای همان Widget را اصلاح و Redeploy کنید |
 | دکمه مدیر کار نمی‌کند | Turnstile یا Build قدیمی | تأیید، Redeploy و `Ctrl+F5` |
 | رمز/کد مدیر اشتباه است | Hash یا TOTP ناهماهنگ | Hash جدید و ثبت Secret در Authenticator |
-| ایمیل مشتری نمی‌رسد | Resend Verified نیست یا From متفاوت است | Verify دامنه و اصلاح From |
+| کد پیامکی مشتری نمی‌رسد | API Key یا الگوی Verify SMS.ir ناقص است | شناسهٔ الگو، پارامتر و وضعیت خطا را بررسی و Redeploy کنید |
 | نرخ لحظه‌ای خاموش است | Embedded Sync خاموش است | مقدار را true کنید و لاگ را ببینید |
 | Prisma در Build خطا دارد | DIRECT_URL در Build نیست | DATABASE_URL و DIRECT_URL را به Build اضافه کنید |
 | Server Action رد می‌شود | Origin پراکسی شناخته نشده | `ELORIA_ALLOWED_ORIGINS` و Build مجدد |
@@ -386,7 +393,7 @@ powershell -ExecutionPolicy Bypass -File .\scripts\audit-parspack-env.ps1 -Proje
 ## وضعیت نسخه
 
 - ورود مدیر، TOTP، Turnstile و Session امن: تکمیل
-- ورود مشتری با رمز ایمیلی: تکمیل
+- ورود مشتری با رمز و OTP پیامکی SMS.ir: تکمیل
 - قیمت لحظه‌ای و همگام‌سازی داخلی: تکمیل
 - پنل مشتری و مدیریت: تکمیل
 - افسانه مادر، صد افسانه مرتبط و شخصیت‌ها: تکمیل

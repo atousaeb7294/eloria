@@ -181,6 +181,22 @@ async function main(): Promise<void> {
           "readJsonBody",
         )) &&
         (await fileIncludes(
+          "src/app/api/customer/auth/password-login/route.ts",
+          "readJsonBody",
+        )) &&
+        (await fileIncludes(
+          "src/app/api/customer/auth/request-password-otp/route.ts",
+          "readJsonBody",
+        )) &&
+        (await fileIncludes(
+          "src/app/api/customer/auth/verify-password-otp/route.ts",
+          "readJsonBody",
+        )) &&
+        (await fileIncludes(
+          "src/app/api/customer/auth/password/route.ts",
+          "readJsonBody",
+        )) &&
+        (await fileIncludes(
           "src/app/api/customer/me/route.ts",
           "readJsonBody",
         )) &&
@@ -272,6 +288,20 @@ async function main(): Promise<void> {
           "CUSTOMER_OTP_VERIFY_RATE_LIMITED",
           "CUSTOMER_OTP_VERIFY_FAILED",
           "CUSTOMER_LOGIN_SUCCEEDED",
+        ])) &&
+        (await fileIncludes("src/app/api/customer/auth/password-login/route.ts", [
+          "CUSTOMER_PASSWORD_LOGIN_RATE_LIMITED",
+          "CUSTOMER_PASSWORD_LOGIN_FAILED",
+          "CUSTOMER_LOGIN_SUCCEEDED",
+        ])) &&
+        (await fileIncludes("src/app/api/customer/auth/verify-password-otp/route.ts", [
+          "CUSTOMER_SIGNUP_SUCCEEDED",
+          "CUSTOMER_PASSWORD_RESET_SUCCEEDED",
+          "CUSTOMER_PASSWORD_OTP_VERIFY_FAILED",
+        ])) &&
+        (await fileIncludes("src/app/api/customer/auth/password/route.ts", [
+          "CUSTOMER_PASSWORD_CHANGED",
+          "CUSTOMER_PASSWORD_CHANGE_FAILED",
         ])),
     ],
     [
@@ -319,9 +349,15 @@ async function main(): Promise<void> {
     [
       "Bounded SMS provider request",
       await fileIncludes(
-        "src/lib/notifications/kavenegar.ts",
+        "src/lib/notifications/sms-ir.ts",
         "AbortSignal.timeout(8_000)",
       ),
+    ],
+    [
+      "SMS.ir customer verification and password routes",
+      (await fileIncludes("src/lib/notifications/sms-ir.ts", ["api.sms.ir", "X-API-KEY"])) &&
+        (await fileIncludes("src/app/api/customer/auth/password-login/route.ts", "verifyCustomerPassword")) &&
+        (await fileIncludes("src/app/api/customer/auth/verify-password-otp/route.ts", "hashCustomerPassword")),
     ],
     [
       "Metal-rate anomaly circuit breaker",

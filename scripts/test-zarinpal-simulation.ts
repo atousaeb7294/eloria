@@ -30,10 +30,13 @@ process.env.ZARINPAL_MERCHANT_ID =
 /*
  * Prevent any real SMS / external alert delivery.
  */
-process.env.KAVENEGAR_API_KEY =
+process.env.SMS_IR_API_KEY =
   "";
 
-process.env.KAVENEGAR_SENDER =
+process.env.SMS_IR_VERIFY_TEMPLATE_ID =
+  "";
+
+process.env.SMS_IR_LINE_NUMBER =
   "";
 
 process.env.ELORIA_SECURITY_ALERT_MOBILE =

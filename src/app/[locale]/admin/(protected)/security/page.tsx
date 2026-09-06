@@ -89,6 +89,15 @@ function eventLabel(eventType: string): string {
     CUSTOMER_OTP_REQUEST_ERROR: "خطای زیرساخت درخواست OTP",
     CUSTOMER_OTP_VERIFY_RATE_LIMITED: "محدودسازی تلاش تأیید OTP",
     CUSTOMER_OTP_VERIFY_FAILED: "کد OTP ناموفق",
+    CUSTOMER_PASSWORD_LOGIN_FAILED: "ورود با رمز ناموفق",
+    CUSTOMER_PASSWORD_LOGIN_LOCKED: "ورود رمزدار موقتاً قفل شد",
+    CUSTOMER_PASSWORD_LOGIN_RATE_LIMITED: "محدودسازی ورود با رمز",
+    CUSTOMER_PASSWORD_CHANGED: "رمز عبور مشتری تغییر کرد",
+    CUSTOMER_PASSWORD_CHANGE_FAILED: "تلاش ناموفق تغییر رمز",
+    CUSTOMER_SIGNUP_SUCCEEDED: "عضویت مشتری تکمیل شد",
+    CUSTOMER_PASSWORD_RESET_SUCCEEDED: "بازیابی رمز مشتری تکمیل شد",
+    CUSTOMER_PASSWORD_OTP_DELIVERY_FAILED: "شکست ارسال کد رمز",
+    CUSTOMER_PASSWORD_OTP_VERIFY_FAILED: "کد تنظیم رمز ناموفق",
     CUSTOMER_INACTIVE_ACCOUNT_LOGIN_BLOCKED: "ورود حساب غیرفعال مسدود شد",
     CUSTOMER_LOGIN_SUCCEEDED: "ورود موفق مشتری",
     PAYMENT_INITIALIZATION_FAILED: "خطای ساخت پرداخت",
@@ -101,7 +110,8 @@ function eventLabel(eventType: string): string {
 
 function channelStatus(): { sms: boolean; webhook: boolean } {
   const mobile = process.env.ELORIA_SECURITY_ALERT_MOBILE?.trim() ?? "";
-  const apiKey = process.env.KAVENEGAR_API_KEY?.trim() ?? "";
+  const apiKey = process.env.SMS_IR_API_KEY?.trim() ?? "";
+  const lineNumber = process.env.SMS_IR_LINE_NUMBER?.trim() ?? "";
   let webhook = false;
   try {
     webhook =
@@ -111,7 +121,7 @@ function channelStatus(): { sms: boolean; webhook: boolean } {
     webhook = false;
   }
   return {
-    sms: /^09\d{9}$/.test(mobile) && apiKey.length >= 16,
+    sms: /^09\d{9}$/.test(mobile) && apiKey.length >= 16 && /^\d+$/.test(lineNumber),
     webhook,
   };
 }

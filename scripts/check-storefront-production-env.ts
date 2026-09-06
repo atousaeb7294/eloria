@@ -15,8 +15,14 @@ if (value("ELORIA_CUSTOMER_AUTH_SECRET").length < 48) {
 if (value("ELORIA_CUSTOMER_OTP_DEV_CODE")) {
   errors.push("ELORIA_CUSTOMER_OTP_DEV_CODE must be unset in production.");
 }
-if (value("KAVENEGAR_API_KEY").length < 16) {
-  errors.push("KAVENEGAR_API_KEY is required for real customer OTP and transactional SMS.");
+if (value("SMS_IR_API_KEY").length < 16) {
+  errors.push("SMS_IR_API_KEY is required for real customer OTP and transactional SMS.");
+}
+if (!/^\d+$/.test(value("SMS_IR_VERIFY_TEMPLATE_ID"))) {
+  errors.push("SMS_IR_VERIFY_TEMPLATE_ID must be the numeric Verify template ID from SMS.ir.");
+}
+if (value("ELORIA_SUPPORT_MOBILE") && !/^\d+$/.test(value("SMS_IR_LINE_NUMBER"))) {
+  errors.push("SMS_IR_LINE_NUMBER is required when transactional SMS support is enabled.");
 }
 
 const merchant = value("ZARINPAL_MERCHANT_ID");

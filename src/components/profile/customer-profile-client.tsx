@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import type { FormEvent } from "react";
-import { Bell, Check, CircleCheck, CreditCard, Heart, LogOut, MapPin, Package, PackageCheck, Plus, Save, Trash2, Truck, UserRound } from "lucide-react";
+import { Bell, Check, CircleCheck, CreditCard, Heart, KeyRound, LogOut, MapPin, Package, PackageCheck, Plus, Save, Trash2, Truck, UserRound } from "lucide-react";
 
 type Order = {
   id: string; orderNumber: string; status: string; payableToman: string; createdAt: string; paidAt: string | null;
@@ -15,7 +15,7 @@ type Address = { id: string; title: string; recipientName: string; mobile: strin
 type Favorite = { slug: string; nameFa: string; nameEn: string; status: string; imageUrl: string; savedAt: string };
 type Notification = { id: string; type: string; titleFa: string; titleEn: string; bodyFa: string; bodyEn: string; orderId: string | null; readAt: string | null; createdAt: string };
 type Data = {
-  customer: { id: string; mobile: string; fullName: string | null; email: string | null; mobileVerifiedAt: Date | string | null; createdAt: Date | string };
+  customer: { id: string; mobile: string; fullName: string | null; mobileVerifiedAt: Date | string | null; createdAt: Date | string; hasPassword: boolean };
   orders: Order[]; addresses: Address[]; favorites: Favorite[]; notifications: Notification[];
 };
 
@@ -52,7 +52,8 @@ function orderJourney(status: string, fa: boolean) {
 export function CustomerProfileClient({ locale, initialData }: { locale: "fa" | "en"; initialData: Data }) {
   const fa = locale === "fa";
   const router = useRouter();
-  const [profile, setProfile] = useState({ fullName: initialData.customer.fullName ?? "", email: initialData.customer.email ?? "" });
+  const [profile, setProfile] = useState({ fullName: initialData.customer.fullName ?? "" });
+  const [passwordForm, setPasswordForm] = useState({ currentPassword: "", newPassword: "", confirmPassword: "" });
   const [addressForm, setAddressForm] = useState<AddressForm>({ ...emptyAddress, mobile: initialData.customer.mobile, recipientName: initialData.customer.fullName ?? "" });
   const [editingAddressId, setEditingAddressId] = useState<string | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
@@ -71,6 +72,16 @@ export function CustomerProfileClient({ locale, initialData }: { locale: "fa" | 
     event.preventDefault(); setBusy("profile"); setMessage(null);
     try { await jsonAction("/api/customer/me", "PATCH", profile); setMessage(fa ? "اطلاعات حساب ذخیره شد." : "Account details saved."); router.refresh(); }
     catch (e) { setMessage(e instanceof Error ? e.message : "Error"); } finally { setBusy(null); }
+  }
+
+  async function savePassword(event: FormEvent) {
+    event.preventDefault(); setBusy("password"); setMessage(null);
+    try {
+      await jsonAction("/api/customer/auth/password", "POST", passwordForm);
+      setPasswordForm({ currentPassword: "", newPassword: "", confirmPassword: "" });
+      setMessage(fa ? "رمز عبور با موفقیت تغییر کرد." : "Password updated successfully.");
+      router.refresh();
+    } catch (e) { setMessage(e instanceof Error ? e.message : "Error"); } finally { setBusy(null); }
   }
 
   async function saveAddress(event: FormEvent) {
@@ -156,6 +167,7 @@ export function CustomerProfileClient({ locale, initialData }: { locale: "fa" | 
           ["#favorites", fa ? "علاقه‌مندی‌ها" : "Favorites"],
           ["#notifications", fa ? "اعلان‌ها" : "Notifications"],
           ["#account", fa ? "حساب" : "Account"],
+          ["#security", fa ? "رمز عبور" : "Password"],
         ].map(([href, label]) => <a key={href} href={href} className="shrink-0 rounded-full border border-[#d8b967]/12 bg-black/10 px-4 py-2 text-xs text-[#d9ca9f]/68 transition hover:border-[#d8b967]/28 hover:text-[#ead58e]">{label}</a>)}
         <Link href={`/${locale}/profile/watches`} className="shrink-0 rounded-full border border-[#d8b967]/12 bg-black/10 px-4 py-2 text-xs text-[#d9ca9f]/68 transition hover:border-[#d8b967]/28 hover:text-[#ead58e]">{fa ? "پیگیری قیمت" : "Price watches"}</Link>
       </nav>
@@ -261,7 +273,18 @@ export function CustomerProfileClient({ locale, initialData }: { locale: "fa" | 
 
       <section id="account" className={`${card} mt-6`}>
         <div className="flex items-center gap-3"><UserRound className="h-5 w-5 text-[#dfc577]" /><h2 className={fa ? "font-persian-title text-xl" : "text-xl font-semibold"}>{fa ? "اطلاعات حساب" : "Account details"}</h2></div>
-        <form onSubmit={saveProfile} className="mt-5 grid gap-3 sm:grid-cols-2"><input className={input} value={profile.fullName} onChange={e => setProfile(v => ({ ...v, fullName: e.target.value }))} placeholder={fa ? "نام و نام خانوادگی" : "Full name"} /><input className={input} value={profile.email} onChange={e => setProfile(v => ({ ...v, email: e.target.value }))} placeholder={fa ? "ایمیل" : "Email"} /><input className={`${input} opacity-65`} value={initialData.customer.mobile} disabled /><button disabled={busy === "profile"} className="inline-flex h-12 items-center justify-center gap-2 rounded-2xl border border-[#d8b967]/20 bg-[#123829] text-xs text-[#e8d18b]"><Save className="h-4 w-4" />{fa ? "ذخیره اطلاعات" : "Save details"}</button></form>
+        <form onSubmit={saveProfile} className="mt-5 grid gap-3 sm:grid-cols-2"><input className={input} value={profile.fullName} onChange={e => setProfile(v => ({ ...v, fullName: e.target.value }))} placeholder={fa ? "نام و نام خانوادگی" : "Full name"} /><input dir="ltr" className={`${input} opacity-65 text-left`} value={initialData.customer.mobile} disabled /><button disabled={busy === "profile"} className="inline-flex h-12 items-center justify-center gap-2 rounded-2xl border border-[#d8b967]/20 bg-[#123829] text-xs text-[#e8d18b]"><Save className="h-4 w-4" />{fa ? "ذخیره اطلاعات" : "Save details"}</button></form>
+      </section>
+
+      <section id="security" className={`${card} mt-6`}>
+        <div className="flex items-center gap-3"><KeyRound className="h-5 w-5 text-[#dfc577]" /><h2 className={fa ? "font-persian-title text-xl" : "text-xl font-semibold"}>{fa ? "امنیت و رمز عبور" : "Security and password"}</h2></div>
+        <p className="mt-3 text-xs leading-6 text-[#c5b797]/60">{initialData.customer.hasPassword ? (fa ? "برای تغییر رمز، رمز فعلی را وارد کنید." : "Enter your current password to change it.") : (fa ? "حساب شما با کد پیامکی ساخته شده است؛ برای ورودهای بعدی یک رمز عبور بسازید." : "This account was created with SMS; create a password for future sign-ins.")}</p>
+        <form onSubmit={savePassword} className="mt-5 grid gap-3 sm:grid-cols-2">
+          {initialData.customer.hasPassword ? <input type="password" dir="ltr" autoComplete="current-password" className={`${input} text-left`} value={passwordForm.currentPassword} onChange={e => setPasswordForm(v => ({ ...v, currentPassword: e.target.value }))} placeholder={fa ? "رمز عبور فعلی" : "Current password"} required /> : null}
+          <input type="password" dir="ltr" autoComplete="new-password" minLength={8} maxLength={128} className={`${input} text-left`} value={passwordForm.newPassword} onChange={e => setPasswordForm(v => ({ ...v, newPassword: e.target.value }))} placeholder={fa ? "رمز عبور جدید (حداقل ۸ نویسه)" : "New password (at least 8 characters)"} required />
+          <input type="password" dir="ltr" autoComplete="new-password" minLength={8} maxLength={128} className={`${input} text-left`} value={passwordForm.confirmPassword} onChange={e => setPasswordForm(v => ({ ...v, confirmPassword: e.target.value }))} placeholder={fa ? "تکرار رمز عبور جدید" : "Confirm new password"} required />
+          <button disabled={busy === "password"} className="inline-flex h-12 items-center justify-center gap-2 rounded-2xl border border-[#d8b967]/20 bg-[#123829] text-xs text-[#e8d18b]"><KeyRound className="h-4 w-4" />{busy === "password" ? (fa ? "در حال ذخیره..." : "Saving...") : (fa ? "ذخیره رمز عبور" : "Save password")}</button>
+        </form>
       </section>
     </main>
   );

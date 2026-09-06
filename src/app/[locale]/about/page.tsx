@@ -140,7 +140,7 @@ export default async function AboutPage({ params }: AboutPageProps) {
 
           <p className="mx-auto max-w-3xl text-sm leading-9 text-[#d8caaa]/72 sm:text-base">
             {isPersian
-              ? "در کهن‌ترین نسخه‌های باقی‌مانده، الوریا را «سرزمین افسانه‌ها» خوانده‌اند؛ سرزمینی میان برف‌های البرز، دشت‌های آفتاب‌سوخته و راه‌های دریایی جنوب، که مردمش نام‌ها، پیمان‌ها و خاطرات بزرگ را به زر و سنگ و گره می‌سپردند تا چیزی از آنان در هجوم زمان گم نشود."
+              ? "در کهن‌ترین نسخه‌های باقی‌مانده، الوریا را «سرزمین کهنِ افسانه‌ها» خوانده‌اند؛ سرزمینی میان برف‌های البرز، دشت‌های آفتاب‌سوخته و راه‌های دریایی جنوب، که مردمش نام‌ها، پیمان‌ها و خاطرات بزرگ را به زر و سنگ و گره می‌سپردند تا چیزی از آنان در هجوم زمان گم نشود."
               : "In the oldest surviving manuscripts, Eloria is called the Land of Legends: a realm between the snows of Alborz, sunburnt plains and the southern sea roads, where names, vows and great memories were entrusted to gold, stone and knots so time could not erase them."}
           </p>
         </header>
@@ -176,7 +176,7 @@ export default async function AboutPage({ params }: AboutPageProps) {
               </p>
               <p className="text-[#cbbb9d]/62">
                 {isPersian
-                  ? "هفت استاد از میان زرگران، سنگ‌تراشان و گره‌بافان برگزیده شدند و مردم آنان را «نگهبانان نشان» نامیدند. هر نشان برای یک تن و یک واقعه ساخته می‌شد: حلقه‌ای برای پیمانی که در تالار مهر بسته شد، سنگی برای مسافری که از دره باران بازنگشت، یا گره‌ای برای نامی که نباید فراموش می‌شد. پشت هر نشان، نشانه‌ای بسیار ریز از جایگاهش در بایگانی حک می‌شد؛ خطی از نقشه‌ای که تنها آرمیتا و هفت نگهبان تمامی آن را می‌شناختند."
+                  ? "هفت استاد از میان زرگران، سنگ‌تراشان و مکرومه‌بافان برگزیده شدند و مردم آنان را «نگهبانان نشان» نامیدند. هر نشان برای یک تن و یک واقعه ساخته می‌شد: حلقه‌ای برای پیمانی که در تالار مهر بسته شد، سنگی برای مسافری که از دره باران بازنگشت، یا گره‌ای برای نامی که نباید فراموش می‌شد. پشت هر نشان، نشانه‌ای بسیار ریز از جایگاهش در بایگانی حک می‌شد؛ خطی از نقشه‌ای که تنها آرمیتا و هفت نگهبان تمامی آن را می‌شناختند."
                   : "Seven masters were chosen from the goldsmiths, stonecutters and knot-weavers, and became known as the Keepers of the Sign. Each Sign was made for one person and one event: a ring for a covenant sworn in the Hall of Mehr, a stone for a traveller who never returned from the Valley of Rain, or a knot for a name that must not be forgotten. Each bore a tiny archive mark: one line from a map known in full only to Armita and the seven Keepers."}
               </p>
             </div>

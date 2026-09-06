@@ -199,6 +199,26 @@
     background: var(--eloria-surface-emerald-1);
   }
 
+  html[lang="fa"],
+  html[lang="fa"] body,
+  html[lang="fa"] button,
+  html[lang="fa"] input,
+  html[lang="fa"] select,
+  html[lang="fa"] textarea {
+    font-family:
+      "Vazirmatn Variable",
+      Vazirmatn,
+      Tahoma,
+      "Segoe UI",
+      sans-serif;
+    font-feature-settings:
+      "kern" 1,
+      "liga" 1,
+      "calt" 1;
+    font-kerning: normal;
+    font-synthesis: none;
+  }
+
   ::selection {
     background: rgba(224, 194, 109, 0.28);
     color: #fff4d6;
@@ -221,10 +241,11 @@
 @layer utilities {
   .font-persian-title {
     font-family:
-      "Noto Nastaliq Urdu",
       "Vazirmatn Variable",
+      Vazirmatn,
       Tahoma,
-      serif;
+      "Segoe UI",
+      sans-serif;
 
     font-feature-settings:
       "kern" 1,
@@ -237,7 +258,7 @@
     font-weight: 600 !important;
     letter-spacing: 0 !important;
     word-spacing: 0.025em;
-    line-height: 2.05;
+    line-height: 1.95;
     padding-block: 0.08em 0.18em;
     text-wrap: balance;
     text-rendering: optimizeLegibility;
@@ -248,7 +269,7 @@
 
   .font-persian-calligraphy {
     font-family:
-      "Noto Nastaliq Urdu",
+      "Eloria Iran Nastaliq",
       "Vazirmatn Variable",
       Tahoma,
       serif;
@@ -351,20 +372,68 @@ html:has(#hero:target) .eloria-intro-root {
   font-display: swap;
 }
 
-html[lang="fa"] .font-persian-title,
-html[lang="fa"] .font-persian-calligraphy {
-  font-family:
-    "Eloria Iran Nastaliq",
-    "Vazirmatn Variable",
-    Tahoma,
-    serif !important;
-  font-style: normal;
-  font-weight: 400 !important;
-  font-synthesis: none;
-  letter-spacing: 0 !important;
-  word-spacing: 0.02em;
-  line-height: 1.95;
-  text-rendering: optimizeLegibility;
+@media (min-width: 901px) {
+  /*
+    Persian desktop typography is intentionally editorial: the self-hosted
+    Iran Nastaliq font is inherited by every text-bearing element. Technical
+    values (passwords, phone numbers, codes and LTR content) stay in Vazir so
+    digits, Latin identifiers and form controls never become ambiguous.
+  */
+  html[lang="fa"] body,
+  html[lang="fa"] body * {
+    font-family:
+      "Eloria Iran Nastaliq",
+      "Vazirmatn Variable",
+      Tahoma,
+      serif !important;
+    font-feature-settings:
+      "kern" 1,
+      "liga" 1,
+      "calt" 1;
+    font-kerning: normal;
+    font-synthesis: none;
+  }
+
+  /* Keep technical values readable; these selectors intentionally outrank
+   * the body * rule above. */
+  html[lang="fa"] body input[type="password"],
+  html[lang="fa"] body input[type="email"],
+  html[lang="fa"] body input[type="url"],
+  html[lang="fa"] body input[type="search"],
+  html[lang="fa"] body input[inputmode="tel"],
+  html[lang="fa"] body input[inputmode="numeric"],
+  html[lang="fa"] body code,
+  html[lang="fa"] body pre,
+  html[lang="fa"] body kbd,
+  html[lang="fa"] body samp,
+  html[lang="fa"] body .font-mono,
+  html[lang="fa"] body [dir="ltr"] {
+    font-family:
+      "Vazirmatn Variable",
+      Vazirmatn,
+      Tahoma,
+      "Segoe UI",
+      sans-serif !important;
+  }
+
+  html[lang="fa"] .font-eloria-brand {
+    font-family: Georgia, "Times New Roman", serif !important;
+  }
+
+  html[lang="fa"] .font-persian-title,
+  html[lang="fa"] .font-persian-calligraphy {
+    font-family:
+      "Eloria Iran Nastaliq",
+      "Vazirmatn Variable",
+      Tahoma,
+      serif !important;
+    font-style: normal;
+    font-weight: 400;
+    letter-spacing: 0;
+    word-spacing: 0.02em;
+    line-height: 1.95;
+    text-rendering: optimizeLegibility;
+  }
 }
 /* ELORIA IRAN NASTALIQ SELF HOST END */
 
@@ -474,6 +543,25 @@ a[href], button:not(:disabled), [role="button"]:not([aria-disabled="true"]) { tr
 */
 @media (max-width: 900px) {
   html[lang="fa"] body,
+  html[lang="fa"] body * {
+    font-family:
+      "Vazirmatn Variable",
+      Vazirmatn,
+      Tahoma,
+      "Segoe UI",
+      sans-serif !important;
+    font-synthesis: none !important;
+    font-feature-settings: "kern" 1, "liga" 1, "calt" 1 !important;
+    font-variant-ligatures: common-ligatures !important;
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+  }
+
+  html[lang="fa"] .font-eloria-brand {
+    font-family: Georgia, "Times New Roman", serif !important;
+  }
+
+  html[lang="fa"] body,
   html[lang="fa"] button,
   html[lang="fa"] input,
   html[lang="fa"] textarea,
@@ -489,8 +577,8 @@ a[href], button:not(:disabled), [role="button"]:not([aria-disabled="true"]) { tr
       "Segoe UI",
       sans-serif !important;
     font-synthesis: none !important;
-    font-feature-settings: normal !important;
-    font-variant-ligatures: normal !important;
+    font-feature-settings: "kern" 1, "liga" 1, "calt" 1 !important;
+    font-variant-ligatures: common-ligatures !important;
     letter-spacing: normal !important;
     word-spacing: normal !important;
     text-rendering: auto !important;
@@ -507,3 +595,40 @@ a[href], button:not(:disabled), [role="button"]:not([aria-disabled="true"]) { tr
   }
 }
 /* ELORIA MOBILE NASTALIQ SAFE MODE END */
+
+html[lang="fa"] input[type="password"] {
+  direction: ltr;
+  text-align: left;
+  unicode-bidi: plaintext;
+}
+
+html[lang="fa"] :where(p, li, label, button, a, h1, h2, h3, h4, h5, h6) {
+  overflow-wrap: anywhere;
+}
+
+/* Readability contract: Nastaliq is decorative and never the default body font.
+   Earlier visual releases applied it to every desktop node, which caused tight,
+   hard-to-read Persian copy. Keep it only where a page explicitly asks for a
+   display title or calligraphic quotation. */
+@media (min-width: 901px) {
+  html[lang="fa"] body,
+  html[lang="fa"] body * {
+    font-family: "Vazirmatn Variable", Vazirmatn, Tahoma, "Segoe UI", sans-serif !important;
+    letter-spacing: normal !important;
+    word-spacing: normal !important;
+    line-height: normal;
+  }
+
+  html[lang="fa"] .font-eloria-brand {
+    font-family: Georgia, "Times New Roman", serif !important;
+  }
+
+  html[lang="fa"] .font-persian-title,
+  html[lang="fa"] .font-persian-calligraphy {
+    font-family: "Eloria Iran Nastaliq", "Vazirmatn Variable", Tahoma, serif !important;
+    font-weight: 400 !important;
+    letter-spacing: 0 !important;
+    word-spacing: 0.03em !important;
+    line-height: 2 !important;
+  }
+}

@@ -1,5 +1,5 @@
 /* ELORIA_SECURITY_ALERT_WORKER_V1 */
-import { sendSms } from "@/lib/notifications/kavenegar";
+import { sendSms } from "@/lib/notifications/sms-ir";
 import { prisma } from "@/lib/prisma";
 import {
   securityAlertBackoffMs,

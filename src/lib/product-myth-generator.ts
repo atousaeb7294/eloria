@@ -1,152 +1,49 @@
+/** The canonical, local story library: stable, reviewable, and no external AI required. */
 type ProductMythInput = { nameFa: string; nameEn?: string; material?: string };
 
-export type ProductMythOutput = {
-  mythKey: string;
-  mythNameFa: string;
-  mythNameEn: string;
-  legendFa: string;
-  legendEn: string;
-  worldProfile: ProductWorldProfile;
-};
-
 export type ProductWorldProfile = {
-  characterNameFa: string;
-  characterNameEn: string;
-  roleFa: string;
-  roleEn: string;
-  homelandFa: string;
-  homelandEn: string;
-  eraFa: string;
-  eraEn: string;
-  appearanceFa: string;
-  appearanceEn: string;
-  relicMeaningFa: string;
-  relicMeaningEn: string;
-  motherLegendAnchor: string;
-  visualPromptFa: string;
+  characterNameFa: string; characterNameEn: string; roleFa: string; roleEn: string;
+  homelandFa: string; homelandEn: string; eraFa: string; eraEn: string;
+  appearanceFa: string; appearanceEn: string; relicMeaningFa: string; relicMeaningEn: string;
+  motherLegendAnchor: string; guardianNameFa: string; guardianNameEn: string;
+  guardianDomainFa: string; guardianDomainEn: string; visualPromptFa: string;
 };
+export type ProductMythOutput = { mythKey: string; mythNameFa: string; mythNameEn: string; legendFa: string; legendEn: string; worldProfile: ProductWorldProfile };
 
-const roots = [
-  { fa: "آذر", en: "Azar", placeFa: "برج آتشِ آذر", placeEn: "the Tower of Azar", eventFa: "پس از خاموشی سه‌روزهٔ آتش مقدس", eventEn: "after the sacred fire went dark for three days", traceFa: "روی پلکان سنگی پیدا شد", traceEn: "was found on the stone stair" },
-  { fa: "مهر", en: "Mehr", placeFa: "تالار مهر", placeEn: "the Hall of Mehr", eventFa: "در شب شکستن پیمان دو خاندان", eventEn: "on the night two houses broke their covenant", traceFa: "در صندوقچهٔ مُهرشده باقی ماند", traceEn: "remained inside a sealed coffer" },
-  { fa: "ماه", en: "Mah", placeFa: "چشمهٔ ماه", placeEn: "the Moon Spring", eventFa: "وقتی آب چشمه تا سپیده‌دم از حرکت ایستاد", eventEn: "when the spring stood still until dawn", traceFa: "بر سطح آب دیده شد", traceEn: "was seen resting on the water" },
-  { fa: "خور", en: "Khor", placeFa: "ایوان خور", placeEn: "the Khor Terrace", eventFa: "در نخستین طلوع پس از محاصرهٔ شهر", eventEn: "at the first sunrise after the siege", traceFa: "میان خاکستر فانوس‌ها یافت شد", traceEn: "was found among the lantern ash" },
-  { fa: "سپند", en: "Sepand", placeFa: "باغ سپند", placeEn: "the Sepand Garden", eventFa: "پس از ناپدیدشدن نگهبان باغ", eventEn: "after the garden keeper vanished", traceFa: "به شاخهٔ سروِ دروازه بسته مانده بود", traceEn: "was left tied to the gate cypress" },
-  { fa: "باران", en: "Baran", placeFa: "درهٔ باران", placeEn: "the Valley of Rain", eventFa: "در سالی که باران هفتاد روز بند نیامد", eventEn: "in the year rain fell for seventy days", traceFa: "در خانهٔ آخرین بافندهٔ دره پیدا شد", traceEn: "was found in the last weaver’s house" },
-  { fa: "دریا", en: "Darya", placeFa: "بندر نیلگون", placeEn: "the Azure Port", eventFa: "پس از بازگشت کشتی بی‌سرنشین از جنوب", eventEn: "after an unmanned ship returned from the south", traceFa: "میان طناب‌های خیس عرشه باقی مانده بود", traceEn: "was left among the wet ropes on deck" },
-  { fa: "البرز", en: "Alborz", placeFa: "گذرگاه البرز", placeEn: "the Alborz Pass", eventFa: "پس از بسته‌شدن راه شمال برای یک زمستان کامل", eventEn: "after the northern road was sealed for an entire winter", traceFa: "زیر سنگ نشانِ گذرگاه کشف شد", traceEn: "was discovered beneath the pass marker" },
-  { fa: "پارس", en: "Pars", placeFa: "حیاط سنگی پارس", placeEn: "the Stone Court of Pars", eventFa: "در روزی که نام آخرین خاندان از دیوار پاک شد", eventEn: "the day the final house-name was erased from the wall", traceFa: "پشت سنگ‌نوشته‌ای شکسته پنهان بود", traceEn: "was hidden behind a broken inscription" },
-  { fa: "سروش", en: "Soroush", placeFa: "نیایشگاه سروش", placeEn: "the Shrine of Soroush", eventFa: "پس از شنیده‌شدن زنگی که هیچ‌کس آن را به صدا درنیاورده بود", eventEn: "after a bell rang with no hand upon it", traceFa: "کنار درِ بستهٔ نیایشگاه یافت شد", traceEn: "was found beside the sealed door" },
+const guardians = [
+  ["یلدا", "Yalda", "رازهای پنهان", "hidden mysteries", "باغ‌های خاموش ماه", "the silent gardens of the moon", "پروانهٔ شب"],
+  ["ماهورا", "Mahoora", "رویا و زیبایی", "dreams and beauty", "قصرهای آسمانی", "the sky palaces", "پرندهٔ ماه"],
+  ["آتوسا", "Atossa", "اصالت و میراث", "heritage and memory", "تالارهای سیمرغ", "the Simurgh halls", "سیمرغ"],
+  ["آناهید", "Anahid", "زندگی و احساس", "life and feeling", "چشمه‌های زنده", "the living springs", "نیلوفر آبی"],
+  ["پرنیا", "Parnia", "هنر دست", "handmade art", "کارگاه تارهای طلایی", "the workshop of golden threads", "تارهای طلایی"],
+  ["ویستا", "Vista", "خرد و کشف", "wisdom and discovery", "کتابخانه‌های نور", "the libraries of light", "جغد دانا"],
+  ["رها", "Raha", "آزادی و آفرینش", "freedom and creation", "گذرگاه باد", "the wind passage", "پرندهٔ مهاجر"],
 ] as const;
 
-const endings = [
-  { fa: "دخت", en: "Dokht", ownerFa: "دختری از خاندان خاموش", ownerEn: "a daughter of the Silent House", clueFa: "نام او از همهٔ دفترها تراشیده شده بود", clueEn: "her name had been cut from every record" },
-  { fa: "آوا", en: "Ava", ownerFa: "خوانندهٔ بی‌نام دربار", ownerEn: "the court’s nameless singer", clueFa: "آخرین آوازش هرگز نوشته نشد", clueEn: "her final song was never written down" },
-  { fa: "گون", en: "Goon", ownerFa: "فرستاده‌ای با جامهٔ سبز", ownerEn: "a messenger in green", clueFa: "هیچ‌کس مقصد او را به یاد نداشت", clueEn: "no one remembered the destination" },
-  { fa: "نوش", en: "Noush", ownerFa: "بانوی داروخانهٔ سلطنتی", ownerEn: "the keeper of the royal apothecary", clueFa: "پس از آن شب دیگر در قصر دیده نشد", clueEn: "she was never seen in the palace again" },
-  { fa: "چهر", en: "Chehr", ownerFa: "نقاب‌دار جشن زمستان", ownerEn: "the masked guest of the winter feast", clueFa: "پیش از سپیده نقابش را کنار آتش گذاشت و رفت", clueEn: "before dawn, the mask was left beside the fire" },
-  { fa: "رخ", en: "Rokh", ownerFa: "سوارِ دروازهٔ شرقی", ownerEn: "the rider of the eastern gate", clueFa: "اسبش بازگشت اما خود او نه", clueEn: "the horse returned, but the rider did not" },
-  { fa: "تاب", en: "Tab", ownerFa: "چراغ‌دار برج جنوبی", ownerEn: "the lamp-keeper of the southern tower", clueFa: "فانوسش سه شب پس از ناپدیدشدنش روشن ماند", clueEn: "the lantern burned for three nights after the disappearance" },
-  { fa: "بانو", en: "Banoo", ownerFa: "بانوی تالار آینه", ownerEn: "the lady of the Mirror Hall", clueFa: "آخرین کسی بود که پیش از فروپاشی تالار آنجا دیده شد", clueEn: "she was the last person seen there before the hall fell" },
-  { fa: "فر", en: "Far", ownerFa: "وارثی که تاج را نپذیرفت", ownerEn: "the heir who refused the crown", clueFa: "صبح تاج‌گذاری تنها مُهر او بر تخت مانده بود", clueEn: "on coronation morning, only the heir’s seal remained on the throne" },
-  { fa: "پر", en: "Par", ownerFa: "پیغام‌رسان بلندترین برج", ownerEn: "the messenger of the highest tower", clueFa: "نامه‌ای که حمل می‌کرد هرگز پیدا نشد", clueEn: "the letter being carried was never found" },
+// 7 × 22 = 154 unique tales, each permanently linked to one guardian.
+const archetypes = [
+  ["آوای گمشده", "Lost Melody"], ["گره سپیده", "Dawn Knot"], ["نشان باران", "Rain Sign"], ["چراغ خاموش", "Quiet Lamp"], ["آینهٔ نیلی", "Indigo Mirror"], ["ردّ انار", "Pomegranate Trace"], ["مُهر سرو", "Cypress Seal"], ["پلکان ماه", "Moon Stair"], ["دستبند رود", "River Bracelet"], ["راز فیروزه", "Turquoise Secret"], ["پرِ آتش", "Fire Feather"], ["ستارهٔ گره‌خورده", "Knotted Star"], ["کلید باغ", "Garden Key"], ["نفس کویر", "Desert Breath"], ["حلقهٔ بازگشت", "Return Ring"], ["نامهٔ بی‌نام", "Nameless Letter"], ["شعلهٔ آرام", "Gentle Flame"], ["موجِ آخر", "Last Wave"], ["نقشهٔ پنهان", "Hidden Map"], ["سایهٔ روشن", "Luminous Shadow"], ["قولِ هفتم", "Seventh Promise"], ["یادگار درخت", "Tree Relic"],
 ] as const;
 
-const iranianAttire = [
-  { fa: "پیراهن بلند پارسی با چین‌های منظم، شلوار سواری و شنلی کوتاه با حاشیهٔ سرو", en: "a long pleated Persian tunic, riding trousers and a short cypress-bordered mantle" },
-  { fa: "جامهٔ مادیِ آستین‌دار با شلوار باریک، نیم‌تاج زرین و بافت موی ایرانی", en: "a sleeved Median robe with fitted trousers, a gold half-crown and Iranian braided hair" },
-  { fa: "ردای ساسانی با نقش سیمرغ، شلوار ابریشمی و کمربند نشان‌دار", en: "a Sasanian robe bearing a Simurgh motif, silk trousers and a sigil belt" },
-  { fa: "جامهٔ سواره‌نظام اشکانی با یقهٔ بسته، شلوار چین‌دار و چکمهٔ چرمی", en: "a high-collared Parthian riding coat, pleated trousers and leather boots" },
-] as const;
-
-const archiveTraces = [
-  { fa: "به رشته‌ای نیلی با هفت گره بسته بود؛ همان نشانی که بر کیسه‌های کاروان سرو دیده می‌شد", en: "it was tied to an indigo cord with seven knots, the mark carried by the Cypress caravan" },
-  { fa: "پشت آن نیمهٔ شکستهٔ مُهر دروازهٔ شرقی دیده می‌شد", en: "the broken half of the eastern gate seal was visible on its reverse" },
-  { fa: "بر لبه‌اش خطی باریک از نقشهٔ تالار نشان‌ها حک شده بود", en: "a fine line from the map of the Hall of Signs was engraved along its edge" },
-  { fa: "در پارچه‌ای با نقش انار پیچیده شده بود؛ نشان کاروانی که شب آخر به غرب رفت", en: "it was wrapped in pomegranate-patterned cloth, the sign of the caravan that rode west on the final night" },
-  { fa: "کنارش مهره‌ای فیروزه‌ای و یادداشتی با دست‌خط آرمیتا باقی مانده بود", en: "beside it lay a turquoise bead and a note in Armita’s hand" },
-  { fa: "یک گره سوخته بر آن مانده بود که نگهبانان تنها در شب بسته‌شدن دروازه‌ها به کار بردند", en: "it retained a scorched knot used by the Keepers only on the night the gates were sealed" },
-  { fa: "نام صاحبش در دفترها نبود، اما شمارهٔ بایگانی صد نشان هنوز بر پشت آن خوانده می‌شد", en: "its owner’s name was absent from the books, but its number among the Hundred Signs remained legible" },
-  { fa: "غبار آبیِ سنگ‌های تالار بسته هنوز در شیارهای آن مانده بود", en: "blue dust from the sealed hall’s stones still rested in its grooves" },
-  { fa: "نشان موج بر بست آن حک شده بود؛ علامت کاروانی که به آب‌های جنوب رسید", en: "the Wave mark was cut into its clasp, sign of the caravan that reached the southern waters" },
-  { fa: "آخرین سطر لوح همراهش با این واژه‌ها پایان می‌یافت: «چراغ هنوز روشن است»", en: "the final line of its tablet ended with the words: ‘The lamp is still burning’" },
-] as const;
-
-function worldProfile(mythKey: string, input: ProductMythInput): ProductWorldProfile {
-  const numeric = Math.max(0, Number.parseInt(mythKey.slice(-3), 10) - 1);
-  const root = roots[Math.floor(numeric / endings.length) % roots.length];
-  const ending = endings[numeric % endings.length];
-  const attire = iranianAttire[numeric % iranianAttire.length];
-  const archiveTrace = archiveTraces[numeric % archiveTraces.length];
-  const characterNameFa = `${root.fa}${ending.fa}`;
-  const characterNameEn = `${root.en}${ending.en}`;
+function profile(index: number, input: ProductMythInput): ProductWorldProfile {
+  const guardian = guardians[Math.floor(index / archetypes.length)];
+  const [guardianNameFa, guardianNameEn, domainFa, domainEn, homelandFa, homelandEn, symbol] = guardian;
+  const characterNameFa = `${archetypes[index % archetypes.length][0]}ِ ${guardianNameFa}`;
+  const characterNameEn = `${guardianNameEn}'s ${archetypes[index % archetypes.length][1]}`;
   const piece = input.nameFa.trim();
-  return {
-    characterNameFa,
-    characterNameEn,
-    roleFa: ending.ownerFa,
-    roleEn: ending.ownerEn,
-    homelandFa: root.placeFa,
-    homelandEn: root.placeEn,
-    eraFa: ["روزگار هخامنشیِ متأخر", "روزگار اشکانی", "روزگار ساسانی", "سال‌های پایانی الوریا"][numeric % 4],
-    eraEn: ["late Achaemenid age", "Parthian age", "Sasanian age", "Eloria's final years"][numeric % 4],
-    appearanceFa: `چهره‌ای ایرانی با مو و چشم تیره؛ ${attire.fa}`,
-    appearanceEn: `Iranian features with dark hair and eyes; ${attire.en}`,
-    relicMeaningFa: `«${piece}» نشان شخصی او و شاهد واقعهٔ ${root.placeFa} است؛ ${archiveTrace.fa}.`,
-    relicMeaningEn: `“${(input.nameEn ?? input.nameFa).trim()}” is this character's personal sign and a witness to the event at ${root.placeEn}; ${archiveTrace.en}.`,
-    motherLegendAnchor: "night-of-the-sealed-gates",
-    visualPromptFa: `پرتره سینمایی و واقع‌گرایانه از ${characterNameFa}، ${ending.ownerFa}، با چهره و آناتومی ایرانی، ${attire.fa}، زیور ${piece}، معماری و نقوش ایران باستان؛ بدون عناصر رومی، یونانی، عربی، اروپایی یا فانتزی غربی.`,
-  };
+  return { characterNameFa, characterNameEn, roleFa: `شاگرد و پیام‌آور ${guardianNameFa}`, roleEn: `apprentice and messenger of ${guardianNameEn}`, homelandFa, homelandEn, eraFa: "پس از پیمان نخستین", eraEn: "after the First Covenant", appearanceFa: "چهره و پوشش الهام‌گرفته از هنر ایران؛ بدون عناصر فانتزی غربی", appearanceEn: "Iranian-inspired face and dress; without Western fantasy elements", relicMeaningFa: `«${piece}» نشانی از ${guardianNameFa} است و یکی از رشته‌های نقشهٔ درخت خاطره‌ها را نگه می‌دارد.`, relicMeaningEn: `“${(input.nameEn ?? input.nameFa).trim()}” carries ${guardianNameEn}'s mark and preserves one thread of the Tree of Memories map.`, motherLegendAnchor: "seven-guardians-first-covenant", guardianNameFa, guardianNameEn, guardianDomainFa: domainFa, guardianDomainEn: domainEn, visualPromptFa: `پرتره سینمایی و واقع‌گرایانه از ${characterNameFa}، شاگرد ${guardianNameFa}، با چهره و پوشش ایرانی، نماد ${symbol}، زیور «${piece}» و فضای ${homelandFa}؛ بدون عناصر رومی، یونانی، عربی، اروپایی یا فانتزی غربی.` };
 }
 
-export const ELORIA_MYTH_LIBRARY: readonly ProductMythOutput[] = roots.flatMap(
-  (root, rootIndex) => endings.map((ending, endingIndex) => {
-    const key = `iranian-myth-${String(rootIndex * 10 + endingIndex + 1).padStart(3, "0")}`;
-    const mythNameFa = `${root.fa}${ending.fa}`;
-    const mythNameEn = `${root.en}${ending.en}`;
-    const trace = archiveTraces[(rootIndex * endings.length + endingIndex) % archiveTraces.length];
-    return {
-      mythKey: key,
-      mythNameFa,
-      mythNameEn,
-      legendFa: `${mythNameFa} نشانِ ${ending.ownerFa} بود. ${root.eventFa}، در ${root.placeFa} ${root.traceFa}؛ ${trace.fa}. ${ending.clueFa}.`,
-      legendEn: `${mythNameEn} was the Sign of ${ending.ownerEn}. ${root.eventEn}, it ${root.traceEn} at ${root.placeEn}; ${trace.en}. ${ending.clueEn}.`,
-      worldProfile: worldProfile(key, { nameFa: mythNameFa, nameEn: mythNameEn }),
-    };
-  }),
-);
+export const ELORIA_MYTH_LIBRARY: readonly ProductMythOutput[] = guardians.flatMap((guardian, guardianIndex) => archetypes.map((archetype, archetypeIndex) => {
+  const index = guardianIndex * archetypes.length + archetypeIndex;
+  const [guardianNameFa, guardianNameEn, domainFa, domainEn, homelandFa, homelandEn] = guardian;
+  const mythNameFa = `${archetype[0]}ِ ${guardianNameFa}`;
+  const mythNameEn = `${guardianNameEn}'s ${archetype[1]}`;
+  return { mythKey: `guardian-${String(guardianIndex + 1).padStart(2, "0")}-${String(archetypeIndex + 1).padStart(2, "0")}`, mythNameFa, mythNameEn, legendFa: `«${mythNameFa}» روزی در ${homelandFa} پدیدار شد. ${guardianNameFa} آن را به یکی از پیروان خود سپرد تا ${domainFa} از یاد نرود؛ این نشان هنوز رشته‌ای از نقشهٔ درخت خاطره‌ها و پیمان هفت نگهبان را حفظ می‌کند.`, legendEn: `“${mythNameEn}” appeared in ${homelandEn}. ${guardianNameEn} entrusted it to a follower so that ${domainEn} would not be forgotten; the Sign still keeps one thread of the Tree of Memories map and the covenant of the Seven Guardians.`, worldProfile: profile(index, { nameFa: mythNameFa, nameEn: mythNameEn }) };
+}));
 
-function stableIndex(value: string): number {
-  let hash = 0;
-  for (const char of value) hash = (hash * 31 + char.charCodeAt(0)) >>> 0;
-  return hash % ELORIA_MYTH_LIBRARY.length;
-}
-
-function personalize(myth: ProductMythOutput, input: ProductMythInput): ProductMythOutput {
-  const faName = input.nameFa.trim();
-  const enName = (input.nameEn ?? input.nameFa).trim();
-  return {
-    ...myth,
-    legendFa: myth.legendFa.replace(myth.mythNameFa, `«${faName}»`),
-    legendEn: myth.legendEn.replace(myth.mythNameEn, `“${enName}”`),
-    worldProfile: worldProfile(myth.mythKey, input),
-  };
-}
-
-export function generateProductMyth(input: ProductMythInput): ProductMythOutput {
-  return personalize(ELORIA_MYTH_LIBRARY[stableIndex(`${input.nameFa}|${input.nameEn ?? ""}|${input.material ?? ""}`)], input);
-}
-
-export function getProductMythByKey(mythKey: string, input: ProductMythInput): ProductMythOutput | null {
-  const myth = ELORIA_MYTH_LIBRARY.find(item => item.mythKey === mythKey);
-  return myth ? personalize(myth, input) : null;
-}
-
-export function generateUnusedProductMyth(input: ProductMythInput, usedKeys: ReadonlySet<string>): ProductMythOutput {
-  const start = stableIndex(`${input.nameFa}|${input.nameEn ?? ""}|${input.material ?? ""}`);
-  for (let offset = 0; offset < ELORIA_MYTH_LIBRARY.length; offset += 1) {
-    const candidate = ELORIA_MYTH_LIBRARY[(start + offset) % ELORIA_MYTH_LIBRARY.length];
-    if (!usedKeys.has(candidate.mythKey)) return personalize(candidate, input);
-  }
-  throw new Error("ELORIA_MYTH_LIBRARY_EXHAUSTED");
-}
+function stableIndex(value: string): number { let hash = 2166136261; for (const char of value) { hash ^= char.charCodeAt(0); hash = Math.imul(hash, 16777619); } return (hash >>> 0) % ELORIA_MYTH_LIBRARY.length; }
+function personalize(myth: ProductMythOutput, input: ProductMythInput): ProductMythOutput { const fa = input.nameFa.trim(); const en = (input.nameEn ?? input.nameFa).trim(); return { ...myth, legendFa: myth.legendFa.replace(`«${myth.mythNameFa}»`, `«${fa}»`), legendEn: myth.legendEn.replace(`“${myth.mythNameEn}”`, `“${en}”`), worldProfile: profile(ELORIA_MYTH_LIBRARY.indexOf(myth), input) }; }
+export function generateProductMyth(input: ProductMythInput): ProductMythOutput { return personalize(ELORIA_MYTH_LIBRARY[stableIndex(`${input.nameFa}|${input.nameEn ?? ""}|${input.material ?? ""}`)], input); }
+export function getProductMythByKey(mythKey: string, input: ProductMythInput): ProductMythOutput | null { const myth = ELORIA_MYTH_LIBRARY.find((item) => item.mythKey === mythKey); return myth ? personalize(myth, input) : null; }
+export function generateUnusedProductMyth(input: ProductMythInput, usedKeys: ReadonlySet<string>): ProductMythOutput { const start = stableIndex(`${input.nameFa}|${input.nameEn ?? ""}|${input.material ?? ""}`); for (let offset = 0; offset < ELORIA_MYTH_LIBRARY.length; offset += 1) { const myth = ELORIA_MYTH_LIBRARY[(start + offset) % ELORIA_MYTH_LIBRARY.length]; if (!usedKeys.has(myth.mythKey)) return personalize(myth, input); } throw new Error("ELORIA_MYTH_LIBRARY_EXHAUSTED"); }

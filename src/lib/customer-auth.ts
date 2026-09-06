@@ -12,6 +12,10 @@ const DEFAULT_SESSION_DAYS = 30;
 const DEFAULT_OTP_MINUTES = 5;
 
 export type CustomerOtpChannel = "SMS" | "EMAIL";
+export type CustomerOtpPurpose =
+  | "LOGIN"
+  | "SIGNUP"
+  | "PASSWORD_RESET";
 
 function authSecret(): string {
   const explicit = process.env.ELORIA_CUSTOMER_AUTH_SECRET?.trim();
@@ -199,21 +203,27 @@ export function safeEqualHex(
 
 export async function createCustomerOtpChallenge(
   input:
-    | {
+      | {
         channel?: "SMS";
         mobile: string;
         ip?: string | null;
+        purpose?: CustomerOtpPurpose;
       }
     | {
         channel: "EMAIL";
         email: string;
         mobile: string;
         ip?: string | null;
+        purpose?: CustomerOtpPurpose;
       },
 ) {
   const id = randomUUID();
   const code = createOtpCode();
   const now = new Date();
+  const channel: CustomerOtpChannel =
+    input.channel ?? "SMS";
+  const purpose: CustomerOtpPurpose =
+    input.purpose ?? "LOGIN";
 
   const expiresAt = new Date(
     now.getTime() +
@@ -231,7 +241,7 @@ export async function createCustomerOtpChallenge(
       : null;
 
   const lockIdentity =
-    input.channel === "EMAIL"
+    channel === "EMAIL"
       ? email
       : mobile;
 
@@ -239,14 +249,14 @@ export async function createCustomerOtpChallenge(
     async tx => {
       await tx.$executeRaw`
         SELECT pg_advisory_xact_lock(
-          hashtext(${`customer-otp:${input.channel}:${lockIdentity}`})
+          hashtext(${`customer-otp:${channel}:${purpose}:${lockIdentity}`})
         )
       `;
 
       await tx.customerOtpChallenge.updateMany({
         where: {
-          channel: input.channel,
-          ...(input.channel === "EMAIL"
+          channel,
+          ...(channel === "EMAIL"
             ? { email }
             : { mobile }),
           consumedAt: null,
@@ -262,9 +272,10 @@ export async function createCustomerOtpChallenge(
       await tx.customerOtpChallenge.create({
         data: {
           id,
-          channel: input.channel,
+          channel,
           mobile,
           email,
+          purpose,
           codeHash: hashOtp(
             id,
             code,
@@ -279,7 +290,8 @@ export async function createCustomerOtpChallenge(
 
   return {
     id,
-    channel: input.channel,
+    channel,
+    purpose,
     mobile,
     email,
     code,
@@ -289,11 +301,12 @@ export async function createCustomerOtpChallenge(
 
 export async function consumeCustomerOtp(
   input:
-    | {
+      | {
         challengeId: string;
         channel?: "SMS";
         mobile: string;
         code: string;
+        purpose?: CustomerOtpPurpose;
       }
     | {
         challengeId: string;
@@ -301,8 +314,13 @@ export async function consumeCustomerOtp(
         email: string;
         mobile: string;
         code: string;
+        purpose?: CustomerOtpPurpose;
       },
 ) {
+  const channel: CustomerOtpChannel =
+    input.channel ?? "SMS";
+  const purpose: CustomerOtpPurpose =
+    input.purpose ?? "LOGIN";
   const mobile =
     normalizeIranMobile(input.mobile);
 
@@ -346,10 +364,7 @@ export async function consumeCustomerOtp(
           );
         }
 
-        if (
-          challenge.channel !==
-          input.channel
-        ) {
+        if (challenge.channel !== channel) {
           throw new Error(
             "کانال کد تأیید معتبر نیست.",
           );
@@ -363,18 +378,13 @@ export async function consumeCustomerOtp(
           );
         }
 
-        if (
-          input.channel === "EMAIL" &&
-          challenge.email !== email
-        ) {
+        if (channel === "EMAIL" && challenge.email !== email) {
           throw new Error(
             "درخواست کد تأیید معتبر نیست.",
           );
         }
 
-        if (
-          challenge.purpose !== "LOGIN"
-        ) {
+        if (challenge.purpose !== purpose) {
           throw new Error(
             "هدف کد تأیید معتبر نیست.",
           );
@@ -444,9 +454,7 @@ export async function consumeCustomerOtp(
           },
         });
 
-        if (
-          input.channel === "SMS"
-        ) {
+        if (channel === "SMS") {
           const existingCustomer =
             await tx.customer.findUnique({
               where: {
@@ -754,6 +762,24 @@ export async function revokeCustomerSession(
       sessionHash:
         hmac(`session:${token}`),
       revokedAt: null,
+    },
+    data: {
+      revokedAt: new Date(),
+    },
+  });
+}
+
+export async function revokeOtherCustomerSessions(
+  customerId: string,
+  currentSessionId?: string | null,
+) {
+  await prisma.customerSession.updateMany({
+    where: {
+      customerId,
+      revokedAt: null,
+      ...(currentSessionId
+        ? { id: { not: currentSessionId } }
+        : {}),
     },
     data: {
       revokedAt: new Date(),

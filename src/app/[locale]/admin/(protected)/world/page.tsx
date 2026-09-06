@@ -2,7 +2,7 @@ import Link from "next/link";
 import { BookOpenText, MapPinned, Sparkles, UserRound } from "lucide-react";
 import { notFound } from "next/navigation";
 
-import { generateProductMyth } from "@/lib/product-myth-generator";
+import { generateProductMyth, getProductMythByKey } from "@/lib/product-myth-generator";
 import { prisma } from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
@@ -29,11 +29,11 @@ export default async function AdminWorldPage({ params }: { params: Promise<{ loc
 
   const profiles = products.map(product => ({
     product,
-    myth: generateProductMyth({
+    myth: (product.mythKey ? getProductMythByKey(product.mythKey, {
       nameFa: product.nameFa,
       nameEn: product.nameEn,
       material: product.material,
-    }),
+    }) : null) ?? generateProductMyth({ nameFa: product.nameFa, nameEn: product.nameEn, material: product.material }),
   }));
 
   return <div className="mx-auto max-w-[1540px] space-y-7">
@@ -61,7 +61,7 @@ export default async function AdminWorldPage({ params }: { params: Promise<{ loc
           <div className="flex flex-wrap items-start justify-between gap-3"><div><p className="text-[10px] text-[#d9bd73]/60">{product.status} · {product.mythKey ?? myth.mythKey}</p><h2 className="mt-2 text-lg text-[#f2e2bd]">{product.nameFa} — {product.mythNameFa ?? myth.mythNameFa}</h2></div><Link href={`/${locale}/admin/products/${product.id}`} className="rounded-full border border-[#d7b95f]/20 px-3 py-2 text-[11px] text-[#e8cf82]">ویرایش اثر</Link></div>
           <p className="mt-4 text-sm leading-8 text-[#d5c6a6]/67">{product.legendFa?.trim() || myth.legendFa}</p>
           <div className="mt-4 grid gap-2 sm:grid-cols-2">
-            <p className="rounded-xl border border-white/[.06] bg-black/10 p-3 text-xs leading-6 text-[#c8ba99]/62"><span className="block text-[9px] text-[#d9bd73]/60">شخصیت</span>{profile.characterNameFa}؛ {profile.roleFa}</p>
+            <p className="rounded-xl border border-white/[.06] bg-black/10 p-3 text-xs leading-6 text-[#c8ba99]/62"><span className="block text-[9px] text-[#d9bd73]/60">نگهبان و شخصیت</span>{profile.guardianNameFa}؛ {profile.guardianDomainFa} — {profile.characterNameFa}</p>
             <p className="rounded-xl border border-white/[.06] bg-black/10 p-3 text-xs leading-6 text-[#c8ba99]/62"><span className="block text-[9px] text-[#d9bd73]/60">مکان و دوره</span>{profile.homelandFa}؛ {profile.eraFa}</p>
           </div>
           <details className="mt-4 rounded-xl border border-[#d7b95f]/10 p-3"><summary className="cursor-pointer text-xs text-[#e3ca7d]">دستور آمادهٔ ساخت تصویر ایرانی این شخصیت</summary><p className="mt-3 text-xs leading-7 text-[#c8ba99]/60">{profile.visualPromptFa}</p></details>

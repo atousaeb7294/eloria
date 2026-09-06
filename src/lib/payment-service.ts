@@ -1,5 +1,5 @@
 import { Prisma } from "@/generated/prisma/client";
-import { sendSms } from "@/lib/notifications/kavenegar";
+import { sendSms } from "@/lib/notifications/sms-ir";
 import {
   isZarinpalConfigured,
   requestZarinpalPayment,

@@ -27,7 +27,7 @@ powershell -ExecutionPolicy Bypass -File .\scripts\audit-parspack-env.ps1 -Proje
 3. Site Key و Secret Key متعلق به یک Widget نیستند.
 4. `NEXT_PUBLIC_SITE_URL` یا `ELORIA_ALLOWED_ORIGINS` با دامنه‌ای که مرورگر باز کرده هماهنگ نیست.
 5. migrationهای `admin_sessions` یا `customer_otp_challenges` روی دیتابیس Production اعمال نشده‌اند.
-6. برای مدیر، Hash رمز، TOTP یا secret نشست ناقص است؛ برای مشتری، feature gate یا Resend ناقص است.
+6. برای مدیر، Hash رمز، TOTP یا secret نشست ناقص است؛ برای مشتری، feature gate یا تنظیمات SMS.ir ناقص است.
 
 ## حداقل تنظیم صحیح ورود
 
@@ -37,8 +37,10 @@ ELORIA_INTERNAL_BASE_URL=https://eloriagallery.ir
 ELORIA_ALLOWED_ORIGINS=https://eloriagallery.ir,https://www.eloriagallery.ir
 
 ELORIA_CUSTOMER_AUTH_ENABLED=true
-RESEND_API_KEY=...
-ELORIA_EMAIL_FROM=Eloria <login@eloriagallery.ir>
+ELORIA_CUSTOMER_SMS_OTP_ENABLED=true
+SMS_IR_API_KEY=...
+SMS_IR_VERIFY_TEMPLATE_ID=...
+SMS_IR_VERIFY_PARAMETER=Code
 ELORIA_CUSTOMER_AUTH_SECRET=...
 
 NEXT_PUBLIC_TURNSTILE_SITE_KEY=...
@@ -51,14 +53,14 @@ ELORIA_ADMIN_SESSION_VERSION=1
 ELORIA_ADMIN_TOTP_SECRET=...
 ```
 
-نکته: ورود مشتری اکنون کد شش‌رقمی را به ایمیل می‌فرستد. شماره موبایل نیز برای اتصال امن حساب به سفارش‌ها گرفته می‌شود و در این مرحله پیامک ارسال نمی‌شود؛ بنابراین نبود کاوه‌نگار مانع ورود ایمیلی نیست.
+نکته: ورود، عضویت و بازیابی رمز مشتری اکنون با کد شش‌رقمی SMS.ir انجام می‌شود و هیچ ورودی ایمیلی در پنل احراز هویت مشتری وجود ندارد.
 
-## تنظیم Resend
+## تنظیم SMS.ir
 
-1. دامنه `eloriagallery.ir` در Resend باید Verified باشد.
-2. `ELORIA_EMAIL_FROM` باید دقیقاً از همان دامنه تأییدشده باشد؛ نمونه: `Eloria <login@eloriagallery.ir>`.
+1. در پنل SMS.ir یک الگوی Verify بسازید و نام پارامتر آن را دقیقاً در `SMS_IR_VERIFY_PARAMETER` قرار دهید.
+2. شناسهٔ عددی الگو را در `SMS_IR_VERIFY_TEMPLATE_ID` و کلید API را در `SMS_IR_API_KEY` قرار دهید.
 3. بعد از تغییر ENV، سرویس باید restart شود.
-4. از صفحه ورود مشتری یک ایمیل واقعی آزمایش شود و Logهای سرور برای `[Eloria Email OTP]` بررسی شوند.
+4. از صفحهٔ ورود، عضویت یا فراموشی رمز یک شمارهٔ آزمایشی را بررسی کنید و Logهای `[Eloria SMS.ir]` را ببینید.
 
 ## ترتیب نصب و راه‌اندازی روی پارس‌پک
 
@@ -79,10 +81,10 @@ npm run start:production
 
 - `https://eloriagallery.ir/api/public/turnstile-config` باید `required: true` و یک `siteKey` غیرخالی برگرداند.
 - ورود مدیر باید بعد از Turnstile، رمز و کد شش‌رقمی Authenticator به `/{locale}/admin` برسد.
-- ورود مشتری باید ایمیل OTP را تحویل دهد و بعد از تأیید به `/{locale}/profile` برسد.
+- ورود، عضویت و بازیابی رمز مشتری باید OTP پیامکی SMS.ir را تحویل دهد و بعد از تأیید به `/{locale}/profile` برسد.
 - `npm run db:status` باید همه migrationها را Applied نشان دهد.
 - `npm run typecheck`، `npm run lint` و `npm run build` باید موفق شوند.
 
 ## نکته امنیتی
 
-کلید خصوصی Turnstile، Resend API Key، TOTP Secret، Session Secret و URLهای دیتابیس نباید در Git، ZIP عمومی، اسکرین‌شات یا پیام قرار گیرند. فقط گزارش ابزار ممیزی بالا را برای بررسی ارسال کنید.
+کلید خصوصی Turnstile، SMS.ir API Key، TOTP Secret، Session Secret و URLهای دیتابیس نباید در Git، ZIP عمومی، اسکرین‌شات یا پیام قرار گیرند. فقط گزارش ابزار ممیزی بالا را برای بررسی ارسال کنید.

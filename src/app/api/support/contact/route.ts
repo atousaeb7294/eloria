@@ -5,7 +5,7 @@ import {
 
 import {
   sendSms,
-} from "@/lib/notifications/kavenegar";
+} from "@/lib/notifications/sms-ir";
 import {
   readJsonBody,
 } from "@/lib/security/json-body";

@@ -145,19 +145,22 @@ export function productionEnvironmentChecks(): Check[] {
     isLegalContactPhone("ELORIA_LEGAL_SUPPORT_PHONE") ||
     isLegalContactEmail("ELORIA_LEGAL_SUPPORT_EMAIL");
 
-  const customerEmailOtpEnabled = boolFlag("ELORIA_CUSTOMER_EMAIL_OTP_ENABLED");
   const customerSmsOtpEnabled = boolFlag("ELORIA_CUSTOMER_SMS_OTP_ENABLED");
-  const smsProviderConfigured = present("KAVENEGAR_API_KEY", 16);
+  const smsApiConfigured = present("SMS_IR_API_KEY", 16);
+  const smsVerifyConfigured =
+    smsApiConfigured && /^\d+$/.test(value("SMS_IR_VERIFY_TEMPLATE_ID"));
+  const smsLineConfigured =
+    smsApiConfigured && /^\d+$/.test(value("SMS_IR_LINE_NUMBER"));
   const securityAlertMobile = value("ELORIA_SECURITY_ALERT_MOBILE");
   const securityAlertWebhook = value("ELORIA_SECURITY_ALERT_WEBHOOK_URL");
   const securityAlertSmsChannel =
-    /^09\d{9}$/.test(securityAlertMobile) && smsProviderConfigured;
+    /^09\d{9}$/.test(securityAlertMobile) && smsLineConfigured;
   const securityAlertWebhookChannel =
     Boolean(securityAlertWebhook) &&
     isPublicHttpsUrl("ELORIA_SECURITY_ALERT_WEBHOOK_URL");
   const supportMobile = value("ELORIA_SUPPORT_MOBILE");
   const supportWebhook = value("ELORIA_SUPPORT_WEBHOOK_URL");
-  const supportSmsChannel = /^09\d{9}$/.test(supportMobile) && smsProviderConfigured;
+  const supportSmsChannel = /^09\d{9}$/.test(supportMobile) && smsLineConfigured;
   const supportWebhookChannel =
     Boolean(supportWebhook) && isPublicHttpsUrl("ELORIA_SUPPORT_WEBHOOK_URL");
 
@@ -215,13 +218,12 @@ export function productionEnvironmentChecks(): Check[] {
     { key: "ELORIA_ADMIN_TOTP_SECRET", required: true, valid: isTotpSecret("ELORIA_ADMIN_TOTP_SECRET"), message: "TOTP مدیر در Production اجباری است" },
 
     { key: "ELORIA_CUSTOMER_AUTH_SECRET", required: customerAuthEnabled, valid: !customerAuthEnabled || present("ELORIA_CUSTOMER_AUTH_SECRET", 48), message: "کلید نشست و OTP مشتری" },
-    { key: "ELORIA_CUSTOMER_EMAIL_OTP_ENABLED", required: customerAuthEnabled, valid: !customerAuthEnabled || isExplicitBoolean("ELORIA_CUSTOMER_EMAIL_OTP_ENABLED"), message: "فعال/غیرفعال بودن ورود ایمیلی باید صریح باشد" },
-    { key: "ELORIA_CUSTOMER_SMS_OTP_ENABLED", required: customerAuthEnabled, valid: !customerAuthEnabled || isExplicitBoolean("ELORIA_CUSTOMER_SMS_OTP_ENABLED"), message: "فعال/غیرفعال بودن ورود پیامکی باید صریح باشد" },
-    { key: "ELORIA_CUSTOMER_OTP_CHANNEL", required: customerAuthEnabled, valid: !customerAuthEnabled || customerEmailOtpEnabled || customerSmsOtpEnabled, message: "حداقل یکی از کانال‌های ایمیل یا پیامک ورود باید فعال باشد" },
-    { key: "RESEND_API_KEY", required: customerAuthEnabled && customerEmailOtpEnabled, valid: !customerAuthEnabled || !customerEmailOtpEnabled || present("RESEND_API_KEY", 16), message: "Email OTP provider API key" },
-    { key: "ELORIA_EMAIL_FROM", required: customerAuthEnabled && customerEmailOtpEnabled, valid: !customerAuthEnabled || !customerEmailOtpEnabled || present("ELORIA_EMAIL_FROM", 5), message: "Email OTP sender identity" },
+    { key: "ELORIA_CUSTOMER_SMS_OTP_ENABLED", required: customerAuthEnabled, valid: !customerAuthEnabled || (isExplicitBoolean("ELORIA_CUSTOMER_SMS_OTP_ENABLED") && customerSmsOtpEnabled), message: "ورود و بازیابی رمز مشتری باید با SMS فعال باشد" },
+    { key: "SMS_IR_API_KEY", required: customerAuthEnabled || Boolean(securityAlertMobile) || Boolean(supportMobile), valid: !(customerAuthEnabled || Boolean(securityAlertMobile) || Boolean(supportMobile)) || smsApiConfigured, message: "کلید API سرویس SMS.ir" },
+    { key: "SMS_IR_VERIFY_TEMPLATE_ID", required: customerAuthEnabled, valid: !customerAuthEnabled || smsVerifyConfigured, message: "شناسه قالب Verify در SMS.ir" },
+    { key: "SMS_IR_VERIFY_PARAMETER", required: customerAuthEnabled, valid: !customerAuthEnabled || /^[A-Za-z][A-Za-z0-9_-]{0,31}$/.test(value("SMS_IR_VERIFY_PARAMETER")), message: "نام پارامتر قالب Verify در SMS.ir" },
+    { key: "SMS_IR_LINE_NUMBER", required: Boolean(securityAlertMobile) || Boolean(supportMobile), valid: !(Boolean(securityAlertMobile) || Boolean(supportMobile)) || smsLineConfigured, message: "شماره خط ارسال SMS.ir برای هشدار یا پشتیبانی" },
     { key: "ELORIA_SUPPORT_CHAT_SECRET", required: supportChatEnabled, valid: !supportChatEnabled || present("ELORIA_SUPPORT_CHAT_SECRET", 48), message: "کلید مستقل نشست گفت‌وگوی پشتیبانی" },
-    { key: "KAVENEGAR_API_KEY", required: customerSmsOtpEnabled || Boolean(securityAlertMobile) || Boolean(supportMobile), valid: !(customerSmsOtpEnabled || Boolean(securityAlertMobile) || Boolean(supportMobile)) || present("KAVENEGAR_API_KEY", 16), message: "SMS provider API key for customer auth, security alerts, and support" },
 
     { key: "ELORIA_SUPPORT_TURNSTILE_REQUIRED", required: true, valid: isExplicitBoolean("ELORIA_SUPPORT_TURNSTILE_REQUIRED"), message: "محافظت Turnstile فرم پشتیبانی باید صریح باشد" },
     { key: "NEXT_PUBLIC_TURNSTILE_SITE_KEY", required: turnstileRequired, valid: !turnstileRequired || present("NEXT_PUBLIC_TURNSTILE_SITE_KEY", 10), message: "کلید عمومی Turnstile" },

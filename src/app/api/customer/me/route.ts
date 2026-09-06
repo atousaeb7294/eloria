@@ -50,8 +50,6 @@ export async function GET(
           auth.customer.mobile,
         fullName:
           auth.customer.fullName,
-        email:
-          auth.customer.email,
       },
       checkout,
     },
@@ -97,7 +95,6 @@ export async function PATCH(
   const body =
     await readJsonBody<{
       fullName?: unknown;
-      email?: unknown;
     }>(
       request,
       8 * 1024,
@@ -121,7 +118,6 @@ export async function PATCH(
         {
           fullName:
             body.fullName,
-          email: body.email,
         },
       );
 
