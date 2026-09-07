@@ -254,6 +254,7 @@ export function HeroShowcase({
               ],
             }}
             className={[
+              isPersian ? "font-persian-calligraphy" : "",
               titleFontClass,
               "max-w-5xl pb-2 text-center text-[clamp(2.25rem,11vw,6rem)] font-normal leading-[1.48] text-[#fff7e6] drop-shadow-[0_16px_40px_rgba(0,0,0,0.68)] sm:pb-3 sm:text-[clamp(3rem,6vw,6rem)] sm:leading-[1.65]",
             ].join(" ")}

@@ -143,6 +143,7 @@ const imageSourceDirective =
         "'self'",
         "data:",
         "blob:",
+        "https://trustseal.enamad.ir",
         ...imageConfig.cspSources,
       ].join(" ")
     : "'self' data: blob: https:";
