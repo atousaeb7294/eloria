@@ -22,6 +22,7 @@ import {
 
 import {
   resolveSectionBackground,
+  resolveMobileSectionBackground,
 } from "@/lib/section-backgrounds";
 
 type BackgroundTone =
@@ -114,6 +115,42 @@ export function SectionBackground({
       sectionKey,
     ]);
 
+  const mobileBackground =
+    useMemo(() => {
+      if (
+        typeof fixedIndex ===
+          "number" &&
+        Number.isFinite(
+          fixedIndex,
+        )
+      ) {
+        return resolveMobileSectionBackground({
+          fixedIndex,
+          offset,
+        });
+      }
+
+      if (pageBackground) {
+        return resolveMobileSectionBackground({
+          fixedIndex:
+            pageBackground.index,
+          offset,
+        });
+      }
+
+      return resolveMobileSectionBackground({
+        seed:
+          `${pathname}::${sectionKey}`,
+        offset,
+      });
+    }, [
+      fixedIndex,
+      offset,
+      pageBackground,
+      pathname,
+      sectionKey,
+    ]);
+
   return (
     <div
       aria-hidden="true"
@@ -193,7 +230,24 @@ export function SectionBackground({
             sizes="100vw"
             draggable={false}
             className={[
-              "select-none object-cover",
+              "hidden select-none object-cover md:block",
+              imageClassName,
+            ].join(" ")}
+            style={{
+              objectPosition,
+            }}
+          />
+
+          <Image
+            fill
+            src={mobileBackground.src}
+            alt=""
+            priority={priority}
+            quality={quality}
+            sizes="100vw"
+            draggable={false}
+            className={[
+              "select-none object-cover md:hidden",
               imageClassName,
             ].join(" ")}
             style={{

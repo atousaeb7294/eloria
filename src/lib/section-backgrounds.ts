@@ -10,12 +10,31 @@ export const SECTION_BACKGROUND_PATHS = [
   "/images/section-backgrounds/bg-09.jpeg",
 ] as const;
 
+export const MOBILE_SECTION_BACKGROUND_PATHS = [
+  "/images/section-backgrounds/mobile/bg-01.jpg",
+  "/images/section-backgrounds/mobile/bg-02.jpg",
+  "/images/section-backgrounds/mobile/bg-03.jpg",
+  "/images/section-backgrounds/mobile/bg-04.jpg",
+  "/images/section-backgrounds/mobile/bg-05.jpg",
+  "/images/section-backgrounds/mobile/bg-06.jpg",
+  "/images/section-backgrounds/mobile/bg-07.jpg",
+  "/images/section-backgrounds/mobile/bg-08.jpg",
+] as const;
+
 export type SectionBackgroundPath =
   (typeof SECTION_BACKGROUND_PATHS)[number];
+
+export type MobileSectionBackgroundPath =
+  (typeof MOBILE_SECTION_BACKGROUND_PATHS)[number];
 
 export type ResolvedSectionBackground = {
   index: number;
   src: SectionBackgroundPath;
+};
+
+export type ResolvedMobileSectionBackground = {
+  index: number;
+  src: MobileSectionBackgroundPath;
 };
 
 type ResolveSectionBackgroundOptions = {
@@ -80,6 +99,36 @@ export function resolveSectionBackground({
     index: resolvedIndex,
     src:
       SECTION_BACKGROUND_PATHS[
+        resolvedIndex
+      ],
+  };
+}
+
+export function resolveMobileSectionBackground({
+  seed = "",
+  fixedIndex,
+  offset = 0,
+}: ResolveSectionBackgroundOptions = {}): ResolvedMobileSectionBackground {
+  const backgroundCount =
+    MOBILE_SECTION_BACKGROUND_PATHS.length;
+
+  const baseIndex =
+    typeof fixedIndex === "number" &&
+    Number.isFinite(fixedIndex)
+      ? Math.trunc(fixedIndex)
+      : createStableHash(seed);
+
+  const resolvedIndex =
+    normalizeIndex(
+      baseIndex +
+        Math.trunc(offset),
+      backgroundCount,
+    );
+
+  return {
+    index: resolvedIndex,
+    src:
+      MOBILE_SECTION_BACKGROUND_PATHS[
         resolvedIndex
       ],
   };
