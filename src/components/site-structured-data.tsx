@@ -38,7 +38,7 @@ export function SiteStructuredData() {
     "@type": "Organization",
     name: "ELORIA",
     url: base,
-    logo: `${base}/images/brand/eloria-logo.png`,
+    logo: `${base}/images/brand/eloria-logo.webp`,
     contactPoint: {
       "@type": "ContactPoint",
       telephone: phone,

@@ -121,7 +121,7 @@ export function CartHeaderButton({
       >
         <EloriaBagIcon className="relative size-6 transition duration-300 group-hover:scale-110" />
 
-        <span className="relative whitespace-nowrap text-[11px] font-medium">
+        <span className="relative hidden whitespace-nowrap text-[11px] font-medium min-[420px]:inline">
           {cartText}
         </span>
 
@@ -180,7 +180,6 @@ export function CartHeaderButton({
     </Link>
   );
 }
-
 
 
 

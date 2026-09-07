@@ -6,13 +6,18 @@ import {
   useReducedMotion,
 } from "motion/react";
 
-export function FloatingLogo() {
+export function FloatingLogo({ compact = false }: { compact?: boolean }) {
   const reducedMotion =
     useReducedMotion();
 
   return (
     <motion.div
-      className="relative flex h-[3.35rem] w-[3.75rem] shrink-0 items-center justify-center sm:h-[4.35rem] sm:w-[5.1rem]"
+      className={[
+        "relative flex shrink-0 items-center justify-center",
+        compact
+          ? "h-11 w-12 sm:h-[4.35rem] sm:w-[5.1rem]"
+          : "h-[3.35rem] w-[3.75rem] sm:h-[4.35rem] sm:w-[5.1rem]",
+      ].join(" ")}
       animate={
         reducedMotion
           ? undefined
@@ -37,7 +42,12 @@ export function FloatingLogo() {
       />
 
       <motion.div
-        className="relative z-10 h-[2.9rem] w-[3.35rem] sm:h-[3.85rem] sm:w-[4.5rem]"
+        className={[
+          "relative z-10",
+          compact
+            ? "h-10 w-11 sm:h-[3.85rem] sm:w-[4.5rem]"
+            : "h-[2.9rem] w-[3.35rem] sm:h-[3.85rem] sm:w-[4.5rem]",
+        ].join(" ")}
         whileHover={
           reducedMotion
             ? undefined
@@ -54,7 +64,7 @@ export function FloatingLogo() {
           src="/images/brand/eloria-logo.webp"
           alt="Eloria"
           fill
-          priority
+          preload
           sizes="(max-width: 640px) 54px, 72px"
           className="object-contain mix-blend-screen brightness-[1.42] contrast-[1.38] saturate-[1.18] drop-shadow-[0_0_16px_rgba(255,222,133,0.78)]"
         />

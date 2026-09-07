@@ -401,6 +401,9 @@ const unsafeBlankTargets: string[] = [];
 const reviewedAdminRawImageFiles = new Set([
   "src/app/[locale]/admin/(protected)/products/page.tsx",
   "src/components/admin/admin-product-media-manager.tsx",
+  // A responsive <picture> is intentional here: it prevents mobile browsers
+  // from discovering and downloading the desktop background candidate.
+  "src/components/section-background.tsx",
   // eNamad serves its own dynamically verified seal URL, which cannot be
   // safely proxied through Next/Image. The element has an explicit lint waiver.
   "src/components/site-footer.tsx",

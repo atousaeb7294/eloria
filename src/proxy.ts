@@ -11,9 +11,12 @@ function contentSecurityPolicy(nonce: string): string {
     // the existing motion layout, while script execution stays strict.
     `style-src 'self' 'nonce-${nonce}'`,
     "style-src-attr 'unsafe-inline'",
+    "script-src-attr 'none'",
     "img-src 'self' data: blob: https://trustseal.enamad.ir https://*.supabase.co",
     "font-src 'self' data:",
     "media-src 'self' blob:",
+    "worker-src 'self' blob:",
+    "manifest-src 'self'",
     "connect-src 'self' https://payment.zarinpal.com https://api.sms.ir https://*.supabase.co https://challenges.cloudflare.com",
     "frame-src https://payment.zarinpal.com https://challenges.cloudflare.com",
     "object-src 'none'",

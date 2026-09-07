@@ -113,7 +113,7 @@ export function HeroShowcase({
           sectionKey="home-hero"
           priority
           tone="none"
-          quality={92}
+          quality={84}
           objectPosition="center 46%"
           imageClassName="scale-[1.02]"
         />

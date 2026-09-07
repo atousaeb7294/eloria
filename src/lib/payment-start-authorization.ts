@@ -139,6 +139,7 @@ export function setPaymentStartAuthorizationCookie(
       sameSite: "strict",
       path: "/",
       maxAge: 20 * 60,
+      priority: "high",
     },
   );
 }

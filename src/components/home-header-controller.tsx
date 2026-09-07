@@ -408,7 +408,7 @@ export function HomeHeaderController({ locale }: HomeHeaderControllerProps) {
                   />
 
                   <span className="relative flex size-full items-center justify-center drop-shadow-[0_0_10px_rgba(233,201,116,0.22)] transition duration-500 group-hover:scale-[1.04] group-hover:drop-shadow-[0_0_16px_rgba(239,207,126,0.35)] [&_img]:h-full [&_img]:w-full [&_img]:object-contain [&_svg]:h-full [&_svg]:w-full">
-                    <FloatingLogo />
+                    <FloatingLogo compact />
                   </span>
                 </motion.span>
 

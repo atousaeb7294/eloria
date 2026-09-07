@@ -655,6 +655,7 @@ export function setCustomerSessionCookie(
       sameSite: "lax",
       path: "/",
       expires: expiresAt,
+      priority: "high",
     },
   );
 }
@@ -673,6 +674,7 @@ export function clearCustomerSessionCookie(
       sameSite: "lax",
       path: "/",
       expires: new Date(0),
+      priority: "high",
     },
   );
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import Image from "next/image";
+import { getImageProps } from "next/image";
 
 import {
   usePathname,
@@ -151,6 +151,34 @@ export function SectionBackground({
       sectionKey,
     ]);
 
+  // A single responsive <picture> prevents browsers from downloading both the
+  // desktop and mobile background. Rendering two hidden <Image> elements still
+  // allows both resources to be discovered, which is costly on mobile pages.
+  const commonImageProps = {
+    alt: "",
+    sizes: "100vw",
+    quality,
+    fetchPriority: priority ? ("high" as const) : ("auto" as const),
+  };
+
+  const {
+    props: { srcSet: desktopSrcSet },
+  } = getImageProps({
+    ...commonImageProps,
+    src: background.src,
+    width: 1500,
+    height: 685,
+  });
+
+  const {
+    props: { srcSet: mobileSrcSet, ...mobileImageProps },
+  } = getImageProps({
+    ...commonImageProps,
+    src: mobileBackground.src,
+    width: 853,
+    height: 1844,
+  });
+
   return (
     <div
       aria-hidden="true"
@@ -221,39 +249,18 @@ export function SectionBackground({
             },
           }}
         >
-          <Image
-            fill
-            src={background.src}
-            alt=""
-            priority={priority}
-            quality={quality}
-            sizes="100vw"
-            draggable={false}
-            className={[
-              "hidden select-none object-cover md:block",
-              imageClassName,
-            ].join(" ")}
-            style={{
-              objectPosition,
-            }}
-          />
-
-          <Image
-            fill
-            src={mobileBackground.src}
-            alt=""
-            priority={priority}
-            quality={quality}
-            sizes="100vw"
-            draggable={false}
-            className={[
-              "select-none object-cover md:hidden",
-              imageClassName,
-            ].join(" ")}
-            style={{
-              objectPosition,
-            }}
-          />
+          <picture className="absolute inset-0">
+            <source media="(min-width: 768px)" srcSet={desktopSrcSet} />
+            <source media="(max-width: 767px)" srcSet={mobileSrcSet} />
+            {/* Reviewed exception to @next/next/no-img-element: picture art direction avoids downloading both mobile and desktop assets. */}
+            <img
+              {...mobileImageProps}
+              alt=""
+              draggable={false}
+              className={["absolute inset-0 size-full select-none object-cover", imageClassName].join(" ")}
+              style={{ objectPosition }}
+            />
+          </picture>
 
           {tone !== "none" && (
             <div

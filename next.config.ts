@@ -111,9 +111,12 @@ const staticContentSecurityPolicy = [
   `script-src 'self' https://challenges.cloudflare.com${isProduction ? "" : " 'unsafe-eval'"}`,
   "style-src 'self'",
   "style-src-attr 'unsafe-inline'",
+  "script-src-attr 'none'",
   `img-src ${imageSourceDirective}`,
   "font-src 'self' data:",
   "media-src 'self' blob:",
+  "worker-src 'self' blob:",
+  "manifest-src 'self'",
   "connect-src 'self' https://payment.zarinpal.com https://api.sms.ir https://*.supabase.co https://challenges.cloudflare.com",
   "frame-src https://payment.zarinpal.com https://challenges.cloudflare.com",
   "object-src 'none'",
@@ -146,7 +149,8 @@ const nextConfig: NextConfig = {
   },
 
   images: {
-    minimumCacheTTL: 14400,
+    formats: ["image/avif", "image/webp"],
+    minimumCacheTTL: 86400,
     qualities: [75, 84, 88, 92],
     ...(imageConfig.remotePatterns.length
       ? {
@@ -214,6 +218,14 @@ const nextConfig: NextConfig = {
           {
             key: "Cross-Origin-Resource-Policy",
             value: "same-origin",
+          },
+          {
+            key: "Origin-Agent-Cluster",
+            value: "?1",
+          },
+          {
+            key: "X-Permitted-Cross-Domain-Policies",
+            value: "none",
           },
           ...(isProduction
             ? [

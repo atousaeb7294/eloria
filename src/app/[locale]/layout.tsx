@@ -15,8 +15,7 @@ import { notFound } from "next/navigation";
 import { connection } from "next/server";
 
 import { PageBackgroundProvider } from "@/components/page-background-provider";
-import { CustomerSupportWidget } from "@/components/customer-support-widget";
-import { SmartSelectionAssistant } from "@/components/smart-selection-assistant";
+import { DeferredSiteTools } from "@/components/deferred-site-tools";
 import { SiteMeasurementTracker } from "@/components/site-measurement-tracker";
 import { SiteStructuredData } from "@/components/site-structured-data";
 import { PwaRegistration } from "@/components/pwa-registration";
@@ -145,14 +144,13 @@ export default async function LocaleLayout({
             <SiteStructuredData />
             <PwaRegistration />
             <MarketingAttributionTracker />
-            <NavigationAccelerator locale={locale} />
+            <NavigationAccelerator />
             <SiteMeasurementTracker
               locale={locale}
               enabled={isSiteMeasurementEnabled()}
             />
             {children}
-            <SmartSelectionAssistant locale={locale} />
-            <CustomerSupportWidget locale={locale} />
+            <DeferredSiteTools locale={locale} />
           </PageBackgroundProvider>
         </NextIntlClientProvider>
       </body>

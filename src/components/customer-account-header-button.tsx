@@ -34,7 +34,7 @@ export function CustomerAccountHeaderButton({ locale }: { locale: "fa" | "en" })
     >
       <span aria-hidden="true" className="absolute inset-[3px] rounded-[9px] border border-dashed border-[#efd184]/20" />
       <UserRound className="relative z-10 h-[18px] w-[18px]" strokeWidth={1.6} />
-      <span className="relative z-10 inline whitespace-nowrap text-[10px] font-medium sm:text-[11px]">
+      <span className="relative z-10 hidden whitespace-nowrap text-[10px] font-medium min-[420px]:inline sm:text-[11px]">
         {label}
       </span>
     </Link>

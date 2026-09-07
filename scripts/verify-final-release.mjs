@@ -8,7 +8,7 @@ const check = (label, valid) => checks.push({ label, valid: Boolean(valid) });
 check("ترتیب اینترو دو مرحله‌ای است", has("src/components/intro/use-eloria-intro-controller.ts", 'setPhase("awaiting-entry")') && has("src/components/intro/use-eloria-intro-controller.ts", 'setPhase("video-two")'));
 check("ورود فقط پس از پایان پرده دوم انجام می‌شود", has("src/components/intro/eloria-intro-view.tsx", "onEnded={\n              beginCinematicReveal"));
 check("پخش ناگهانی دوباره در همان نشست مهار شده است", has("src/components/intro/use-eloria-intro-controller.ts", "sessionStorage") && has("src/components/intro/eloria-intro-config.ts", "INTRO_SESSION_KEY"));
-check("داستان سرزمین کهن و بافت مکرومه حفظ شده است", has("src/app/[locale]/about/page.tsx", "سرزمین کهن") && has("src/app/[locale]/about/page.tsx", "مکرومه"));
+check("هویت برند و بافت مکرومه در صفحه درباره ما حفظ شده است", has("src/app/[locale]/about/page.tsx", "الوریا برند زیورآلات دست‌ساز") && has("src/app/[locale]/about/page.tsx", "مکرومه"));
 check("فرم تماس به API واقعی وصل است", has("src/components/support-forms.tsx", 'fetch(\n          "/api/support/contact"') && has("src/app/api/support/contact/route.ts", "addVisitorSupportMessage"));
 check("Social links are connected through shared config", has("src/components/site-footer.tsx", "eloriaSocialLinks") && has("src/lib/social-links.ts", "NEXT_PUBLIC_ELORIA_INSTAGRAM_URL") && has("src/lib/social-links.ts", "NEXT_PUBLIC_ELORIA_TELEGRAM_URL") && has("src/lib/social-links.ts", "NEXT_PUBLIC_ELORIA_BALE_URL"));
 check("راهنمای مچ و لینک دستبند فعال‌اند", existsSync(new URL("../src/app/[locale]/journal/wrist-size-guide/page.tsx", import.meta.url)) && has("src/app/[locale]/products/[slug]/page.tsx", "/journal/wrist-size-guide"));
@@ -70,8 +70,8 @@ check("R6 هیچ Provider پولی OpenAI ندارد", !has("package.json", '"op
 check("جست‌وجوی طبیعی بدون نمایش توضیح فنی باقی مانده است", existsSync(new URL("../src/components/home-smart-discovery.tsx", import.meta.url)) && has("src/components/home-smart-discovery.tsx", "DISCOVER ELORIA") && has("src/components/home-smart-discovery.tsx", "router.push") && !has("src/components/home-smart-discovery.tsx", "بدون API پولی"));
 check("هوش شتاب هفتگی در پنل و Briefing فعال است", has("src/lib/site-intelligence.ts", "merchandisingMomentum") && has("src/lib/store-autopilot.ts", "momentum") && has("src/app/[locale]/admin/(protected)/intelligence/page.tsx", "شتاب توجه ۷ روزه"));
 check("شماره تماس مستقیم 09180079556 فعال است", has("src/lib/legal-business.ts", 'DEFAULT_PUBLIC_SUPPORT_PHONE = "09180079556"') && has("src/app/[locale]/contact/page.tsx", "publicSupportPhone") && has(".env.example", 'ELORIA_LEGAL_SUPPORT_PHONE="09180079556"'));
-check("SEO سازمان از لوگوی واقعی و ContactPoint استفاده می‌کند", has("src/components/site-structured-data.tsx", "/images/brand/eloria-logo.png") && has("src/components/site-structured-data.tsx", "ContactPoint") && has("src/components/site-structured-data.tsx", "MerchantReturnPolicy"));
-check("کش رسانه و Image TTL برای سرعت فعال است", has("next.config.ts", "minimumCacheTTL: 14400") && has("next.config.ts", 'source: "/videos/:path*"') && has("next.config.ts", 'source: "/images/:path*"'));
+check("SEO سازمان از لوگوی واقعی و ContactPoint استفاده می‌کند", has("src/components/site-structured-data.tsx", "/images/brand/eloria-logo.webp") && has("src/components/site-structured-data.tsx", "ContactPoint") && has("src/components/site-structured-data.tsx", "MerchantReturnPolicy"));
+check("کش رسانه و Image TTL برای سرعت فعال است", has("next.config.ts", "minimumCacheTTL: 86400") && has("next.config.ts", 'source: "/videos/:path*"') && has("next.config.ts", 'source: "/images/:path*"'));
 check("افکت‌های Home بعد از Intro به‌صورت Dynamic بارگذاری می‌شوند", has("src/components/deferred-home-effects.tsx", "dynamic(") && has("src/components/deferred-home-effects.tsx", "ssr: false"));
 check("Installer R6 بکاپ، env، تست و build را انجام می‌دهد", has("INSTALL_ELORIA_R6.ps1", "Backing up current ELORIA project") && has("INSTALL_ELORIA_R6.ps1", "npm run typecheck") && has("INSTALL_ELORIA_R6.ps1", "npm run lint") && has("INSTALL_ELORIA_R6.ps1", "npm run build"));
 check("Current Intro 2 loading behavior is valid", has("src/components/intro/eloria-intro-view.tsx", 'preload="none"') && has("src/components/intro/use-eloria-intro-controller.ts", "prepareSecondVideo"));
@@ -85,5 +85,4 @@ checks.forEach((item, index) => console.log(`${String(index + 1).padStart(2, "0"
 const failures = checks.filter((item) => !item.valid);
 console.log(`\n${checks.length} کنترل اجرا شد؛ ${failures.length} خطا.`);
 if (failures.length) process.exit(1);
-
 

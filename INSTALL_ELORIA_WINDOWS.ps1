@@ -72,6 +72,7 @@ npm run test:content-seo
 npm run test:critical
 npm run audit:security
 npm run audit:quality
+npm run audit:performance
 npm run build
 
 Write-Host "نصب و کنترل‌های محلی با موفقیت تمام شد." -ForegroundColor Green

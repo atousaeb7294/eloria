@@ -35,7 +35,7 @@ export const ELORIA_GUARDIANS: readonly EloriaGuardian[] = [
     realmEn: "the Silent Gardens of the Moon",
     symbolFa: "پروانهٔ شب",
     symbolEn: "night moth",
-    imageUrl: "/images/guardians/yalda.jpg",
+    imageUrl: "/images/guardians/yalda.webp",
     summaryFa:
       "یلدا نخستین کسی بود که صدای خاطرات فراموش‌شده را شنید؛ او رازهای گمشده را از میان سایه‌ها به درخت خاطره‌ها بازمی‌گرداند.",
     summaryEn:
@@ -55,7 +55,7 @@ export const ELORIA_GUARDIANS: readonly EloriaGuardian[] = [
     realmEn: "the Sky Palaces",
     symbolFa: "پرندهٔ ماه",
     symbolEn: "moon bird",
-    imageUrl: "/images/guardians/mahora.jpg",
+    imageUrl: "/images/guardians/mahora.webp",
     summaryFa:
       "ماهورا نگهبان رویاهایی است که هنوز فرصت تولد نیافته‌اند؛ نور ماه او خیال‌های خاموش را دوباره بیدار می‌کند.",
     summaryEn:
@@ -76,7 +76,7 @@ export const ELORIA_GUARDIANS: readonly EloriaGuardian[] = [
     realmEn: "the Halls of the Simurgh",
     symbolFa: "سیمرغ",
     symbolEn: "Simurgh",
-    imageUrl: "/images/guardians/atousa.jpg",
+    imageUrl: "/images/guardians/atousa.webp",
     summaryFa:
       "آتوسا حافظ تمدن‌های فراموش‌شده، هنرهای باستانی و داستان‌هایی است که نسل‌ها از مادران به فرزندان رسیده‌اند.",
     summaryEn:
@@ -96,7 +96,7 @@ export const ELORIA_GUARDIANS: readonly EloriaGuardian[] = [
     realmEn: "the Living Springs",
     symbolFa: "نیلوفر آبی",
     symbolEn: "blue lotus",
-    imageUrl: "/images/guardians/anahid.jpg",
+    imageUrl: "/images/guardians/anahid.webp",
     summaryFa:
       "آناهید از سرچشمه‌های زندهٔ الوریا برخاست؛ او رودها، باغ‌ها و قلب‌های شکسته را پاس می‌دارد.",
     summaryEn:
@@ -116,7 +116,7 @@ export const ELORIA_GUARDIANS: readonly EloriaGuardian[] = [
     realmEn: "the Workshop of Golden Threads",
     symbolFa: "تارهای طلایی",
     symbolEn: "golden threads",
-    imageUrl: "/images/guardians/parnia.jpg",
+    imageUrl: "/images/guardians/parnia.webp",
     summaryFa:
       "پرنیا باور دارد هر چیز ساخته‌شده با عشق روحی درون خود دارد؛ او گره، بافت و یادگارهای دست‌ساز را زنده نگه می‌دارد.",
     summaryEn:
@@ -137,7 +137,7 @@ export const ELORIA_GUARDIANS: readonly EloriaGuardian[] = [
     realmEn: "the Libraries of Light",
     symbolFa: "جغد دانا",
     symbolEn: "wise owl",
-    imageUrl: "/images/guardians/vista.jpg",
+    imageUrl: "/images/guardians/vista.webp",
     summaryFa:
       "ویستا بزرگ‌ترین جستجوگر دانش است و در کتابخانه‌های نور، نشانه‌های گذشته و آینده را می‌خواند.",
     summaryEn:
@@ -157,7 +157,7 @@ export const ELORIA_GUARDIANS: readonly EloriaGuardian[] = [
     realmEn: "the Wind Passage",
     symbolFa: "پرندهٔ مهاجر",
     symbolEn: "migrating bird",
-    imageUrl: "/images/guardians/raha.jpg",
+    imageUrl: "/images/guardians/raha.webp",
     summaryFa:
       "رها روح آزاد الوریاست؛ او بر بادها فرمان می‌راند، راه‌های بسته را می‌گشاید و آغازهای تازه را محافظت می‌کند.",
     summaryEn:

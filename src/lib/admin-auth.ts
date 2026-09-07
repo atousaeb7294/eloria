@@ -215,6 +215,7 @@ export async function createAdminSession(input: {
     path: "/",
     maxAge: SESSION_LIFETIME_SECONDS,
     expires: new Date(expiresAt * 1000),
+    priority: "high",
   });
 }
 
@@ -244,6 +245,7 @@ export async function clearAdminSession(): Promise<void> {
     path: "/",
     maxAge: 0,
     expires: new Date(0),
+    priority: "high",
   });
 }
 

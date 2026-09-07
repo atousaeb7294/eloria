@@ -3,18 +3,10 @@
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 
-export function NavigationAccelerator({ locale }: { locale: string }) {
+export function NavigationAccelerator() {
   const router = useRouter();
 
   useEffect(() => {
-    const safeLocale = locale === "en" ? "en" : "fa";
-    const commonRoutes = [
-      `/${safeLocale}/products`,
-      `/${safeLocale}/collections`,
-      `/${safeLocale}/contact`,
-      `/${safeLocale}/cart`,
-      `/${safeLocale}/checkout`,
-    ];
     let cancelled = false;
     const prefetched = new Set<string>();
 
@@ -31,23 +23,6 @@ export function NavigationAccelerator({ locale }: { locale: string }) {
       prefetched.add(href);
       router.prefetch(href);
     };
-
-    const idleWindow = window as Window & {
-      requestIdleCallback?: (callback: () => void, options?: { timeout: number }) => number;
-      cancelIdleCallback?: (id: number) => void;
-    };
-
-    let idleId: number | null = null;
-    let timerId: number | null = null;
-    const warmCommonRoutes = () => {
-      if (!cancelled) commonRoutes.forEach(prefetch);
-    };
-
-    if (idleWindow.requestIdleCallback) {
-      idleId = idleWindow.requestIdleCallback(warmCommonRoutes, { timeout: 1200 });
-    } else {
-      timerId = window.setTimeout(warmCommonRoutes, 300);
-    }
 
     const extractInternalHref = (target: EventTarget | null) => {
       if (!(target instanceof Element)) return null;
@@ -78,10 +53,8 @@ export function NavigationAccelerator({ locale }: { locale: string }) {
       document.removeEventListener("pointerover", warmFromEvent, true);
       document.removeEventListener("pointerdown", warmFromEvent, true);
       document.removeEventListener("focusin", warmFromEvent, true);
-      if (idleId !== null && idleWindow.cancelIdleCallback) idleWindow.cancelIdleCallback(idleId);
-      if (timerId !== null) window.clearTimeout(timerId);
     };
-  }, [locale, router]);
+  }, [router]);
 
   return null;
 }
