@@ -1,0 +1,1335 @@
+import type { Metadata } from "next";
+import Link from "next/link";
+import Image from "next/image";
+import { notFound } from "next/navigation";
+
+import { setRequestLocale } from "next-intl/server";
+
+import {
+  Gem,
+  Hash,
+  PackageCheck,
+  Scale,
+  ScrollText,
+  ShieldCheck,
+  Sparkles,
+  Truck,
+} from "lucide-react";
+
+import { AddToCartButton } from "@/components/add-to-cart-button";
+
+import { InternalPageShell } from "@/components/internal-page-shell";
+
+import { ProductGallery } from "@/components/product-gallery";
+
+import { ProductVariantSelector } from "@/components/product-variant-selector";
+
+import { MagicArrowIcon, WorldRuneIcon } from "@/components/luxury-icons";
+
+import { GoldRuneIcon, SilverRuneIcon } from "@/components/material-rune-icons";
+
+import {
+  ProductPricingError,
+  getProductDisplayPrice,
+} from "@/lib/product-pricing";
+
+import { prisma, withDatabaseRetry } from "@/lib/prisma";
+
+import {
+  PriceInformationItem,
+  PurchaseAssuranceItem,
+  SpecificationItem,
+  collectionNames,
+  fallbackImages,
+  formatDecimal,
+  formatToman,
+} from "@/components/product-detail/product-detail-ui";
+import { truncateMetaDescription } from "@/lib/seo";
+
+import { ProductStructuredData } from "@/components/product-detail/product-structured-data";
+
+import { TreasuryButton } from "@/components/treasury/treasury-button";
+import { ProductWatchButton } from "@/components/product-watch-button";
+import { ProductShareActions } from "@/components/product-share-actions";
+import { CatalogProductCard } from "@/components/catalog-product-card";
+import { getPricedProductsCatalog } from "@/lib/priced-catalog";
+import {
+  generateProductMyth,
+  getProductMythByKey,
+} from "@/lib/product-myth-generator";
+
+export const dynamic = "force-dynamic";
+
+export const revalidate = 0;
+
+type ProductPageProps = {
+  params: Promise<{
+    locale: string;
+    slug: string;
+  }>;
+
+  searchParams: Promise<{
+    variant?: string | string[];
+  }>;
+};
+
+type ProductPageRecord = Awaited<ReturnType<typeof loadProductPageRecord>>;
+
+type ProductPageCacheEntry = {
+  value: ProductPageRecord;
+  freshUntil: number;
+  staleUntil: number;
+};
+
+type ProductPageCacheGlobal = typeof globalThis & {
+  __eloriaProductPageCache?: Map<string, ProductPageCacheEntry>;
+  __eloriaProductPageInflight?: Map<string, Promise<ProductPageRecord>>;
+};
+
+const productPageCacheGlobal = globalThis as ProductPageCacheGlobal;
+
+const productPageCache =
+  productPageCacheGlobal.__eloriaProductPageCache ??
+  new Map<string, ProductPageCacheEntry>();
+
+const productPageInflight =
+  productPageCacheGlobal.__eloriaProductPageInflight ??
+  new Map<string, Promise<ProductPageRecord>>();
+
+productPageCacheGlobal.__eloriaProductPageCache = productPageCache;
+
+productPageCacheGlobal.__eloriaProductPageInflight = productPageInflight;
+
+async function loadProductPageRecord(slug: string) {
+  const product = await prisma.product.findFirst({
+    where: {
+      slug,
+      status: {
+        in: ["ACTIVE", "OUT_OF_STOCK"],
+      },
+    },
+
+    select: {
+      id: true,
+      slug: true,
+      sku: true,
+      nameFa: true,
+      nameEn: true,
+      mythKey: true,
+      mythNameFa: true,
+      mythNameEn: true,
+      material: true,
+      status: true,
+      stock: true,
+      pricingMode: true,
+      currency: true,
+      price: true,
+      metalWeight: true,
+      purity: true,
+      purityFineness: true,
+      descriptionFa: true,
+      descriptionEn: true,
+      legendFa: true,
+      legendEn: true,
+
+      collection: {
+        select: {
+          slug: true,
+          nameFa: true,
+          nameEn: true,
+        },
+      },
+
+      images: {
+        orderBy: [
+          {
+            isPrimary: "desc",
+          },
+          {
+            displayOrder: "asc",
+          },
+        ],
+
+        select: {
+          imageUrl: true,
+          altFa: true,
+          altEn: true,
+        },
+      },
+
+      variants: {
+        where: {
+          isActive: true,
+        },
+
+        orderBy: [
+          {
+            displayOrder: "asc",
+          },
+          {
+            createdAt: "asc",
+          },
+        ],
+
+        select: {
+          id: true,
+          titleFa: true,
+          titleEn: true,
+          sku: true,
+          price: true,
+          stock: true,
+          metalWeight: true,
+          purity: true,
+          purityFineness: true,
+        },
+      },
+    },
+  });
+
+  if (!product) {
+    return null;
+  }
+
+  // Myth media was added after the original production schema. Reading the
+  // optional values through row JSON keeps product pages operational during a
+  // rolling deployment even before the idempotent media migration is applied.
+  let mythMedia: {
+    characterImageUrl: string | null;
+    worldSceneImageUrl: string | null;
+  } | null = null;
+
+  try {
+    const rows = await prisma.$queryRaw<
+      Array<{
+        characterImageUrl: string | null;
+        worldSceneImageUrl: string | null;
+      }>
+    >`
+      SELECT
+        to_jsonb(product_row) ->> 'characterImageUrl' AS "characterImageUrl",
+        to_jsonb(product_row) ->> 'worldSceneImageUrl' AS "worldSceneImageUrl"
+      FROM "products" AS product_row
+      WHERE product_row."id" = ${product.id}::uuid
+      LIMIT 1
+    `;
+
+    mythMedia = rows[0] ?? null;
+  } catch (error) {
+    console.warn(
+      `[Eloria Product Page] Optional myth media is unavailable for ${slug}.`,
+      error,
+    );
+  }
+
+  return {
+    ...product,
+    characterImageUrl: mythMedia?.characterImageUrl ?? null,
+    worldSceneImageUrl: mythMedia?.worldSceneImageUrl ?? null,
+  };
+}
+
+function refreshProductPageRecord(slug: string): Promise<ProductPageRecord> {
+  const current = productPageInflight.get(slug);
+
+  if (current) {
+    return current;
+  }
+
+  const request = withDatabaseRetry(() => loadProductPageRecord(slug), {
+    attempts: 2,
+    delayMilliseconds: 150,
+  })
+    .then((value) => {
+      const storedAt = Date.now();
+
+      productPageCache.set(slug, {
+        value,
+        freshUntil: storedAt + 30_000,
+        staleUntil: storedAt + 10 * 60_000,
+      });
+
+      return value;
+    })
+    .finally(() => {
+      productPageInflight.delete(slug);
+    });
+
+  productPageInflight.set(slug, request);
+  return request;
+}
+
+async function getProductPageRecord(slug: string): Promise<ProductPageRecord> {
+  const cached = productPageCache.get(slug);
+
+  const now = Date.now();
+
+  if (cached && cached.freshUntil > now) {
+    return cached.value;
+  }
+
+  if (cached && cached.staleUntil > now) {
+    void refreshProductPageRecord(slug).catch((error) => {
+      console.warn(
+        `[Eloria Product Page] Unable to refresh ${slug}; serving stale page data.`,
+        error,
+      );
+    });
+
+    return cached.value;
+  }
+
+  return refreshProductPageRecord(slug);
+}
+
+function fallbackProductMetadata(locale: string, noIndex = false): Metadata {
+  const metadata: Metadata = {
+    title: locale === "fa" ? "جواهر الوریا" : "Eloria Jewelry",
+    description:
+      locale === "fa" ? "جواهری از دل افسانه" : "A jewel born from legend",
+  };
+
+  return noIndex
+    ? {
+        ...metadata,
+        robots: {
+          index: false,
+          follow: false,
+        },
+      }
+    : metadata;
+}
+
+export async function generateMetadata({
+  params,
+}: Pick<ProductPageProps, "params">): Promise<Metadata> {
+  const { locale, slug } = await params;
+
+  if (locale !== "fa" && locale !== "en") {
+    return fallbackProductMetadata("fa", true);
+  }
+
+  try {
+    const product = await getProductPageRecord(slug);
+
+    if (!product) {
+      return fallbackProductMetadata(locale, true);
+    }
+
+    const productName = locale === "fa" ? product.nameFa : product.nameEn;
+    const mythName = locale === "fa" ? product.mythNameFa : product.mythNameEn;
+    const materialName =
+      locale === "fa"
+        ? product.material === "GOLD"
+          ? "طلا"
+          : "نقره"
+        : product.material === "GOLD"
+          ? "Gold"
+          : "Silver";
+    const title =
+      locale === "fa"
+        ? `${productName} ${materialName}${mythName ? `؛ افسانه ${mythName}` : ""}`
+        : `${productName} ${materialName}${mythName ? ` — ${mythName}` : ""}`;
+
+    const rawDescription =
+      (locale === "fa"
+        ? product.descriptionFa
+        : product.descriptionEn
+      )?.trim() ||
+      (locale === "fa" ? product.legendFa : product.legendEn)?.trim() ||
+      (locale === "fa"
+        ? `مشاهده مشخصات، روایت اختصاصی و قیمت به‌روز ${productName} ${materialName} در گالری الوریا.`
+        : `Discover the details, individual story and current price of ${productName} ${materialName} at Eloria.`);
+
+    const description = truncateMetaDescription(rawDescription, productName);
+
+    const image = product.images[0];
+
+    const imageAlt = image
+      ? (locale === "fa" ? image.altFa : image.altEn)?.trim() || title
+      : title;
+
+    const encodedSlug = encodeURIComponent(slug);
+
+    const canonical = `/${locale}/products/${encodedSlug}`;
+
+    return {
+      title,
+      description,
+      alternates: {
+        canonical,
+        languages: {
+          fa: `/fa/products/${encodedSlug}`,
+          en: `/en/products/${encodedSlug}`,
+          "x-default": `/fa/products/${encodedSlug}`,
+        },
+      },
+      openGraph: {
+        type: "website",
+        siteName: "ELORIA",
+        locale: locale === "fa" ? "fa_IR" : "en_US",
+        alternateLocale: locale === "fa" ? ["en_US"] : ["fa_IR"],
+        title,
+        description,
+        url: canonical,
+        ...(image
+          ? {
+              images: [
+                {
+                  url: image.imageUrl,
+                  alt: imageAlt,
+                },
+              ],
+            }
+          : {}),
+      },
+      twitter: {
+        card: "summary_large_image",
+        title,
+        description,
+        ...(image
+          ? {
+              images: [image.imageUrl],
+            }
+          : {}),
+      },
+    };
+  } catch (error) {
+    console.warn(
+      `[Eloria Product Metadata] Database unavailable for ${slug}; using non-indexable fallback metadata.`,
+      error,
+    );
+
+    return fallbackProductMetadata(locale, true);
+  }
+}
+
+export default async function ProductPage({
+  params,
+  searchParams,
+}: ProductPageProps) {
+  const { locale, slug } = await params;
+
+  if (locale !== "fa" && locale !== "en") {
+    notFound();
+  }
+
+  setRequestLocale(locale);
+
+  const isPersian = locale === "fa";
+
+  const productRecord = await getProductPageRecord(slug);
+
+  if (!productRecord) {
+    notFound();
+  }
+
+  const resolvedSearchParams = await searchParams;
+
+  const requestedVariant = Array.isArray(resolvedSearchParams.variant)
+    ? resolvedSearchParams.variant[0]
+    : resolvedSearchParams.variant;
+
+  const selectedVariantId =
+    requestedVariant &&
+    productRecord.variants.some((variant) => variant.id === requestedVariant)
+      ? requestedVariant
+      : (productRecord.variants.find((variant) => variant.stock > 0)?.id ??
+        productRecord.variants[0]?.id ??
+        null);
+
+  let result: Awaited<ReturnType<typeof getProductDisplayPrice>> | null = null;
+
+  try {
+    result = await getProductDisplayPrice({
+      slug,
+      variantId: selectedVariantId,
+    });
+  } catch (error) {
+    if (
+      error instanceof ProductPricingError &&
+      (error.code === "PRODUCT_NOT_FOUND" || error.code === "VARIANT_NOT_FOUND")
+    ) {
+      notFound();
+    }
+
+    console.error(
+      `[Eloria Product Page] Pricing is unavailable for ${slug}.`,
+      error,
+    );
+  }
+
+  const collection = productRecord.collection;
+
+  const selectedVariant = selectedVariantId
+    ? (productRecord.variants.find(
+        (variant) => variant.id === selectedVariantId,
+      ) ?? null)
+    : null;
+
+  const isGold = productRecord.material === "GOLD";
+
+  const MaterialIcon = isGold ? GoldRuneIcon : SilverRuneIcon;
+
+  const materialSlug = isGold ? "gold" : "silver";
+
+  const materialLabel = isGold
+    ? isPersian
+      ? "طلا"
+      : "Gold"
+    : isPersian
+      ? "نقره"
+      : "Silver";
+
+  const weightLabel = isGold
+    ? isPersian
+      ? "وزن طلا"
+      : "Gold weight"
+    : isPersian
+      ? "وزن نقره"
+      : "Silver weight";
+
+  const liveRateLabel = isGold
+    ? isPersian
+      ? "نرخ خام لحظه‌ای طلا"
+      : "Live raw gold rate"
+    : isPersian
+      ? "نرخ خام لحظه‌ای نقره"
+      : "Live raw silver rate";
+
+  const productName = isPersian ? productRecord.nameFa : productRecord.nameEn;
+
+  const secondaryName = isPersian ? productRecord.nameEn : productRecord.nameFa;
+
+  const collectionSlug = collection?.slug ?? "necklaces";
+
+  const collectionLabel =
+    (isPersian ? collection?.nameFa : collection?.nameEn) ??
+    collectionNames[collectionSlug]?.[isPersian ? "fa" : "en"] ??
+    collectionSlug;
+
+  const backHref = collection?.slug
+    ? `/${locale}/collections/${collection.slug}/${materialSlug}`
+    : `/${locale}/products`;
+
+  const fallbackImage =
+    fallbackImages[collectionSlug] ?? "/images/hero/eloria-hero.jpeg";
+
+  const galleryImages =
+    productRecord.images.length > 0
+      ? productRecord.images.map((productImage) => ({
+          imageUrl: productImage.imageUrl,
+
+          alt: isPersian
+            ? (productImage.altFa ?? productRecord.nameFa)
+            : (productImage.altEn ?? productRecord.nameEn),
+        }))
+      : [
+          {
+            imageUrl: fallbackImage,
+
+            alt: productName,
+          },
+        ];
+
+  const weight =
+    result?.variant?.weightGrams ??
+    selectedVariant?.metalWeight?.toString() ??
+    productRecord.metalWeight?.toString() ??
+    null;
+
+  const purity =
+    result?.variant?.purity ?? selectedVariant?.purity ?? productRecord.purity;
+
+  const purityFineness =
+    result?.variant?.purityFineness ??
+    selectedVariant?.purityFineness ??
+    productRecord.purityFineness;
+
+  const stock =
+    result?.variant?.stock ?? selectedVariant?.stock ?? productRecord.stock;
+
+  const sku = result?.variant?.sku ?? selectedVariant?.sku ?? productRecord.sku;
+
+  const baseProductPurchasable = productRecord.status === "ACTIVE" && stock > 0;
+
+  const rateUsableForSale = Boolean(
+    result?.pricing.mode === "MANUAL" ||
+    result?.liveRate?.isUsableForSale === true,
+  );
+
+  const canPurchase = Boolean(
+    result?.product.isPurchasable &&
+    baseProductPurchasable &&
+    rateUsableForSale,
+  );
+
+  const finalPrice = result
+    ? `${formatToman(
+        result.pricing.finalPriceToman,
+        locale,
+      )} ${isPersian ? "تومان" : "Toman"}`
+    : isPersian
+      ? "قیمت موقتاً در دسترس نیست"
+      : "Price temporarily unavailable";
+
+  const formattedWeight = weight
+    ? `${formatDecimal(weight, locale)} ${isPersian ? "گرم" : "g"}`
+    : "—";
+
+  const formattedLiveRate = result?.liveRate
+    ? `${formatToman(result.liveRate.originalPricePerGramToman, locale)} ${
+        isPersian ? "تومان" : "Toman"
+      }`
+    : result?.pricing.mode === "MANUAL"
+      ? isPersian
+        ? "قیمت ثابت"
+        : "Manual price"
+      : isPersian
+        ? "نرخ در دسترس نیست"
+        : "Rate unavailable";
+
+  const productDescription =
+    (isPersian
+      ? productRecord.descriptionFa
+      : productRecord.descriptionEn
+    )?.trim() ||
+    (isPersian
+      ? "این قطعه با تمرکز بر ظرافت، دوام و هویت افسانه‌ای الوریا طراحی شده است."
+      : "This piece is designed around refinement, durability, and Eloria’s legendary identity.");
+
+  const hiddenLegend = isPersian
+    ? productRecord.legendFa
+    : productRecord.legendEn;
+
+  const generatedLegend =
+    (productRecord.mythKey
+      ? getProductMythByKey(productRecord.mythKey, {
+          nameFa: productRecord.nameFa,
+          nameEn: productRecord.nameEn ?? undefined,
+          material: productRecord.material,
+        })
+      : null) ??
+    generateProductMyth({
+      nameFa: productRecord.nameFa,
+      nameEn: productRecord.nameEn ?? undefined,
+      material: productRecord.material,
+    });
+
+  const legendText =
+    hiddenLegend?.trim() ||
+    (isPersian ? generatedLegend.legendFa : generatedLegend.legendEn);
+
+  const legendName =
+    (isPersian ? productRecord.mythNameFa : productRecord.mythNameEn)?.trim() ||
+    (isPersian ? generatedLegend.mythNameFa : generatedLegend.mythNameEn);
+  const worldProfile = generatedLegend.worldProfile;
+
+  let relatedProducts: Awaited<
+    ReturnType<typeof getPricedProductsCatalog>
+  >["products"] = [];
+  if (result) {
+    try {
+      const relatedCatalog = await getPricedProductsCatalog({
+        material: result.product.material,
+        availability: "AVAILABLE",
+        page: 1,
+        pageSize: 32,
+      });
+
+      const candidates = relatedCatalog.products.filter(
+        (item) => item.slug !== result.product.slug && item.displayPriceToman,
+      );
+      const candidateSlugs = candidates.map((item) => item.slug);
+      const recentSince = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+
+      const [viewRows, saleRows] = candidateSlugs.length
+        ? await Promise.all([
+            prisma.siteMeasurementEvent.groupBy({
+              by: ["productSlug"],
+              where: {
+                eventType: "view_item",
+                occurredAt: { gte: recentSince },
+                productSlug: { in: candidateSlugs },
+              },
+              _count: { _all: true },
+            }),
+            prisma.orderItem.groupBy({
+              by: ["productSlug"],
+              where: {
+                productSlug: { in: candidateSlugs },
+                createdAt: { gte: recentSince },
+                order: {
+                  status: {
+                    in: ["PAID", "PROCESSING", "SHIPPED", "COMPLETED"],
+                  },
+                },
+              },
+              _sum: { quantity: true },
+            }),
+          ])
+        : [[], []];
+
+      const views = new Map(
+        viewRows
+          .filter((row) => row.productSlug)
+          .map((row) => [row.productSlug as string, row._count._all]),
+      );
+      const sales = new Map(
+        saleRows.map((row) => [row.productSlug, row._sum.quantity ?? 0]),
+      );
+      const currentPrice = BigInt(result.pricing.finalPriceToman);
+
+      relatedProducts = candidates
+        .map((item) => {
+          const itemPrice = BigInt(item.displayPriceToman ?? "0");
+          const distance =
+            currentPrice > 0n
+              ? Number(
+                  ((itemPrice > currentPrice
+                    ? itemPrice - currentPrice
+                    : currentPrice - itemPrice) *
+                    10_000n) /
+                    currentPrice,
+                ) / 100
+              : 100;
+          const priceScore = Math.max(0, 28 - Math.min(28, distance * 0.35));
+          const collectionScore =
+            item.collectionSlug === collectionSlug ? 32 : 0;
+          const behaviorScore =
+            Math.min(views.get(item.slug) ?? 0, 50) * 0.35 +
+            Math.min(sales.get(item.slug) ?? 0, 12) * 3.5;
+          return { item, score: collectionScore + priceScore + behaviorScore };
+        })
+        .sort((a, b) => b.score - a.score)
+        .slice(0, 4)
+        .map((entry) => entry.item);
+    } catch (error) {
+      console.warn(
+        `[Eloria Recommendations] Smart related products unavailable for ${productRecord.slug}.`,
+        error,
+      );
+    }
+  }
+
+  return (
+    <InternalPageShell locale={locale}>
+      {result ? (
+        <ProductStructuredData
+          locale={locale}
+          slug={productRecord.slug}
+          name={productName}
+          description={productDescription}
+          images={galleryImages.map((image) => image.imageUrl)}
+          sku={sku}
+          collectionSlug={collection?.slug ?? null}
+          collectionName={collectionLabel}
+          finalPriceToman={result.pricing.finalPriceToman}
+          stock={stock}
+          purchasable={canPurchase}
+          material={materialLabel}
+          weightGrams={weight?.toString() ?? null}
+          purity={purity ?? (purityFineness ? purityFineness.toString() : null)}
+        />
+      ) : null}
+      <section className="relative z-10 mx-auto w-full max-w-[1450px] px-4 pb-28 pt-[130px] sm:px-6 sm:pt-[142px] lg:px-10">
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <Link
+            href={backHref}
+            className="group flex w-fit items-center gap-3 rounded-full border border-[#d9b85f]/32 bg-[#061f17]/80 py-1.5 pe-4 ps-1.5 text-[11px] text-[#e5d19a] transition hover:border-[#efd17d]/65"
+          >
+            <span className="flex h-9 w-9 items-center justify-center rounded-full border border-[#d9b85f]/25">
+              <MagicArrowIcon
+                className={["h-4 w-4", isPersian ? "" : "rotate-180"].join(" ")}
+              />
+            </span>
+
+            <span>
+              {isPersian
+                ? `بازگشت به ${collectionLabel}`
+                : `Back to ${collectionLabel}`}
+            </span>
+          </Link>
+
+          <Link
+            href={`/${locale}/collections`}
+            className="flex items-center gap-2 rounded-full border border-white/[0.08] bg-white/[0.025] px-4 py-2 text-[10px] text-white/45 transition hover:border-[#d9b85f]/25 hover:text-[#ead699]"
+          >
+            <WorldRuneIcon className="h-4 w-4" />
+
+            <span>{isPersian ? "دنیای الوریا" : "Eloria World"}</span>
+          </Link>
+        </div>
+
+        <div className="mt-7 grid items-start gap-8 lg:grid-cols-[minmax(0,1.05fr)_minmax(380px,0.95fr)]">
+          <div
+            className={[
+              "relative overflow-visible rounded-[2.5rem] border bg-[linear-gradient(145deg,rgba(8,36,27,0.96),rgba(2,20,14,0.99))] p-3 shadow-[0_35px_100px_rgba(0,0,0,0.48)] transition-[border-color,box-shadow] duration-500",
+
+              isGold
+                ? "border-[#d8b860]/25 hover:border-[#ebcf7b]/42 hover:shadow-[0_42px_120px_rgba(0,0,0,0.56),0_0_44px_rgba(216,184,96,0.08)]"
+                : "border-[#d8e3e6]/20 hover:border-[#e1ecef]/34 hover:shadow-[0_42px_120px_rgba(0,0,0,0.56),0_0_44px_rgba(216,229,233,0.06)]",
+            ].join(" ")}
+          >
+            <div
+              aria-hidden="true"
+              className={[
+                "absolute inset-x-16 top-0 h-px bg-gradient-to-r from-transparent to-transparent",
+
+                isGold ? "via-[#efd480]/70" : "via-[#e1ebee]/50",
+              ].join(" ")}
+            />
+
+            <ProductGallery
+              locale={locale}
+              images={galleryImages}
+              materialLabel={materialLabel}
+              collectionLabel={collectionLabel}
+              isGold={isGold}
+              unavailable={!baseProductPurchasable}
+            />
+          </div>
+
+          <div className="grid gap-5">
+            <article
+              className={[
+                "relative overflow-hidden rounded-[2.2rem] border bg-[linear-gradient(145deg,rgba(7,34,25,0.96),rgba(2,20,14,0.99))] p-5 shadow-[0_28px_80px_rgba(0,0,0,0.38)] sm:p-7",
+
+                isGold ? "border-[#d8b860]/23" : "border-[#d6e1e4]/18",
+              ].join(" ")}
+            >
+              <div
+                aria-hidden="true"
+                className={[
+                  "absolute inset-x-12 top-0 h-px bg-gradient-to-r from-transparent to-transparent",
+
+                  isGold ? "via-[#efd17a]/65" : "via-[#dce6e9]/45",
+                ].join(" ")}
+              />
+
+              <div className="flex items-center gap-3">
+                <span
+                  className={[
+                    "flex h-11 w-11 items-center justify-center rounded-xl border",
+
+                    isGold
+                      ? "border-[#d9b85f]/30 bg-[#d9b85f]/[0.06] text-[#e6c873]"
+                      : "border-[#dce6e9]/25 bg-[#dce6e9]/[0.045] text-[#dce6e9]",
+                  ].join(" ")}
+                >
+                  <MaterialIcon className="h-6 w-6" />
+                </span>
+
+                <div>
+                  <span className="block text-[9px] uppercase tracking-[0.3em] text-[#ccb77a]/55">
+                    {materialLabel}
+                  </span>
+
+                  <span className="mt-1 block text-[10px] text-white/38">
+                    {isPersian
+                      ? "جواهری از جهان الوریا"
+                      : "A piece from Eloria’s collection"}
+                  </span>
+                </div>
+              </div>
+
+              <h1
+                className={[
+                  "mt-5 text-[#f5e8cc]",
+
+                  isPersian
+                    ? `font-persian-title pb-2 text-3xl font-semibold leading-[1.9] sm:text-4xl`
+                    : "text-3xl font-semibold leading-tight sm:text-4xl",
+                ].join(" ")}
+              >
+                {productName}
+              </h1>
+
+              <p
+                dir="ltr"
+                className={[
+                  "text-xs tracking-[0.18em] text-[#c9b98f]/50",
+
+                  isPersian ? "text-right" : "text-left",
+                ].join(" ")}
+              >
+                {secondaryName}
+              </p>
+
+              <ProductVariantSelector
+                locale={locale}
+                productSlug={productRecord.slug}
+                variants={productRecord.variants.map((variant) => ({
+                  id: variant.id,
+                  titleFa: variant.titleFa,
+                  titleEn: variant.titleEn,
+                  stock: variant.stock,
+                  metalWeight: variant.metalWeight?.toString() ?? null,
+                  purity: variant.purity,
+                }))}
+                activeVariantId={selectedVariantId}
+                isGold={isGold}
+              />
+
+              <div
+                className={[
+                  "mt-6 rounded-[1.8rem] border p-5",
+
+                  isGold
+                    ? "border-[#d9b85f]/30 bg-[radial-gradient(circle_at_top,rgba(213,178,79,0.12),rgba(3,27,19,0.75)_65%)]"
+                    : "border-[#dce6e9]/22 bg-[radial-gradient(circle_at_top,rgba(220,230,233,0.08),rgba(3,27,19,0.75)_65%)]",
+                ].join(" ")}
+              >
+                <div className="flex items-center justify-between gap-4">
+                  <div>
+                    <span className="block text-[10px] text-white/45">
+                      {isPersian ? "قیمت نهایی" : "Final price"}
+                    </span>
+
+                    <span className="mt-1 block text-[9px] text-white/30">
+                      {isPersian
+                        ? "با فرمول مالی ثبت‌شده و نرخ معتبر بازار محاسبه می‌شود"
+                        : "Calculated by the recorded financial formula and a valid market rate"}
+                    </span>
+                  </div>
+
+                  <span
+                    className={[
+                      "inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-[10px]",
+                      !result || (baseProductPurchasable && !rateUsableForSale)
+                        ? "border-amber-200/18 bg-amber-950/30 text-amber-100/75"
+                        : canPurchase
+                          ? "border-emerald-200/15 bg-emerald-950/35 text-emerald-100/75"
+                          : "border-rose-200/18 bg-rose-950/35 text-rose-100/75",
+                    ].join(" ")}
+                  >
+                    <span
+                      className={[
+                        "h-1.5 w-1.5 rounded-full",
+                        !result ||
+                        (baseProductPurchasable && !rateUsableForSale)
+                          ? "bg-amber-300"
+                          : canPurchase
+                            ? "bg-emerald-300"
+                            : "bg-rose-300",
+                      ].join(" ")}
+                    />
+
+                    {!result
+                      ? isPersian
+                        ? "قیمت در حال بازیابی"
+                        : "Price recovery in progress"
+                      : canPurchase
+                        ? isPersian
+                          ? "آماده سفارش"
+                          : "Ready to order"
+                        : baseProductPurchasable
+                          ? isPersian
+                            ? "خرید موقتاً متوقف"
+                            : "Purchasing temporarily paused"
+                          : isPersian
+                            ? "ناموجود"
+                            : "Unavailable"}
+                  </span>
+                </div>
+
+                <strong
+                  className={[
+                    "mt-3 block text-2xl font-semibold sm:text-3xl",
+
+                    isGold ? "text-[#f4dc95]" : "text-[#e5edef]",
+                  ].join(" ")}
+                >
+                  {finalPrice}
+                </strong>
+
+                {!result ? (
+                  <p
+                    role="status"
+                    className="mt-3 rounded-xl border border-amber-300/15 bg-amber-950/20 px-3 py-2 text-[11px] leading-6 text-amber-100/75"
+                  >
+                    {isPersian
+                      ? "اطلاعات محصول در دسترس است، اما منبع قیمت لحظه‌ای موقتاً پاسخ نمی‌دهد. خرید تا دریافت نرخ معتبر غیرفعال شده است."
+                      : "Product details are available, but the live pricing source is temporarily unavailable. Purchasing is paused until a valid rate is restored."}
+                  </p>
+                ) : result.liveRate && !result.liveRate.isUsableForSale ? (
+                  <p
+                    role="status"
+                    className="mt-3 rounded-xl border border-amber-300/15 bg-amber-950/20 px-3 py-2 text-[11px] leading-6 text-amber-100/75"
+                  >
+                    {isPersian
+                      ? "این نرخ فقط برای اطلاع نمایش داده می‌شود و تا تازه‌شدن نرخ، خرید غیرفعال است."
+                      : "This rate is display-only. Purchasing remains disabled until the market rate is refreshed."}
+                  </p>
+                ) : null}
+
+                <div className="mt-5 grid gap-2 sm:grid-cols-2">
+                  <PriceInformationItem
+                    icon={<Scale className="h-4 w-4" />}
+                    label={weightLabel}
+                    value={formattedWeight}
+                    isGold={isGold}
+                  />
+
+                  <PriceInformationItem
+                    icon={<MaterialIcon className="h-4 w-4" />}
+                    label={liveRateLabel}
+                    value={formattedLiveRate}
+                    isGold={isGold}
+                  />
+                </div>
+
+                <p className="mt-3 rounded-2xl border border-white/[0.055] bg-black/10 px-3.5 py-3 text-[10px] leading-6 text-[#cdbf9f]/62">
+                  {isPersian
+                    ? isGold
+                      ? "قیمت نهایی این اثر، حاصل ارزش روز طلای به‌کاررفته به‌همراه اجرت ساخت، سهم سود و ارزش هنری قطعهٔ دست‌بافت الوریاست؛ همهٔ این موارد در مبلغ نهایی لحاظ شده‌اند."
+                      : "قیمت نهایی این اثر، حاصل ارزش روز نقرهٔ به‌کاررفته به‌همراه اجرت ساخت، سهم سود و ارزش هنری قطعهٔ دست‌بافت الوریاست؛ همهٔ این موارد در مبلغ نهایی لحاظ شده‌اند."
+                    : "The final price combines the live value of the precious metal with craftsmanship, margin, and the artistic value of Eloria’s handwoven element; all are already included in the displayed total."}
+                </p>
+              </div>
+
+              <div className="mt-5">
+                <AddToCartButton
+                  locale={locale}
+                  slug={productRecord.slug}
+                  variantId={selectedVariantId}
+                  maxQuantity={stock}
+                  disabled={!canPurchase}
+                />
+                <ProductWatchButton locale={locale} slug={productRecord.slug} />
+                <ProductShareActions
+                  locale={locale}
+                  slug={productRecord.slug}
+                  title={productName}
+                />
+                <div className="mt-3">
+                  <TreasuryButton locale={locale} />
+                </div>
+              </div>
+
+              <section className="rounded-[2rem] border border-[#d9b85f]/18 bg-[#061c15]/78 p-4 shadow-[0_24px_70px_rgba(0,0,0,0.3)] backdrop-blur-xl sm:p-5">
+                <div className="mb-4 flex items-center gap-3">
+                  <ShieldCheck className="h-5 w-5 text-[#d9bd70]" />
+
+                  <h2 className="text-sm font-medium text-[#ebdfc8]">
+                    {isPersian ? "مشخصات محصول" : "Product specifications"}
+                  </h2>
+                </div>
+
+                <div className="grid gap-2 sm:grid-cols-2">
+                  <SpecificationItem
+                    icon={<MaterialIcon className="h-5 w-5" />}
+                    label={isPersian ? "جنس" : "Material"}
+                    value={materialLabel}
+                  />
+
+                  <SpecificationItem
+                    icon={<Gem className="h-5 w-5" />}
+                    label={isPersian ? "عیار" : "Purity"}
+                    value={
+                      purity ??
+                      (purityFineness
+                        ? formatDecimal(purityFineness, locale)
+                        : "—")
+                    }
+                  />
+
+                  <SpecificationItem
+                    icon={<PackageCheck className="h-5 w-5" />}
+                    label={isPersian ? "موجودی" : "Stock"}
+                    value={
+                      stock > 0
+                        ? `${stock.toLocaleString(
+                            isPersian ? "fa-IR" : "en-US",
+                          )} ${isPersian ? "عدد" : "items"}`
+                        : isPersian
+                          ? "ناموجود"
+                          : "Out of stock"
+                    }
+                  />
+
+                  <SpecificationItem
+                    icon={<Hash className="h-5 w-5" />}
+                    label={isPersian ? "کد محصول" : "SKU"}
+                    value={sku ?? "—"}
+                  />
+                </div>
+              </section>
+
+              <div className="mt-4 grid gap-2 sm:grid-cols-3">
+                <PurchaseAssuranceItem
+                  icon={<Truck className="h-4 w-4" />}
+                  title={
+                    isPersian
+                      ? "ارسال مهمانِ الوریا"
+                      : "Complimentary Eloria delivery"
+                  }
+                  description={
+                    isPersian
+                      ? "این اثر با ارسال رایگان و بسته‌بندی اختصاصی الوریا به دست شما می‌رسد."
+                      : "This piece reaches you with complimentary delivery and Eloria’s signature packaging."
+                  }
+                />
+
+                <PurchaseAssuranceItem
+                  icon={<ShieldCheck className="h-4 w-4" />}
+                  title={
+                    isPersian ? "اتصال تا پرداخت" : "Connected through payment"
+                  }
+                  description={
+                    isPersian
+                      ? "سبد و ثبت سفارش، مبلغ را از همان منبع مالیِ سرور دوباره تأیید می‌کنند."
+                      : "Cart and order creation reconfirm the amount from the same server financial source."
+                  }
+                />
+
+                <PurchaseAssuranceItem
+                  icon={<Scale className="h-4 w-4" />}
+                  title={isPersian ? "مشخصات دقیق" : "Precise details"}
+                  description={
+                    isPersian
+                      ? "وزن، عیار و مدل انتخابی پیش از خرید مشخص است."
+                      : "Weight, purity, and option are visible before purchase."
+                  }
+                />
+              </div>
+            </article>
+
+            <article className="rounded-[2rem] border border-white/[0.08] bg-[#061c15]/78 p-5 shadow-[0_24px_70px_rgba(0,0,0,0.28)] backdrop-blur-xl sm:p-6">
+              <div className="flex items-center gap-3">
+                <span className="flex h-10 w-10 items-center justify-center rounded-xl border border-[#d9b85f]/25 bg-[#d9b85f]/[0.055] text-[#dec16d]">
+                  <ScrollText className="h-5 w-5" />
+                </span>
+
+                <div>
+                  <span className="block text-[10px] uppercase tracking-[0.22em] text-[#cdb777]/55">
+                    Eloria Details
+                  </span>
+
+                  <h2 className="mt-1 text-sm font-medium text-[#eee1ca]">
+                    {isPersian ? "درباره این محصول" : "About this piece"}
+                  </h2>
+                </div>
+              </div>
+
+              <p className="mt-4 whitespace-pre-line text-sm leading-8 text-[#d8cbb2]/72">
+                {productDescription}
+              </p>
+
+              {collectionSlug === "bracelets" ? (
+                <div className="mt-5 rounded-2xl border border-[#e0c16d]/22 bg-[#e0c16d]/[0.045] px-4 py-4 text-sm leading-8 text-[#e5d5ad]/78">
+                  <strong className="font-semibold text-[#f2d98f]">
+                    {isPersian
+                      ? "سایز تمام دستبندها استاندارد است. در صورت تمایل به شخصی‌سازی سایز، اندازهٔ مچ دست خود را در قسمت «توضیحات سفارش» بنویسید."
+                      : "All bracelets use a standard size. If you would like a personalized fit, enter your wrist measurement in the order notes."}
+                  </strong>{" "}
+                  <Link
+                    href={`/${locale}/journal/wrist-size-guide`}
+                    className="font-medium text-[#efd17d] underline decoration-[#efd17d]/35 underline-offset-4 transition hover:text-[#fff0bd]"
+                  >
+                    {isPersian
+                      ? "راهنمای اندازه‌گیری سایز مچ دست"
+                      : "Wrist measurement guide"}
+                  </Link>
+                </div>
+              ) : null}
+            </article>
+          </div>
+        </div>
+
+        {relatedProducts.length > 0 ? (
+          <section
+            className="mt-10"
+            aria-labelledby="eloria-related-products-title"
+          >
+            <div className="mb-5 flex items-end justify-between gap-4">
+              <div>
+                <span className="text-[10px] uppercase tracking-[0.2em] text-[#d2b96e]/55">
+                  Eloria Curated For You
+                </span>
+                <h2
+                  id="eloria-related-products-title"
+                  className={
+                    isPersian
+                      ? "font-persian-title mt-2 text-xl text-[#f1e2be]"
+                      : "mt-2 text-xl font-semibold text-[#f1e2be]"
+                  }
+                >
+                  {isPersian ? "اگر این اثر را پسندیدید" : "You may also love"}
+                </h2>
+                <p className="mt-2 text-xs leading-6 text-[#cbbd9d]/58">
+                  {isPersian
+                    ? "انتخاب‌هایی نزدیک به جنس، گنجینه و بازهٔ قیمت این اثر، با اولویت آثار آمادهٔ سفارش."
+                    : "A smart selection close to this piece by material and collection, with live pricing and availability."}
+                </p>
+              </div>
+              <Link
+                href={`/${locale}/products`}
+                className="hidden rounded-full border border-[#d9b85f]/25 px-4 py-2 text-[11px] text-[#e4cd8a] transition hover:border-[#e7ce79]/55 sm:inline-flex"
+              >
+                {isPersian ? "همه آثار" : "All creations"}
+              </Link>
+            </div>
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              {relatedProducts.map((product) => (
+                <CatalogProductCard
+                  key={product.id}
+                  product={product}
+                  locale={locale}
+                  showCollection={false}
+                />
+              ))}
+            </div>
+          </section>
+        ) : null}
+
+        <article className="relative mt-8 overflow-hidden rounded-[2.2rem] border border-[#d9b85f]/22 bg-[linear-gradient(135deg,rgba(8,39,29,0.94),rgba(2,20,14,0.98))] px-5 py-7 shadow-[0_28px_80px_rgba(0,0,0,0.34)] backdrop-blur-xl sm:px-8 sm:py-8">
+          <div
+            aria-hidden="true"
+            className="absolute inset-x-20 top-0 h-px bg-gradient-to-r from-transparent via-[#efd17a]/65 to-transparent"
+          />
+
+          <div
+            aria-hidden="true"
+            className="absolute -end-20 -top-24 h-52 w-52 rounded-full bg-[#d9b85f]/[0.045] blur-3xl"
+          />
+
+          <div
+            aria-hidden="true"
+            className="absolute -bottom-24 -start-20 h-52 w-52 rounded-full bg-emerald-300/[0.035] blur-3xl"
+          />
+
+          <div className="relative flex flex-col items-center gap-5 text-center sm:flex-row sm:text-start">
+            <div className="relative flex h-20 w-20 shrink-0 items-center justify-center rounded-full border border-[#dfc36f]/35 bg-[#d9b85f]/[0.06] text-[#ead07d] shadow-[0_0_35px_rgba(218,184,95,0.08)]">
+              <span className="absolute inset-[7px] rounded-full border border-dashed border-[#e2c771]/25" />
+
+              <ScrollText className="relative h-8 w-8" />
+
+              <Sparkles className="absolute -end-1 top-1 h-4 w-4 text-[#f0d986]" />
+            </div>
+
+            <div className="min-w-0 flex-1">
+              <span className="text-[9px] uppercase tracking-[0.32em] text-[#d4bd7a]/50">
+                Eloria Secret Legend
+              </span>
+
+              <h2
+                className={[
+                  "mt-2 text-[#f0dfb7]",
+
+                  isPersian
+                    ? `font-persian-title text-2xl font-semibold leading-[1.8]`
+                    : "text-xl font-semibold",
+                ].join(" ")}
+              >
+                {isPersian
+                  ? `افسانهٔ ${legendName}`
+                  : `The Legend of ${legendName}`}
+              </h2>
+
+              <p className="mt-2 text-xs leading-7 text-[#d7c9aa]/65 sm:text-sm">
+                {legendText}
+              </p>
+
+              {productRecord.characterImageUrl ||
+              productRecord.worldSceneImageUrl ? (
+                <div className="mt-5 grid gap-3 sm:grid-cols-2">
+                  {productRecord.characterImageUrl ? (
+                    <figure className="overflow-hidden rounded-2xl border border-[#d8bd72]/15 bg-black/15">
+                      <div className="relative aspect-[4/5]">
+                        <Image
+                          src={productRecord.characterImageUrl}
+                          alt={
+                            isPersian
+                              ? `شخصیت افسانهٔ ${legendName}`
+                              : `Character of ${legendName}`
+                          }
+                          fill
+                          sizes="(max-width: 640px) 100vw, 40vw"
+                          className="object-cover"
+                        />
+                      </div>
+                      <figcaption className="px-3 py-2 text-[10px] text-[#d8c69d]/65">
+                        {isPersian
+                          ? "چهرهٔ این افسانه"
+                          : "The face of this legend"}
+                      </figcaption>
+                    </figure>
+                  ) : null}
+                  {productRecord.worldSceneImageUrl ? (
+                    <figure className="overflow-hidden rounded-2xl border border-[#d8bd72]/15 bg-black/15">
+                      <div className="relative aspect-[4/5]">
+                        <Image
+                          src={productRecord.worldSceneImageUrl}
+                          alt={
+                            isPersian
+                              ? `جهان افسانهٔ ${legendName}`
+                              : `World of ${legendName}`
+                          }
+                          fill
+                          sizes="(max-width: 640px) 100vw, 40vw"
+                          className="object-cover"
+                        />
+                      </div>
+                      <figcaption className="px-3 py-2 text-[10px] text-[#d8c69d]/65">
+                        {isPersian
+                          ? "فضای این افسانه"
+                          : "The world of this legend"}
+                      </figcaption>
+                    </figure>
+                  ) : null}
+                </div>
+              ) : null}
+
+              <div className="mt-5 grid gap-2 text-xs leading-6 text-[#cdbf9f]/65 sm:grid-cols-3">
+                <div className="rounded-xl border border-white/[0.07] bg-black/10 px-3 py-2">
+                  <span className="block text-[9px] text-[#d8bd72]/60">
+                    {isPersian ? "شخصیت این اثر" : "Character"}
+                  </span>
+                  <strong className="font-normal text-[#ead8ae]">
+                    {isPersian
+                      ? worldProfile.characterNameFa
+                      : worldProfile.characterNameEn}
+                  </strong>
+                </div>
+                <div className="rounded-xl border border-white/[0.07] bg-black/10 px-3 py-2">
+                  <span className="block text-[9px] text-[#d8bd72]/60">
+                    {isPersian ? "نقش و خاستگاه" : "Role and homeland"}
+                  </span>
+                  <strong className="font-normal text-[#ead8ae]">
+                    {isPersian
+                      ? `${worldProfile.roleFa}؛ ${worldProfile.homelandFa}`
+                      : `${worldProfile.roleEn}; ${worldProfile.homelandEn}`}
+                  </strong>
+                </div>
+                <div className="rounded-xl border border-white/[0.07] bg-black/10 px-3 py-2">
+                  <span className="block text-[9px] text-[#d8bd72]/60">
+                    {isPersian ? "دوره" : "Era"}
+                  </span>
+                  <strong className="font-normal text-[#ead8ae]">
+                    {isPersian ? worldProfile.eraFa : worldProfile.eraEn}
+                  </strong>
+                </div>
+              </div>
+
+              <p className="mt-4 text-[11px] leading-7 text-[#bfb08f]/55">
+                {isPersian
+                  ? worldProfile.relicMeaningFa
+                  : worldProfile.relicMeaningEn}
+              </p>
+
+              <Link
+                href={`/${locale}/story#mother-legend`}
+                className="mt-4 inline-flex items-center gap-2 rounded-full border border-[#d9b85f]/24 px-4 py-2 text-[10px] text-[#e5cd86] transition hover:border-[#e8cf7c]/55"
+              >
+                <WorldRuneIcon className="size-4" />
+                {isPersian
+                  ? "رد این نشان در تاریخ الوریا"
+                  : "This Sign in Eloria’s history"}
+              </Link>
+            </div>
+          </div>
+        </article>
+      </section>
+    </InternalPageShell>
+  );
+}

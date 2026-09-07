@@ -1,0 +1,356 @@
+import Link from "next/link";
+
+import { ArrowRight, ExternalLink, History } from "lucide-react";
+
+import { notFound } from "next/navigation";
+
+import { AdminProductDangerZone } from "@/components/admin/admin-product-danger-zone";
+
+import {
+  AdminProductForm,
+  type AdminProductFormValue,
+} from "@/components/admin/admin-product-form";
+
+import { AdminProductMediaManager } from "@/components/admin/admin-product-media-manager";
+
+import { AdminProductVariantManager } from "@/components/admin/admin-product-variant-manager";
+
+import { prisma, withDatabaseRetry } from "@/lib/prisma";
+
+export const dynamic = "force-dynamic";
+
+export const revalidate = 0;
+
+function one(value: string | string[] | undefined): string {
+  return Array.isArray(value) ? (value[0] ?? "") : (value ?? "");
+}
+
+function decoded(value: string | string[] | undefined): string | undefined {
+  const raw = one(value);
+
+  if (!raw) {
+    return undefined;
+  }
+
+  try {
+    return decodeURIComponent(raw);
+  } catch {
+    return raw;
+  }
+}
+
+export default async function EditAdminProductPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{
+    locale: string;
+    id: string;
+  }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
+  const { locale, id } = await params;
+
+  if (locale !== "fa" && locale !== "en") {
+    notFound();
+  }
+
+  const safeLocale: "fa" | "en" = locale;
+
+  const product = await withDatabaseRetry(
+    () =>
+      prisma.product.findUnique({
+        where: {
+          id,
+        },
+        include: {
+          images: {
+            orderBy: [
+              {
+                isPrimary: "desc",
+              },
+              {
+                displayOrder: "asc",
+              },
+              {
+                createdAt: "asc",
+              },
+            ],
+          },
+          variants: {
+            orderBy: [
+              {
+                displayOrder: "asc",
+              },
+              {
+                createdAt: "asc",
+              },
+            ],
+          },
+          timelineEvents: {
+            orderBy: { occurredAt: "desc" },
+            take: 100,
+          },
+          orderItems: {
+            orderBy: { createdAt: "desc" },
+            take: 100,
+            select: {
+              id: true,
+              quantity: true,
+              unitPriceToman: true,
+              metalValueToman: true,
+              createdAt: true,
+              order: {
+                select: {
+                  id: true,
+                  orderNumber: true,
+                  status: true,
+                  customerFullName: true,
+                  paidAt: true,
+                  payments: {
+                    where: { status: "PAID" },
+                    take: 1,
+                    orderBy: { verifiedAt: "desc" },
+                    select: { gatewayReference: true },
+                  },
+                },
+              },
+            },
+          },
+          _count: {
+            select: {
+              orderItems: true,
+            },
+          },
+        },
+      }),
+    {
+      attempts: 2,
+      delayMilliseconds: 200,
+    },
+  );
+
+  if (!product) {
+    notFound();
+  }
+
+  const collections = await withDatabaseRetry(
+    () =>
+      prisma.collection.findMany({
+        where: {
+          isActive: true,
+        },
+        orderBy: {
+          displayOrder: "asc",
+        },
+        select: {
+          id: true,
+          nameFa: true,
+          slug: true,
+        },
+      }),
+    {
+      attempts: 2,
+      delayMilliseconds: 200,
+    },
+  );
+
+  const query = await searchParams;
+
+  const value: AdminProductFormValue = {
+    id: product.id,
+    collectionId: product.collectionId,
+    slug: product.slug,
+    sku: product.sku ?? "",
+    nameFa: product.nameFa,
+    nameEn: product.nameEn,
+    descriptionFa: product.descriptionFa ?? "",
+    descriptionEn: product.descriptionEn ?? "",
+    legendFa: product.legendFa ?? "",
+    legendEn: product.legendEn ?? "",
+    characterImageUrl: product.characterImageUrl ?? "",
+    worldSceneImageUrl: product.worldSceneImageUrl ?? "",
+    material: product.material,
+    pricingMode: product.pricingMode,
+    price: product.price?.toString() ?? "",
+    compareAtPrice: product.compareAtPrice?.toString() ?? "",
+    metalWeight: product.metalWeight?.toString() ?? "",
+    purity: product.purity ?? "",
+    purityFineness: product.purityFineness?.toString() ?? "",
+    makingChargeType: product.makingChargeType,
+    makingChargeFixed: product.makingChargeFixed.toString(),
+    makingChargePerGram: product.makingChargePerGram.toString(),
+    makingChargePercent: product.makingChargePercent.toString(),
+    artisticFee: product.artisticFee.toString(),
+    profitPercent: product.profitPercent?.toString() ?? "",
+    taxPercent: product.taxPercent?.toString() ?? "",
+    stock: product.stock.toString(),
+    status: product.status,
+    isFeatured: product.isFeatured,
+    displayOrder: product.displayOrder.toString(),
+    primaryImageUrl:
+      product.images.find((image) => image.isPrimary)?.imageUrl ??
+      product.images[0]?.imageUrl ??
+      "",
+  };
+
+  return (
+    <div className="space-y-6">
+      <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <Link
+            href={`/${locale}/admin/products`}
+            className="inline-flex items-center gap-2 text-sm text-[#b9aa8c] hover:text-[#ecd17c]"
+          >
+            <ArrowRight className="size-4" />
+            بازگشت به محصولات
+          </Link>
+
+          <h1 className="mt-4 text-2xl font-semibold text-[#f7e4b6] sm:text-3xl">
+            ویرایش {product.nameFa}
+          </h1>
+
+          <p className="mt-2 text-sm text-[#9f9279]">
+            اطلاعات، گالری و تنوع‌های محصول از همین صفحه مدیریت می‌شوند.
+          </p>
+        </div>
+
+        <Link
+          href={`/${locale}/products/${product.slug}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex h-11 items-center gap-2 rounded-xl border border-[#d1b45c]/20 bg-[#d0b258]/8 px-4 text-sm text-[#dfc46e]"
+        >
+          <ExternalLink className="size-4" />
+          پیش‌نمایش محصول
+        </Link>
+      </header>
+
+      {one(query.saved) === "1" ? (
+        <div className="rounded-xl border border-emerald-300/20 bg-emerald-950/20 p-4 text-sm text-emerald-100">
+          اطلاعات محصول ذخیره شد.
+        </div>
+      ) : null}
+
+      <AdminProductForm
+        locale={safeLocale}
+        collections={collections}
+        value={value}
+      />
+
+      <AdminProductMediaManager
+        productId={product.id}
+        locale={safeLocale}
+        images={product.images}
+        saved={one(query.mediaSaved) === "1"}
+        legendMediaSaved={one(query.legendMediaSaved) === "1"}
+        characterImageUrl={product.characterImageUrl ?? ""}
+        worldSceneImageUrl={product.worldSceneImageUrl ?? ""}
+        error={decoded(query.mediaError)}
+      />
+
+      <AdminProductVariantManager
+        productId={product.id}
+        locale={safeLocale}
+        variants={product.variants}
+        saved={one(query.variantSaved) === "1"}
+        archived={one(query.variantArchived) === "1"}
+        error={decoded(query.variantError)}
+      />
+
+      <section className="overflow-hidden rounded-2xl border border-[#d1b45c]/18 bg-[#071a14]/70">
+        <header className="flex items-center gap-3 border-b border-[#d1b45c]/14 px-5 py-4 sm:px-6">
+          <span className="grid size-10 place-items-center rounded-xl border border-[#d1b45c]/20 bg-[#d1b45c]/[0.06] text-[#dfc46e]">
+            <History className="size-5" />
+          </span>
+          <div>
+            <h2 className="font-semibold text-[#f4dfaa]">
+              Timeline کامل این قطعه
+            </h2>
+            <p className="mt-1 text-xs text-[#9f9279]">
+              ثبت ورود، وزن، تغییر قیمت و موجودی، رزرو، فروش و مرجع فاکتور
+            </p>
+          </div>
+        </header>
+
+        <div className="divide-y divide-white/[0.055]">
+          {product.timelineEvents.map((event) => (
+            <article
+              key={event.id}
+              className="grid gap-2 px-5 py-4 sm:grid-cols-[11rem_1fr] sm:px-6"
+            >
+              <time className="text-xs text-[#9f9279]">
+                {new Intl.DateTimeFormat("fa-IR", {
+                  dateStyle: "medium",
+                  timeStyle: "short",
+                }).format(event.occurredAt)}
+              </time>
+              <div>
+                <p className="text-sm font-medium text-[#ead39a]">
+                  {event.titleFa}
+                </p>
+                <p className="mt-1 text-xs leading-6 text-[#b9aa8c]">
+                  {event.actorLabel ?? event.actorType}
+                  {event.metalWeight
+                    ? ` · وزن ${event.metalWeight.toString()} گرم`
+                    : ""}
+                  {event.priceToman
+                    ? ` · قیمت ${new Intl.NumberFormat("fa-IR").format(Number(event.priceToman))} تومان`
+                    : ""}
+                  {event.stock !== null
+                    ? ` · موجودی ${new Intl.NumberFormat("fa-IR").format(event.stock)}`
+                    : ""}
+                </p>
+              </div>
+            </article>
+          ))}
+
+          {product.orderItems.map((item) => (
+            <article
+              key={item.id}
+              className="grid gap-2 px-5 py-4 sm:grid-cols-[11rem_1fr] sm:px-6"
+            >
+              <time className="text-xs text-[#9f9279]">
+                {new Intl.DateTimeFormat("fa-IR", {
+                  dateStyle: "medium",
+                  timeStyle: "short",
+                }).format(item.createdAt)}
+              </time>
+              <div>
+                <p className="text-sm font-medium text-[#ead39a]">
+                  {item.order.paidAt
+                    ? "فروش و پرداخت قطعه"
+                    : "رزرو قطعه در سفارش"}
+                </p>
+                <p className="mt-1 text-xs leading-6 text-[#b9aa8c]">
+                  سفارش {item.order.orderNumber} · وضعیت {item.order.status} ·
+                  تعداد {new Intl.NumberFormat("fa-IR").format(item.quantity)}
+                  {item.order.customerFullName
+                    ? ` · خریدار ${item.order.customerFullName}`
+                    : ""}
+                  {item.order.payments[0]?.gatewayReference
+                    ? ` · مرجع فاکتور/پرداخت ${item.order.payments[0].gatewayReference}`
+                    : ""}
+                </p>
+              </div>
+            </article>
+          ))}
+
+          {product.timelineEvents.length === 0 &&
+          product.orderItems.length === 0 ? (
+            <p className="px-6 py-8 text-sm text-[#9f9279]">
+              هنوز رویدادی برای این قطعه ثبت نشده است؛ اولین ویرایش، Timeline را
+              آغاز می‌کند.
+            </p>
+          ) : null}
+        </div>
+      </section>
+
+      <AdminProductDangerZone
+        productId={product.id}
+        locale={safeLocale}
+        hasOrders={product._count.orderItems > 0}
+      />
+    </div>
+  );
+}

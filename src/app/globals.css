@@ -1,0 +1,649 @@
+@import "@fontsource-variable/vazirmatn";
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: "Vazirmatn Variable", "Segoe UI", sans-serif;
+  --font-mono: var(--font-geist-mono);
+  --font-heading: var(--font-sans);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --color-eloria-obsidian: var(--eloria-surface-obsidian);
+  --color-eloria-emerald-1: var(--eloria-surface-emerald-1);
+  --color-eloria-emerald-2: var(--eloria-surface-emerald-2);
+  --color-eloria-gold: var(--eloria-gold-primary);
+  --color-eloria-gold-muted: var(--eloria-gold-muted);
+  --color-eloria-cream: var(--eloria-text-primary);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
+}
+
+/* ELORIA R8 — motion inspired by macrame craft, never decorative particles. */
+@keyframes eloria-thread-draw {
+  0% { stroke-dashoffset: 1; opacity: 0; }
+  24% { opacity: .42; }
+  72%, 100% { stroke-dashoffset: 0; opacity: 1; }
+}
+@keyframes eloria-thread-breathe {
+  0%, 100% { transform: translate3d(0, 0, 0); }
+  50% { transform: translate3d(0, 6px, 0); }
+}
+
+@keyframes eloria-thread-shuttle {
+  0%, 100% { stroke-dashoffset: 0; opacity: .3; }
+  50% { stroke-dashoffset: -.34; opacity: .9; }
+}
+.eloria-thread-braid path:nth-child(2) { stroke-dasharray: .08 .05; animation-name: eloria-thread-draw, eloria-thread-shuttle; animation-duration: 8.5s, 5.5s; animation-timing-function: cubic-bezier(.16,1,.3,1), ease-in-out; animation-iteration-count: infinite; animation-direction: alternate, normal; }
+
+@keyframes eloria-knot-form {
+  0%, 16% { opacity: 0; transform: translate(720px, 455px) scale(.7) rotate(-8deg); }
+  48%, 100% { opacity: .76; transform: translate(720px, 455px) scale(1) rotate(0); }
+}
+.eloria-woven-threads { opacity: .56; mix-blend-mode: screen; filter: drop-shadow(0 0 10px rgb(224 194 109 / .08)); }
+.eloria-thread-braid { animation: eloria-thread-breathe 13s ease-in-out infinite; transform-origin: center; }
+.eloria-thread-braid-b { animation-duration: 17s; animation-delay: -6s; }
+.eloria-thread-braid path, .eloria-thread-knot path { stroke-dasharray: 1; stroke-dashoffset: 1; animation: eloria-thread-draw 8.5s cubic-bezier(.16,1,.3,1) infinite alternate; }
+.eloria-thread-braid-b path { animation-duration: 11s; animation-delay: -3s; }
+.eloria-thread-knot { animation: eloria-knot-form 10s cubic-bezier(.16,1,.3,1) infinite alternate; transform-origin: center; }
+.eloria-woven-threads-showcase { opacity: .46; }
+@media (max-width: 640px) { .eloria-woven-threads { opacity: .26; } }
+@media (prefers-reduced-motion: reduce) {
+  .eloria-thread-braid, .eloria-thread-braid path, .eloria-thread-knot, .eloria-thread-knot path { animation: none !important; }
+  .eloria-thread-braid path, .eloria-thread-knot path { stroke-dashoffset: 0; }
+}
+
+:root {
+  --eloria-surface-obsidian: #010b07;
+  --eloria-surface-emerald-1: #02140e;
+  --eloria-surface-emerald-2: #05251a;
+  --eloria-surface-emerald-3: #0a3a29;
+  --eloria-gold-primary: #e0c26d;
+  --eloria-gold-muted: #bca45f;
+  --eloria-gold-highlight: #fff0b4;
+  --eloria-text-primary: #f6e8c6;
+  --eloria-text-secondary: #d2c39e;
+  --eloria-text-subtle: #a99e82;
+  --eloria-border-subtle: rgb(255 255 255 / 0.09);
+  --eloria-border-gold: rgb(224 194 109 / 0.36);
+  --eloria-focus-ring: #f0d587;
+  --eloria-shadow-card: 0 24px 70px rgb(0 0 0 / 0.38);
+  --eloria-shadow-gold: 0 0 28px rgb(224 194 109 / 0.12);
+  --eloria-radius-card: 1.75rem;
+  --eloria-motion-fast: 180ms;
+  --eloria-motion-base: 320ms;
+  --eloria-motion-slow: 700ms;
+
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.145 0 0);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.145 0 0);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.145 0 0);
+  --primary: oklch(0.205 0 0);
+  --primary-foreground: oklch(0.985 0 0);
+  --secondary: oklch(0.97 0 0);
+  --secondary-foreground: oklch(0.205 0 0);
+  --muted: oklch(0.97 0 0);
+  --muted-foreground: oklch(0.556 0 0);
+  --accent: oklch(0.97 0 0);
+  --accent-foreground: oklch(0.205 0 0);
+  --destructive: oklch(0.577 0.245 27.325);
+  --border: oklch(0.922 0 0);
+  --input: oklch(0.922 0 0);
+  --ring: oklch(0.708 0 0);
+  --chart-1: oklch(0.87 0 0);
+  --chart-2: oklch(0.556 0 0);
+  --chart-3: oklch(0.439 0 0);
+  --chart-4: oklch(0.371 0 0);
+  --chart-5: oklch(0.269 0 0);
+  --radius: 0.625rem;
+  --sidebar: oklch(0.985 0 0);
+  --sidebar-foreground: oklch(0.145 0 0);
+  --sidebar-primary: oklch(0.205 0 0);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.97 0 0);
+  --sidebar-accent-foreground: oklch(0.205 0 0);
+  --sidebar-border: oklch(0.922 0 0);
+  --sidebar-ring: oklch(0.708 0 0);
+}
+
+.dark {
+  --background: oklch(0.145 0 0);
+  --foreground: oklch(0.985 0 0);
+  --card: oklch(0.205 0 0);
+  --card-foreground: oklch(0.985 0 0);
+  --popover: oklch(0.205 0 0);
+  --popover-foreground: oklch(0.985 0 0);
+  --primary: oklch(0.922 0 0);
+  --primary-foreground: oklch(0.205 0 0);
+  --secondary: oklch(0.269 0 0);
+  --secondary-foreground: oklch(0.985 0 0);
+  --muted: oklch(0.269 0 0);
+  --muted-foreground: oklch(0.708 0 0);
+  --accent: oklch(0.269 0 0);
+  --accent-foreground: oklch(0.985 0 0);
+  --destructive: oklch(0.704 0.191 22.216);
+  --border: oklch(1 0 0 / 10%);
+  --input: oklch(1 0 0 / 15%);
+  --ring: oklch(0.556 0 0);
+  --chart-1: oklch(0.87 0 0);
+  --chart-2: oklch(0.556 0 0);
+  --chart-3: oklch(0.439 0 0);
+  --chart-4: oklch(0.371 0 0);
+  --chart-5: oklch(0.269 0 0);
+  --sidebar: oklch(0.205 0 0);
+  --sidebar-foreground: oklch(0.985 0 0);
+  --sidebar-primary: oklch(0.488 0.243 264.376);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.269 0 0);
+  --sidebar-accent-foreground: oklch(0.985 0 0);
+  --sidebar-border: oklch(1 0 0 / 10%);
+  --sidebar-ring: oklch(0.556 0 0);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+    min-width: 320px;
+    background: var(--eloria-surface-emerald-1);
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  button:not(:disabled), [role="button"]:not(:disabled) {
+    cursor: pointer;
+  }
+  html {
+    @apply font-sans;
+    scroll-behavior: smooth;
+    background: var(--eloria-surface-emerald-1);
+  }
+
+  html[lang="fa"],
+  html[lang="fa"] body,
+  html[lang="fa"] button,
+  html[lang="fa"] input,
+  html[lang="fa"] select,
+  html[lang="fa"] textarea {
+    font-family:
+      "Vazirmatn Variable",
+      Vazirmatn,
+      Tahoma,
+      "Segoe UI",
+      sans-serif;
+    font-feature-settings:
+      "kern" 1,
+      "liga" 1,
+      "calt" 1;
+    font-kerning: normal;
+    font-synthesis: none;
+  }
+
+  ::selection {
+    background: rgba(224, 194, 109, 0.28);
+    color: #fff4d6;
+  }
+
+  a,
+  button,
+  input,
+  select,
+  textarea {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--eloria-focus-ring);
+    outline-offset: 3px;
+  }
+}
+
+@layer utilities {
+  .font-persian-title {
+    font-family:
+      "Vazirmatn Variable",
+      Vazirmatn,
+      Tahoma,
+      "Segoe UI",
+      sans-serif;
+
+    font-feature-settings:
+      "kern" 1,
+      "liga" 1,
+      "calt" 1;
+
+    font-kerning: normal;
+    font-synthesis: none;
+    font-style: normal;
+    font-weight: 600 !important;
+    letter-spacing: 0 !important;
+    word-spacing: 0.025em;
+    line-height: 1.95;
+    padding-block: 0.08em 0.18em;
+    text-wrap: balance;
+    text-rendering: optimizeLegibility;
+    text-shadow:
+      0 10px 30px rgb(224 194 109 / 0.09),
+      0 1px 0 rgb(255 255 255 / 0.04);
+  }
+
+  .font-persian-calligraphy {
+    font-family:
+      "Eloria Iran Nastaliq",
+      "Vazirmatn Variable",
+      Tahoma,
+      serif;
+
+    font-weight: 400;
+    letter-spacing: 0 !important;
+    word-spacing: 0.03em;
+    line-height: 2.15;
+    padding-block: 0.08em 0.2em;
+    text-rendering: optimizeLegibility;
+  }
+
+  .eloria-surface-card {
+    border: 1px solid var(--eloria-border-subtle);
+    border-radius: var(--eloria-radius-card);
+    background: linear-gradient(145deg, rgb(7 38 28 / 0.92), rgb(2 21 15 / 0.96));
+    box-shadow: var(--eloria-shadow-card);
+  }
+
+  .eloria-readable-small {
+    font-size: 0.75rem;
+    line-height: 1.6;
+    color: var(--eloria-text-secondary);
+  }
+
+  .font-eloria-brand {
+    font-family: Georgia, "Times New Roman", serif;
+    font-weight: 600;
+    font-style: normal;
+    font-variant-ligatures: common-ligatures;
+    letter-spacing: 0.28em;
+    text-rendering: geometricPrecision;
+  }
+}
+
+
+@keyframes eloria-shimmer {
+  0% {
+    transform: translateX(-30%);
+    opacity: 0;
+  }
+
+  20% {
+    opacity: 1;
+  }
+
+  100% {
+    transform: translateX(330%);
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    transition-delay: 0ms !important;
+  }
+}
+
+/* کارت‌های گنجینه خارج از دید مرورگر رندر کامل نمی‌شوند. */
+.eloria-collection-card {
+  content-visibility: auto;
+  contain: layout paint style;
+  contain-intrinsic-size: 580px 780px;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .eloria-collection-card {
+    transition:
+      transform 220ms ease,
+      border-color 300ms ease,
+      box-shadow 300ms ease;
+  }
+
+  .eloria-collection-card:hover {
+    transform: translateY(-4px);
+  }
+}
+
+/*
+ * لینک‌های خانه که مستقیماً به #hero می‌روند، باید Intro را پیش از Hydration
+ * نیز کنار بزنند تا هیچ لایه‌ای کلیک‌های Hero یا هدر را مسدود نکند.
+ */
+html[data-eloria-skip-intro="true"] .eloria-intro-root,
+html:has(#hero:target) .eloria-intro-root {
+  display: none !important;
+  pointer-events: none !important;
+}
+/* ELORIA IRAN NASTALIQ SELF HOST START */
+@font-face {
+  font-family: "Eloria Iran Nastaliq";
+  src: url("/fonts/IranNastaliq-Web.woff2") format("woff2");
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+}
+
+@media (min-width: 901px) {
+  /*
+    Persian desktop typography is intentionally editorial: the self-hosted
+    Iran Nastaliq font is inherited by every text-bearing element. Technical
+    values (passwords, phone numbers, codes and LTR content) stay in Vazir so
+    digits, Latin identifiers and form controls never become ambiguous.
+  */
+  html[lang="fa"] body,
+  html[lang="fa"] body * {
+    font-family:
+      "Eloria Iran Nastaliq",
+      "Vazirmatn Variable",
+      Tahoma,
+      serif !important;
+    font-feature-settings:
+      "kern" 1,
+      "liga" 1,
+      "calt" 1;
+    font-kerning: normal;
+    font-synthesis: none;
+  }
+
+  /* Keep technical values readable; these selectors intentionally outrank
+   * the body * rule above. */
+  html[lang="fa"] body input[type="password"],
+  html[lang="fa"] body input[type="email"],
+  html[lang="fa"] body input[type="url"],
+  html[lang="fa"] body input[type="search"],
+  html[lang="fa"] body input[inputmode="tel"],
+  html[lang="fa"] body input[inputmode="numeric"],
+  html[lang="fa"] body code,
+  html[lang="fa"] body pre,
+  html[lang="fa"] body kbd,
+  html[lang="fa"] body samp,
+  html[lang="fa"] body .font-mono,
+  html[lang="fa"] body [dir="ltr"] {
+    font-family:
+      "Vazirmatn Variable",
+      Vazirmatn,
+      Tahoma,
+      "Segoe UI",
+      sans-serif !important;
+  }
+
+  html[lang="fa"] .font-eloria-brand {
+    font-family: Georgia, "Times New Roman", serif !important;
+  }
+
+  html[lang="fa"] .font-persian-title,
+  html[lang="fa"] .font-persian-calligraphy {
+    font-family:
+      "Eloria Iran Nastaliq",
+      "Vazirmatn Variable",
+      Tahoma,
+      serif !important;
+    font-style: normal;
+    font-weight: 400;
+    letter-spacing: 0;
+    word-spacing: 0.02em;
+    line-height: 1.95;
+    text-rendering: optimizeLegibility;
+  }
+}
+
+/* The home hero is calligraphic on desktop only. Mobile keeps the readable
+   Vazirmatn typography from the mobile safety rules below. */
+@media (min-width: 901px) {
+  html[lang="fa"] body .eloria-hero-nastaliq,
+  html[lang="fa"] body .eloria-hero-nastaliq * {
+    font-family: "Eloria Iran Nastaliq", "Vazirmatn Variable", Tahoma, serif !important;
+    font-weight: 400 !important;
+    font-style: normal !important;
+    letter-spacing: 0 !important;
+    word-spacing: 0.03em !important;
+    line-height: 1.75 !important;
+    font-synthesis: none !important;
+  }
+}
+/* ELORIA IRAN NASTALIQ SELF HOST END */
+
+
+/* ELORIA R4 responsiveness and product tapestry */
+@keyframes eloria-product-drift { 0%, 100% { transform: translate3d(0,0,0); } 50% { transform: translate3d(0,-5px,0); } }
+.eloria-product-drift { animation: eloria-product-drift 7.5s ease-in-out infinite; contain: layout paint; }
+a, button, [role="button"] { touch-action: manipulation; }
+a[href], button:not(:disabled), [role="button"]:not([aria-disabled="true"]) { transition-duration: 180ms !important; }
+@media (prefers-reduced-motion: reduce) { .eloria-product-drift { animation: none !important; } }
+.eloria-page-container { width: min(100% - 2rem, 88rem); margin-inline: auto; }
+.eloria-panel { border: 1px solid rgb(222 193 111 / .2); background: linear-gradient(145deg,rgb(7 39 29 / .92),rgb(2 20 14 / .965)); box-shadow: 0 24px 80px rgb(0 0 0 / .28), inset 0 1px 0 rgb(255 255 255 / .035); backdrop-filter: blur(18px); }
+.eloria-field { min-height: 3rem; width: 100%; border-radius: .9rem; border: 1px solid rgb(255 255 255 / .1); background: rgb(0 0 0 / .16); padding-inline: 1rem; color: #f3e6c9; outline: none; transition: border-color 180ms ease, background-color 180ms ease, box-shadow 180ms ease; }
+.eloria-field::placeholder { color: rgb(200 185 150 / .3); }
+.eloria-field:focus { border-color: rgb(229 200 115 / .62); background: rgb(217 184 95 / .035); box-shadow: 0 0 0 3px rgb(217 184 95 / .065); }
+.eloria-kicker { font-size: .68rem; font-weight: 600; color: rgb(221 195 119 / .68); }
+.eloria-button-primary, .eloria-button-secondary { display: inline-flex; min-height: 3rem; align-items: center; justify-content: center; gap: .55rem; border-radius: 9999px; padding: .7rem 1.25rem; font-size: .78rem; transition: border-color 180ms ease, background-color 180ms ease, color 180ms ease, box-shadow 180ms ease; }
+.eloria-button-primary { border: 1px solid rgb(225 193 105 / .54); background: linear-gradient(110deg,rgb(102 74 22 / .24),rgb(214 178 85 / .22),rgb(7 74 52 / .38)); color: #f5df9f; box-shadow: 0 12px 34px rgb(0 0 0 / .24); }
+.eloria-button-primary:hover { border-color: rgb(240 213 130 / .8); background-color: rgb(217 184 95 / .11); }
+.eloria-button-secondary { border: 1px solid rgb(255 255 255 / .12); background: rgb(255 255 255 / .035); color: rgb(246 232 198 / .8); }
+.eloria-button-secondary:hover { border-color: rgb(225 193 105 / .4); color: #f4dfa3; }
+
+/* ELORIA R5 — editorial fashion storefront */
+@keyframes eloria-editorial-marquee { from { transform: translate3d(0,0,0); } to { transform: translate3d(-50%,0,0); } }
+.eloria-editorial-marquee { overflow: hidden; mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent); }
+.eloria-editorial-marquee-track { display: flex; width: max-content; min-width: 200%; gap: 2.25rem; white-space: nowrap; color: rgb(221 193 112 / .34); font-family: Georgia, "Times New Roman", serif; font-size: .65rem; letter-spacing: .22em; animation: eloria-editorial-marquee 28s linear infinite; will-change: transform; }
+.eloria-editorial-marquee-track > span { min-width: max-content; }
+.eloria-runway-rail { scrollbar-width: none; overscroll-behavior-inline: contain; -webkit-overflow-scrolling: touch; }
+.eloria-runway-rail::-webkit-scrollbar { display: none; }
+.eloria-editorial-piece { content-visibility: auto; contain: layout paint style; contain-intrinsic-size: 620px 760px; }
+@media (prefers-reduced-motion: reduce) { .eloria-editorial-marquee-track { animation: none !important; transform: none !important; } }
+
+/* ELORIA R6 — luxury fashion editorial motion system */
+.eloria-home-lazy-section {
+  content-visibility: auto;
+  contain: layout paint style;
+  contain-intrinsic-size: 900px 1200px;
+}
+
+.eloria-editorial-stage,
+.eloria-editorial-card,
+.eloria-fashion-tile {
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}
+
+.eloria-fashion-rail {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  overscroll-behavior-inline: contain;
+  scroll-snap-type: inline proximity;
+  -webkit-overflow-scrolling: touch;
+}
+
+.eloria-fashion-rail::-webkit-scrollbar {
+  display: none;
+}
+
+.eloria-editorial-card {
+  content-visibility: auto;
+  contain: layout paint style;
+  contain-intrinsic-size: 320px 430px;
+}
+
+.eloria-fashion-tile::after {
+  content: "";
+  position: absolute;
+  inset: -35% -75%;
+  pointer-events: none;
+  background: linear-gradient(105deg, transparent 38%, rgb(255 238 190 / .075) 50%, transparent 62%);
+  transform: translate3d(-26%, 0, 0) rotate(4deg);
+  opacity: 0;
+  transition: transform 900ms cubic-bezier(.22, 1, .36, 1), opacity 450ms ease;
+}
+
+.eloria-editorial-stage img {
+  -webkit-user-drag: none;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .eloria-fashion-tile:hover::after {
+    transform: translate3d(30%, 0, 0) rotate(4deg);
+    opacity: 1;
+  }
+
+  .eloria-editorial-card {
+    will-change: transform;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .eloria-editorial-card,
+  .eloria-fashion-tile,
+  .eloria-fashion-tile::after,
+  .eloria-editorial-stage * {
+    scroll-behavior: auto !important;
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+  }
+}
+
+/* ELORIA MOBILE NASTALIQ SAFE MODE START */
+/*
+  IranNastaliq is disabled on mobile to avoid broken Persian shaping
+  and to keep the decorative font out of the critical rendering path.
+*/
+@media (max-width: 900px) {
+  html[lang="fa"] body,
+  html[lang="fa"] body * {
+    font-family:
+      "Vazirmatn Variable",
+      Vazirmatn,
+      Tahoma,
+      "Segoe UI",
+      sans-serif !important;
+    font-synthesis: none !important;
+    font-feature-settings: "kern" 1, "liga" 1, "calt" 1 !important;
+    font-variant-ligatures: common-ligatures !important;
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+  }
+
+  html[lang="fa"] .font-eloria-brand {
+    font-family: Georgia, "Times New Roman", serif !important;
+  }
+
+  html[lang="fa"] body,
+  html[lang="fa"] button,
+  html[lang="fa"] input,
+  html[lang="fa"] textarea,
+  html[lang="fa"] select,
+  html[lang="fa"] .font-persian-title,
+  html[lang="fa"] .font-persian-calligraphy,
+  html[lang="fa"] [class*="font-persian-"],
+  html[lang="fa"] [style*="Eloria Iran Nastaliq"] {
+    font-family:
+      "Vazirmatn Variable",
+      Vazirmatn,
+      Tahoma,
+      "Segoe UI",
+      sans-serif !important;
+    font-synthesis: none !important;
+    font-feature-settings: "kern" 1, "liga" 1, "calt" 1 !important;
+    font-variant-ligatures: common-ligatures !important;
+    letter-spacing: normal !important;
+    word-spacing: normal !important;
+    text-rendering: auto !important;
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+  }
+
+  html[lang="fa"] .font-persian-title,
+  html[lang="fa"] .font-persian-calligraphy,
+  html[lang="fa"] [class*="font-persian-"] {
+    line-height: 1.7 !important;
+    word-break: normal !important;
+    overflow-wrap: normal !important;
+  }
+}
+/* ELORIA MOBILE NASTALIQ SAFE MODE END */
+
+html[lang="fa"] input[type="password"] {
+  direction: ltr;
+  text-align: left;
+  unicode-bidi: plaintext;
+}
+
+html[lang="fa"] :where(p, li, label, button, a, h1, h2, h3, h4, h5, h6) {
+  overflow-wrap: anywhere;
+}
+
+/* Readability contract: Nastaliq is decorative and never the default body font.
+   Earlier visual releases applied it to every desktop node, which caused tight,
+   hard-to-read Persian copy. Keep it only where a page explicitly asks for a
+   display title or calligraphic quotation. */
+@media (min-width: 901px) {
+  html[lang="fa"] body,
+  html[lang="fa"] body * {
+    font-family: "Vazirmatn Variable", Vazirmatn, Tahoma, "Segoe UI", sans-serif !important;
+    letter-spacing: normal !important;
+    word-spacing: normal !important;
+    line-height: normal;
+  }
+
+  html[lang="fa"] .font-eloria-brand {
+    font-family: Georgia, "Times New Roman", serif !important;
+  }
+
+  html[lang="fa"] .font-persian-title,
+  html[lang="fa"] .font-persian-calligraphy {
+    font-family: "Eloria Iran Nastaliq", "Vazirmatn Variable", Tahoma, serif !important;
+    font-weight: 400 !important;
+    letter-spacing: 0 !important;
+    word-spacing: 0.03em !important;
+    line-height: 2 !important;
+  }
+}

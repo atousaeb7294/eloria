@@ -1,0 +1,87 @@
+import { timingSafeEqual } from "node:crypto";
+import { NextRequest, NextResponse } from "next/server";
+
+import { isAdminConfigured } from "@/lib/admin-auth";
+import { productionEnvironmentChecks } from "@/lib/env-validation";
+import {
+  isSmsIrConfigured,
+  isSmsIrVerifyConfigured,
+} from "@/lib/notifications/sms-ir";
+import { isZarinpalConfigured } from "@/lib/payment/zarinpal";
+import { prisma } from "@/lib/prisma";
+
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+
+function safeEqual(left: string, right: string): boolean {
+  const a = Buffer.from(left, "utf8");
+  const b = Buffer.from(right, "utf8");
+  return a.length === b.length && timingSafeEqual(a, b);
+}
+
+function canSeeDetails(request: NextRequest): boolean {
+  const configured = process.env.ELORIA_HEALTH_SECRET?.trim() ?? "";
+  const supplied = request.headers.get("x-eloria-health-secret")?.trim() ?? "";
+  return configured.length >= 48 && supplied.length > 0 && safeEqual(supplied, configured);
+}
+
+export async function GET(request: NextRequest) {
+  const startedAt = Date.now();
+  const mode = request.nextUrl.searchParams.get("mode") === "live" ? "live" : "ready";
+
+  if (mode === "live") {
+    return NextResponse.json(
+      {
+        status: "ok",
+        mode,
+        timestamp: new Date().toISOString(),
+        responseTimeMs: Date.now() - startedAt,
+      },
+      { status: 200, headers: { "Cache-Control": "no-store" } },
+    );
+  }
+
+  let database = false;
+  try {
+    await prisma.$queryRaw`SELECT 1`;
+    database = true;
+  } catch (error) {
+    console.error("[Eloria Health] Database readiness check failed.", error);
+  }
+
+  const requiredEnvironment =
+    process.env.NODE_ENV !== "production" ||
+    productionEnvironmentChecks()
+      .filter(item => item.required)
+      .every(item => item.valid);
+  const ready = database && requiredEnvironment;
+  const base = {
+    status: ready ? "ok" : "degraded",
+    mode,
+    timestamp: new Date().toISOString(),
+    responseTimeMs: Date.now() - startedAt,
+  };
+
+  return NextResponse.json(
+    canSeeDetails(request)
+      ? {
+          ...base,
+          checks: {
+            database,
+            environment: requiredEnvironment,
+            admin: isAdminConfigured(),
+            customerSmsOtp: isSmsIrVerifyConfigured(),
+            turnstile: Boolean(process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY?.trim() && process.env.TURNSTILE_SECRET_KEY?.trim()),
+            dynamicPricing: process.env.ELORIA_DYNAMIC_PRICING_ENABLED?.trim().toLowerCase() === "true",
+            embeddedMetalSync: process.env.ELORIA_EMBEDDED_METAL_SYNC_ENABLED?.trim().toLowerCase() === "true",
+            payment: isZarinpalConfigured(),
+            sms: isSmsIrConfigured(),
+          },
+        }
+      : base,
+    {
+      status: ready ? 200 : 503,
+      headers: { "Cache-Control": "no-store" },
+    },
+  );
+}

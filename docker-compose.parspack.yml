@@ -1,0 +1,32 @@
+services:
+  eloria:
+    image: eloria:release
+    env_file: .env
+    restart: unless-stopped
+    expose:
+      - "3000"
+    networks:
+      - eloria-internal
+
+  caddy:
+    image: caddy:2.10-alpine
+    env_file: .env
+    restart: unless-stopped
+    depends_on:
+      - eloria
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+    networks:
+      - eloria-internal
+
+networks:
+  eloria-internal:
+
+volumes:
+  caddy-data:
+  caddy-config:

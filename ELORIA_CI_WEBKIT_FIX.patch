@@ -1,0 +1,43 @@
+diff --git a/tests/eloria-critical-flows.spec.ts b/tests/eloria-critical-flows.spec.ts
+--- a/tests/eloria-critical-flows.spec.ts
++++ b/tests/eloria-critical-flows.spec.ts
+@@ -672,7 +672,7 @@ test.describe(
+     );
+ 
+     test(
+-      "product pricing breakdown exposes customer-safe components",
++      "product pricing keeps internal financial components private",
+       async ({
+         page,
+       }) => {
+@@ -690,7 +690,9 @@ test.describe(
+           page.getByText(
+             "Making charge",
+           ),
+-        ).toBeVisible();
++        ).toHaveCount(
++          0,
++        );
+ 
+         await expect(
+           page.getByText(
+@@ -703,14 +705,18 @@ test.describe(
+               true,
+             },
+           ),
+-        ).toBeVisible();
++        ).toHaveCount(
++          0,
++        );
+ 
+         await expect(
+           page.getByText(
+             "Artistic fee",
+           ),
+-        ).toBeVisible();
++        ).toHaveCount(
++          0,
++        );
+ 
+         await expect(
+           page.getByText(

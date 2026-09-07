@@ -1,0 +1,16 @@
+{
+  email {$CADDY_EMAIL}
+}
+
+{$ELORIA_DOMAIN} {
+  encode zstd gzip
+
+  header {
+    -Server
+  }
+
+  reverse_proxy eloria:3000 {
+    health_uri /api/health?mode=ready
+    health_interval 30s
+  }
+}

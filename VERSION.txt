@@ -1,0 +1,13 @@
+ELORIA FINAL R10 SMS.IR CUSTOMER AUTH
+Release date: 2026-09-04
+Base: ELORIA R8.3.4 Orbit Swap Motion
+Customer: mobile-only SMS.ir OTP plus password login, sign-up, recovery and profile password change
+Header: guest Login / Join label and authenticated My Account state
+Mobile typography: stable Vazirmatn fallback with protected Persian shaping
+Desktop typography: self-hosted Iran Nastaliq retained with reliable font swap
+Metal pricing: optional protected embedded scheduler for ParsPack application deployments
+Security: dependency audit clean; customer authentication encoding and Persian digit normalization repaired
+Smart marketing: product article drafts and SEO health remain available from Admin
+Next.js: 16.3.3
+Database schema changes in R10: customer password hash, lockout counters and lock expiry
+Deployment guide: ELORIA_FINAL_INSTALL_FA.md

@@ -1,0 +1,928 @@
+generator client {
+  provider        = "prisma-client"
+  output          = "../src/generated/prisma"
+  previewFeatures = ["relationJoins", "partialIndexes"]
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model AdminSession {
+  id          String    @id @default(uuid()) @db.Uuid
+  sessionHash String    @unique @db.VarChar(64)
+  ipHash      String?   @db.VarChar(64)
+  userAgent   String?   @db.VarChar(500)
+  expiresAt   DateTime
+  revokedAt   DateTime?
+  lastSeenAt  DateTime  @default(now())
+  createdAt   DateTime  @default(now())
+
+  @@index([expiresAt])
+  @@index([revokedAt])
+  @@map("admin_sessions")
+}
+
+model AdminSecurityEvent {
+  id         String          @id @default(uuid()) @db.Uuid
+  eventType  String          @db.VarChar(100)
+  successful Boolean
+  ipHash     String?         @db.VarChar(64)
+  userAgent  String?         @db.VarChar(500)
+  payload    Json?
+  createdAt  DateTime        @default(now())
+  alerts     SecurityAlert[]
+
+  @@index([eventType, createdAt])
+  @@index([successful, createdAt])
+  @@map("admin_security_events")
+}
+
+model CronLease {
+  key         String   @id @db.VarChar(100)
+  holder      String   @db.VarChar(128)
+  lockedUntil DateTime
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([lockedUntil])
+  @@map("cron_leases")
+}
+
+model RateLimitBucket {
+  key       String   @id @db.VarChar(190)
+  count     Int      @default(0)
+  resetAt   DateTime
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([resetAt])
+  @@map("rate_limit_buckets")
+}
+
+model Collection {
+  id            String           @id @default(uuid()) @db.Uuid
+  slug          String           @unique
+  nameFa        String
+  nameEn        String
+  descriptionFa String?
+  descriptionEn String?
+  imageUrl      String?
+  displayOrder  Int              @default(0)
+  isActive      Boolean          @default(true)
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
+  articles      ContentArticle[]
+  products      Product[]
+
+  @@index([isActive, displayOrder])
+  @@map("collections")
+}
+
+model Product {
+  id                  String           @id @default(uuid()) @db.Uuid
+  collectionId        String           @db.Uuid
+  slug                String           @unique
+  sku                 String?          @unique
+  nameFa              String
+  nameEn              String
+  descriptionFa       String?
+  descriptionEn       String?
+  material            MaterialType     @default(GOLD)
+  metalWeight         Decimal?         @map("goldWeight") @db.Decimal(10, 3)
+  purity              String?
+  purityFineness      Int?
+  pricingMode         PricingMode      @default(DYNAMIC)
+  price               Decimal?         @db.Decimal(18, 0)
+  compareAtPrice      Decimal?         @db.Decimal(18, 0)
+  makingChargeType    MakingChargeType @default(NONE)
+  makingChargeFixed   Decimal          @default(0) @db.Decimal(18, 0)
+  makingChargePerGram Decimal          @default(0) @db.Decimal(18, 0)
+  makingChargePercent Decimal          @default(0) @db.Decimal(7, 3)
+  artisticFee         Decimal          @default(0) @db.Decimal(18, 0)
+  profitPercent       Decimal?         @db.Decimal(7, 3)
+  taxPercent          Decimal?         @db.Decimal(7, 3)
+  currency            Currency         @default(TOMAN)
+
+  mythNameFa String?
+  mythNameEn String?
+  mythKey    String? @unique
+
+  legendFa String?
+  legendEn String?
+  characterImageUrl String?
+  worldSceneImageUrl String?
+
+  stock          Int                    @default(0)
+  specifications Json?
+  status         ProductStatus          @default(DRAFT)
+  isFeatured     Boolean                @default(false)
+  displayOrder   Int                    @default(0)
+  createdAt      DateTime               @default(now())
+  updatedAt      DateTime               @updatedAt
+  articles       ContentArticle?
+  favorites      CustomerFavorite[]
+  productWatches CustomerProductWatch[]
+  orderItems     OrderItem[]
+  images         ProductImage[]
+  variants       ProductVariant[]
+  timelineEvents ProductTimelineEvent[]
+  collection     Collection             @relation(fields: [collectionId], references: [id])
+
+  @@index([collectionId, status, displayOrder])
+  @@index([material, status])
+  @@index([pricingMode, status])
+  @@index([isFeatured, status])
+  @@map("products")
+}
+
+model ProductTimelineEvent {
+  id               String   @id @default(uuid()) @db.Uuid
+  productId        String   @db.Uuid
+  eventType        String   @db.VarChar(80)
+  actorType        String   @default("SYSTEM") @db.VarChar(40)
+  actorLabel       String?  @db.VarChar(160)
+  titleFa          String   @db.VarChar(240)
+  details          Json?
+  metalWeight      Decimal? @db.Decimal(10, 3)
+  priceToman       Decimal? @db.Decimal(18, 0)
+  stock            Int?
+  orderId          String?  @db.Uuid
+  invoiceReference String?  @db.VarChar(180)
+  occurredAt       DateTime @default(now())
+  product          Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@index([productId, occurredAt])
+  @@index([eventType, occurredAt])
+  @@index([orderId])
+  @@map("product_timeline_events")
+}
+
+model ProductImage {
+  id           String   @id @default(uuid()) @db.Uuid
+  productId    String   @db.Uuid
+  imageUrl     String
+  altFa        String?
+  altEn        String?
+  width        Int?
+  height       Int?
+  isPrimary    Boolean  @default(false)
+  displayOrder Int      @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  product      Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@index([productId, displayOrder])
+  @@index([productId, isPrimary])
+  @@map("product_images")
+}
+
+model ProductVariant {
+  id                  String      @id @default(uuid()) @db.Uuid
+  productId           String      @db.Uuid
+  titleFa             String
+  titleEn             String
+  sku                 String?     @unique
+  price               Decimal?    @db.Decimal(18, 0)
+  stock               Int         @default(0)
+  metalWeight         Decimal?    @map("goldWeight") @db.Decimal(10, 3)
+  purity              String?
+  purityFineness      Int?
+  makingChargeFixed   Decimal?    @db.Decimal(18, 0)
+  makingChargePerGram Decimal?    @db.Decimal(18, 0)
+  makingChargePercent Decimal?    @db.Decimal(7, 3)
+  artisticFee         Decimal?    @db.Decimal(18, 0)
+  attributes          Json?
+  isActive            Boolean     @default(true)
+  displayOrder        Int         @default(0)
+  createdAt           DateTime    @default(now())
+  updatedAt           DateTime    @updatedAt
+  orderItems          OrderItem[]
+  product             Product     @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@index([productId, isActive, displayOrder])
+  @@map("product_variants")
+}
+
+model PricingPolicy {
+  id                              String       @id @default(uuid()) @db.Uuid
+  material                        MaterialType @unique
+  referencePurity                 Int
+  defaultProfitPercent            Decimal      @default(7) @db.Decimal(7, 3)
+  defaultTaxPercent               Decimal      @default(10) @db.Decimal(7, 3)
+  taxMetalValue                   Boolean      @default(false)
+  quoteTtlSeconds                 Int          @default(120)
+  staleAfterMinutes               Int          @default(15)
+  closedMarketPricingEnabled      Boolean      @default(true)
+  closedMarketMaxAgeMinutes       Int          @default(14400)
+  closedMarketSafetyMarginPercent Decimal      @default(3) @db.Decimal(7, 3)
+  roundingStep                    Int          @default(1)
+  isActive                        Boolean      @default(true)
+  createdAt                       DateTime     @default(now())
+  updatedAt                       DateTime     @updatedAt
+
+  @@index([material, isActive])
+  @@map("pricing_policies")
+}
+
+model MetalPrice {
+  id              String              @id @default(uuid()) @db.Uuid
+  material        MaterialType        @unique
+  pricePerGram    Decimal             @db.Decimal(18, 0)
+  referencePurity Int                 @default(750)
+  currency        Currency            @default(TOMAN)
+  source          String?
+  sourceSymbol    String              @default("")
+  sourceUnit      String?
+  sourceDate      String?
+  sourceTime      String?
+  sourceTimeUnix  BigInt?
+  fetchedAt       DateTime            @default(now())
+  lastSuccessAt   DateTime            @default(now())
+  lastError       String?
+  rawPayload      Json?
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
+  history         MetalPriceHistory[]
+
+  @@index([material, lastSuccessAt])
+  @@index([updatedAt])
+  @@map("metal_prices")
+}
+
+model MetalPriceHistory {
+  id              String       @id @default(uuid()) @db.Uuid
+  metalPriceId    String       @db.Uuid
+  material        MaterialType
+  pricePerGram    Decimal      @db.Decimal(18, 0)
+  referencePurity Int
+  currency        Currency     @default(TOMAN)
+  source          String?
+  sourceSymbol    String
+  sourceUnit      String?
+  sourceDate      String?
+  sourceTime      String?
+  sourceTimeUnix  BigInt?
+  fetchedAt       DateTime
+  fingerprint     String       @unique @db.VarChar(64)
+  rawPayload      Json?
+  createdAt       DateTime     @default(now())
+  metalPrice      MetalPrice   @relation(fields: [metalPriceId], references: [id], onDelete: Cascade)
+
+  @@index([material, fetchedAt])
+  @@index([metalPriceId, fetchedAt])
+  @@map("metal_price_history")
+}
+
+model Order {
+  id                    String                 @id @default(uuid()) @db.Uuid
+  orderNumber           String                 @unique @db.VarChar(32)
+  idempotencyKey        String                 @unique @db.VarChar(128)
+  locale                String                 @default("fa") @db.VarChar(10)
+  currency              Currency               @default(TOMAN)
+  status                OrderStatus            @default(PENDING_PAYMENT)
+  customerFullName      String?
+  customerMobile        String?                @db.VarChar(20)
+  customerEmail         String?
+  province              String?
+  city                  String?
+  postalCode            String?                @db.VarChar(20)
+  address               String?
+  orderNotes            String?                @db.VarChar(1000)
+  marketingSource       String?                @db.VarChar(120)
+  marketingMedium       String?                @db.VarChar(120)
+  marketingCampaign     String?                @db.VarChar(160)
+  marketingContent      String?                @db.VarChar(160)
+  subtotalToman         Decimal                @db.Decimal(18, 0)
+  shippingToman         Decimal                @default(0) @db.Decimal(18, 0)
+  discountToman         Decimal                @default(0) @db.Decimal(18, 0)
+  payableToman          Decimal                @db.Decimal(18, 0)
+  pricingSnapshot       Json
+  priceVerifiedAt       DateTime
+  priceExpiresAt        DateTime
+  inventoryReservedAt   DateTime
+  inventoryExpiresAt    DateTime
+  inventoryReleasedAt   DateTime?
+  inventoryCommittedAt  DateTime?
+  paidAt                DateTime?
+  cancelledAt           DateTime?
+  expiredAt             DateTime?
+  refundedAt            DateTime?
+  createdAt             DateTime               @default(now())
+  updatedAt             DateTime               @updatedAt
+  customerId            String?                @db.Uuid
+  customerNotifications CustomerNotification[]
+  auditEvents           OrderAuditEvent[]
+  items                 OrderItem[]
+  customer              Customer?              @relation(fields: [customerId], references: [id])
+  payments              PaymentAttempt[]
+  shipments             Shipment[]
+  couponRedemption      CouponRedemption?
+
+  @@index([status, createdAt])
+  @@index([status, paidAt])
+  @@index([customerMobile, createdAt])
+  @@index([customerId, createdAt])
+  @@index([marketingSource, createdAt])
+  @@index([marketingCampaign, createdAt])
+  @@index([priceExpiresAt])
+  @@index([inventoryExpiresAt])
+  @@map("orders")
+}
+
+model Coupon {
+  id                String             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  code              String             @unique @db.VarChar(64)
+  titleFa           String?            @db.VarChar(140)
+  titleEn           String?            @db.VarChar(140)
+  discountType      CouponDiscountType
+  value             Decimal            @db.Decimal(18, 3)
+  minSubtotalToman  Decimal            @default(0) @db.Decimal(18, 0)
+  maxDiscountToman  Decimal?           @db.Decimal(18, 0)
+  usageLimit        Int?
+  perCustomerLimit  Int                @default(1)
+  firstPurchaseOnly Boolean            @default(false)
+  startsAt          DateTime?
+  expiresAt         DateTime?
+  isActive          Boolean            @default(true)
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @default(now()) @updatedAt
+  redemptions       CouponRedemption[]
+
+  @@index([isActive, startsAt, expiresAt])
+  @@map("coupons")
+}
+
+model CouponRedemption {
+  id            String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  couponId      String   @db.Uuid
+  orderId       String   @unique @db.Uuid
+  discountToman Decimal  @db.Decimal(18, 0)
+  createdAt     DateTime @default(now())
+  coupon        Coupon   @relation(fields: [couponId], references: [id], onDelete: Restrict)
+  order         Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@index([couponId, createdAt])
+  @@map("coupon_redemptions")
+}
+
+model OrderItem {
+  id                      String          @id @default(uuid()) @db.Uuid
+  orderId                 String          @db.Uuid
+  productId               String?         @db.Uuid
+  variantId               String?         @db.Uuid
+  productSlug             String
+  productSku              String?
+  productNameFa           String
+  productNameEn           String
+  variantTitleFa          String?
+  variantTitleEn          String?
+  variantSku              String?
+  material                MaterialType
+  quantity                Int
+  unitPriceToman          Decimal         @db.Decimal(18, 0)
+  lineTotalToman          Decimal         @db.Decimal(18, 0)
+  metalValueToman         Decimal?        @db.Decimal(18, 0)
+  makingChargeToman       Decimal?        @db.Decimal(18, 0)
+  artisticFeeToman        Decimal?        @db.Decimal(18, 0)
+  profitToman             Decimal?        @db.Decimal(18, 0)
+  taxToman                Decimal?        @db.Decimal(18, 0)
+  originalMetalRateToman  Decimal?        @db.Decimal(18, 0)
+  effectiveMetalRateToman Decimal?        @db.Decimal(18, 0)
+  metalRateMode           String?         @db.VarChar(32)
+  metalRateReason         String?         @db.VarChar(64)
+  safetyMarginPercent     Decimal?        @db.Decimal(7, 3)
+  safetyMarginToman       Decimal?        @db.Decimal(18, 0)
+  stockBeforeReservation  Int
+  stockAfterReservation   Int
+  pricingSnapshot         Json
+  createdAt               DateTime        @default(now())
+  order                   Order           @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product                 Product?        @relation(fields: [productId], references: [id])
+  variant                 ProductVariant? @relation(fields: [variantId], references: [id])
+
+  @@index([orderId])
+  @@index([productId])
+  @@index([variantId])
+  @@index([material])
+  @@map("order_items")
+}
+
+model PaymentAttempt {
+  id                         String        @id @default(uuid()) @db.Uuid
+  orderId                    String        @db.Uuid
+  provider                   String        @db.VarChar(50)
+  status                     PaymentStatus @default(CREATED)
+  amountToman                Decimal       @db.Decimal(18, 0)
+  gatewayAuthority           String?       @unique @db.VarChar(128)
+  gatewayReference           String?       @unique @db.VarChar(128)
+  activeKey                  String?       @unique @db.VarChar(180)
+  requestPayload             Json?
+  responsePayload            Json?
+  callbackPayload            Json?
+  verificationPayload        Json?
+  errorCode                  String?       @db.VarChar(100)
+  errorMessage               String?
+  requestedAt                DateTime      @default(now())
+  redirectedAt               DateTime?
+  callbackReceivedAt         DateTime?
+  verificationStartedAt      DateTime?
+  verificationLeaseExpiresAt DateTime?
+  verifiedAt                 DateTime?
+  failedAt                   DateTime?
+  refundedAt                 DateTime?
+  createdAt                  DateTime      @default(now())
+  updatedAt                  DateTime      @updatedAt
+  refundReference            String?       @db.VarChar(160)
+  refundAmountToman          Decimal?      @db.Decimal(18, 0)
+  refundNote                 String?
+  order                      Order         @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@index([orderId, status])
+  @@index([status, createdAt])
+  @@index([status, verifiedAt])
+  @@index([status, refundedAt])
+  @@index([provider, createdAt])
+  @@index([verificationLeaseExpiresAt])
+  @@index([refundReference])
+  @@map("payment_attempts")
+}
+
+model FinanceExpense {
+  id             String                     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  documentNumber String                     @unique @db.VarChar(32)
+  status         FinanceExpenseStatus       @default(POSTED)
+  category       FinanceExpenseCategory
+  amountToman    Decimal                    @db.Decimal(18, 0)
+  taxToman       Decimal                    @default(0) @db.Decimal(18, 0)
+  occurredAt     DateTime
+  supplier       String                     @db.VarChar(160)
+  reference      String                     @db.VarChar(160)
+  note           String?
+  voidedAt       DateTime?
+  voidReason     String?
+  createdAt      DateTime                   @default(now())
+  updatedAt      DateTime                   @updatedAt
+  auditEvents    FinanceExpenseAuditEvent[]
+
+  @@index([status, occurredAt])
+  @@index([category, occurredAt])
+  @@index([reference])
+  @@map("finance_expenses")
+}
+
+model FinanceExpenseAuditEvent {
+  id        String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  expenseId String         @db.Uuid
+  eventType String         @db.VarChar(80)
+  payload   Json
+  createdAt DateTime       @default(now())
+  expense   FinanceExpense @relation(fields: [expenseId], references: [id])
+
+  @@index([expenseId, createdAt])
+  @@index([eventType, createdAt])
+  @@map("finance_expense_audit_events")
+}
+
+model ContentArticle {
+  id                 String                     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  slug               String                     @unique @db.VarChar(140)
+  status             ContentArticleStatus       @default(DRAFT)
+  origin             ContentArticleOrigin       @default(MANUAL)
+  sourceProductId    String?                    @unique(map: "content_articles_one_live_source_product_idx", where: raw("((\"sourceProductId\" IS NOT NULL) AND (status <> 'ARCHIVED'::\"ContentArticleStatus\"))")) @db.Uuid
+  sourceCollectionId String?                    @db.Uuid
+  titleFa            String                     @db.VarChar(180)
+  titleEn            String                     @db.VarChar(180)
+  excerptFa          String                     @db.VarChar(360)
+  excerptEn          String                     @db.VarChar(360)
+  contentFa          String
+  contentEn          String
+  seoTitleFa         String?                    @db.VarChar(180)
+  seoTitleEn         String?                    @db.VarChar(180)
+  seoDescriptionFa   String?                    @db.VarChar(180)
+  seoDescriptionEn   String?                    @db.VarChar(180)
+  focusKeywordFa     String?                    @db.VarChar(120)
+  focusKeywordEn     String?                    @db.VarChar(120)
+  coverImageUrl      String?
+  publishedAt        DateTime?
+  archivedAt         DateTime?
+  createdAt          DateTime                   @default(now())
+  updatedAt          DateTime                   @updatedAt
+  auditEvents        ContentArticleAuditEvent[]
+  sourceCollection   Collection?                @relation(fields: [sourceCollectionId], references: [id])
+  sourceProduct      Product?                   @relation(fields: [sourceProductId], references: [id])
+
+  @@index([status, publishedAt])
+  @@index([updatedAt])
+  @@index([sourceProductId])
+  @@index([sourceCollectionId])
+  @@map("content_articles")
+}
+
+model ContentArticleAuditEvent {
+  id        String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  articleId String         @db.Uuid
+  eventType String         @db.VarChar(80)
+  payload   Json
+  createdAt DateTime       @default(now())
+  article   ContentArticle @relation(fields: [articleId], references: [id])
+
+  @@index([articleId, createdAt])
+  @@index([eventType, createdAt])
+  @@map("content_article_audit_events")
+}
+
+model ContentSeoSnapshot {
+  id                         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  recordedFor                DateTime @unique @db.Date
+  overallScore               Int
+  publishedArticleCount      Int
+  draftArticleCount          Int
+  activeProductCount         Int
+  productsMissingDescription Int
+  productsMissingImageAlt    Int
+  stalePublishedArticleCount Int
+  issues                     Json
+  createdAt                  DateTime @default(now())
+
+  @@index([createdAt])
+  @@map("content_seo_snapshots")
+}
+
+model DailyStoreBriefing {
+  id                String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  recordedFor       DateTime @unique @db.Date
+  actionCount       Int
+  highPriorityCount Int
+  summary           Json
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @default(now()) @updatedAt
+
+  @@index([createdAt])
+  @@map("daily_store_briefings")
+}
+
+model OrderAuditEvent {
+  id        String         @id @default(uuid()) @db.Uuid
+  orderId   String         @db.Uuid
+  actorType AuditActorType @default(SYSTEM)
+  eventType String         @db.VarChar(100)
+  requestId String?        @db.VarChar(128)
+  payload   Json?
+  createdAt DateTime       @default(now())
+  order     Order          @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@index([orderId, createdAt])
+  @@index([eventType, createdAt])
+  @@map("order_audit_events")
+}
+
+model Customer {
+  id                   String                 @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  fullName             String?
+  mobile               String                 @unique @db.VarChar(20)
+  email                String?                @unique
+  passwordHash         String?                @db.VarChar(255)
+  emailVerifiedAt      DateTime?
+  mobileVerifiedAt     DateTime?
+  failedLoginAttempts  Int                    @default(0)
+  lockedUntil          DateTime?
+  lastLoginAt          DateTime?
+  isActive             Boolean                @default(true)
+  createdAt            DateTime               @default(now())
+  updatedAt            DateTime               @default(now()) @updatedAt
+  addresses            CustomerAddress?
+  favorites            CustomerFavorite[]
+  notifications        CustomerNotification[]
+  productWatches       CustomerProductWatch[]
+  sessions             CustomerSession[]
+  orders               Order[]
+  supportConversations SupportConversation[]
+
+  @@index([isActive, createdAt])
+  @@index([lockedUntil])
+  @@map("customers")
+}
+
+model CustomerSession {
+  id          String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  customerId  String    @db.Uuid
+  sessionHash String    @unique @db.VarChar(64)
+  ipHash      String?   @db.VarChar(64)
+  userAgent   String?   @db.VarChar(500)
+  expiresAt   DateTime
+  revokedAt   DateTime?
+  lastSeenAt  DateTime  @default(now())
+  createdAt   DateTime  @default(now())
+  customer    Customer  @relation(fields: [customerId], references: [id], onDelete: Cascade)
+
+  @@index([customerId, expiresAt])
+  @@index([revokedAt])
+  @@map("customer_sessions")
+}
+
+model CustomerOtpChallenge {
+  id            String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  mobile        String?   @db.VarChar(20)
+  email         String?   @db.VarChar(254)
+  channel       String    @default("SMS") @db.VarChar(16)
+  codeHash      String    @db.VarChar(64)
+  purpose       String    @default("LOGIN") @db.VarChar(32)
+  attempts      Int       @default(0)
+  maxAttempts   Int       @default(5)
+  expiresAt     DateTime
+  consumedAt    DateTime?
+  requestIpHash String?   @db.VarChar(64)
+  createdAt     DateTime  @default(now())
+
+  @@index([mobile, createdAt])
+  @@index([email, createdAt])
+  @@index([channel, createdAt])
+  @@index([expiresAt])
+  @@map("customer_otp_challenges")
+}
+
+model CustomerAddress {
+  id            String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  customerId    String   @unique(map: "customer_addresses_one_default_per_customer_idx", where: raw("(\"isDefault\" = true)")) @db.Uuid
+  title         String   @default("آدرس من") @db.VarChar(80)
+  recipientName String
+  mobile        String   @db.VarChar(20)
+  province      String
+  city          String
+  postalCode    String   @db.VarChar(20)
+  address       String
+  isDefault     Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @default(now()) @updatedAt
+  customer      Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+
+  @@index([customerId, isDefault])
+  @@map("customer_addresses")
+}
+
+model CustomerFavorite {
+  customerId String   @db.Uuid
+  productId  String   @db.Uuid
+  createdAt  DateTime @default(now())
+  customer   Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  product    Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@id([customerId, productId])
+  @@index([productId])
+  @@map("customer_favorites")
+}
+
+model CustomerProductWatch {
+  id                     String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  customerId             String    @db.Uuid
+  productId              String    @db.Uuid
+  notifyOnPriceDrop      Boolean   @default(true)
+  notifyOnRestock        Boolean   @default(true)
+  lastObservedPriceToman Decimal?  @db.Decimal(18, 0)
+  lastObservedInStock    Boolean?
+  lastNotifiedAt         DateTime?
+  createdAt              DateTime  @default(now())
+  updatedAt              DateTime  @default(now()) @updatedAt
+  customer               Customer  @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  product                Product   @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([customerId, productId])
+  @@index([productId, updatedAt])
+  @@index([customerId, createdAt])
+  @@map("customer_product_watches")
+}
+
+model CustomerNotification {
+  id         String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  customerId String    @db.Uuid
+  type       String    @db.VarChar(64)
+  titleFa    String
+  titleEn    String
+  bodyFa     String
+  bodyEn     String
+  orderId    String?   @db.Uuid
+  readAt     DateTime?
+  createdAt  DateTime  @default(now())
+  customer   Customer  @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  order      Order?    @relation(fields: [orderId], references: [id])
+
+  @@index([customerId, createdAt])
+  @@index([customerId, readAt])
+  @@index([orderId])
+  @@map("customer_notifications")
+}
+
+model SiteMeasurementEvent {
+  id             String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  eventKey       String   @unique @db.VarChar(160)
+  eventType      String   @db.VarChar(40)
+  locale         String   @db.VarChar(10)
+  path           String   @db.VarChar(240)
+  sessionId      String   @db.VarChar(80)
+  productSlug    String?  @db.VarChar(140)
+  metricName     String?  @db.VarChar(32)
+  metricValue    Decimal? @db.Decimal(18, 4)
+  metricRating   String?  @db.VarChar(24)
+  navigationType String?  @db.VarChar(32)
+  occurredAt     DateTime
+  createdAt      DateTime @default(now())
+
+  @@index([eventType, occurredAt])
+  @@index([path, occurredAt])
+  @@index([productSlug, occurredAt])
+  @@index([metricName, occurredAt])
+  @@map("site_measurement_events")
+}
+
+model Shipment {
+  id           String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  orderId      String    @db.Uuid
+  carrier      String    @db.VarChar(120)
+  trackingCode String    @db.VarChar(160)
+  status       String    @default("PROCESSING") @db.VarChar(40)
+  note         String?
+  shippedAt    DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @default(now()) @updatedAt
+  order        Order     @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@unique([orderId, carrier, trackingCode])
+  @@index([orderId, createdAt])
+  @@map("shipments")
+}
+
+model SecurityAlert {
+  id            String             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  sourceEventId String             @db.Uuid
+  eventType     String             @db.VarChar(100)
+  severity      String             @db.VarChar(16)
+  scope         String             @db.VarChar(32)
+  channel       String             @db.VarChar(16)
+  status        String             @default("PENDING") @db.VarChar(16)
+  dedupeKey     String             @unique @db.VarChar(64)
+  payload       Json
+  attempts      Int                @default(0)
+  nextAttemptAt DateTime           @default(now())
+  lastAttemptAt DateTime?
+  sentAt        DateTime?
+  lastError     String?            @db.VarChar(300)
+  createdAt     DateTime           @default(now())
+  updatedAt     DateTime           @default(now()) @updatedAt
+  sourceEvent   AdminSecurityEvent @relation(fields: [sourceEventId], references: [id], onDelete: Cascade)
+
+  @@index([status, nextAttemptAt])
+  @@index([severity, createdAt])
+  @@index([sourceEventId, createdAt])
+  @@map("security_alerts")
+}
+
+model SupportConversation {
+  id              String                    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  accessTokenHash String                    @unique @db.VarChar(64)
+  customerId      String?                   @db.Uuid
+  locale          String                    @default("fa") @db.VarChar(10)
+  visitorName     String?                   @db.VarChar(120)
+  visitorEmail    String?                   @db.VarChar(254)
+  visitorPhone    String?                   @db.VarChar(30)
+  status          SupportConversationStatus @default(OPEN)
+  lastMessageAt   DateTime                  @default(now())
+  closedAt        DateTime?
+  createdAt       DateTime                  @default(now())
+  updatedAt       DateTime                  @default(now()) @updatedAt
+  customer        Customer?                 @relation(fields: [customerId], references: [id])
+  messages        SupportMessage[]
+
+  @@index([status, lastMessageAt])
+  @@index([customerId, createdAt])
+  @@map("support_conversations")
+}
+
+model SupportMessage {
+  id             String               @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  conversationId String               @db.Uuid
+  author         SupportMessageAuthor
+  body           String
+  readAt         DateTime?
+  createdAt      DateTime             @default(now())
+  conversation   SupportConversation  @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  @@index([conversationId, createdAt])
+  @@index([author, readAt])
+  @@map("support_messages")
+}
+
+model SupportAgentPresence {
+  id         String   @id @default("primary") @db.VarChar(32)
+  lastSeenAt DateTime
+  updatedAt  DateTime @default(now()) @updatedAt
+
+  @@map("support_agent_presence")
+}
+
+enum CouponDiscountType {
+  PERCENT
+  FIXED_TOMAN
+}
+
+enum ProductStatus {
+  DRAFT
+  ACTIVE
+  OUT_OF_STOCK
+  ARCHIVED
+}
+
+enum Currency {
+  TOMAN
+  USD
+}
+
+enum MaterialType {
+  GOLD
+  SILVER
+}
+
+enum PricingMode {
+  DYNAMIC
+  MANUAL
+}
+
+enum MakingChargeType {
+  NONE
+  FIXED
+  PER_GRAM
+  PERCENT
+  COMBINED
+}
+
+enum OrderStatus {
+  PENDING_PAYMENT
+  PAID
+  PROCESSING
+  SHIPPED
+  COMPLETED
+  PAYMENT_FAILED
+  PAYMENT_REVIEW
+  CANCELLED
+  EXPIRED
+  REFUNDED
+}
+
+enum PaymentStatus {
+  CREATED
+  REDIRECTED
+  PENDING_VERIFICATION
+  REQUIRES_REVIEW
+  PAID
+  FAILED
+  CANCELLED
+  EXPIRED
+  REFUNDED
+}
+
+enum FinanceExpenseCategory {
+  INVENTORY_PURCHASE
+  SHIPPING_COST
+  MARKETING
+  RENT
+  PAYROLL
+  GATEWAY_FEE
+  PACKAGING
+  TAX
+  SOFTWARE
+  OTHER
+}
+
+enum FinanceExpenseStatus {
+  POSTED
+  VOID
+}
+
+enum ContentArticleStatus {
+  DRAFT
+  IN_REVIEW
+  PUBLISHED
+  ARCHIVED
+}
+
+enum ContentArticleOrigin {
+  MANUAL
+  PRODUCT_ASSISTED
+}
+
+enum AuditActorType {
+  SYSTEM
+  CUSTOMER
+  ADMIN
+  PAYMENT_GATEWAY
+}
+
+enum SupportConversationStatus {
+  OPEN
+  CLOSED
+}
+
+enum SupportMessageAuthor {
+  VISITOR
+  ADMIN
+}

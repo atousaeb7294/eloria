@@ -1,0 +1,2360 @@
+diff --git a/scripts/quality-audit.ts b/scripts/quality-audit.ts
+index 648eb4d..509f823 100644
+--- a/scripts/quality-audit.ts
++++ b/scripts/quality-audit.ts
+@@ -254,6 +254,13 @@ check(
+   journalPage.includes("getPublishedArticles") &&
+     journalArticlePage.includes("getPublishedArticleBySlug"),
+ );
++check(
++  "Journal index degrades safely when its database read is unavailable",
++  journalPage.includes("journalUnavailable") &&
++    journalPage.includes("try {") &&
++    journalPage.includes("Published articles are temporarily unavailable") &&
++    journalPage.includes('role="status"'),
++);
+ check(
+   "Article body renderer does not execute raw HTML",
+   !articleMarkdown.includes("dangerouslySetInnerHTML") &&
+@@ -339,7 +346,7 @@ check(
+ );
+ check(
+   "Selection guide uses real catalog query parameters",
+-  selectionAssistant.includes("availability: \"available\"") &&
++  selectionAssistant.includes('availability: "available"') &&
+     selectionAssistant.includes("maxPrice") &&
+     selectionAssistant.includes("router.push"),
+ );
+diff --git a/scripts/security-audit.ts b/scripts/security-audit.ts
+index b769eeb..c876d03 100644
+--- a/scripts/security-audit.ts
++++ b/scripts/security-audit.ts
+@@ -10,7 +10,7 @@ async function fileIncludes(
+ ): Promise<boolean> {
+   try {
+     const content = await readFile(path.join(root, file), "utf8");
+-    return (Array.isArray(values) ? values : [values]).every(value =>
++    return (Array.isArray(values) ? values : [values]).every((value) =>
+       content.includes(value),
+     );
+   } catch {
+@@ -54,7 +54,10 @@ async function main(): Promise<void> {
+         "verifyTurnstileToken",
+         "checkout-mobile:",
+       ])) &&
+-        (await fileIncludes("src/lib/checkout-order.ts", "PENDING_ORDER_LIMIT")),
++        (await fileIncludes(
++          "src/lib/checkout-order.ts",
++          "PENDING_ORDER_LIMIT",
++        )),
+     ],
+     [
+       "Turnstile bounded verification",
+@@ -138,7 +141,10 @@ async function main(): Promise<void> {
+     ],
+     [
+       "Dedicated health secret separation",
+-      (await fileIncludes("src/app/api/health/route.ts", "ELORIA_HEALTH_SECRET")) &&
++      (await fileIncludes(
++        "src/app/api/health/route.ts",
++        "ELORIA_HEALTH_SECRET",
++      )) &&
+         (await fileIncludes("src/lib/env-validation.ts", [
+           "ELORIA_HEALTH_SECRET",
+           "CRON_SECRET",
+@@ -146,28 +152,81 @@ async function main(): Promise<void> {
+     ],
+     [
+       "Bounded public JSON request bodies",
+-      (await fileIncludes("src/lib/security/json-body.ts", "ELORIA_FINAL_JSON_BODY_LIMIT_V1")) &&
+-        (await fileIncludes("src/app/api/checkout/orders/route.ts", "readJsonBody")) &&
+-        (await fileIncludes("src/app/api/payments/zarinpal/start/route.ts", "readJsonBody")) &&
+-        (await fileIncludes("src/app/api/support/contact/route.ts", "readJsonBody")) &&
+-        (await fileIncludes("src/app/api/treasury/products/route.ts", "readJsonBody")) &&
+-        (await fileIncludes("src/app/api/customer/auth/request-otp/route.ts", "readJsonBody")) &&
+-        (await fileIncludes("src/app/api/customer/auth/verify-otp/route.ts", "readJsonBody")) &&
+-        (await fileIncludes("src/app/api/customer/me/route.ts", "readJsonBody")) &&
+-        (await fileIncludes("src/app/api/customer/addresses/route.ts", "readJsonBody")) &&
+-        (await fileIncludes("src/app/api/customer/addresses/[id]/route.ts", "readJsonBody")) &&
+-        (await fileIncludes("src/app/api/customer/favorites/route.ts", "readJsonBody")),
++      (await fileIncludes(
++        "src/lib/security/json-body.ts",
++        "ELORIA_FINAL_JSON_BODY_LIMIT_V1",
++      )) &&
++        (await fileIncludes(
++          "src/app/api/checkout/orders/route.ts",
++          "readJsonBody",
++        )) &&
++        (await fileIncludes(
++          "src/app/api/payments/zarinpal/start/route.ts",
++          "readJsonBody",
++        )) &&
++        (await fileIncludes(
++          "src/app/api/support/contact/route.ts",
++          "readJsonBody",
++        )) &&
++        (await fileIncludes(
++          "src/app/api/treasury/products/route.ts",
++          "readJsonBody",
++        )) &&
++        (await fileIncludes(
++          "src/app/api/customer/auth/request-otp/route.ts",
++          "readJsonBody",
++        )) &&
++        (await fileIncludes(
++          "src/app/api/customer/auth/verify-otp/route.ts",
++          "readJsonBody",
++        )) &&
++        (await fileIncludes(
++          "src/app/api/customer/me/route.ts",
++          "readJsonBody",
++        )) &&
++        (await fileIncludes(
++          "src/app/api/customer/addresses/route.ts",
++          "readJsonBody",
++        )) &&
++        (await fileIncludes(
++          "src/app/api/customer/addresses/[id]/route.ts",
++          "readJsonBody",
++        )) &&
++        (await fileIncludes(
++          "src/app/api/customer/favorites/route.ts",
++          "readJsonBody",
++        )) &&
++        (await fileIncludes(
++          "src/app/api/customer/notifications/route.ts",
++          "readJsonBody",
++        )) &&
++        (await fileIncludes("src/app/api/cart/quote/route.ts", "readJsonBody")),
+     ],
+     [
+       "Sanitized admin and provider-facing errors",
+-      (await fileIncludes("src/app/[locale]/admin/(protected)/orders/actions.ts", "publicOrderActionError")) &&
+-        (await fileIncludes("src/app/[locale]/admin/(protected)/products/actions.ts", "publicAdminProductError")) &&
+-        (await fileIncludes("src/app/[locale]/admin/(protected)/products/assets/actions.ts", "publicAssetError")) &&
+-        (await fileIncludes("src/lib/product-media-storage.ts", "Supabase upload failed")),
++      (await fileIncludes(
++        "src/app/[locale]/admin/(protected)/orders/actions.ts",
++        "publicOrderActionError",
++      )) &&
++        (await fileIncludes(
++          "src/app/[locale]/admin/(protected)/products/actions.ts",
++          "publicAdminProductError",
++        )) &&
++        (await fileIncludes(
++          "src/app/[locale]/admin/(protected)/products/assets/actions.ts",
++          "publicAssetError",
++        )) &&
++        (await fileIncludes(
++          "src/lib/product-media-storage.ts",
++          "Supabase upload failed",
++        )),
+     ],
+     [
+       "Payment verification payload minimization",
+-      await fileIncludes("src/lib/payment-service.ts", "paymentVerificationSnapshot"),
++      await fileIncludes(
++        "src/lib/payment-service.ts",
++        "paymentVerificationSnapshot",
++      ),
+     ],
+     [
+       "Production secret generator completeness",
+@@ -193,11 +252,14 @@ async function main(): Promise<void> {
+           "acquireCronLease",
+           "CRON_SECRET",
+         ])) &&
+-        (await fileIncludes("src/app/[locale]/admin/(protected)/security/page.tsx", [
+-          "امنیت و هشدارها",
+-          "Delivery Outbox",
+-        ])) &&
+-        (await fileIncludes("src/components/admin/admin-shell.tsx", "/security")),
++        (await fileIncludes(
++          "src/app/[locale]/admin/(protected)/security/page.tsx",
++          ["امنیت و هشدارها", "Delivery Outbox"],
++        )) &&
++        (await fileIncludes(
++          "src/components/admin/admin-shell.tsx",
++          "/security",
++        )),
+     ],
+     [
+       "Customer authentication security telemetry",
+@@ -256,7 +318,10 @@ async function main(): Promise<void> {
+     ],
+     [
+       "Bounded SMS provider request",
+-      await fileIncludes("src/lib/notifications/kavenegar.ts", "AbortSignal.timeout(8_000)"),
++      await fileIncludes(
++        "src/lib/notifications/kavenegar.ts",
++        "AbortSignal.timeout(8_000)",
++      ),
+     ],
+     [
+       "Metal-rate anomaly circuit breaker",
+@@ -282,20 +347,25 @@ async function main(): Promise<void> {
+     ],
+     [
+       "Historical guest order privacy",
+-      !(await fileIncludes("src/lib/customer-auth.ts", "customerMobile: mobile")),
++      !(await fileIncludes(
++        "src/lib/customer-auth.ts",
++        "customerMobile: mobile",
++      )),
+     ],
+     [
+       "Structured refund reference",
+       (await fileIncludes("src/lib/order-operations.ts", [
+         "refundReference",
+         "شماره مرجع",
+-      ])) &&
+-        (await fileIncludes("prisma/schema.prisma", "refundReference")),
++      ])) && (await fileIncludes("prisma/schema.prisma", "refundReference")),
+     ],
+     [
+       "Data retention cron",
+       (await fileIncludes("src/lib/data-retention.ts", "runDataRetention")) &&
+-        (await fileIncludes("src/app/api/cron/data-retention/route.ts", "CRON_SECRET")),
++        (await fileIncludes(
++          "src/app/api/cron/data-retention/route.ts",
++          "CRON_SECRET",
++        )),
+     ],
+     [
+       "Prisma production migrations",
+diff --git a/src/app/[locale]/journal/page.tsx b/src/app/[locale]/journal/page.tsx
+index a281d8b..19d931a 100644
+--- a/src/app/[locale]/journal/page.tsx
++++ b/src/app/[locale]/journal/page.tsx
+@@ -36,7 +36,18 @@ export default async function JournalIndexPage({
+   setRequestLocale(locale);
+ 
+   const isPersian = locale === "fa";
+-  const articles = await getPublishedArticles();
++  let journalUnavailable = false;
++  let articles: Awaited<ReturnType<typeof getPublishedArticles>> = [];
++
++  try {
++    articles = await getPublishedArticles();
++  } catch (error) {
++    journalUnavailable = true;
++    console.error(
++      "[Eloria Journal] Published articles are temporarily unavailable.",
++      error,
++    );
++  }
+ 
+   return (
+     <InternalPageShell locale={locale}>
+@@ -66,7 +77,30 @@ export default async function JournalIndexPage({
+           </p>
+         </header>
+ 
+-        {articles.length === 0 ? (
++        {journalUnavailable ? (
++          <div
++            role="status"
++            className="mx-auto mt-14 max-w-3xl rounded-[2.2rem] border border-amber-200/20 bg-amber-100/[0.05] px-7 py-12 text-center shadow-[0_24px_65px_rgba(0,0,0,0.28)] backdrop-blur-xl"
++          >
++            <BookOpen className="mx-auto size-7 text-[#e2c777]" />
++            <h2 className="mt-4 text-xl text-[#f1dfb7]">
++              {isPersian
++                ? "مجله موقتاً در دسترس نیست"
++                : "The journal is temporarily unavailable"}
++            </h2>
++            <p className="mx-auto mt-3 max-w-xl text-sm leading-8 text-[#d4c5a7]/68">
++              {isPersian
++                ? "ارتباط با آرشیو مقاله‌ها موقتاً برقرار نیست. کمی بعد دوباره تلاش کنید؛ فروشگاه و گنجینه‌ها همچنان در دسترس‌اند."
++                : "The article archive cannot be reached right now. Please try again shortly; the shop and collections remain available."}
++            </p>
++            <Link
++              href={`/${locale}/products`}
++              className="mt-7 inline-flex rounded-full border border-[#d9b85f]/40 bg-[#d9b85f]/[0.07] px-5 py-3 text-xs text-[#ecd794] transition hover:-translate-y-0.5 hover:border-[#efd17d]/72 hover:bg-[#d9b85f]/[0.11]"
++            >
++              {isPersian ? "مشاهدهٔ جواهرها" : "Explore the jewellery"}
++            </Link>
++          </div>
++        ) : articles.length === 0 ? (
+           <div className="mx-auto mt-14 max-w-3xl rounded-[2.2rem] border border-[#d9b85f]/22 bg-[#061c15]/80 px-7 py-12 text-center shadow-[0_24px_65px_rgba(0,0,0,0.28)] backdrop-blur-xl">
+             <Sparkles className="mx-auto size-7 text-[#e2c777]" />
+             <h2 className="mt-4 text-xl text-[#f1dfb7]">
+diff --git a/src/app/api/cart/quote/route.ts b/src/app/api/cart/quote/route.ts
+index 49efded..51317f3 100644
+--- a/src/app/api/cart/quote/route.ts
++++ b/src/app/api/cart/quote/route.ts
+@@ -1,26 +1,18 @@
+-import {
+-  NextRequest,
+-  NextResponse,
+-} from "next/server";
++import { NextRequest, NextResponse } from "next/server";
+ 
+ import {
+   getProductLivePrice,
+   ProductPricingError,
+ } from "@/lib/product-pricing";
+ 
+-import {
+-  consumeRateLimit,
+-} from "@/lib/security/rate-limit";
++import { JsonRequestBodyError, readJsonBody } from "@/lib/security/json-body";
++import { consumeRateLimit } from "@/lib/security/rate-limit";
+ 
+ import { calculateShipping } from "@/lib/shipping";
+ 
+-import {
+-  hasTrustedOrigin,
+-  requestIp,
+-} from "@/lib/security/request";
++import { hasTrustedOrigin, requestIp } from "@/lib/security/request";
+ 
+-export const dynamic =
+-  "force-dynamic";
++export const dynamic = "force-dynamic";
+ 
+ export const revalidate = 0;
+ 
+@@ -85,78 +77,40 @@ type FailedCartItem = {
+ 
+ function noStoreHeaders() {
+   return {
+-    "Cache-Control":
+-      "no-store, no-cache, must-revalidate",
++    "Cache-Control": "no-store, no-cache, must-revalidate",
+   };
+ }
+ 
+-function normalizeCartItem(
+-  item: IncomingCartItem,
+-): ValidCartItem | null {
+-  if (
+-    typeof item !== "object" ||
+-    item === null
+-  ) {
++function normalizeCartItem(item: IncomingCartItem): ValidCartItem | null {
++  if (typeof item !== "object" || item === null) {
+     return null;
+   }
+ 
+-  if (
+-    typeof item.slug !==
+-    "string"
+-  ) {
++  if (typeof item.slug !== "string") {
+     return null;
+   }
+ 
+-  const slug =
+-    item.slug.trim();
++  const slug = item.slug.trim();
+ 
+-  if (
+-    !slug ||
+-    slug.length > 160
+-  ) {
++  if (!slug || slug.length > 160) {
+     return null;
+   }
+ 
+-  let variantId:
+-    string | null = null;
+-
+-  if (
+-    typeof item.variantId ===
+-    "string"
+-  ) {
+-    const normalizedVariantId =
+-      item.variantId.trim();
+-
+-    variantId =
+-      normalizedVariantId ||
+-      null;
+-  } else if (
+-    item.variantId !==
+-      null &&
+-    item.variantId !==
+-      undefined
+-  ) {
++  let variantId: string | null = null;
++
++  if (typeof item.variantId === "string") {
++    const normalizedVariantId = item.variantId.trim();
++
++    variantId = normalizedVariantId || null;
++  } else if (item.variantId !== null && item.variantId !== undefined) {
+     return null;
+   }
+ 
+-  if (
+-    typeof item.quantity !==
+-      "number" ||
+-    !Number.isInteger(
+-      item.quantity,
+-    )
+-  ) {
++  if (typeof item.quantity !== "number" || !Number.isInteger(item.quantity)) {
+     return null;
+   }
+ 
+-  const quantity =
+-    Math.min(
+-      Math.max(
+-        item.quantity,
+-        1,
+-      ),
+-      99,
+-    );
++  const quantity = Math.min(Math.max(item.quantity, 1), 99);
+ 
+   return {
+     slug,
+@@ -165,106 +119,61 @@ function normalizeCartItem(
+   };
+ }
+ 
+-function mergeDuplicateItems(
+-  items: ValidCartItem[],
+-): ValidCartItem[] {
+-  const merged =
+-    new Map<
+-      string,
+-      ValidCartItem
+-    >();
++function mergeDuplicateItems(items: ValidCartItem[]): ValidCartItem[] {
++  const merged = new Map<string, ValidCartItem>();
+ 
+   for (const item of items) {
+-    const key =
+-      `${item.slug}::${item.variantId ?? ""}`;
++    const key = `${item.slug}::${item.variantId ?? ""}`;
+ 
+-    const existing =
+-      merged.get(key);
++    const existing = merged.get(key);
+ 
+     if (existing) {
+-      existing.quantity =
+-        Math.min(
+-          existing.quantity +
+-            item.quantity,
+-          99,
+-        );
++      existing.quantity = Math.min(existing.quantity + item.quantity, 99);
+ 
+       continue;
+     }
+ 
+-    merged.set(
+-      key,
+-      {
+-        ...item,
+-      },
+-    );
++    merged.set(key, {
++      ...item,
++    });
+   }
+ 
+-  return Array.from(
+-    merged.values(),
+-  );
++  return Array.from(merged.values());
+ }
+ 
+-async function mapWithConcurrency<
+-  T,
+-  R,
+->(
++async function mapWithConcurrency<T, R>(
+   items: T[],
+   concurrency: number,
+-  mapper: (
+-    item: T,
+-    index: number,
+-  ) => Promise<R>,
++  mapper: (item: T, index: number) => Promise<R>,
+ ): Promise<R[]> {
+-  if (
+-    items.length === 0
+-  ) {
++  if (items.length === 0) {
+     return [];
+   }
+ 
+-  const output =
+-    new Array<R>(
+-      items.length,
+-    );
++  const output = new Array<R>(items.length);
+ 
+   let nextIndex = 0;
+ 
+   async function worker() {
+     while (true) {
+-      const currentIndex =
+-        nextIndex;
++      const currentIndex = nextIndex;
+ 
+       nextIndex += 1;
+ 
+-      if (
+-        currentIndex >=
+-        items.length
+-      ) {
++      if (currentIndex >= items.length) {
+         return;
+       }
+ 
+-      output[currentIndex] =
+-        await mapper(
+-          items[currentIndex],
+-          currentIndex,
+-        );
++      output[currentIndex] = await mapper(items[currentIndex], currentIndex);
+     }
+   }
+ 
+-  const workerCount =
+-    Math.min(
+-      Math.max(
+-        concurrency,
+-        1,
+-      ),
+-      items.length,
+-    );
++  const workerCount = Math.min(Math.max(concurrency, 1), items.length);
+ 
+   await Promise.all(
+     Array.from(
+       {
+-        length:
+-          workerCount,
++        length: workerCount,
+       },
+       () => worker(),
+     ),
+@@ -273,9 +182,7 @@ async function mapWithConcurrency<
+   return output;
+ }
+ 
+-async function quoteCartItem(
+-  item: ValidCartItem,
+-): Promise<
++async function quoteCartItem(item: ValidCartItem): Promise<
+   | {
+       successful: true;
+       item: QuotedCartItem;
+@@ -286,145 +193,86 @@ async function quoteCartItem(
+     }
+ > {
+   try {
+-    const result =
+-      await getProductLivePrice({
+-        slug:
+-          item.slug,
+-
+-        variantId:
+-          item.variantId,
+-      });
+-
+-    const image =
+-      result.product.primaryImage;
+-
+-    const selectedStock =
+-      result.variant
+-        ?.stock ??
+-      result.product.stock;
+-
+-    const unitPriceToman =
+-      result.pricing
+-        .finalPriceToman;
+-
+-    const lineTotalToman =
+-      (
+-        BigInt(
+-          unitPriceToman,
+-        ) *
+-        BigInt(
+-          item.quantity,
+-        )
+-      ).toString();
++    const result = await getProductLivePrice({
++      slug: item.slug,
+ 
+-    const hasEnoughStock =
+-      selectedStock >=
+-      item.quantity;
++      variantId: item.variantId,
++    });
+ 
+-    const canPurchase =
+-      result.product
+-        .isPurchasable &&
+-      hasEnoughStock;
++    const image = result.product.primaryImage;
+ 
+-    let unavailableReason:
+-      string | null = null;
++    const selectedStock = result.variant?.stock ?? result.product.stock;
+ 
+-    if (
+-      !result.product
+-        .isPurchasable
+-    ) {
+-      unavailableReason =
+-        "PRODUCT_UNAVAILABLE";
+-    } else if (
+-      !hasEnoughStock
+-    ) {
+-      unavailableReason =
+-        "INSUFFICIENT_STOCK";
++    const unitPriceToman = result.pricing.finalPriceToman;
++
++    const lineTotalToman = (
++      BigInt(unitPriceToman) * BigInt(item.quantity)
++    ).toString();
++
++    const hasEnoughStock = selectedStock >= item.quantity;
++
++    const canPurchase = result.product.isPurchasable && hasEnoughStock;
++
++    let unavailableReason: string | null = null;
++
++    if (!result.product.isPurchasable) {
++      unavailableReason = "PRODUCT_UNAVAILABLE";
++    } else if (!hasEnoughStock) {
++      unavailableReason = "INSUFFICIENT_STOCK";
+     }
+ 
+     return {
+       successful: true,
+ 
+       item: {
+-        slug:
+-          result.product.slug,
++        slug: result.product.slug,
+ 
+-        variantId:
+-          result.variant
+-            ?.id ?? null,
++        variantId: result.variant?.id ?? null,
+ 
+-        quantity:
+-          item.quantity,
++        quantity: item.quantity,
+ 
+         product: {
+-          id:
+-            result.product.id,
++          id: result.product.id,
+ 
+-          nameFa:
+-            result.product
+-              .nameFa,
++          nameFa: result.product.nameFa,
+ 
+-          nameEn:
+-            result.product
+-              .nameEn,
++          nameEn: result.product.nameEn,
+ 
+-          material:
+-            result.product
+-              .material,
++          material: result.product.material,
+ 
+-          sku:
+-            result.product.sku,
++          sku: result.product.sku,
+ 
+-          stock:
+-            result.product.stock,
++          stock: result.product.stock,
+ 
+-          isPurchasable:
+-            result.product
+-              .isPurchasable,
++          isPurchasable: result.product.isPurchasable,
+         },
+ 
+-        variant:
+-          result.variant
+-            ? {
+-                id:
+-                  result.variant
+-                    .id,
+-
+-                titleFa:
+-                  result.variant
+-                    .titleFa,
+-
+-                titleEn:
+-                  result.variant
+-                    .titleEn,
+-
+-                sku:
+-                  result.variant
+-                    .sku,
+-
+-                stock:
+-                  result.variant
+-                    .stock,
+-              }
+-            : null,
+-
+-        image:
+-          image
+-            ? {
+-                url:
+-                  image.url,
+-
+-                altFa:
+-                  image.altFa,
+-
+-                altEn:
+-                  image.altEn,
+-              }
+-            : null,
++        variant: result.variant
++          ? {
++              id: result.variant.id,
++
++              titleFa: result.variant.titleFa,
++
++              titleEn: result.variant.titleEn,
++
++              sku: result.variant.sku,
++
++              stock: result.variant.stock,
++            }
++          : null,
++
++        image: image
++          ? {
++              url: image.url,
++
++              altFa: image.altFa,
++
++              altEn: image.altEn,
++            }
++          : null,
+ 
+         pricing: {
+-          currency:
+-            "TOMAN",
++          currency: "TOMAN",
+ 
+           unitPriceToman,
+ 
+@@ -437,68 +285,52 @@ async function quoteCartItem(
+       },
+     };
+   } catch (error) {
+-    if (
+-      error instanceof
+-        ProductPricingError
+-    ) {
++    if (error instanceof ProductPricingError) {
+       return {
+-        successful:
+-          false,
++        successful: false,
+ 
+         item: {
+-          slug:
+-            item.slug,
++          slug: item.slug,
+ 
+-          variantId:
+-            item.variantId,
++          variantId: item.variantId,
+ 
+-          quantity:
+-            item.quantity,
++          quantity: item.quantity,
+ 
+-          code:
+-            error.code,
++          code: error.code,
+ 
+-          message:
+-            error.message,
++          message: error.message,
+         },
+       };
+     }
+ 
+-    console.error(
+-      `[Eloria Cart] Unable to quote "${item.slug}".`,
+-      error,
+-    );
++    console.error(`[Eloria Cart] Unable to quote "${item.slug}".`, error);
+ 
+     return {
+-      successful:
+-        false,
++      successful: false,
+ 
+       item: {
+-        slug:
+-          item.slug,
++        slug: item.slug,
+ 
+-        variantId:
+-          item.variantId,
++        variantId: item.variantId,
+ 
+-        quantity:
+-          item.quantity,
++        quantity: item.quantity,
+ 
+-        code:
+-          "INTERNAL_ERROR",
++        code: "INTERNAL_ERROR",
+ 
+-        message:
+-          "محاسبه قیمت این محصول در حال حاضر امکان‌پذیر نیست.",
++        message: "محاسبه قیمت این محصول در حال حاضر امکان‌پذیر نیست.",
+       },
+     };
+   }
+ }
+ 
+-export async function POST(
+-  request: NextRequest,
+-) {
++export async function POST(request: NextRequest) {
+   if (!hasTrustedOrigin(request)) {
+     return NextResponse.json(
+-      { successful: false, code: "FORBIDDEN_ORIGIN", message: "مبدأ درخواست معتبر نیست." },
++      {
++        successful: false,
++        code: "FORBIDDEN_ORIGIN",
++        message: "مبدأ درخواست معتبر نیست.",
++      },
+       { status: 403, headers: noStoreHeaders() },
+     );
+   }
+@@ -511,8 +343,18 @@ export async function POST(
+ 
+   if (!rate.allowed) {
+     return NextResponse.json(
+-      { successful: false, code: "RATE_LIMITED", message: "تعداد درخواست‌های بررسی قیمت بیش از حد مجاز است." },
+-      { status: 429, headers: { ...noStoreHeaders(), "Retry-After": String(rate.retryAfterSeconds) } },
++      {
++        successful: false,
++        code: "RATE_LIMITED",
++        message: "تعداد درخواست‌های بررسی قیمت بیش از حد مجاز است.",
++      },
++      {
++        status: 429,
++        headers: {
++          ...noStoreHeaders(),
++          "Retry-After": String(rate.retryAfterSeconds),
++        },
++      },
+     );
+   }
+ 
+@@ -520,279 +362,182 @@ export async function POST(
+     let body: unknown;
+ 
+     try {
+-      body =
+-        await request.json();
+-    } catch {
++      body = await readJsonBody(request, 32 * 1024);
++    } catch (error) {
++      const bodyError = error instanceof JsonRequestBodyError ? error : null;
++
+       return NextResponse.json(
+         {
+           successful: false,
+-          code:
+-            "INVALID_JSON",
+-          message:
+-            "ساختار اطلاعات سبد خرید معتبر نیست.",
++          code: bodyError?.code ?? "INVALID_JSON",
++          message: bodyError?.message ?? "ساختار اطلاعات سبد خرید معتبر نیست.",
+         },
+         {
+-          status: 400,
+-          headers:
+-            noStoreHeaders(),
++          status: bodyError?.status ?? 400,
++          headers: noStoreHeaders(),
+         },
+       );
+     }
+ 
+     if (
+-      typeof body !==
+-        "object" ||
++      typeof body !== "object" ||
+       body === null ||
+-      !(
+-        "items" in body
+-      ) ||
+-      !Array.isArray(
+-        body.items,
+-      )
++      !("items" in body) ||
++      !Array.isArray(body.items)
+     ) {
+       return NextResponse.json(
+         {
+           successful: false,
+-          code:
+-            "INVALID_CART",
+-          message:
+-            "سبد خرید معتبر نیست.",
++          code: "INVALID_CART",
++          message: "سبد خرید معتبر نیست.",
+         },
+         {
+           status: 400,
+-          headers:
+-            noStoreHeaders(),
++          headers: noStoreHeaders(),
+         },
+       );
+     }
+ 
+-    if (
+-      body.items.length >
+-      50
+-    ) {
++    if (body.items.length > 50) {
+       return NextResponse.json(
+         {
+           successful: false,
+-          code:
+-            "TOO_MANY_ITEMS",
+-          message:
+-            "تعداد اقلام سبد خرید بیش از حد مجاز است.",
++          code: "TOO_MANY_ITEMS",
++          message: "تعداد اقلام سبد خرید بیش از حد مجاز است.",
+         },
+         {
+           status: 400,
+-          headers:
+-            noStoreHeaders(),
++          headers: noStoreHeaders(),
+         },
+       );
+     }
+ 
+-    const normalizedItems =
+-      body.items
+-        .map((item) =>
+-          normalizeCartItem(
+-            item as IncomingCartItem,
+-          ),
+-        )
+-        .filter(
+-          (
+-            item,
+-          ): item is ValidCartItem =>
+-            item !== null,
+-        );
++    const normalizedItems = body.items
++      .map((item) => normalizeCartItem(item as IncomingCartItem))
++      .filter((item): item is ValidCartItem => item !== null);
+ 
+-    if (
+-      normalizedItems.length !==
+-      body.items.length
+-    ) {
++    if (normalizedItems.length !== body.items.length) {
+       return NextResponse.json(
+         {
+           successful: false,
+-          code:
+-            "INVALID_CART_ITEM",
+-          message:
+-            "حداقل یکی از اقلام سبد خرید معتبر نیست.",
++          code: "INVALID_CART_ITEM",
++          message: "حداقل یکی از اقلام سبد خرید معتبر نیست.",
+         },
+         {
+           status: 400,
+-          headers:
+-            noStoreHeaders(),
++          headers: noStoreHeaders(),
+         },
+       );
+     }
+ 
+-    const mergedItems =
+-      mergeDuplicateItems(
+-        normalizedItems,
+-      );
++    const mergedItems = mergeDuplicateItems(normalizedItems);
+ 
+-    if (
+-      mergedItems.length >
+-      30
+-    ) {
++    if (mergedItems.length > 30) {
+       return NextResponse.json(
+         {
+           successful: false,
+-          code:
+-            "TOO_MANY_UNIQUE_ITEMS",
+-          message:
+-            "حداکثر ۳۰ محصول متفاوت می‌تواند در سبد خرید باشد.",
++          code: "TOO_MANY_UNIQUE_ITEMS",
++          message: "حداکثر ۳۰ محصول متفاوت می‌تواند در سبد خرید باشد.",
+         },
+         {
+           status: 400,
+-          headers:
+-            noStoreHeaders(),
++          headers: noStoreHeaders(),
+         },
+       );
+     }
+ 
+-    const results =
+-      await mapWithConcurrency(
+-        mergedItems,
+-        2,
+-        quoteCartItem,
+-      );
++    const results = await mapWithConcurrency(mergedItems, 2, quoteCartItem);
+ 
+-    const quotedItems =
+-      results
+-        .filter(
+-          (
+-            result,
+-          ): result is {
+-            successful: true;
+-            item: QuotedCartItem;
+-          } =>
+-            result.successful,
+-        )
+-        .map(
+-          (result) =>
+-            result.item,
+-        );
+-
+-    const failedItems =
+-      results
+-        .filter(
+-          (
+-            result,
+-          ): result is {
+-            successful: false;
+-            item: FailedCartItem;
+-          } =>
+-            !result.successful,
+-        )
+-        .map(
+-          (result) =>
+-            result.item,
+-        );
+-
+-    const subtotalToman =
+-      quotedItems.reduce(
++    const quotedItems = results
++      .filter(
+         (
+-          total,
+-          item,
+-        ) => {
+-          if (
+-            !item.canPurchase
+-          ) {
+-            return total;
+-          }
+-
+-          return (
+-            total +
+-            BigInt(
+-              item.pricing
+-                .lineTotalToman,
+-            )
+-          );
+-        },
+-        BigInt(0),
+-      );
++          result,
++        ): result is {
++          successful: true;
++          item: QuotedCartItem;
++        } => result.successful,
++      )
++      .map((result) => result.item);
++
++    const failedItems = results
++      .filter(
++        (
++          result,
++        ): result is {
++          successful: false;
++          item: FailedCartItem;
++        } => !result.successful,
++      )
++      .map((result) => result.item);
++
++    const subtotalToman = quotedItems.reduce((total, item) => {
++      if (!item.canPurchase) {
++        return total;
++      }
++
++      return total + BigInt(item.pricing.lineTotalToman);
++    }, BigInt(0));
+ 
+     // ELORIA_V3_SERVER_SHIPPING
+     const shippingQuote = calculateShipping(subtotalToman);
+     const payableToman = subtotalToman + BigInt(shippingQuote.shippingToman);
+ 
+-    const totalQuantity =
+-      quotedItems.reduce(
+-        (
+-          total,
+-          item,
+-        ) =>
+-          total +
+-          item.quantity,
+-        0,
+-      );
++    const totalQuantity = quotedItems.reduce(
++      (total, item) => total + item.quantity,
++      0,
++    );
+ 
+     const canCheckout =
+-      mergedItems.length >
+-        0 &&
+-      failedItems.length ===
+-        0 &&
+-      quotedItems.every(
+-        (item) =>
+-          item.canPurchase,
+-      );
++      mergedItems.length > 0 &&
++      failedItems.length === 0 &&
++      quotedItems.every((item) => item.canPurchase);
+ 
+     return NextResponse.json(
+       {
+         successful: true,
+ 
+-        currency:
+-          "TOMAN",
++        currency: "TOMAN",
+ 
+-        items:
+-          quotedItems,
++        items: quotedItems,
+ 
+         failedItems,
+ 
+         summary: {
+-          uniqueItems:
+-            quotedItems.length,
++          uniqueItems: quotedItems.length,
+ 
+           totalQuantity,
+ 
+-          subtotalToman:
+-            subtotalToman.toString(),
++          subtotalToman: subtotalToman.toString(),
+ 
+-          shippingToman:
+-            shippingQuote.shippingToman,
++          shippingToman: shippingQuote.shippingToman,
+ 
+-          freeShippingApplied:
+-            shippingQuote.freeShippingApplied,
++          freeShippingApplied: shippingQuote.freeShippingApplied,
+ 
+-          payableToman:
+-            payableToman.toString(),
++          payableToman: payableToman.toString(),
+ 
+           canCheckout,
+         },
+ 
+-        generatedAt:
+-          new Date().toISOString(),
++        generatedAt: new Date().toISOString(),
+       },
+       {
+         status: 200,
+-        headers:
+-          noStoreHeaders(),
++        headers: noStoreHeaders(),
+       },
+     );
+   } catch (error) {
+-    console.error(
+-      "[Eloria Cart] Unexpected quote error.",
+-      error,
+-    );
++    console.error("[Eloria Cart] Unexpected quote error.", error);
+ 
+     return NextResponse.json(
+       {
+         successful: false,
+-        code:
+-          "INTERNAL_ERROR",
+-        message:
+-          "دریافت اطلاعات سبد خرید امکان‌پذیر نیست.",
++        code: "INTERNAL_ERROR",
++        message: "دریافت اطلاعات سبد خرید امکان‌پذیر نیست.",
+       },
+       {
+         status: 500,
+-        headers:
+-          noStoreHeaders(),
++        headers: noStoreHeaders(),
+       },
+     );
+   }
+-}
+\ No newline at end of file
++}
+diff --git a/src/app/api/checkout/orders/route.ts b/src/app/api/checkout/orders/route.ts
+index 5f70a65..97aca4b 100644
+--- a/src/app/api/checkout/orders/route.ts
++++ b/src/app/api/checkout/orders/route.ts
+@@ -1,11 +1,6 @@
+-import {
+-  randomUUID,
+-} from "node:crypto";
++import { randomUUID } from "node:crypto";
+ 
+-import {
+-  NextRequest,
+-  NextResponse,
+-} from "next/server";
++import { NextRequest, NextResponse } from "next/server";
+ 
+ import {
+   CheckoutCustomerError,
+@@ -15,7 +10,7 @@ import {
+ 
+ import { consumeRateLimit } from "@/lib/security/rate-limit";
+ import { hasTrustedOrigin, requestIp } from "@/lib/security/request";
+-import { readJsonBody } from "@/lib/security/json-body";
++import { JsonRequestBodyError, readJsonBody } from "@/lib/security/json-body";
+ import { verifyTurnstileToken } from "@/lib/security/turnstile";
+ import { isZarinpalConfigured } from "@/lib/payment/zarinpal";
+ import { getCustomerFromRequest } from "@/lib/customer-auth";
+@@ -29,14 +24,11 @@ import {
+   type CheckoutOrderItemInput,
+ } from "@/lib/checkout-order";
+ 
+-export const dynamic =
+-  "force-dynamic";
++export const dynamic = "force-dynamic";
+ 
+-export const revalidate =
+-  0;
++export const revalidate = 0;
+ 
+-export const runtime =
+-  "nodejs";
++export const runtime = "nodejs";
+ 
+ type IncomingCheckoutBody = {
+   idempotencyKey?: unknown;
+@@ -54,177 +46,98 @@ type IncomingCheckoutItem = {
+ 
+ function noStoreHeaders() {
+   return {
+-    "Cache-Control":
+-      "no-store, no-cache, must-revalidate",
++    "Cache-Control": "no-store, no-cache, must-revalidate",
+ 
+-    Pragma:
+-      "no-cache",
++    Pragma: "no-cache",
+ 
+-    Expires:
+-      "0",
++    Expires: "0",
+   };
+ }
+ 
+-function getRequestId(
+-  request:
+-    NextRequest,
+-): string {
+-  const suppliedRequestId =
+-    request.headers
+-      .get(
+-        "x-request-id",
+-      )
+-      ?.trim();
++function getRequestId(request: NextRequest): string {
++  const suppliedRequestId = request.headers.get("x-request-id")?.trim();
+ 
+-  if (
+-    suppliedRequestId
+-  ) {
+-    return suppliedRequestId.slice(
+-      0,
+-      128,
+-    );
++  if (suppliedRequestId) {
++    return suppliedRequestId.slice(0, 128);
+   }
+ 
+   return randomUUID();
+ }
+ 
+-function normalizeCustomerInput(
+-  value:
+-    unknown,
+-): CheckoutCustomerInput | null {
+-  if (
+-    typeof value !==
+-      "object" ||
+-    value === null
+-  ) {
++function normalizeCustomerInput(value: unknown): CheckoutCustomerInput | null {
++  if (typeof value !== "object" || value === null) {
+     return null;
+   }
+ 
+-  const customer =
+-    value as Record<
+-      string,
+-      unknown
+-    >;
++  const customer = value as Record<string, unknown>;
+ 
+   if (
+-    typeof customer.fullName !==
+-      "string" ||
+-    typeof customer.mobile !==
+-      "string" ||
+-    typeof customer.province !==
+-      "string" ||
+-    typeof customer.city !==
+-      "string" ||
+-    typeof customer.postalCode !==
+-      "string" ||
+-    typeof customer.address !==
+-      "string"
++    typeof customer.fullName !== "string" ||
++    typeof customer.mobile !== "string" ||
++    typeof customer.province !== "string" ||
++    typeof customer.city !== "string" ||
++    typeof customer.postalCode !== "string" ||
++    typeof customer.address !== "string"
+   ) {
+     return null;
+   }
+ 
+   if (
+-    customer.email !==
+-      undefined &&
+-    customer.email !==
+-      null &&
+-    typeof customer.email !==
+-      "string"
++    customer.email !== undefined &&
++    customer.email !== null &&
++    typeof customer.email !== "string"
+   ) {
+     return null;
+   }
+ 
+   return {
+-    fullName:
+-      customer.fullName,
++    fullName: customer.fullName,
+ 
+-    mobile:
+-      customer.mobile,
++    mobile: customer.mobile,
+ 
+     email:
+-      customer.email ===
+-        undefined
+-        ? null
+-        : customer.email as
+-            string | null,
++      customer.email === undefined ? null : (customer.email as string | null),
+ 
+-    province:
+-      customer.province,
++    province: customer.province,
+ 
+-    city:
+-      customer.city,
++    city: customer.city,
+ 
+-    postalCode:
+-      customer.postalCode,
++    postalCode: customer.postalCode,
+ 
+-    address:
+-      customer.address,
++    address: customer.address,
+   };
+ }
+ 
+-function normalizeCheckoutItem(
+-  value:
+-    unknown,
+-): CheckoutOrderItemInput | null {
+-  if (
+-    typeof value !==
+-      "object" ||
+-    value === null
+-  ) {
++function normalizeCheckoutItem(value: unknown): CheckoutOrderItemInput | null {
++  if (typeof value !== "object" || value === null) {
+     return null;
+   }
+ 
+-  const item =
+-    value as IncomingCheckoutItem;
++  const item = value as IncomingCheckoutItem;
+ 
+-  if (
+-    typeof item.slug !==
+-      "string"
+-  ) {
++  if (typeof item.slug !== "string") {
+     return null;
+   }
+ 
+-  const slug =
+-    item.slug.trim();
++  const slug = item.slug.trim();
+ 
+-  if (
+-    !slug ||
+-    slug.length >
+-      160
+-  ) {
++  if (!slug || slug.length > 160) {
+     return null;
+   }
+ 
+-  let variantId:
+-    string | null =
+-      null;
++  let variantId: string | null = null;
+ 
+-  if (
+-    typeof item.variantId ===
+-      "string"
+-  ) {
+-    variantId =
+-      item.variantId.trim() ||
+-      null;
+-  } else if (
+-    item.variantId !==
+-      null &&
+-    item.variantId !==
+-      undefined
+-  ) {
++  if (typeof item.variantId === "string") {
++    variantId = item.variantId.trim() || null;
++  } else if (item.variantId !== null && item.variantId !== undefined) {
+     return null;
+   }
+ 
+   if (
+-    typeof item.quantity !==
+-      "number" ||
+-    !Number.isInteger(
+-      item.quantity,
+-    ) ||
+-    item.quantity <
+-      1 ||
+-    item.quantity >
+-      99
++    typeof item.quantity !== "number" ||
++    !Number.isInteger(item.quantity) ||
++    item.quantity < 1 ||
++    item.quantity > 99
+   ) {
+     return null;
+   }
+@@ -234,115 +147,111 @@ function normalizeCheckoutItem(
+ 
+     variantId,
+ 
+-    quantity:
+-      item.quantity,
++    quantity: item.quantity,
+   };
+ }
+ 
+-export async function POST(
+-  request:
+-    NextRequest,
+-) {
++export async function POST(request: NextRequest) {
+   if (!hasTrustedOrigin(request)) {
+-    return NextResponse.json({ successful: false, code: "INVALID_ORIGIN", message: "مبدأ درخواست معتبر نیست." }, { status: 403, headers: noStoreHeaders() });
++    return NextResponse.json(
++      {
++        successful: false,
++        code: "INVALID_ORIGIN",
++        message: "مبدأ درخواست معتبر نیست.",
++      },
++      { status: 403, headers: noStoreHeaders() },
++    );
+   }
+ 
+   if (!isCommerceEnabled()) {
+     return NextResponse.json(
+-      { successful: false, code: "COMMERCE_DISABLED", message: "ثبت سفارش در حال حاضر غیرفعال است." },
++      {
++        successful: false,
++        code: "COMMERCE_DISABLED",
++        message: "ثبت سفارش در حال حاضر غیرفعال است.",
++      },
+       { status: 503, headers: noStoreHeaders() },
+     );
+   }
+ 
+-  const rate = await consumeRateLimit({ key: `checkout:${requestIp(request)}`, limit: 12, windowMs: 60_000 });
++  const rate = await consumeRateLimit({
++    key: `checkout:${requestIp(request)}`,
++    limit: 12,
++    windowMs: 60_000,
++  });
+   if (!rate.allowed) {
+-    return NextResponse.json({ successful: false, code: "RATE_LIMITED", message: "تعداد درخواست‌ها بیش از حد مجاز است." }, { status: 429, headers: { ...noStoreHeaders(), "Retry-After": String(rate.retryAfterSeconds) } });
++    return NextResponse.json(
++      {
++        successful: false,
++        code: "RATE_LIMITED",
++        message: "تعداد درخواست‌ها بیش از حد مجاز است.",
++      },
++      {
++        status: 429,
++        headers: {
++          ...noStoreHeaders(),
++          "Retry-After": String(rate.retryAfterSeconds),
++        },
++      },
++    );
+   }
+ 
+-  const requestId =
+-    getRequestId(
+-      request,
+-    );
++  const requestId = getRequestId(request);
+ 
+   try {
+-    let body:
+-      IncomingCheckoutBody;
++    let body: IncomingCheckoutBody;
+ 
+     try {
+-      const parsed:
+-        unknown =
+-          await readJsonBody(request, 64 * 1024);
+-
+-      if (
+-        typeof parsed !==
+-          "object" ||
+-        parsed === null
+-      ) {
+-        throw new Error(
+-          "INVALID_BODY",
+-        );
++      const parsed: unknown = await readJsonBody(request, 64 * 1024);
++
++      if (typeof parsed !== "object" || parsed === null) {
++        throw new Error("INVALID_BODY");
+       }
+ 
+-      body =
+-        parsed as IncomingCheckoutBody;
+-    } catch {
++      body = parsed as IncomingCheckoutBody;
++    } catch (error) {
++      const bodyError = error instanceof JsonRequestBodyError ? error : null;
++
+       return NextResponse.json(
+         {
+-          successful:
+-            false,
++          successful: false,
+ 
+-          code:
+-            "INVALID_JSON",
++          code: bodyError?.code ?? "INVALID_JSON",
+ 
+-          message:
+-            "ساختار اطلاعات سفارش معتبر نیست.",
++          message: bodyError?.message ?? "ساختار اطلاعات سفارش معتبر نیست.",
+ 
+           requestId,
+         },
+         {
+-          status:
+-            400,
++          status: bodyError?.status ?? 400,
+ 
+-          headers:
+-            noStoreHeaders(),
++          headers: noStoreHeaders(),
+         },
+       );
+     }
+ 
+-    const normalizedCustomer =
+-      normalizeCustomerInput(
+-        body.customer,
+-      );
++    const normalizedCustomer = normalizeCustomerInput(body.customer);
+ 
+     if (
+-      typeof body.idempotencyKey !==
+-        "string" ||
+-      typeof body.locale !==
+-        "string" ||
++      typeof body.idempotencyKey !== "string" ||
++      typeof body.locale !== "string" ||
+       !normalizedCustomer ||
+-      !Array.isArray(
+-        body.items,
+-      )
++      !Array.isArray(body.items)
+     ) {
+       return NextResponse.json(
+         {
+-          successful:
+-            false,
++          successful: false,
+ 
+-          code:
+-            "INVALID_CHECKOUT",
++          code: "INVALID_CHECKOUT",
+ 
+-          message:
+-            "اطلاعات ثبت سفارش کامل یا معتبر نیست.",
++          message: "اطلاعات ثبت سفارش کامل یا معتبر نیست.",
+ 
+           requestId,
+         },
+         {
+-          status:
+-            400,
++          status: 400,
+ 
+-          headers:
+-            noStoreHeaders(),
++          headers: noStoreHeaders(),
+         },
+       );
+     }
+@@ -354,8 +263,14 @@ export async function POST(
+       return NextResponse.json(
+         {
+           successful: false,
+-          code: error instanceof CheckoutCustomerError ? error.code : "INVALID_CUSTOMER",
+-          message: error instanceof Error ? error.message : "اطلاعات مشتری معتبر نیست.",
++          code:
++            error instanceof CheckoutCustomerError
++              ? error.code
++              : "INVALID_CUSTOMER",
++          message:
++            error instanceof Error
++              ? error.message
++              : "اطلاعات مشتری معتبر نیست.",
+           requestId,
+         },
+         { status: 400, headers: noStoreHeaders() },
+@@ -364,22 +279,36 @@ export async function POST(
+ 
+     // ELORIA_V3_CUSTOMER_CHECKOUT
+     const authenticatedCustomer = await getCustomerFromRequest(request);
+-    if (authenticatedCustomer && authenticatedCustomer.customer.mobile !== canonicalCustomer.mobile) {
++    if (
++      authenticatedCustomer &&
++      authenticatedCustomer.customer.mobile !== canonicalCustomer.mobile
++    ) {
+       return NextResponse.json(
+-        { successful: false, code: "ACCOUNT_MOBILE_MISMATCH", message: "شماره موبایل سفارش باید با حساب واردشده یکسان باشد.", requestId },
++        {
++          successful: false,
++          code: "ACCOUNT_MOBILE_MISMATCH",
++          message: "شماره موبایل سفارش باید با حساب واردشده یکسان باشد.",
++          requestId,
++        },
+         { status: 409, headers: noStoreHeaders() },
+       );
+     }
+ 
+     const clientIp = requestIp(request);
+     const challenge = await verifyTurnstileToken({
+-      token: typeof body.turnstileToken === "string" ? body.turnstileToken : null,
++      token:
++        typeof body.turnstileToken === "string" ? body.turnstileToken : null,
+       ip: clientIp,
+       expectedAction: "checkout",
+     });
+     if (!challenge.successful) {
+       return NextResponse.json(
+-        { successful: false, code: "CHALLENGE_FAILED", message: "تأیید امنیتی سفارش ناموفق بود.", requestId },
++        {
++          successful: false,
++          code: "CHALLENGE_FAILED",
++          message: "تأیید امنیتی سفارش ناموفق بود.",
++          requestId,
++        },
+         { status: 403, headers: noStoreHeaders() },
+       );
+     }
+@@ -391,125 +320,106 @@ export async function POST(
+     });
+     if (!mobileRate.allowed) {
+       return NextResponse.json(
+-        { successful: false, code: "MOBILE_RATE_LIMITED", message: "برای این شماره موبایل سفارش‌های زیادی ثبت شده است.", requestId },
+-        { status: 429, headers: { ...noStoreHeaders(), "Retry-After": String(mobileRate.retryAfterSeconds) } },
++        {
++          successful: false,
++          code: "MOBILE_RATE_LIMITED",
++          message: "برای این شماره موبایل سفارش‌های زیادی ثبت شده است.",
++          requestId,
++        },
++        {
++          status: 429,
++          headers: {
++            ...noStoreHeaders(),
++            "Retry-After": String(mobileRate.retryAfterSeconds),
++          },
++        },
+       );
+     }
+ 
+-    if (
+-      body.items.length ===
+-      0
+-    ) {
++    if (body.items.length === 0) {
+       return NextResponse.json(
+         {
+-          successful:
+-            false,
++          successful: false,
+ 
+-          code:
+-            "EMPTY_CART",
++          code: "EMPTY_CART",
+ 
+-          message:
+-            "سبد خرید خالی است.",
++          message: "سبد خرید خالی است.",
+ 
+           requestId,
+         },
+         {
+-          status:
+-            400,
++          status: 400,
+ 
+-          headers:
+-            noStoreHeaders(),
++          headers: noStoreHeaders(),
+         },
+       );
+     }
+ 
+-    if (
+-      body.items.length >
+-      30
+-    ) {
++    if (body.items.length > 30) {
+       return NextResponse.json(
+         {
+-          successful:
+-            false,
++          successful: false,
+ 
+-          code:
+-            "TOO_MANY_ITEMS",
++          code: "TOO_MANY_ITEMS",
+ 
+-          message:
+-            "تعداد اقلام سفارش بیش از حد مجاز است.",
++          message: "تعداد اقلام سفارش بیش از حد مجاز است.",
+ 
+           requestId,
+         },
+         {
+-          status:
+-            400,
++          status: 400,
+ 
+-          headers:
+-            noStoreHeaders(),
++          headers: noStoreHeaders(),
+         },
+       );
+     }
+ 
+-    const normalizedItems =
+-      body.items.map(
+-        normalizeCheckoutItem,
+-      );
++    const normalizedItems = body.items.map(normalizeCheckoutItem);
+ 
+-    if (
+-      normalizedItems.some(
+-        (
+-          item,
+-        ) =>
+-          item === null,
+-      )
+-    ) {
++    if (normalizedItems.some((item) => item === null)) {
+       return NextResponse.json(
+         {
+-          successful:
+-            false,
++          successful: false,
+ 
+-          code:
+-            "INVALID_CART_ITEM",
++          code: "INVALID_CART_ITEM",
+ 
+-          message:
+-            "حداقل یکی از اقلام سبد خرید معتبر نیست.",
++          message: "حداقل یکی از اقلام سبد خرید معتبر نیست.",
+ 
+           requestId,
+         },
+         {
+-          status:
+-            400,
++          status: 400,
+ 
+-          headers:
+-            noStoreHeaders(),
++          headers: noStoreHeaders(),
+         },
+       );
+     }
+ 
+-    const result =
+-      await createCheckoutOrder({
+-        idempotencyKey:
+-          body.idempotencyKey,
++    const result = await createCheckoutOrder({
++      idempotencyKey: body.idempotencyKey,
+ 
+-        locale:
+-          body.locale,
++      locale: body.locale,
+ 
+-        customer:
+-          canonicalCustomer,
++      customer: canonicalCustomer,
+ 
+-        items:
+-          normalizedItems as CheckoutOrderItemInput[],
++      items: normalizedItems as CheckoutOrderItemInput[],
+ 
+-        requestId,
+-      });
++      requestId,
++    });
+ 
+     if (authenticatedCustomer) {
+       try {
+         await prisma.$transaction([
+-          prisma.order.updateMany({ where: { id: result.order.id, customerId: null }, data: { customerId: authenticatedCustomer.customer.id } }),
++          prisma.order.updateMany({
++            where: { id: result.order.id, customerId: null },
++            data: { customerId: authenticatedCustomer.customer.id },
++          }),
+           prisma.customer.update({
+             where: { id: authenticatedCustomer.customer.id },
+-            data: { fullName: canonicalCustomer.fullName, email: canonicalCustomer.email },
++            data: {
++              fullName: canonicalCustomer.fullName,
++              email: canonicalCustomer.email,
++            },
+           }),
+         ]);
+         if (!result.reused) {
+@@ -528,111 +438,87 @@ export async function POST(
+       } catch (customerLinkError) {
+         // Checkout itself already succeeded. Do not return a false checkout failure
+         // because account enrichment or its notification failed.
+-        console.error("[Eloria Customer] order account enrichment failed", customerLinkError);
++        console.error(
++          "[Eloria Customer] order account enrichment failed",
++          customerLinkError,
++        );
+       }
+     }
+ 
+-    const paymentConfigured =
+-      isZarinpalConfigured();
++    const paymentConfigured = isZarinpalConfigured();
+ 
+     /*
+      * ساخت Authority زرین‌پال از ثبت سفارش جداست. سفارش و رزرو موجودی فوراً
+      * پاسخ داده می‌شوند و مشتری با دکمه مستقل وارد مرحله پرداخت می‌شود.
+      */
+     const payment = {
+-      configured:
+-        paymentConfigured,
++      configured: paymentConfigured,
+ 
+-      redirectUrl:
+-        null,
++      redirectUrl: null,
+ 
+-      message:
+-        paymentConfigured
+-          ? "سفارش ثبت شد. برای ورود به درگاه پرداخت، دکمه پرداخت را بزنید."
+-          : "درگاه پرداخت پیکربندی نشده است.",
++      message: paymentConfigured
++        ? "سفارش ثبت شد. برای ورود به درگاه پرداخت، دکمه پرداخت را بزنید."
++        : "درگاه پرداخت پیکربندی نشده است.",
+     };
+ 
+     const response = NextResponse.json(
+       {
+-        successful:
+-          true,
++        successful: true,
+ 
+-        reused:
+-          result.reused,
++        reused: result.reused,
+ 
+-        order:
+-          result.order,
++        order: result.order,
+ 
+         payment,
+ 
+         requestId,
+       },
+       {
+-        status:
+-          result.reused
+-            ? 200
+-            : 201,
++        status: result.reused ? 200 : 201,
+ 
+-        headers:
+-          noStoreHeaders(),
++        headers: noStoreHeaders(),
+       },
+     );
+ 
+     if (paymentConfigured) {
+-      setPaymentStartAuthorizationCookie(
+-        response,
+-        {
+-          orderId: result.order.id,
+-          amountToman: result.order.payableToman,
+-          mobile: canonicalCustomer.mobile,
+-        },
+-      );
++      setPaymentStartAuthorizationCookie(response, {
++        orderId: result.order.id,
++        amountToman: result.order.payableToman,
++        mobile: canonicalCustomer.mobile,
++      });
+     }
+ 
+     return response;
+   } catch (error) {
+-    if (
+-      error instanceof
+-      CheckoutOrderError
+-    ) {
++    if (error instanceof CheckoutOrderError) {
+       return NextResponse.json(
+         {
+-          successful:
+-            false,
++          successful: false,
+ 
+-          code:
+-            error.code,
++          code: error.code,
+ 
+-          message:
+-            error.message,
++          message: error.message,
+ 
+           requestId,
+         },
+         {
+-          status:
+-            error.status,
++          status: error.status,
+ 
+-          headers:
+-            noStoreHeaders(),
++          headers: noStoreHeaders(),
+         },
+       );
+     }
+ 
+-    console.error(
+-      "[Eloria Checkout API] Unexpected order creation error.",
+-      {
+-        requestId,
+-        error,
+-      },
+-    );
++    console.error("[Eloria Checkout API] Unexpected order creation error.", {
++      requestId,
++      error,
++    });
+ 
+     return NextResponse.json(
+       {
+-        successful:
+-          false,
++        successful: false,
+ 
+-        code:
+-          "INTERNAL_ERROR",
++        code: "INTERNAL_ERROR",
+ 
+         message:
+           "ثبت سفارش در حال حاضر امکان‌پذیر نیست. لطفاً دوباره تلاش کنید.",
+@@ -640,12 +526,10 @@ export async function POST(
+         requestId,
+       },
+       {
+-        status:
+-          500,
++        status: 500,
+ 
+-        headers:
+-          noStoreHeaders(),
++        headers: noStoreHeaders(),
+       },
+     );
+   }
+-}
+\ No newline at end of file
++}
+diff --git a/src/app/api/customer/notifications/route.ts b/src/app/api/customer/notifications/route.ts
+index 86a0d5c..62b58ef 100644
+--- a/src/app/api/customer/notifications/route.ts
++++ b/src/app/api/customer/notifications/route.ts
+@@ -1,26 +1,80 @@
+ import { NextRequest, NextResponse } from "next/server";
+ import { getCustomerFromRequest } from "@/lib/customer-auth";
+ import { prisma } from "@/lib/prisma";
++import { JsonRequestBodyError, readJsonBody } from "@/lib/security/json-body";
+ import { hasTrustedOrigin } from "@/lib/security/request";
+ 
+ export const runtime = "nodejs";
++export const dynamic = "force-dynamic";
++
++const noStoreHeaders = {
++  "Cache-Control": "no-store, no-cache, must-revalidate",
++  Pragma: "no-cache",
++};
++
+ export async function GET(request: NextRequest) {
+   const auth = await getCustomerFromRequest(request);
+-  if (!auth) return NextResponse.json({ successful: false }, { status: 401 });
+-  const notifications = await prisma.customerNotification.findMany({ where: { customerId: auth.customer.id }, orderBy: { createdAt: "desc" }, take: 100 });
+-  return NextResponse.json({ successful: true, notifications }, { headers: { "Cache-Control": "no-store" } });
++  if (!auth)
++    return NextResponse.json(
++      { successful: false },
++      { status: 401, headers: noStoreHeaders },
++    );
++  const notifications = await prisma.customerNotification.findMany({
++    where: { customerId: auth.customer.id },
++    orderBy: { createdAt: "desc" },
++    take: 100,
++  });
++  return NextResponse.json(
++    { successful: true, notifications },
++    { headers: noStoreHeaders },
++  );
+ }
+ export async function PATCH(request: NextRequest) {
+-  if (!hasTrustedOrigin(request)) return NextResponse.json({ successful: false }, { status: 403 });
++  if (!hasTrustedOrigin(request))
++    return NextResponse.json(
++      { successful: false },
++      { status: 403, headers: noStoreHeaders },
++    );
+   const auth = await getCustomerFromRequest(request);
+-  if (!auth) return NextResponse.json({ successful: false }, { status: 401 });
+-  const body = await request.json().catch(() => null) as { id?: unknown; all?: unknown } | null;
++  if (!auth)
++    return NextResponse.json(
++      { successful: false },
++      { status: 401, headers: noStoreHeaders },
++    );
++
++  let body: { id?: unknown; all?: unknown };
++  try {
++    body = await readJsonBody(request, 4 * 1024);
++  } catch (error) {
++    const bodyError = error instanceof JsonRequestBodyError ? error : null;
++    return NextResponse.json(
++      {
++        successful: false,
++        message: bodyError?.message ?? "بدنه درخواست معتبر نیست.",
++      },
++      {
++        status: bodyError?.status ?? 400,
++        headers: noStoreHeaders,
++      },
++    );
++  }
++
+   const now = new Date();
+-  if (body?.all === true) {
+-    await prisma.customerNotification.updateMany({ where: { customerId: auth.customer.id, readAt: null }, data: { readAt: now } });
+-    return NextResponse.json({ successful: true });
++  if (body.all === true) {
++    await prisma.customerNotification.updateMany({
++      where: { customerId: auth.customer.id, readAt: null },
++      data: { readAt: now },
++    });
++    return NextResponse.json({ successful: true }, { headers: noStoreHeaders });
+   }
+-  if (typeof body?.id !== "string") return NextResponse.json({ successful: false, message: "شناسه اعلان معتبر نیست." }, { status: 400 });
+-  await prisma.customerNotification.updateMany({ where: { id: body.id, customerId: auth.customer.id }, data: { readAt: now } });
+-  return NextResponse.json({ successful: true });
++  if (typeof body.id !== "string")
++    return NextResponse.json(
++      { successful: false, message: "شناسه اعلان معتبر نیست." },
++      { status: 400, headers: noStoreHeaders },
++    );
++  await prisma.customerNotification.updateMany({
++    where: { id: body.id, customerId: auth.customer.id },
++    data: { readAt: now },
++  });
++  return NextResponse.json({ successful: true }, { headers: noStoreHeaders });
+ }
+diff --git a/src/app/api/payments/zarinpal/start/route.ts b/src/app/api/payments/zarinpal/start/route.ts
+index 1755c78..2320f49 100644
+--- a/src/app/api/payments/zarinpal/start/route.ts
++++ b/src/app/api/payments/zarinpal/start/route.ts
+@@ -1,11 +1,6 @@
+-import {
+-  NextRequest,
+-  NextResponse,
+-} from "next/server";
++import { NextRequest, NextResponse } from "next/server";
+ 
+-import {
+-  getCustomerFromRequest,
+-} from "@/lib/customer-auth";
++import { getCustomerFromRequest } from "@/lib/customer-auth";
+ import {
+   initiateOrderPayment,
+   PaymentServiceError,
+@@ -15,16 +10,9 @@ import {
+   verifyPaymentStartAuthorization,
+ } from "@/lib/payment-start-authorization";
+ import { prisma } from "@/lib/prisma";
+-import {
+-  consumeRateLimit,
+-} from "@/lib/security/rate-limit";
+-import {
+-  hasTrustedOrigin,
+-  requestIp,
+-} from "@/lib/security/request";
+-import {
+-  readJsonBody,
+-} from "@/lib/security/json-body";
++import { consumeRateLimit } from "@/lib/security/rate-limit";
++import { hasTrustedOrigin, requestIp } from "@/lib/security/request";
++import { JsonRequestBodyError, readJsonBody } from "@/lib/security/json-body";
+ 
+ export const runtime = "nodejs";
+ export const dynamic = "force-dynamic";
+@@ -35,9 +23,7 @@ function noStore() {
+   };
+ }
+ 
+-export async function POST(
+-  request: NextRequest,
+-) {
++export async function POST(request: NextRequest) {
+   if (!hasTrustedOrigin(request)) {
+     return NextResponse.json(
+       {
+@@ -74,19 +60,30 @@ export async function POST(
+     );
+   }
+ 
+-  const body =
+-    await readJsonBody<{
++  let body: {
++    orderId?: unknown;
++  };
++
++  try {
++    body = await readJsonBody<{
+       orderId?: unknown;
+-    }>(
+-      request,
+-      8 * 1024,
+-    ).catch(() => null);
+-
+-  if (
+-    !body ||
+-    typeof body.orderId !== "string" ||
+-    !body.orderId.trim()
+-  ) {
++    }>(request, 8 * 1024);
++  } catch (error) {
++    const bodyError = error instanceof JsonRequestBodyError ? error : null;
++
++    return NextResponse.json(
++      {
++        successful: false,
++        message: bodyError?.message ?? "اطلاعات پرداخت معتبر نیست.",
++      },
++      {
++        status: bodyError?.status ?? 400,
++        headers: noStore(),
++      },
++    );
++  }
++
++  if (typeof body.orderId !== "string" || !body.orderId.trim()) {
+     return NextResponse.json(
+       {
+         successful: false,
+@@ -117,9 +114,7 @@ export async function POST(
+         status: 429,
+         headers: {
+           ...noStore(),
+-          "Retry-After": String(
+-            orderRate.retryAfterSeconds,
+-          ),
++          "Retry-After": String(orderRate.retryAfterSeconds),
+         },
+       },
+     );
+@@ -150,34 +145,22 @@ export async function POST(
+     );
+   }
+ 
+-  const customerAuth =
+-    await getCustomerFromRequest(request);
++  const customerAuth = await getCustomerFromRequest(request);
+ 
+   let authorized = false;
+ 
+   if (order.customerId) {
+-    authorized =
+-      customerAuth?.customer.id ===
+-      order.customerId;
++    authorized = customerAuth?.customer.id === order.customerId;
+   } else if (order.customerMobile) {
+-    const token =
+-      readPaymentStartAuthorizationCookie(
+-        request,
+-        order.id,
+-      );
++    const token = readPaymentStartAuthorizationCookie(request, order.id);
+ 
+     authorized = Boolean(
+       token &&
+-        verifyPaymentStartAuthorization(
+-          token,
+-          {
+-            orderId: order.id,
+-            amountToman:
+-              order.payableToman.toString(),
+-            mobile:
+-              order.customerMobile,
+-          },
+-        ),
++      verifyPaymentStartAuthorization(token, {
++        orderId: order.id,
++        amountToman: order.payableToman.toString(),
++        mobile: order.customerMobile,
++      }),
+     );
+   }
+ 
+@@ -195,10 +178,7 @@ export async function POST(
+   }
+ 
+   try {
+-    const payment =
+-      await initiateOrderPayment(
+-        order.id,
+-      );
++    const payment = await initiateOrderPayment(order.id);
+ 
+     return NextResponse.json(
+       {
+@@ -210,10 +190,7 @@ export async function POST(
+       },
+     );
+   } catch (error) {
+-    if (
+-      error instanceof
+-      PaymentServiceError
+-    ) {
++    if (error instanceof PaymentServiceError) {
+       return NextResponse.json(
+         {
+           successful: false,
+@@ -234,8 +211,7 @@ export async function POST(
+     return NextResponse.json(
+       {
+         successful: false,
+-        message:
+-          "ارتباط با درگاه پرداخت انجام نشد. لطفاً دوباره تلاش کنید.",
++        message: "ارتباط با درگاه پرداخت انجام نشد. لطفاً دوباره تلاش کنید.",
+       },
+       {
+         status: 502,
+diff --git a/src/components/site-header.tsx b/src/components/site-header.tsx
+index 3950f3b..caefc04 100644
+--- a/src/components/site-header.tsx
++++ b/src/components/site-header.tsx
+@@ -16,8 +16,6 @@ import {
+ 
+ import { CartHeaderButton } from "@/components/cart-header-button";
+ 
+-import { Sparkles } from "lucide-react";
+-
+ import { CustomerAccountHeaderButton } from "@/components/customer-account-header-button";
+ 
+ import { FloatingLogo } from "@/components/floating-logo";
+@@ -120,7 +118,8 @@ const NAVIGATION_LABELS = {
+     world: "دنیای الوریا",
+     necklaces: "گردنبندها",
+     bracelets: "دستبندها",
+-    earrings: "گوشواره‌ها",    contact: "تماس",
++    earrings: "گوشواره‌ها",
++    contact: "تماس",
+   },
+   en: {
+     tagline: "A jewel born from legend",
+@@ -518,10 +517,3 @@ export function SiteHeader({ locale }: SiteHeaderProps) {
+     </header>
+   );
+ }
+-
+-
+-
+-
+-
+-
+-
+

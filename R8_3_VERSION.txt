@@ -1,0 +1,6 @@
+ELORIA R8.3 — Instant Narrative / Smart Keyword / Woven Motion
+Base: R8.2
+Date: 2026-08-27
+Intro: act-two preloaded during act one; no visitor-facing loading copy
+Discovery: general keyword search restored to Home and expanded across catalog text/relations
+Motion: macrame-inspired woven thread layers rendered in Hero and Showcase
