@@ -436,17 +436,19 @@ html:has(#hero:target) .eloria-intro-root {
   }
 }
 
-/* The home hero is an intentional calligraphic display title on every screen.
-   This comes last so the mobile readability rules above cannot replace it. */
-html[lang="fa"] body .eloria-hero-nastaliq,
-html[lang="fa"] body .eloria-hero-nastaliq * {
-  font-family: "Eloria Iran Nastaliq", "Vazirmatn Variable", Tahoma, serif !important;
-  font-weight: 400 !important;
-  font-style: normal !important;
-  letter-spacing: 0 !important;
-  word-spacing: 0.03em !important;
-  line-height: 1.75 !important;
-  font-synthesis: none !important;
+/* The home hero is calligraphic on desktop only. Mobile keeps the readable
+   Vazirmatn typography from the mobile safety rules below. */
+@media (min-width: 901px) {
+  html[lang="fa"] body .eloria-hero-nastaliq,
+  html[lang="fa"] body .eloria-hero-nastaliq * {
+    font-family: "Eloria Iran Nastaliq", "Vazirmatn Variable", Tahoma, serif !important;
+    font-weight: 400 !important;
+    font-style: normal !important;
+    letter-spacing: 0 !important;
+    word-spacing: 0.03em !important;
+    line-height: 1.75 !important;
+    font-synthesis: none !important;
+  }
 }
 /* ELORIA IRAN NASTALIQ SELF HOST END */
 

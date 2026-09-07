@@ -3,9 +3,9 @@ export const SECTION_BACKGROUND_PATHS = [
   "/images/section-backgrounds/bg-02.jpeg",
   "/images/section-backgrounds/bg-03.jpeg",
   "/images/section-backgrounds/bg-04.jpeg",
-  "/images/section-backgrounds/bg-05.jpeg",
+  "/images/section-backgrounds/bg-05-v2.jpeg",
   "/images/section-backgrounds/bg-06.jpeg",
-  "/images/section-backgrounds/bg-07.jpeg",
+  "/images/section-backgrounds/bg-07-v2.jpeg",
   "/images/section-backgrounds/bg-08.jpeg",
   "/images/section-backgrounds/bg-09.jpeg",
 ] as const;
