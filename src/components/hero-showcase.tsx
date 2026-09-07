@@ -42,9 +42,11 @@ export function HeroShowcase({
           eyebrow:
             "الهام‌گرفته از شکوه ایران کهن",
 
-          titleFirst: "هر اثر،",
+          titleFirst:
+            "هر اثر،",
 
-          titleHighlight: "روایتی ماندگار",
+          titleHighlight:
+            "روایتی ماندگار",
 
           description:
             "در الوریا فقط زیور انتخاب نمی‌کنید؛ اثر متناسب با داستان خودتان را پیدا می‌کنید.",
@@ -89,7 +91,10 @@ export function HeroShowcase({
 
   const titleFontClass =
     isPersian
-      ? persianTitleClassName ?? ""
+      ? [
+          "font-persian-calligraphy",
+          persianTitleClassName ?? "",
+        ].join(" ")
       : "font-serif";
 
   return (
@@ -251,22 +256,16 @@ export function HeroShowcase({
               ],
             }}
             className={[
-              isPersian ? "font-persian-calligraphy" : "",
               titleFontClass,
-              "max-w-3xl pb-5 text-center text-4xl font-semibold leading-[1.95] text-[#f3e6ca] sm:text-5xl lg:text-6xl",
+              isPersian ? "eloria-hero-nastaliq" : "",
+              "max-w-5xl pb-2 text-center text-[clamp(2.25rem,11vw,6rem)] font-normal leading-[1.48] text-[#fff7e6] drop-shadow-[0_16px_40px_rgba(0,0,0,0.68)] sm:pb-3 sm:text-[clamp(3rem,6vw,6rem)] sm:leading-[1.65]",
             ].join(" ")}
           >
             <span className="block sm:inline">
               {copy.titleFirst}
             </span>
 
-            <span
-              className={
-                isPersian
-                  ? "mt-1 block text-[#f3e6ca] sm:mx-3 sm:mt-0 sm:inline"
-                  : "mt-1 block bg-[linear-gradient(100deg,#fff2c8_0%,#f0ce75_32%,#c68c24_66%,#ffe7a2_100%)] bg-clip-text text-transparent sm:mx-3 sm:mt-0 sm:inline"
-              }
-            >
+            <span className="mt-1 block bg-[linear-gradient(100deg,#fff2c8_0%,#f0ce75_32%,#c68c24_66%,#ffe7a2_100%)] bg-clip-text text-transparent drop-shadow-[0_0_30px_rgba(225,181,80,0.2)] sm:mx-3 sm:mt-0 sm:inline">
               {copy.titleHighlight}
             </span>
           </motion.h1>
