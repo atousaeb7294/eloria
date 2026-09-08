@@ -22,6 +22,8 @@ import {
   withDatabaseRetry,
 } from "@/lib/prisma";
 
+import { reassignCanonicalProductLegendsAction } from "./actions";
+
 export const dynamic =
   "force-dynamic";
 
@@ -55,6 +57,7 @@ export default async function AdminProductsPage({
     q?: string | string[];
     status?: string | string[];
     created?: string | string[];
+    legends?: string | string[];
   }>;
 }) {
   const {
@@ -207,6 +210,35 @@ export default async function AdminProductsPage({
           محصول جدید با موفقیت ساخته شد.
         </div>
       ) : null}
+
+      {singleValue(raw.legends) === "synced" ? (
+        <div className="rounded-2xl border border-emerald-300/20 bg-emerald-950/20 px-5 py-4 text-sm text-emerald-100">
+          افسانه‌های پنهان همه محصولات با زنان جوان و میانسال رسمی الوریا همگام شدند.
+        </div>
+      ) : null}
+
+      {singleValue(raw.legends) === "too-many" ? (
+        <div className="rounded-2xl border border-amber-300/20 bg-amber-950/20 px-5 py-4 text-sm text-amber-100">
+          تعداد محصولات از ۲۰ افسانه رسمی بیشتر است؛ برای جلوگیری از تکرار، چیزی تغییر نکرد.
+        </div>
+      ) : null}
+
+      <section className="rounded-[22px] border border-[#d0b359]/15 bg-[#041d15]/82 p-4">
+        <p className="text-sm leading-7 text-[#cdbd9e]">
+          این کار افسانه‌های قدیمی محصولات را با مجموعه رسمی زنان جوان و میانسال الوریا جایگزین می‌کند.
+        </p>
+        <form
+          action={reassignCanonicalProductLegendsAction.bind(null, locale)}
+          className="mt-3"
+        >
+          <button
+            type="submit"
+            className="h-11 rounded-xl border border-[#d2b65e]/25 bg-[#d0b258]/10 px-5 text-sm font-semibold text-[#efd782] transition hover:bg-[#d0b258]/15"
+          >
+            همگام‌سازی افسانه‌های پنهان محصولات
+          </button>
+        </form>
+      </section>
 
       <form className="grid gap-3 rounded-[22px] border border-[#d0b359]/15 bg-[#041d15]/82 p-4 md:grid-cols-[1fr_220px_auto]">
         <label className="relative block">

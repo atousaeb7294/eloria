@@ -1,6 +1,9 @@
 "use server";
 
-import { generateUnusedProductMyth } from "@/lib/product-myth-generator";
+import {
+  ELORIA_MYTH_LIBRARY,
+  generateUnusedProductMyth,
+} from "@/lib/product-myth-generator";
 
 import {
   revalidatePath,
@@ -26,6 +29,72 @@ import {
 export type AdminProductActionState = {
   error: string | null;
 };
+
+export async function reassignCanonicalProductLegendsAction(
+  locale: "fa" | "en",
+): Promise<never> {
+  if (!(await hasValidAdminSession())) {
+    redirect(`/${locale}/admin/login`);
+  }
+
+  const products = await withDatabaseRetry(
+    () =>
+      prisma.product.findMany({
+        orderBy: [{ createdAt: "asc" }, { id: "asc" }],
+        select: {
+          id: true,
+          nameFa: true,
+          nameEn: true,
+          material: true,
+        },
+      }),
+    { attempts: 2, delayMilliseconds: 200 },
+  );
+
+  if (products.length > ELORIA_MYTH_LIBRARY.length) {
+    redirect(`/${locale}/admin/products?legends=too-many`);
+  }
+
+  await withDatabaseRetry(
+    () =>
+      prisma.$transaction(async (transaction) => {
+        await transaction.product.updateMany({
+          data: { mythKey: null },
+        });
+
+        const used = new Set<string>();
+
+        for (const product of products) {
+          const myth = generateUnusedProductMyth(
+            {
+              nameFa: product.nameFa,
+              nameEn: product.nameEn,
+              material: product.material,
+            },
+            used,
+          );
+
+          await transaction.product.update({
+            where: { id: product.id },
+            data: {
+              mythKey: myth.mythKey,
+              mythNameFa: myth.mythNameFa,
+              mythNameEn: myth.mythNameEn,
+              legendFa: myth.legendFa,
+              legendEn: myth.legendEn,
+            },
+          });
+
+          used.add(myth.mythKey);
+        }
+      }),
+    { attempts: 2, delayMilliseconds: 200 },
+  );
+
+  revalidatePath(`/${locale}/products`);
+  revalidatePath(`/${locale}/admin/products`);
+  redirect(`/${locale}/admin/products?legends=synced`);
+}
 
 class AdminProductActionError extends Error {
   constructor(message: string) {
@@ -940,7 +1009,6 @@ await ensureUniqueIdentity({
     `/${input.locale}/admin/products/${productId}?saved=1`,
   );
 }
-
 
 
 
