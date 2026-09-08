@@ -512,7 +512,7 @@ export default async function ProductPage({
     : `/${locale}/products`;
 
   const fallbackImage =
-    fallbackImages[collectionSlug] ?? "/images/hero/eloria-hero.jpeg";
+    fallbackImages[collectionSlug] ?? "/images/hero/eloria-hero.webp";
 
   const galleryImages =
     productRecord.images.length > 0

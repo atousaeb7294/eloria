@@ -1,13 +1,13 @@
 export const SECTION_BACKGROUND_PATHS = [
-  "/images/section-backgrounds/bg-01.jpeg",
-  "/images/section-backgrounds/bg-02.jpeg",
-  "/images/section-backgrounds/bg-03.jpeg",
-  "/images/section-backgrounds/bg-04.jpeg",
-  "/images/section-backgrounds/bg-05.jpeg",
-  "/images/section-backgrounds/bg-06.jpeg",
-  "/images/section-backgrounds/bg-07.jpeg",
-  "/images/section-backgrounds/bg-08.jpeg",
-  "/images/section-backgrounds/bg-09.jpeg",
+  "/images/section-backgrounds/bg-01.webp",
+  "/images/section-backgrounds/bg-02.webp",
+  "/images/section-backgrounds/bg-03.webp",
+  "/images/section-backgrounds/bg-04.webp",
+  "/images/section-backgrounds/bg-05.webp",
+  "/images/section-backgrounds/bg-06.webp",
+  "/images/section-backgrounds/bg-07.webp",
+  "/images/section-backgrounds/bg-08.webp",
+  "/images/section-backgrounds/bg-09.webp",
 ] as const;
 
 export const MOBILE_SECTION_BACKGROUND_PATHS = [

@@ -96,7 +96,7 @@ export async function generateMetadata({
       url: `/${locale}`,
       images: [
         {
-          url: "/images/hero/eloria-hero.jpeg",
+          url: "/images/hero/eloria-hero.webp",
           width: 1600,
           height: 900,
           alt: title,
@@ -108,7 +108,7 @@ export async function generateMetadata({
       card: "summary_large_image",
       title,
       description,
-      images: ["/images/hero/eloria-hero.jpeg"],
+      images: ["/images/hero/eloria-hero.webp"],
     },
   };
 }

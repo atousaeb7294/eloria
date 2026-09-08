@@ -23,7 +23,7 @@ type OrbitPose = {
 
 const AUTOPLAY_MS = 4800;
 const ORBIT_DURATION = 1.08;
-const FALLBACK_IMAGES = ["/images/collections/bracelet.jpg", "/images/collections/earring.jpg", "/images/collections/necklaces.jfif"];
+const FALLBACK_IMAGES = ["/images/collections/bracelet.webp", "/images/collections/earring.webp", "/images/collections/necklaces.webp"];
 
 function fallbackItems(locale: string): FeaturedAlbumItem[] {
   const names = locale === "fa"

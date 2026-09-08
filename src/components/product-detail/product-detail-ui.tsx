@@ -28,13 +28,13 @@ export const fallbackImages: Record<
   string
 > = {
   necklaces:
-    "/images/collections/necklaces.jfif",
+    "/images/collections/necklaces.webp",
 
   bracelets:
-    "/images/collections/bracelet.jpg",
+    "/images/collections/bracelet.webp",
 
   earrings:
-    "/images/collections/earring.jpg",
+    "/images/collections/earring.webp",
 };
 
 export function formatToman(

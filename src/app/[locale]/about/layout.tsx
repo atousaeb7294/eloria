@@ -22,7 +22,7 @@ export async function generateMetadata({
       locale === "fa"
         ? "آشنایی رسمی با الوریا، زیورآلات دست‌ساز مکرومه، طلا، نقره و سنگ‌های زینتی."
         : "The official introduction to Eloria handmade macramé, gold, silver and gemstone jewelry.",
-    image: "/images/hero/eloria-hero.jpeg",
+    image: "/images/hero/eloria-hero.webp",
   });
 }
 

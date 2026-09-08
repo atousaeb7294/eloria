@@ -40,9 +40,9 @@ function digits(value: string): string {
 }
 
 const fallbackImages: Record<string, string> = {
-  necklaces: "/images/collections/necklaces.jfif",
-  bracelets: "/images/collections/bracelet.jpg",
-  earrings: "/images/collections/earring.jpg",
+  necklaces: "/images/collections/necklaces.webp",
+  bracelets: "/images/collections/bracelet.webp",
+  earrings: "/images/collections/earring.webp",
 };
 
 function SelectionOption({ selected, onClick, icon, title, subtitle }: {
@@ -248,7 +248,7 @@ export function SmartSelectionAssistant({ locale }: { locale: "fa" | "en" }) {
                 <div className="mt-6 grid gap-4 md:grid-cols-3">
                   {results.map(product => {
                     const name = fa ? product.nameFa : product.nameEn;
-                    const image = product.image?.imageUrl ?? fallbackImages[product.collectionSlug] ?? "/images/collections/necklaces.jfif";
+                    const image = product.image?.imageUrl ?? fallbackImages[product.collectionSlug] ?? "/images/collections/necklaces.webp";
                     const alt = fa ? product.image?.altFa ?? name : product.image?.altEn ?? name;
                     return (
                       <Link key={product.id} href={`/${locale}/products/${product.slug}`} onClick={() => setOpen(false)} className="group overflow-hidden rounded-[1.4rem] border border-white/[.08] bg-black/15 transition hover:-translate-y-1 hover:border-[#e3c66f]/38">

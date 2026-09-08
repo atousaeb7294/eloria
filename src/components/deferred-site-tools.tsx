@@ -3,18 +3,12 @@
 import dynamic from "next/dynamic";
 import { useEffect, useState } from "react";
 
+import { CustomerSupportWidget } from "@/components/customer-support-widget";
+
 const SmartSelectionAssistant = dynamic(
   () =>
     import("@/components/smart-selection-assistant").then(
       module => module.SmartSelectionAssistant,
-    ),
-  { ssr: false },
-);
-
-const CustomerSupportWidget = dynamic(
-  () =>
-    import("@/components/customer-support-widget").then(
-      module => module.CustomerSupportWidget,
     ),
   { ssr: false },
 );
@@ -46,11 +40,9 @@ export function DeferredSiteTools({ locale }: { locale: string }) {
     };
   }, []);
 
-  if (!ready) return null;
-
   return (
     <>
-      <SmartSelectionAssistant locale={resolvedLocale} />
+      {ready ? <SmartSelectionAssistant locale={resolvedLocale} /> : null}
       <CustomerSupportWidget locale={resolvedLocale} />
     </>
   );

@@ -39,7 +39,7 @@ const fallbackCollections: CollectionCard[] = [
     slug: "necklaces",
     nameFa: "گردنبند",
     nameEn: "Necklaces",
-    imageUrl: "/images/collections/necklaces.jfif",
+    imageUrl: "/images/collections/necklaces.webp",
     productCount: null,
   },
   {
@@ -47,7 +47,7 @@ const fallbackCollections: CollectionCard[] = [
     slug: "bracelets",
     nameFa: "دستبند",
     nameEn: "Bracelets",
-    imageUrl: "/images/collections/bracelet.jpg",
+    imageUrl: "/images/collections/bracelet.webp",
     productCount: null,
   },
   {
@@ -55,7 +55,7 @@ const fallbackCollections: CollectionCard[] = [
     slug: "earrings",
     nameFa: "گوشواره",
     nameEn: "Earrings",
-    imageUrl: "/images/collections/earring.jpg",
+    imageUrl: "/images/collections/earring.webp",
     productCount: null,
   },
 ];
@@ -83,10 +83,10 @@ function iconForCollection(slug: string) {
 }
 
 function fallbackImageForCollection(slug: string) {
-  if (slug === "necklaces") return "/images/collections/necklaces.jfif";
-  if (slug === "bracelets") return "/images/collections/bracelet.jpg";
-  if (slug === "earrings") return "/images/collections/earring.jpg";
-  return "/images/hero/eloria-hero.jpeg";
+  if (slug === "necklaces") return "/images/collections/necklaces.webp";
+  if (slug === "bracelets") return "/images/collections/bracelet.webp";
+  if (slug === "earrings") return "/images/collections/earring.webp";
+  return "/images/hero/eloria-hero.webp";
 }
 
 function descriptionForCollection(

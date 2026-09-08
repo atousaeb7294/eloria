@@ -31,7 +31,7 @@ type KnownCollectionSlug =
 
 const collectionContent = {
   necklaces: {
-    image: "/images/collections/necklaces.jfif",
+    image: "/images/collections/necklaces.webp",
     eyebrow: "Eloria Necklace Collection",
     fa: {
       title: "گنجینه گردنبندها",
@@ -51,7 +51,7 @@ const collectionContent = {
     },
   },
   bracelets: {
-    image: "/images/collections/bracelet.jpg",
+    image: "/images/collections/bracelet.webp",
     eyebrow: "Eloria Bracelet Collection",
     fa: {
       title: "گنجینه دستبندها",
@@ -71,7 +71,7 @@ const collectionContent = {
     },
   },
   earrings: {
-    image: "/images/collections/earring.jpg",
+    image: "/images/collections/earring.webp",
     eyebrow: "Eloria Earring Collection",
     fa: {
       title: "گنجینه گوشواره‌ها",
@@ -211,7 +211,7 @@ export default async function CollectionPage({
   const image =
     databaseCollection?.imageUrl ||
     known?.image ||
-    "/images/hero/eloria-hero.jpeg";
+    "/images/hero/eloria-hero.webp";
 
   const eyebrow =
     known?.eyebrow ||

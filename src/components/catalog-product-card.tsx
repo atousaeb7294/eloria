@@ -30,9 +30,9 @@ type CatalogProductCardProps = {
 };
 
 const fallbackImages: Record<string, string> = {
-  necklaces: "/images/collections/necklaces.jfif",
-  bracelets: "/images/collections/bracelet.jpg",
-  earrings: "/images/collections/earring.jpg",
+  necklaces: "/images/collections/necklaces.webp",
+  bracelets: "/images/collections/bracelet.webp",
+  earrings: "/images/collections/earring.webp",
 };
 
 const collectionNames: Record<
@@ -78,7 +78,7 @@ export function CatalogProductCard({
   const imageUrl =
     product.image?.imageUrl ??
     fallbackImages[product.collectionSlug] ??
-    "/images/collections/necklaces.jfif";
+    "/images/collections/necklaces.webp";
 
   const MaterialIcon = isGold
     ? GoldRuneIcon
