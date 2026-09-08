@@ -512,7 +512,7 @@ export default async function ProductPage({
     : `/${locale}/products`;
 
   const fallbackImage =
-    fallbackImages[collectionSlug] ?? "/images/hero/eloria-hero.webp";
+    fallbackImages[collectionSlug] ?? "/images/hero/eloria-hero.jpeg";
 
   const galleryImages =
     productRecord.images.length > 0
@@ -1280,52 +1280,51 @@ export default async function ProductPage({
                 </div>
               ) : null}
 
-              <div className="mt-5 grid gap-2 text-xs leading-6 text-[#cdbf9f]/65 sm:grid-cols-3">
+              <div className="mt-5 grid gap-2 text-xs leading-6 text-[#cdbf9f]/65 sm:grid-cols-2">
                 <div className="rounded-xl border border-white/[0.07] bg-black/10 px-3 py-2">
                   <span className="block text-[9px] text-[#d8bd72]/60">
-                    {isPersian ? "شخصیت این اثر" : "Character"}
+                    {isPersian ? "وابستگی" : "Affiliation"}
                   </span>
                   <strong className="font-normal text-[#ead8ae]">
                     {isPersian
-                      ? worldProfile.characterNameFa
-                      : worldProfile.characterNameEn}
+                      ? `${worldProfile.characterNameFa}، زیرمجموعهٔ ${worldProfile.guardianNameFa}، شاخهٔ ${worldProfile.branchFa}`
+                      : `${worldProfile.characterNameEn}, follower of ${worldProfile.guardianNameEn}, ${worldProfile.branchEn} branch`}
                   </strong>
                 </div>
                 <div className="rounded-xl border border-white/[0.07] bg-black/10 px-3 py-2">
                   <span className="block text-[9px] text-[#d8bd72]/60">
-                    {isPersian ? "نقش و خاستگاه" : "Role and homeland"}
+                    {isPersian ? "محیط زندگی" : "Homeland"}
                   </span>
                   <strong className="font-normal text-[#ead8ae]">
-                    {isPersian
-                      ? `${worldProfile.roleFa}؛ ${worldProfile.homelandFa}`
-                      : `${worldProfile.roleEn}; ${worldProfile.homelandEn}`}
+                    {isPersian ? worldProfile.homelandFa : worldProfile.homelandEn}
                   </strong>
                 </div>
-                <div className="rounded-xl border border-white/[0.07] bg-black/10 px-3 py-2">
+                <div className="rounded-xl border border-white/[0.07] bg-black/10 px-3 py-2 sm:col-span-2">
                   <span className="block text-[9px] text-[#d8bd72]/60">
-                    {isPersian ? "دوره" : "Era"}
+                    {isPersian ? "نقش" : "Role"}
                   </span>
                   <strong className="font-normal text-[#ead8ae]">
-                    {isPersian ? worldProfile.eraFa : worldProfile.eraEn}
+                    {isPersian ? worldProfile.roleFa : worldProfile.roleEn}
                   </strong>
                 </div>
               </div>
 
-              <p className="mt-4 text-[11px] leading-7 text-[#bfb08f]/55">
-                {isPersian
-                  ? worldProfile.relicMeaningFa
-                  : worldProfile.relicMeaningEn}
-              </p>
-
-              <Link
-                href={`/${locale}/story#mother-legend`}
-                className="mt-4 inline-flex items-center gap-2 rounded-full border border-[#d9b85f]/24 px-4 py-2 text-[10px] text-[#e5cd86] transition hover:border-[#e8cf7c]/55"
-              >
-                <WorldRuneIcon className="size-4" />
-                {isPersian
-                  ? "رد این نشان در تاریخ الوریا"
-                  : "This Sign in Eloria’s history"}
-              </Link>
+              <div className="mt-4 flex flex-wrap gap-2">
+                <Link
+                  href={`/${locale}/story#mother-legend`}
+                  className="inline-flex items-center gap-2 rounded-full border border-[#d9b85f]/24 px-4 py-2 text-[10px] text-[#e5cd86] transition hover:border-[#e8cf7c]/55"
+                >
+                  <WorldRuneIcon className="size-4" />
+                  {isPersian ? "افسانهٔ مادر الوریا" : "Eloria’s Mother Legend"}
+                </Link>
+                <Link
+                  href={`/${locale}/atelier`}
+                  className="inline-flex items-center gap-2 rounded-full border border-[#d9b85f]/24 px-4 py-2 text-[10px] text-[#e5cd86] transition hover:border-[#e8cf7c]/55"
+                >
+                  <WorldRuneIcon className="size-4" />
+                  {isPersian ? "آتلیهٔ الوریا" : "Eloria Atelier"}
+                </Link>
+              </div>
             </div>
           </div>
         </article>

@@ -72,9 +72,9 @@
     "test:supply-chain": "node scripts/check-supply-chain.mjs",
     "myths:assign": "tsx scripts/assign-unique-product-myths.ts",
     "myths:refresh": "tsx scripts/refresh-product-myths.ts --confirm-overwrite",
+    "myths:reassign:canonical-women": "tsx scripts/reassign-canonical-product-legends.ts --confirm-reassign",
     "test:myths": "node --import tsx scripts/test-product-myth-library.ts",
-    "test:critical": "node --import tsx scripts/test-critical-regressions.ts",
-    "audit:performance": "node scripts/audit-performance.mjs"
+    "test:critical": "node --import tsx scripts/test-critical-regressions.ts"
   },
   "dependencies": {
     "@base-ui/react": "^1.6.0",

@@ -4,18 +4,18 @@ import {
   generateUnusedProductMyth,
 } from "../src/lib/product-myth-generator";
 
-assert.equal(ELORIA_MYTH_LIBRARY.length, 154);
+assert.equal(ELORIA_MYTH_LIBRARY.length, 20);
 assert.equal(
   new Set(ELORIA_MYTH_LIBRARY.map((item) => item.mythKey)).size,
-  154,
+  20,
 );
 assert.equal(
   new Set(ELORIA_MYTH_LIBRARY.map((item) => item.mythNameFa)).size,
-  154,
+  20,
 );
 assert.equal(
   new Set(ELORIA_MYTH_LIBRARY.map((item) => item.legendFa)).size,
-  154,
+  20,
 );
 assert.ok(
   ELORIA_MYTH_LIBRARY.every((item) =>
@@ -24,7 +24,7 @@ assert.ok(
 );
 
 const used = new Set<string>();
-for (let index = 0; index < 154; index += 1) {
+for (let index = 0; index < 20; index += 1) {
   const myth = generateUnusedProductMyth(
     { nameFa: `اثر ${index}`, nameEn: `Creation ${index}` },
     used,
@@ -32,10 +32,10 @@ for (let index = 0; index < 154; index += 1) {
   assert.ok(!used.has(myth.mythKey));
   used.add(myth.mythKey);
 }
-assert.equal(used.size, 154);
+assert.equal(used.size, 20);
 assert.throws(
-  () => generateUnusedProductMyth({ nameFa: "اثر صد و پنجاه و پنجم" }, used),
+  () => generateUnusedProductMyth({ nameFa: "اثر بیست‌ویکم" }, used),
   /ELORIA_MYTH_LIBRARY_EXHAUSTED/,
 );
 
-console.log("PASS  154 unique Persian names and one-time Eloria myths");
+console.log("PASS  20 canonical young/middle-aged women and one-time Eloria myths");

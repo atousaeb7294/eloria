@@ -690,11 +690,29 @@ export async function createAdminProductAction(
         select: { mythKey: true },
       }),
     );
-    const myth = generateUnusedProductMyth({
-        nameFa: input.nameFa,
-        nameEn: input.nameEn,
-        material: input.material,
-      }, new Set(assignedMyths.flatMap(item => item.mythKey ? [item.mythKey] : [])));
+    let myth;
+    try {
+      myth = generateUnusedProductMyth(
+        {
+          nameFa: input.nameFa,
+          nameEn: input.nameEn,
+          material: input.material,
+        },
+        new Set(
+          assignedMyths.flatMap((item) => (item.mythKey ? [item.mythKey] : [])),
+        ),
+      );
+    } catch (error) {
+      if (
+        error instanceof Error &&
+        error.message === "ELORIA_MYTH_LIBRARY_EXHAUSTED"
+      ) {
+        throw new AdminProductActionError(
+          "هر ۲۰ افسانهٔ مجاز زنان الوریا به محصول اختصاص یافته‌اند؛ برای جلوگیری از تکرار، محصول تازه بدون افسانه ذخیره نشد.",
+        );
+      }
+      throw error;
+    }
 await ensureUniqueIdentity({
       slug:
         input.slug,
@@ -922,7 +940,6 @@ await ensureUniqueIdentity({
     `/${input.locale}/admin/products/${productId}?saved=1`,
   );
 }
-
 
 
 
