@@ -140,6 +140,10 @@ const nextConfig: NextConfig = {
   },
 
   experimental: {
+    cpus: 1,
+    staticGenerationRetryCount: 2,
+    staticGenerationMaxConcurrency: 1,
+    staticGenerationMinPagesPerWorker: 25,
     serverActions: {
       bodySizeLimit: "10mb",
       ...(serverActionOrigins.length
