@@ -171,8 +171,7 @@ export function EloriaIntroView({
                 : "pointer-events-none opacity-0",
             ].join(" ")}
             src={firstVideoSrc}
-            poster="/images/hero/eloria-hero.webp"
-            preload={phase === "checking" ? "none" : "metadata"}
+            preload={phase === "checking" ? "none" : "auto"}
             muted
             playsInline
             disablePictureInPicture
@@ -202,7 +201,6 @@ export function EloriaIntroView({
                 : "pointer-events-none opacity-0",
             ].join(" ")}
             src={secondVideoSrc}
-            poster="/images/hero/eloria-hero.webp"
             preload="none"
             playsInline
             disablePictureInPicture

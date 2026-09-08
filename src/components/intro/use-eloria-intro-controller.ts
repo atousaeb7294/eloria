@@ -40,6 +40,7 @@ export function useEloriaIntroController({
   const [secondVideoBuffering, setSecondVideoBuffering] = useState(false);
   const [firstEntryHotspotVisible, setFirstEntryHotspotVisible] = useState(false);
   const [useMobileVideos, setUseMobileVideos] = useState(false);
+  const [mediaProfileReady, setMediaProfileReady] = useState(false);
 
   const isPersian = locale === "fa";
 
@@ -63,11 +64,9 @@ export function useEloriaIntroController({
     const video = secondVideoRef.current;
     if (!video) return;
 
-    // Full preloading of the second 1080p act caused a visible stall on mobile.
-    // Mobile still keeps metadata warm, then starts the compressed rendition on
-    // the visitor's explicit entry gesture.
-    const resolvedPreload = useMobileVideos && preload === "auto" ? "metadata" : preload;
-    video.preload = resolvedPreload;
+    // Both renditions are small enough to warm while act one is playing. This
+    // removes the pause between the two acts without starting playback early.
+    video.preload = preload;
     if (video.readyState === 0) {
       try {
         video.load();
@@ -75,7 +74,7 @@ export function useEloriaIntroController({
         // Loading can be refused until a user gesture. The entry click retries it.
       }
     }
-  }, [useMobileVideos]);
+  }, []);
 
   const completeIntro = useCallback(() => {
     clearTransitionTimers();
@@ -129,12 +128,16 @@ export function useEloriaIntroController({
       setUseMobileVideos(
         window.matchMedia("(max-width: 767px)").matches || constrainedNetwork,
       );
+      setMediaProfileReady(true);
     }, 0);
 
     return () => window.clearTimeout(timer);
   }, []);
 
   useEffect(() => {
+    // Do not start with the desktop source and swap it on the next render.
+    // Waiting one render avoids a duplicate request and a visible poster flash.
+    if (!mediaProfileReady) return;
 
     try {
       if (window.sessionStorage.getItem(INTRO_SESSION_KEY) === "1") {
@@ -149,7 +152,7 @@ export function useEloriaIntroController({
     }
 
     window.setTimeout(() => setPhase("video-one"), 0);
-  }, [announceIntroComplete]);
+  }, [announceIntroComplete, mediaProfileReady]);
 
   useEffect(() => {
     if (phase === "checking" || phase === "complete") return;

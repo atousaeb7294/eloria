@@ -26,7 +26,7 @@ export const TOTAL_TRANSITION_DURATION_MS =
  */
 export const INTRO_SESSION_KEY = "eloria_intro_complete_v10";
 
-export const INTRO_ASSET_VERSION = "2026-08-27-interactive-intro-v4";
+export const INTRO_ASSET_VERSION = "2026-09-08-faststart-intro-v5";
 
 /** The entry artwork is baked into the final seconds of act one.
  * A transparent accessible hotspot is enabled only while that artwork is visible.
