@@ -1280,48 +1280,48 @@ export default async function ProductPage({
                 </div>
               ) : null}
 
-              <div className="mt-5 grid gap-2 text-xs leading-6 text-[#cdbf9f]/65 sm:grid-cols-2">
+              <dl className="mt-5 grid gap-2 text-xs leading-6 text-[#cdbf9f]/65 sm:grid-cols-2">
                 <div className="rounded-xl border border-white/[0.07] bg-black/10 px-3 py-2">
-                  <span className="block text-[9px] text-[#d8bd72]/60">
+                  <dt className="block text-[9px] text-[#d8bd72]/60">
                     {isPersian ? "وابستگی" : "Affiliation"}
-                  </span>
-                  <strong className="font-normal text-[#ead8ae]">
+                  </dt>
+                  <dd className="mt-1 block font-normal text-[#ead8ae]">
                     {isPersian
                       ? `${worldProfile.characterNameFa}، زیرمجموعهٔ ${worldProfile.guardianNameFa}، شاخهٔ ${worldProfile.branchFa}`
                       : `${worldProfile.characterNameEn}, follower of ${worldProfile.guardianNameEn}, ${worldProfile.branchEn} branch`}
-                  </strong>
+                  </dd>
                 </div>
                 <div className="rounded-xl border border-white/[0.07] bg-black/10 px-3 py-2">
-                  <span className="block text-[9px] text-[#d8bd72]/60">
+                  <dt className="block text-[9px] text-[#d8bd72]/60">
                     {isPersian ? "محیط زندگی" : "Homeland"}
-                  </span>
-                  <strong className="font-normal text-[#ead8ae]">
+                  </dt>
+                  <dd className="mt-1 block font-normal text-[#ead8ae]">
                     {isPersian ? worldProfile.homelandFa : worldProfile.homelandEn}
-                  </strong>
+                  </dd>
                 </div>
                 <div className="rounded-xl border border-white/[0.07] bg-black/10 px-3 py-2 sm:col-span-2">
-                  <span className="block text-[9px] text-[#d8bd72]/60">
+                  <dt className="block text-[9px] text-[#d8bd72]/60">
                     {isPersian ? "نقش" : "Role"}
-                  </span>
-                  <strong className="font-normal text-[#ead8ae]">
+                  </dt>
+                  <dd className="mt-1 block font-normal text-[#ead8ae]">
                     {isPersian ? worldProfile.roleFa : worldProfile.roleEn}
-                  </strong>
+                  </dd>
                 </div>
-              </div>
+              </dl>
 
               <div className="mt-4 flex flex-wrap gap-2">
                 <Link
                   href={`/${locale}/story#mother-legend`}
                   className="inline-flex items-center gap-2 rounded-full border border-[#d9b85f]/24 px-4 py-2 text-[10px] text-[#e5cd86] transition hover:border-[#e8cf7c]/55"
                 >
-                  <WorldRuneIcon className="size-4" />
+                  <WorldRuneIcon aria-hidden="true" className="size-4" />
                   {isPersian ? "افسانهٔ مادر الوریا" : "Eloria’s Mother Legend"}
                 </Link>
                 <Link
                   href={`/${locale}/atelier`}
                   className="inline-flex items-center gap-2 rounded-full border border-[#d9b85f]/24 px-4 py-2 text-[10px] text-[#e5cd86] transition hover:border-[#e8cf7c]/55"
                 >
-                  <WorldRuneIcon className="size-4" />
+                  <WorldRuneIcon aria-hidden="true" className="size-4" />
                   {isPersian ? "آتلیهٔ الوریا" : "Eloria Atelier"}
                 </Link>
               </div>

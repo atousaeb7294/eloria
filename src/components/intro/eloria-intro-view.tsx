@@ -46,7 +46,9 @@ export function EloriaIntroView({
     phase ===
       "video-one" ||
     phase ===
-      "awaiting-entry";
+      "awaiting-entry" ||
+    phase ===
+      "loading-two";
 
   const showSecondVideo =
     phase ===
@@ -65,6 +67,7 @@ export function EloriaIntroView({
     "hero-reveal";
 
   const introStep =
+    phase === "loading-two" ||
     phase === "video-two" ||
     phase === "flash-in" ||
     phase === "hero-reveal"
@@ -171,7 +174,8 @@ export function EloriaIntroView({
                 : "pointer-events-none opacity-0",
             ].join(" ")}
             src={firstVideoSrc}
-            preload={phase === "checking" ? "none" : "auto"}
+            poster="/images/hero/eloria-hero.jpeg"
+            preload={phase === "checking" ? "none" : "metadata"}
             muted
             playsInline
             disablePictureInPicture
@@ -201,6 +205,7 @@ export function EloriaIntroView({
                 : "pointer-events-none opacity-0",
             ].join(" ")}
             src={secondVideoSrc}
+            poster="/images/hero/eloria-hero.jpeg"
             preload="none"
             playsInline
             disablePictureInPicture
@@ -460,6 +465,15 @@ export function EloriaIntroView({
             >
               <span className="sr-only">{isPersian ? "ورود به دنیای الوریا" : "Enter the world of Eloria"}</span>
             </button>
+          </div>
+        )}
+
+        {phase === "loading-two" && (
+          <div className="pointer-events-none absolute inset-x-0 bottom-[max(1.5rem,env(safe-area-inset-bottom))] z-[180] flex justify-center px-6">
+            <div className="inline-flex items-center gap-3 rounded-full border border-[#e7ca78]/22 bg-black/55 px-4 py-2 text-[10px] text-[#f0dca5] backdrop-blur-xl">
+              <span className="size-3 animate-spin rounded-full border border-[#e6c975]/25 border-t-[#f4dc96]" />
+              <span>{isPersian ? "آماده‌سازی پردهٔ دوم…" : "Preparing act two…"}</span>
+            </div>
           </div>
         )}
 

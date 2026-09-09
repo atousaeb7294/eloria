@@ -26,6 +26,7 @@ export function useEloriaIntroController({
   const secondVideoRef = useRef<HTMLVideoElement>(null);
   const heroRevealTimerRef = useRef<number | null>(null);
   const completionTimerRef = useRef<number | null>(null);
+  const secondVideoStartTimerRef = useRef<number | null>(null);
   const firstPlaybackStartedRef = useRef(false);
   const firstPlaybackFinishedRef = useRef(false);
   const secondPlaybackStartedRef = useRef(false);
@@ -40,7 +41,6 @@ export function useEloriaIntroController({
   const [secondVideoBuffering, setSecondVideoBuffering] = useState(false);
   const [firstEntryHotspotVisible, setFirstEntryHotspotVisible] = useState(false);
   const [useMobileVideos, setUseMobileVideos] = useState(false);
-  const [mediaProfileReady, setMediaProfileReady] = useState(false);
 
   const isPersian = locale === "fa";
 
@@ -54,6 +54,11 @@ export function useEloriaIntroController({
       window.clearTimeout(completionTimerRef.current);
       completionTimerRef.current = null;
     }
+
+    if (secondVideoStartTimerRef.current !== null) {
+      window.clearTimeout(secondVideoStartTimerRef.current);
+      secondVideoStartTimerRef.current = null;
+    }
   }, []);
 
   const announceIntroComplete = useCallback(() => {
@@ -64,9 +69,11 @@ export function useEloriaIntroController({
     const video = secondVideoRef.current;
     if (!video) return;
 
-    // Both renditions are small enough to warm while act one is playing. This
-    // removes the pause between the two acts without starting playback early.
-    video.preload = preload;
+    // Full preloading of the second 1080p act caused a visible stall on mobile.
+    // Mobile still keeps metadata warm, then starts the compressed rendition on
+    // the visitor's explicit entry gesture.
+    const resolvedPreload = useMobileVideos && preload === "auto" ? "metadata" : preload;
+    video.preload = resolvedPreload;
     if (video.readyState === 0) {
       try {
         video.load();
@@ -74,7 +81,7 @@ export function useEloriaIntroController({
         // Loading can be refused until a user gesture. The entry click retries it.
       }
     }
-  }, []);
+  }, [useMobileVideos]);
 
   const completeIntro = useCallback(() => {
     clearTransitionTimers();
@@ -128,16 +135,12 @@ export function useEloriaIntroController({
       setUseMobileVideos(
         window.matchMedia("(max-width: 767px)").matches || constrainedNetwork,
       );
-      setMediaProfileReady(true);
     }, 0);
 
     return () => window.clearTimeout(timer);
   }, []);
 
   useEffect(() => {
-    // Do not start with the desktop source and swap it on the next render.
-    // Waiting one render avoids a duplicate request and a visible poster flash.
-    if (!mediaProfileReady) return;
 
     try {
       if (window.sessionStorage.getItem(INTRO_SESSION_KEY) === "1") {
@@ -152,7 +155,7 @@ export function useEloriaIntroController({
     }
 
     window.setTimeout(() => setPhase("video-one"), 0);
-  }, [announceIntroComplete, mediaProfileReady]);
+  }, [announceIntroComplete]);
 
   useEffect(() => {
     if (phase === "checking" || phase === "complete") return;
@@ -267,12 +270,24 @@ export function useEloriaIntroController({
     setSecondVideoBuffering(!secondVideoReady);
     setFirstEntryHotspotVisible(false);
 
-    firstVideoRef.current?.pause();
     video.loop = false;
     video.currentTime = 0;
     forceNormalPlayback(video);
     video.muted = false;
-    setPhase("video-two");
+    // Keep act one's final frame visible until act two has produced a real
+    // playing frame. Switching the visible phase before play() resolves caused
+    // the black-frame freeze seen on mobile and slower networks.
+    setPhase("loading-two");
+
+    secondVideoStartTimerRef.current = window.setTimeout(() => {
+      if (!secondPlaybackStartedRef.current || secondPlaybackFinishedRef.current) return;
+      video.pause();
+      secondPlaybackStartedRef.current = false;
+      enteringSecondVideoRef.current = false;
+      setSecondVideoBuffering(false);
+      setSecondVideoError(true);
+      setPhase("awaiting-entry");
+    }, 15_000);
 
     void video.play().catch(() => {
       // Safari/iOS can still reject audio on a user gesture in edge cases.
@@ -280,6 +295,10 @@ export function useEloriaIntroController({
       video.muted = true;
       return video.play();
     }).catch(() => {
+      if (secondVideoStartTimerRef.current !== null) {
+        window.clearTimeout(secondVideoStartTimerRef.current);
+        secondVideoStartTimerRef.current = null;
+      }
       secondPlaybackStartedRef.current = false;
       enteringSecondVideoRef.current = false;
       setSecondVideoBuffering(false);
@@ -307,13 +326,19 @@ export function useEloriaIntroController({
   }, [phase, playSecondVideo, prepareSecondVideo]);
 
   const handleSecondVideoPlaying = useCallback(() => {
+    if (secondVideoStartTimerRef.current !== null) {
+      window.clearTimeout(secondVideoStartTimerRef.current);
+      secondVideoStartTimerRef.current = null;
+    }
+    firstVideoRef.current?.pause();
     enteringSecondVideoRef.current = false;
     setSecondVideoError(false);
     setSecondVideoBuffering(false);
+    setPhase("video-two");
   }, []);
 
   const handleSecondVideoWaiting = useCallback(() => {
-    if (phase === "video-two") setSecondVideoBuffering(true);
+    if (phase === "video-two" || phase === "loading-two") setSecondVideoBuffering(true);
   }, [phase]);
 
   const handleFirstVideoFailure = useCallback(() => {
@@ -325,6 +350,10 @@ export function useEloriaIntroController({
   }, []);
 
   const handleSecondVideoFailure = useCallback(() => {
+    if (secondVideoStartTimerRef.current !== null) {
+      window.clearTimeout(secondVideoStartTimerRef.current);
+      secondVideoStartTimerRef.current = null;
+    }
     secondVideoRef.current?.pause();
     secondPlaybackStartedRef.current = false;
     enteringSecondVideoRef.current = false;

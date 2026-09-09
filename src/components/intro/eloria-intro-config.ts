@@ -6,6 +6,7 @@ export type IntroPhase =
   | "checking"
   | "video-one"
   | "awaiting-entry"
+  | "loading-two"
   | "video-two"
   | "flash-in"
   | "hero-reveal"
@@ -24,9 +25,12 @@ export const TOTAL_TRANSITION_DURATION_MS =
  * پس از ورود کامل، نتیجه فقط در همان تب مرورگر نگه داشته می‌شود.
  * بازسازی React یا جابه‌جایی داخلی دیگر باعث پخش ناگهانی دوباره نمی‌شود.
  */
-export const INTRO_SESSION_KEY = "eloria_intro_complete_v10";
+// Bumped once for this release so visitors who encountered the broken handoff
+// receive one clean run of the repaired state machine. Completion is still
+// locked for the rest of the current browser tab.
+export const INTRO_SESSION_KEY = "eloria_intro_complete_v11";
 
-export const INTRO_ASSET_VERSION = "2026-09-08-faststart-intro-v5";
+export const INTRO_ASSET_VERSION = "2026-09-09-locked-handoff-v11";
 
 /** The entry artwork is baked into the final seconds of act one.
  * A transparent accessible hotspot is enabled only while that artwork is visible.
