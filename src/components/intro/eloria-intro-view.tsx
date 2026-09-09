@@ -103,7 +103,7 @@ export function EloriaIntroView({
          * و Hero واقعی زیر آن دیده خواهد شد.
          */}
         <motion.div
-          className="absolute inset-0 bg-[#010b07]"
+          className="absolute inset-0 bg-black"
           initial={false}
           animate={
             phase ===
@@ -168,14 +168,13 @@ export function EloriaIntroView({
               firstVideoRef
             }
             className={[
-              "absolute inset-0 size-full bg-[#010b07] object-contain object-center transition-opacity duration-500",
+              "absolute inset-0 size-full bg-black object-contain object-center transition-opacity duration-300",
               showFirstVideo
                 ? "opacity-100"
                 : "pointer-events-none opacity-0",
             ].join(" ")}
             src={firstVideoSrc}
-            poster="/images/hero/eloria-hero.jpeg"
-            preload={phase === "checking" ? "none" : "metadata"}
+            preload="auto"
             muted
             playsInline
             disablePictureInPicture
@@ -199,14 +198,13 @@ export function EloriaIntroView({
               secondVideoRef
             }
             className={[
-              "absolute inset-0 size-full bg-[#010b07] object-contain object-center transition-opacity duration-500",
+              "absolute inset-0 size-full bg-black object-contain object-center transition-opacity duration-300",
               showSecondVideo
                 ? "opacity-100"
                 : "pointer-events-none opacity-0",
             ].join(" ")}
             src={secondVideoSrc}
-            poster="/images/hero/eloria-hero.jpeg"
-            preload="none"
+            preload="auto"
             playsInline
             disablePictureInPicture
             controls={false}
@@ -516,7 +514,7 @@ export function EloriaIntroView({
         {/* بارگذاری اولیه */}
         {phase ===
           "checking" && (
-          <div className="absolute inset-0 z-[140] grid place-items-center bg-[#010b07]">
+          <div className="absolute inset-0 z-[140] grid place-items-center bg-black">
             <div className="flex flex-col items-center gap-4">
               <span className="size-10 animate-spin rounded-full border border-[#e6c975]/20 border-t-[#f4dc96]" />
 

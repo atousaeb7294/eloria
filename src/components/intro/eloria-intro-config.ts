@@ -28,9 +28,9 @@ export const TOTAL_TRANSITION_DURATION_MS =
 // Bumped once for this release so visitors who encountered the broken handoff
 // receive one clean run of the repaired state machine. Completion is still
 // locked for the rest of the current browser tab.
-export const INTRO_SESSION_KEY = "eloria_intro_complete_v11";
+export const INTRO_SESSION_KEY = "eloria_intro_complete_v12";
 
-export const INTRO_ASSET_VERSION = "2026-09-09-locked-handoff-v11";
+export const INTRO_ASSET_VERSION = "2026-09-09-mobile-desktop-faststart-v12";
 
 /** The entry artwork is baked into the final seconds of act one.
  * A transparent accessible hotspot is enabled only while that artwork is visible.
