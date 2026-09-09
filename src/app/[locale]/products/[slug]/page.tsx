@@ -1209,7 +1209,7 @@ export default async function ProductPage({
 
             <div className="min-w-0 flex-1">
               <span className="text-[9px] uppercase tracking-[0.32em] text-[#d4bd7a]/50">
-                Eloria Secret Legend
+                {isPersian ? "روایت اختصاصی این اثر" : "Eloria Secret Legend"}
               </span>
 
               <h2
@@ -1226,9 +1226,15 @@ export default async function ProductPage({
                   : `The Legend of ${legendName}`}
               </h2>
 
-              <p className="mt-2 text-xs leading-7 text-[#d7c9aa]/65 sm:text-sm">
-                {legendText}
-              </p>
+              <div className="relative mt-4 overflow-hidden rounded-2xl border border-[#d9b85f]/25 bg-[linear-gradient(145deg,rgba(217,184,95,0.08),rgba(0,0,0,0.18))] px-5 py-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
+                <span aria-hidden="true" className="absolute start-0 top-0 h-full w-px bg-gradient-to-b from-transparent via-[#e4c873]/55 to-transparent" />
+                <h3 className="text-[10px] font-semibold tracking-[0.12em] text-[#e3ca83]">
+                  {isPersian ? "افسانهٔ پنهان" : "The Hidden Legend"}
+                </h3>
+                <p className="mt-3 text-xs leading-8 text-[#e2d4b7]/80 sm:text-sm">
+                  {legendText}
+                </p>
+              </div>
 
               {productRecord.characterImageUrl ||
               productRecord.worldSceneImageUrl ? (
