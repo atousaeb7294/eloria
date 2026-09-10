@@ -17,11 +17,11 @@ function contentSecurityPolicy(nonce: string): string {
     "media-src 'self' blob:",
     "worker-src 'self' blob:",
     "manifest-src 'self'",
-    "connect-src 'self' https://payment.zarinpal.com https://api.sms.ir https://*.supabase.co https://challenges.cloudflare.com",
-    "frame-src https://payment.zarinpal.com https://challenges.cloudflare.com",
+    "connect-src 'self' https://gateway.zibal.ir https://api.sms.ir https://*.supabase.co https://challenges.cloudflare.com",
+    "frame-src https://gateway.zibal.ir https://challenges.cloudflare.com",
     "object-src 'none'",
     "base-uri 'self'",
-    "form-action 'self' https://payment.zarinpal.com",
+    "form-action 'self' https://gateway.zibal.ir",
     "frame-ancestors 'none'",
     ...(isProduction ? ["upgrade-insecure-requests"] : []),
   ].join("; ");
@@ -62,3 +62,4 @@ export const config = {
     },
   ],
 };
+

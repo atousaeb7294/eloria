@@ -14,13 +14,23 @@ export async function GET(request: NextRequest) {
 
   const url = request.nextUrl;
   const orderId = url.searchParams.get("orderId")?.trim() ?? "";
-  const authority = url.searchParams.get("Authority")?.trim() ?? "";
-  const status = url.searchParams.get("Status")?.trim() ?? "";
+  const authority = url.searchParams.get("trackId")?.trim() ?? "";
+const success = url.searchParams.get("success")?.trim() ?? "";
+const status = url.searchParams.get("status")?.trim() ?? "";
+
+const gatewayStatus =
+  success === "1" || success === "2" || status === "2"
+    ? "OK"
+    : "FAILED";
   const locale = url.searchParams.get("locale") === "en" ? "en" : "fa";
   if (!orderId || !authority) return NextResponse.redirect(new URL(`/${locale}/order/failed?reason=invalid-callback`, siteBaseUrl()));
 
   try {
-    const result = await verifyOrderPayment({ orderId, authority, gatewayStatus: status });
+   const result = await verifyOrderPayment({
+  orderId,
+  authority,
+  gatewayStatus,
+});
     const target = result.successful ? (result.requiresReview ? "review" : "success") : "failed";
     const receipt = createPaymentReceiptToken({
       orderId: result.orderId,

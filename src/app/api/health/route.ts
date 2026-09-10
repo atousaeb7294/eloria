@@ -7,7 +7,7 @@ import {
   isSmsIrConfigured,
   isSmsIrVerifyConfigured,
 } from "@/lib/notifications/sms-ir";
-import { isZarinpalConfigured } from "@/lib/payment/zarinpal";
+import { isZibalConfigured } from "@/lib/payment/zibal";
 import { prisma } from "@/lib/prisma";
 
 export const runtime = "nodejs";
@@ -74,7 +74,7 @@ export async function GET(request: NextRequest) {
             turnstile: Boolean(process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY?.trim() && process.env.TURNSTILE_SECRET_KEY?.trim()),
             dynamicPricing: process.env.ELORIA_DYNAMIC_PRICING_ENABLED?.trim().toLowerCase() === "true",
             embeddedMetalSync: process.env.ELORIA_EMBEDDED_METAL_SYNC_ENABLED?.trim().toLowerCase() === "true",
-            payment: isZarinpalConfigured(),
+            payment: isZibalConfigured(),
             sms: isSmsIrConfigured(),
           },
         }
@@ -85,3 +85,4 @@ export async function GET(request: NextRequest) {
     },
   );
 }
+

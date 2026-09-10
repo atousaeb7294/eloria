@@ -12,7 +12,7 @@ import { consumeRateLimit } from "@/lib/security/rate-limit";
 import { hasTrustedOrigin, requestIp } from "@/lib/security/request";
 import { JsonRequestBodyError, readJsonBody } from "@/lib/security/json-body";
 import { verifyTurnstileToken } from "@/lib/security/turnstile";
-import { isZarinpalConfigured } from "@/lib/payment/zarinpal";
+import { isZibalConfigured } from "@/lib/payment/zibal";
 import { getCustomerFromRequest } from "@/lib/customer-auth";
 import { prisma } from "@/lib/prisma";
 import { isCommerceEnabled } from "@/lib/runtime-features";
@@ -477,7 +477,7 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    const paymentConfigured = isZarinpalConfigured();
+    const paymentConfigured = isZibalConfigured();
 
     /*
      * ساخت Authority زرین‌پال از ثبت سفارش جداست. سفارش و رزرو موجودی فوراً
@@ -565,3 +565,4 @@ export async function POST(request: NextRequest) {
     );
   }
 }
+

@@ -247,10 +247,10 @@ export function productionEnvironmentChecks(): Check[] {
     { key: "ELORIA_GOLD_RATE_MAX_DEVIATION_PERCENT", required: dynamicPricingEnabled, valid: !dynamicPricingEnabled || isPercent("ELORIA_GOLD_RATE_MAX_DEVIATION_PERCENT"), message: "حداکثر جهش مجاز نرخ طلا" },
     { key: "ELORIA_SILVER_RATE_MAX_DEVIATION_PERCENT", required: dynamicPricingEnabled, valid: !dynamicPricingEnabled || isPercent("ELORIA_SILVER_RATE_MAX_DEVIATION_PERCENT"), message: "حداکثر جهش مجاز نرخ نقره" },
 
-    { key: "ZARINPAL_MERCHANT_ID", required: paymentEnabled, valid: !paymentEnabled || /^[0-9a-fA-F-]{36}$/.test(value("ZARINPAL_MERCHANT_ID")), message: "Merchant ID زرین‌پال" },
+    { key: "ZIBAL_MERCHANT", required: paymentEnabled, valid: !paymentEnabled || /^[0-9a-fA-F-]{36}$/.test(value("ZIBAL_MERCHANT")), message: "Merchant ID زرین‌پال" },
     { key: "ELORIA_PAYMENT_START_SECRET", required: paymentEnabled, valid: !paymentEnabled || present("ELORIA_PAYMENT_START_SECRET", 48), message: "کلید مستقل مجوز شروع پرداخت Guest" },
-    { key: "ZARINPAL_API_BASE", required: false, valid: optionalOfficialHttpsEndpoint("ZARINPAL_API_BASE", "payment.zarinpal.com", "/pg/v4/payment"), message: "API زرین‌پال فقط روی endpoint رسمی HTTPS" },
-    { key: "ZARINPAL_STARTPAY_BASE", required: false, valid: optionalOfficialHttpsEndpoint("ZARINPAL_STARTPAY_BASE", "payment.zarinpal.com", "/pg/StartPay"), message: "StartPay زرین‌پال فقط روی endpoint رسمی HTTPS" },
+    { key: "ZIBAL_REQUEST_BASE", required: false, valid: optionalOfficialHttpsEndpoint("ZIBAL_REQUEST_BASE", "payment.zarinpal.com", "/pg/v4/payment"), message: "API زرین‌پال فقط روی endpoint رسمی HTTPS" },
+    { key: "ZIBAL_START_BASE", required: false, valid: optionalOfficialHttpsEndpoint("ZIBAL_START_BASE", "payment.zarinpal.com", "/pg/StartPay"), message: "StartPay زرین‌پال فقط روی endpoint رسمی HTTPS" },
 
     { key: "SUPABASE_URL", required: true, valid: isHttpsUrl("SUPABASE_URL"), message: "آدرس Storage" },
     { key: "SUPABASE_SERVICE_ROLE_KEY", required: true, valid: present("SUPABASE_SERVICE_ROLE_KEY", 40), message: "کلید Storage" },
@@ -298,3 +298,4 @@ export function assertProductionEnvironment(): void {
     );
   }
 }
+

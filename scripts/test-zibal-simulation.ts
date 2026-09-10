@@ -1,4 +1,4 @@
-﻿import assert from "node:assert/strict";
+import assert from "node:assert/strict";
 import { randomUUID } from "node:crypto";
 
 import {
@@ -6,8 +6,8 @@ import {
 } from "../src/lib/payment-service";
 
 import {
-  ZarinpalError,
-} from "../src/lib/payment/zarinpal";
+  ZibalError,
+} from "../src/lib/payment/zibal";
 
 import {
   databasePool,
@@ -19,12 +19,12 @@ import {
  * ============================================================
  * Deterministic test-only provider environment.
  *
- * No real Zarinpal request is ever allowed by this test.
+ * No real Zibal request is ever allowed by this test.
  * All provider traffic is intercepted through global.fetch.
  * ============================================================
  */
 
-process.env.ZARINPAL_MERCHANT_ID =
+process.env.Zibal_MERCHANT_ID =
   "11111111-1111-1111-1111-111111111111";
 
 /*
@@ -86,10 +86,10 @@ async function createFixture(
     await prisma.collection.create({
       data: {
         slug:
-          `zarinpal-simulation-${suffix}`,
+          `Zibal-simulation-${suffix}`,
 
         nameFa:
-          "آزمون پرداخت",
+          "????? ??????",
 
         nameEn:
           "Payment simulation",
@@ -106,10 +106,10 @@ async function createFixture(
           collection.id,
 
         slug:
-          `zarinpal-product-${suffix}`,
+          `Zibal-product-${suffix}`,
 
         nameFa:
-          "محصول آزمون پرداخت",
+          "????? ????? ??????",
 
         nameEn:
           "Payment simulation product",
@@ -148,7 +148,7 @@ async function createFixture(
             .slice(0, 32),
 
         idempotencyKey:
-          `zarinpal-simulation:${randomUUID()}`,
+          `Zibal-simulation:${randomUUID()}`,
 
         locale:
           "en",
@@ -182,7 +182,7 @@ async function createFixture(
 
         pricingSnapshot: {
           test:
-            "zarinpal-simulation",
+            "Zibal-simulation",
         },
 
         priceVerifiedAt:
@@ -253,7 +253,7 @@ async function createFixture(
 
             pricingSnapshot: {
               test:
-                "zarinpal-simulation",
+                "Zibal-simulation",
             },
           },
         },
@@ -275,7 +275,7 @@ async function createFixture(
           order.id,
 
         provider:
-          "ZARINPAL",
+          "Zibal",
 
         status:
           attemptStatus,
@@ -295,7 +295,7 @@ async function createFixture(
         activeKey:
           attemptStatus ===
           "REDIRECTED"
-            ? `ZARINPAL:${order.id}`
+            ? `Zibal:${order.id}`
             : null,
 
         redirectedAt:
@@ -575,7 +575,7 @@ async function auditExists(
 /*
  * ============================================================
  * CASE 1
- * Zarinpal verify code 100 = fresh successful payment.
+ * Zibal verify code 100 = fresh successful payment.
  * Also verify an immediate callback replay does not re-contact
  * the provider or mutate the already-paid order.
  * ============================================================
@@ -717,7 +717,7 @@ async function testSuccess100AndReplay() {
     );
 
     console.log(
-      "PASS  Zarinpal 100 finalizes payment and replay is idempotent",
+      "PASS  Zibal 100 finalizes payment and replay is idempotent",
     );
   } finally {
     await cleanupFixture(
@@ -730,7 +730,7 @@ async function testSuccess100AndReplay() {
 /*
  * ============================================================
  * CASE 2
- * Zarinpal 101 is accepted as already-verified success.
+ * Zibal 101 is accepted as already-verified success.
  * ============================================================
  */
 
@@ -807,7 +807,7 @@ async function testSuccess101() {
     );
 
     console.log(
-      "PASS  Zarinpal 101 is treated as successful verification",
+      "PASS  Zibal 101 is treated as successful verification",
     );
   } finally {
     await cleanupFixture(
@@ -1062,7 +1062,7 @@ async function testTimeoutRemainsRetryable() {
         error,
       ) =>
         error instanceof
-          ZarinpalError,
+          ZibalError,
     );
 
     assert.equal(
@@ -1133,7 +1133,7 @@ async function testTimeoutRemainsRetryable() {
 /*
  * ============================================================
  * CASE 6
- * Zarinpal verify returns a non-success provider code.
+ * Zibal verify returns a non-success provider code.
  *
  * Do not irreversibly fail the order because a later callback /
  * reconciliation attempt may still resolve the payment.
@@ -1167,7 +1167,7 @@ async function testProviderVerifyFailureRemainsRetryable() {
         error,
       ) =>
         error instanceof
-          ZarinpalError &&
+          ZibalError &&
         error.code ===
           -51,
     );
@@ -1343,7 +1343,7 @@ async function main() {
 
   console.log("");
   console.log(
-    "PASS  All ELORIA Zarinpal provider simulations completed",
+    "PASS  All ELORIA Zibal provider simulations completed",
   );
 }
 
@@ -1369,3 +1369,5 @@ main()
       await databasePool.end();
     },
   );
+
+

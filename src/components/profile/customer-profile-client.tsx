@@ -114,7 +114,7 @@ export function CustomerProfileClient({ locale, initialData }: { locale: "fa" | 
   async function continuePayment(orderId: string) {
     setBusy(`pay-${orderId}`); setMessage(null);
     try {
-      const response = await fetch("/api/payments/zarinpal/start", {
+      const response = await fetch("/api/payments/zibal/start", {
         method: "POST",
         headers: { "Content-Type": "application/json", Accept: "application/json" },
         cache: "no-store",
@@ -289,3 +289,4 @@ export function CustomerProfileClient({ locale, initialData }: { locale: "fa" | 
     </main>
   );
 }
+

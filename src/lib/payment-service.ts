@@ -1,16 +1,16 @@
 import { Prisma } from "@/generated/prisma/client";
 import { sendSms } from "@/lib/notifications/sms-ir";
 import {
-  isZarinpalConfigured,
-  requestZarinpalPayment,
-  verifyZarinpalPayment,
-  zarinpalStartUrl,
-  ZarinpalError,
-} from "@/lib/payment/zarinpal";
+  isZibalConfigured,
+  requestZibalPayment,
+  verifyZibalPayment,
+  zibalStartUrl,
+  ZibalError,
+} from "@/lib/payment/zibal";
 import { prisma } from "@/lib/prisma";
 import { recordSecurityEvent } from "@/lib/security/security-events";
 
-const PROVIDER = "ZARINPAL";
+const PROVIDER = "ZIBAL";
 const VERIFICATION_LEASE_MS = 10 * 60_000;
 const TERMINAL_ORDER_STATUSES = new Set([
   "PAID",
@@ -35,7 +35,7 @@ function json(value: unknown): Prisma.InputJsonValue {
 }
 
 function paymentVerificationSnapshot(
-  verified: Awaited<ReturnType<typeof verifyZarinpalPayment>>,
+  verified: Awaited<ReturnType<typeof verifyZibalPayment>>,
 ): Prisma.InputJsonValue {
   return json({
     code: verified.code,
@@ -76,7 +76,7 @@ async function existingActiveAttempt(orderId: string) {
 }
 
 export async function initiateOrderPayment(orderId: string) {
-  if (!isZarinpalConfigured()) {
+  if (!isZibalConfigured()) {
     return { configured: false, redirectUrl: null, message: "درگاه پرداخت پیکربندی نشده است." };
   }
 
@@ -103,7 +103,7 @@ export async function initiateOrderPayment(orderId: string) {
   if (existing?.gatewayAuthority) {
     return {
       configured: true,
-      redirectUrl: zarinpalStartUrl(existing.gatewayAuthority),
+      redirectUrl: zibalStartUrl(existing.gatewayAuthority),
       message: "درخواست پرداخت قبلی بازیابی شد.",
     };
   }
@@ -126,7 +126,7 @@ export async function initiateOrderPayment(orderId: string) {
     if (concurrent?.gatewayAuthority) {
       return {
         configured: true,
-        redirectUrl: zarinpalStartUrl(concurrent.gatewayAuthority),
+        redirectUrl: zibalStartUrl(concurrent.gatewayAuthority),
         message: "درخواست پرداخت هم‌زمان بازیابی شد.",
       };
     }
@@ -134,15 +134,15 @@ export async function initiateOrderPayment(orderId: string) {
   }
 
   try {
-    const callbackUrl = `${callbackBase()}/api/payments/zarinpal/callback?orderId=${encodeURIComponent(order.id)}&locale=${encodeURIComponent(order.locale)}`;
-    const result = await requestZarinpalPayment({
+    const callbackUrl = `${callbackBase()}/api/payments/zibal/callback?orderId=${encodeURIComponent(order.id)}&locale=${encodeURIComponent(order.locale)}`;
+    const result = await requestZibalPayment({
       amountToman: order.payableToman.toString(),
       description: `پرداخت سفارش ${order.orderNumber} الوریا`,
       callbackUrl,
       mobile: order.customerMobile,
       email: order.customerEmail,
     });
-    const redirectUrl = zarinpalStartUrl(result.authority);
+    const redirectUrl = zibalStartUrl(result.authority);
 
     await prisma.$transaction([
       prisma.paymentAttempt.update({
@@ -321,10 +321,10 @@ export async function verifyOrderPayment(input: {
     throw new Error("تأیید این پرداخت هم‌اکنون در حال پردازش است.");
   }
 
-  let verified: Awaited<ReturnType<typeof verifyZarinpalPayment>>;
+  let verified: Awaited<ReturnType<typeof verifyZibalPayment>>;
 
   try {
-    verified = await verifyZarinpalPayment({
+    verified = await verifyZibalPayment({
       amountToman: order.payableToman.toString(),
       authority: input.authority,
     });
@@ -335,7 +335,7 @@ export async function verifyOrderPayment(input: {
      * وجود دارد. Attempt و Order به بررسی دستی می‌روند و هرگز FAILED نمی‌شوند.
      */
     if (
-      error instanceof ZarinpalError &&
+      error instanceof ZibalError &&
       (error.code === 100 || error.code === 101)
     ) {
       const protocolReviewAt = new Date();
