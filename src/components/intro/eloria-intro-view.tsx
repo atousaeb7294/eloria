@@ -204,7 +204,7 @@ export function EloriaIntroView({
                 : "pointer-events-none opacity-0",
             ].join(" ")}
             src={secondVideoSrc}
-            preload="auto"
+            preload="metadata"
             playsInline
             disablePictureInPicture
             controls={false}
@@ -444,10 +444,10 @@ export function EloriaIntroView({
           <button
             type="button"
             onClick={handleSkipIntro}
-            className="absolute end-[max(1rem,env(safe-area-inset-right))] top-[max(1rem,env(safe-area-inset-top))] z-[175] inline-flex min-h-10 items-center gap-2 rounded-full border border-white/16 bg-black/28 px-4 text-[10px] font-medium text-white/72 shadow-[0_10px_32px_rgba(0,0,0,.28)] backdrop-blur-xl transition hover:border-[#efd382]/42 hover:bg-black/42 hover:text-[#ffe5a3] sm:end-8 sm:top-8"
+            className="absolute end-4 bottom-[max(1.5rem,env(safe-area-inset-bottom))] z-[190] inline-flex min-h-12 items-center gap-3 rounded-full border border-[#efd382]/70 bg-[#123e2d]/95 px-6 text-sm font-semibold text-[#ffe5a3] shadow-[0_8px_32px_rgba(239,211,130,.22)] backdrop-blur-xl transition hover:bg-[#1b5039] active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffe5a3] focus-visible:ring-offset-4 focus-visible:ring-offset-black sm:bottom-auto sm:end-8 sm:top-8"
             aria-label={isPersian ? "رد کردن اینترو و ورود به سایت" : "Skip intro and enter site"}
           >
-            <span>{isPersian ? "رد کردن" : "Skip intro"}</span>
+            <span>{isPersian ? "رد کردن و ورود به فروشگاه" : "Skip to shop"}</span>
             <span aria-hidden="true" className="text-[#e9cf86]/75">↗</span>
           </button>
         )}

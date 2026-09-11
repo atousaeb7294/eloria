@@ -40,6 +40,7 @@ export function CheckoutPageView({
     dismissPriceNotice,
     loadQuote,
     handleSubmit,
+    startPayment,
     isEmpty,
     checkoutBlocked,
   } = controller;
@@ -683,6 +684,7 @@ export function CheckoutPageView({
                         {createdOrder.paymentMessage || text.gatewayPending}
                       </p>
 
+                      {submitError && <p role="alert" className="mt-3 text-sm text-red-200">{submitError}</p>}
                       {createdOrder.paymentUrl ? (
                         <a
                           href={createdOrder.paymentUrl}
@@ -694,11 +696,12 @@ export function CheckoutPageView({
                       ) : (
                         <button
                           type="button"
-                          disabled
-                          className="mt-6 flex min-h-13 w-full cursor-not-allowed items-center justify-center gap-3 rounded-full border border-[#e0c16d]/25 bg-[#d9b85f]/[0.05] px-6 text-sm text-[#f6e4af]/40"
+                          disabled={submitting || !createdOrder.paymentConfigured}
+                          onClick={() => void startPayment()}
+                          className="mt-6 flex min-h-13 w-full disabled:cursor-not-allowed items-center justify-center gap-3 rounded-full border border-[#e0c16d]/25 bg-[#d9b85f]/[0.05] px-6 text-sm text-[#f6e4af]/40"
                         >
                           <WalletCards className="h-4 w-4" />
-                          {text.gatewayButton}
+                          {submitting ? (isPersian ? "در حال اتصال…" : "Connecting…") : (isPersian ? "ورود به درگاه زیبال" : "Pay with Zibal")}
                         </button>
                       )}
                     </>

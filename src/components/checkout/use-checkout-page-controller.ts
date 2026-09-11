@@ -884,6 +884,32 @@ export function useCheckoutPageController({
       }
     };
 
+  async function startPayment() {
+    if (!createdOrder || submitting) return;
+    setSubmitting(true);
+    setSubmitError(null);
+    try {
+      const response = await fetch("/api/payments/zibal/start", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        cache: "no-store", body: JSON.stringify({ orderId: createdOrder.id }),
+      });
+      const data = await response.json();
+      const target = data?.payment?.redirectUrl;
+      if (!response.ok || !data.successful || !target) {
+        throw new Error(data?.message || data?.payment?.message || text.genericError);
+      }
+      const url = new URL(target);
+      if (url.protocol !== "https:" || url.hostname !== "gateway.zibal.ir" || !url.pathname.startsWith("/start/")) {
+        throw new Error(text.genericError);
+      }
+      window.location.assign(url.href);
+    } catch (error) {
+      setSubmitError(error instanceof Error ? error.message : text.genericError);
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
   const isEmpty =
     storedItems.length ===
     0;
@@ -929,6 +955,7 @@ export function useCheckoutPageController({
     dismissPriceNotice,
     loadQuote,
     handleSubmit,
+    startPayment,
     isEmpty,
     checkoutBlocked,
   };

@@ -1,3 +1,4 @@
+import { silverComparableBaseline } from "@/lib/commerce-policy";
 import {
   createHash,
 } from "node:crypto";
@@ -451,6 +452,7 @@ async function saveCurrentRate(
             pricePerGram:
               true,
 
+            rawPayload: true,
             source:
               true,
 
@@ -470,9 +472,7 @@ async function saveCurrentRate(
             currentSource: currentRate.source,
             incomingSource: rate.source,
           })
-            ? Number(
-                currentRate.pricePerGram.toString(),
-              )
+            ? silverComparableBaseline({ material: rate.material, currentSource: currentRate.source, incomingSource: rate.source, currentPayload: currentRate.rawPayload, incomingPayload: rate.rawPayload, currentPrice: Number(currentRate.pricePerGram.toString()) })
             : null,
       });
 

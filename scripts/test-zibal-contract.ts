@@ -1,0 +1,46 @@
+import assert from "node:assert/strict";
+import { isZibalConfigured, requestZibalPayment, verifyZibalPayment, zibalAmountRial, zibalStartUrl } from "../src/lib/payment/zibal";
+const original = globalThis.fetch;
+process.env.ZIBAL_MERCHANT = "test-merchant";
+process.env.ELORIA_PAYMENT_ENABLED = "true";
+const responses: unknown[] = [];
+const requests: Array<{ url: string; body: Record<string, unknown> }> = [];
+globalThis.fetch = async (url, init) => {
+  requests.push({url:String(url),body:JSON.parse(String(init?.body))});
+  assert.ok(responses.length, "Unexpected provider request");
+  return Response.json(responses.shift());
+};
+async function main() {
+  assert.equal(isZibalConfigured(), true);
+  assert.equal(zibalAmountRial("240000"),2400000);
+  assert.throws(()=>zibalAmountRial("0"));
+  assert.throws(()=>zibalAmountRial("1.5"));
+  assert.throws(()=>zibalAmountRial("900719925474100"));
+  assert.equal(zibalStartUrl("123"),"https://gateway.zibal.ir/start/123");
+  responses.push({result:100,trackId:123});
+  assert.equal((await requestZibalPayment({amountToman:"240000",description:"order",callbackUrl:"https://eloria.example/api/payments/zibal/callback",mobile:"09120000000"})).authority,"123");
+  assert.equal(requests[0].body.amount,2400000);
+  assert.equal(requests[0].body.mobile,"09120000000");
+  responses.push({result:100,amount:2400000,refNumber:"999",cardNumber:"masked"});
+  assert.equal((await verifyZibalPayment({authority:"123",amountToman:"240000"})).referenceId,"999");
+  responses.push({result:100,amount:2400010,refNumber:"999"});
+  await assert.rejects(()=>verifyZibalPayment({authority:"123",amountToman:"240000"}),/مبلغ/);
+  responses.push({result:100,refNumber:"999"});
+  await assert.rejects(()=>verifyZibalPayment({authority:"123",amountToman:"240000"}),/مبلغ/);
+  responses.push({result:100,amount:2400000,cardNumber:"1234"});
+  await assert.rejects(()=>verifyZibalPayment({authority:"123",amountToman:"240000"}),/مرجع/);
+  responses.push({result:201},{result:100,status:2,amount:2400000,refNumber:"999"});
+  assert.equal((await verifyZibalPayment({authority:"123",amountToman:"240000"})).referenceId,"999");
+  assert.equal(requests.at(-1)?.url,"https://gateway.zibal.ir/v1/inquiry");
+  responses.push({result:101});
+  await assert.rejects(()=>verifyZibalPayment({authority:"123",amountToman:"240000"}));
+  responses.push({result:106});
+  await assert.rejects(()=>requestZibalPayment({amountToman:"240000",description:"x",callbackUrl:"https://eloria.example/callback"}),/دامنه/);
+  process.env.ZIBAL_REQUEST_BASE="https://example.com/v1/request";
+  assert.equal(isZibalConfigured(),false);
+  await assert.rejects(()=>requestZibalPayment({amountToman:"240000",description:"x",callbackUrl:"https://eloria.example/callback"}),/رسمی/);
+  delete process.env.ZIBAL_REQUEST_BASE;
+  assert.equal(responses.length,0);
+  console.log("PASS Zibal request, rial conversion, verification, mismatch, replay inquiry and endpoint restrictions");
+}
+main().catch(e=>{console.error(e);process.exitCode=1;}).finally(()=>{globalThis.fetch=original;});

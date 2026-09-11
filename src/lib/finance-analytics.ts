@@ -618,3 +618,8 @@ export function buildDailySales(
     },
   );
 }
+
+/** Order-item component amounts are unit amounts, while lineTotal is extended. */
+export function sumUnitAmounts<K extends string>(rows: Array<{ quantity: number } & Record<K, MoneyLike>>, key: K): bigint {
+  return rows.reduce((sum, row) => sum + tomanValue(row[key]) * BigInt(row.quantity), 0n);
+}

@@ -6,6 +6,7 @@ import type {
 
 import {
   averageToman,
+  sumUnitAmounts,
   buildDailySales,
   createFinanceDateRange,
   netCashAfterExpenses,
@@ -96,7 +97,7 @@ export async function getAdminFinanceReport(
     previousSales,
     receivedPayments,
     refunds,
-    itemTotals,
+    itemRows,
     topProductGroups,
     dailyOrders,
     paymentReview,
@@ -150,15 +151,9 @@ export async function getAdminFinanceReport(
         refundAmountToman: true,
       },
     }),
-    prisma.orderItem.aggregate({
+    prisma.orderItem.findMany({
       where: itemWhere,
-      _sum: {
-        lineTotalToman: true,
-        profitToman: true,
-        makingChargeToman: true,
-        artisticFeeToman: true,
-        taxToman: true,
-      },
+      select: { productSlug: true, quantity: true, lineTotalToman: true, profitToman: true, makingChargeToman: true, artisticFeeToman: true, taxToman: true },
     }),
     prisma.orderItem.groupBy({
       by: [
@@ -289,6 +284,16 @@ export async function getAdminFinanceReport(
       },
     }),
   ]);
+
+  const itemTotals = { _sum: {
+    lineTotalToman: itemRows.reduce((sum, row) => sum + tomanValue(row.lineTotalToman), 0n),
+    profitToman: sumUnitAmounts(itemRows, "profitToman"),
+    makingChargeToman: sumUnitAmounts(itemRows, "makingChargeToman"),
+    artisticFeeToman: sumUnitAmounts(itemRows, "artisticFeeToman"),
+    taxToman: sumUnitAmounts(itemRows, "taxToman"),
+  }};
+  const marginByProduct = new Map<string, bigint>();
+  for (const row of itemRows) marginByProduct.set(row.productSlug, (marginByProduct.get(row.productSlug) ?? 0n) + tomanValue(row.profitToman) * BigInt(row.quantity));
 
   const salesToman =
     tomanValue(
@@ -422,6 +427,7 @@ export async function getAdminFinanceReport(
         refundedToman,
         totalExpenseToman,
       ),
+    unallocatedItemQuantity: itemRows.filter(row => row.profitToman === null || row.taxToman === null).reduce((sum, row) => sum + row.quantity, 0),
     itemRevenueToman: tomanValue(
       itemTotals._sum.lineTotalToman,
     ),
@@ -475,7 +481,7 @@ export async function getAdminFinanceReport(
           product._sum.lineTotalToman,
         ),
         priceMarginToman: tomanValue(
-          product._sum.profitToman,
+          marginByProduct.get(product.productSlug),
         ),
       }),
     ),

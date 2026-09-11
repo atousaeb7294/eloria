@@ -1,3 +1,4 @@
+import { PACKAGING_TOMAN } from "@/lib/commerce-policy";
 export type MaterialType =
   | "GOLD"
   | "SILVER";
@@ -16,6 +17,7 @@ export type DecimalInput =
 
 export type JewelryPriceInput = {
   material: MaterialType;
+  formulaVersion?: "IR_JEWELRY_V1" | "ELORIA_2026_V2";
 
   /**
    * وزن محصول برحسب گرم.
@@ -107,7 +109,8 @@ export type JewelryPriceInput = {
 };
 
 export type JewelryPriceResult = {
-  formulaVersion: "IR_JEWELRY_V1";
+  formulaVersion: "IR_JEWELRY_V1" | "ELORIA_2026_V2";
+  packagingToman?: string;
   currency: "TOMAN";
   material: MaterialType;
 
@@ -546,10 +549,9 @@ export function calculateJewelryPrice(
    * سود فروشنده روی ارزش فلز،
    * اجرت و هزینه کار هنری محاسبه می‌شود.
    */
-  const profitBase =
-    metalValue +
-    makingChargeTotal +
-    artisticFee;
+  const profitBase = input.formulaVersion === "ELORIA_2026_V2"
+    ? metalValue
+    : metalValue + makingChargeTotal + artisticFee;
 
   const profit =
     calculatePercentAmount(
@@ -566,7 +568,7 @@ export function calculateJewelryPrice(
    */
   const taxBase =
     makingChargeTotal +
-    artisticFee +
+    (input.formulaVersion === "ELORIA_2026_V2" ? 0n : artisticFee) +
     profit +
     (input.taxMetalValue
       ? metalValue
@@ -584,8 +586,9 @@ export function calculateJewelryPrice(
     artisticFee +
     profit;
 
+  const packaging = input.formulaVersion === "ELORIA_2026_V2" ? PACKAGING_TOMAN : 0n;
   const finalBeforeRounding =
-    subtotalBeforeTax + tax;
+    subtotalBeforeTax + tax + packaging;
 
   const finalPrice =
     roundToStep(
@@ -598,8 +601,8 @@ export function calculateJewelryPrice(
     finalBeforeRounding;
 
   return {
-    formulaVersion:
-      "IR_JEWELRY_V1",
+    formulaVersion: input.formulaVersion ?? "IR_JEWELRY_V1",
+    packagingToman: packaging.toString(),
 
     currency: "TOMAN",
     material: input.material,
@@ -676,4 +679,21 @@ export function calculateJewelryPrice(
     finalPriceToman:
       finalPrice.toString(),
   };
+}
+/** Store policy: packaging per piece; delivery is charged once per order. */
+export function calculateEloriaJewelryPrice(input: JewelryPriceInput): JewelryPriceResult {
+  const gold = input.material === "GOLD";
+  return calculateJewelryPrice({
+    ...input,
+    formulaVersion: "ELORIA_2026_V2",
+    productPurity: gold ? input.productPurity : input.referencePurity,
+    makingChargeType: gold ? "PERCENT" : "NONE",
+    makingChargePercent: gold ? "8" : "0",
+    makingChargeFixedToman: "0",
+    makingChargePerGramToman: "0",
+    profitPercent: gold ? "7" : "0",
+    taxPercent: gold ? "9" : "0",
+    taxMetalValue: false,
+    roundingStepToman: "1",
+  });
 }

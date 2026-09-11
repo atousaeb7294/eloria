@@ -2,6 +2,7 @@
 
 import {
   useActionState,
+  useState,
   type ReactNode,
 } from "react";
 
@@ -132,6 +133,7 @@ export function AdminProductForm({
   collections: CollectionOption[];
   value: AdminProductFormValue;
 }) {
+  const [selectedMaterial, setSelectedMaterial] = useState(value.material);
   const action: (
     state: AdminProductActionState,
     formData: FormData,
@@ -245,7 +247,8 @@ export function AdminProductForm({
           <Field label="جنس اثر">
             <select
               className={inputClassName}
-              defaultValue={value.material}
+              value={selectedMaterial}
+              onChange={(event) => setSelectedMaterial(event.target.value as "GOLD" | "SILVER")}
               name="material"
             >
               <option value="GOLD">طلا</option>
@@ -324,7 +327,7 @@ export function AdminProductForm({
 
       <FormSection
         title="قیمت‌گذاری"
-        description="قیمت دستی یا محاسبه پویا براساس وزن، عیار و نرخ فلز"
+        description="طلا: اجرت ۸٪ و سود ۷٪ اصل طلا، مالیات قراردادی ۹٪ اجرت و سود، سپس کار هنری. نقره: اونس دلاری ÷ ۱۰٫۳۱ × دلار × وزن + کار هنری. بسته‌بندی هر قطعه ۷۰٬۰۰۰؛ ارسال هر سفارش ۱۷۰٬۰۰۰ تومان. نرخ‌های زیر مطابق فرمول ثابت فروشگاه نمایش داده می‌شوند."
       >
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
           <Field label="روش قیمت‌گذاری">
@@ -338,7 +341,7 @@ export function AdminProductForm({
             </select>
           </Field>
 
-          <Field label="قیمت دستی (تومان)">
+          <Field label="قیمت دستی (تومان)" hint="مبلغ کامل قطعه با کار هنری؛ بدون بسته‌بندی و ارسال. بسته‌بندی خودکار اضافه می‌شود.">
             <input
               className={inputClassName}
               defaultValue={value.price}
@@ -365,6 +368,7 @@ export function AdminProductForm({
             />
           </Field>
 
+          {selectedMaterial === "GOLD" ? <>
           <Field label="عنوان عیار">
             <input
               className={inputClassName}
@@ -386,11 +390,14 @@ export function AdminProductForm({
             />
           </Field>
 
+          </> : <><input type="hidden" name="purity" value="925" /><input type="hidden" name="purityFineness" value="925" /></>}
+
           <Field label="نوع اجرت">
+            <input type="hidden" name="makingChargeType" value={selectedMaterial === "GOLD" ? "PERCENT" : "NONE"} />
             <select
               className={inputClassName}
-              defaultValue={value.makingChargeType}
-              name="makingChargeType"
+              value={selectedMaterial === "GOLD" ? "PERCENT" : "NONE"}
+              disabled
             >
               <option value="NONE">بدون اجرت</option>
               <option value="FIXED">مبلغ ثابت</option>
@@ -403,7 +410,8 @@ export function AdminProductForm({
           <Field label="اجرت ثابت">
             <input
               className={inputClassName}
-              defaultValue={value.makingChargeFixed}
+              value={"0"}
+              readOnly
               inputMode="decimal"
               name="makingChargeFixed"
             />
@@ -412,7 +420,8 @@ export function AdminProductForm({
           <Field label="اجرت هر گرم">
             <input
               className={inputClassName}
-              defaultValue={value.makingChargePerGram}
+              value={"0"}
+              readOnly
               inputMode="decimal"
               name="makingChargePerGram"
             />
@@ -421,7 +430,8 @@ export function AdminProductForm({
           <Field label="درصد اجرت">
             <input
               className={inputClassName}
-              defaultValue={value.makingChargePercent}
+              value={selectedMaterial === "GOLD" ? "8" : "0"}
+              readOnly
               inputMode="decimal"
               name="makingChargePercent"
             />
@@ -439,7 +449,8 @@ export function AdminProductForm({
           <Field label="درصد سود">
             <input
               className={inputClassName}
-              defaultValue={value.profitPercent}
+              value={selectedMaterial === "GOLD" ? "7" : "0"}
+              readOnly
               inputMode="decimal"
               name="profitPercent"
             />
@@ -448,7 +459,8 @@ export function AdminProductForm({
           <Field label="درصد مالیات">
             <input
               className={inputClassName}
-              defaultValue={value.taxPercent}
+              value={selectedMaterial === "GOLD" ? "9" : "0"}
+              readOnly
               inputMode="decimal"
               name="taxPercent"
             />

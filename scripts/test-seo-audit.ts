@@ -1,0 +1,10 @@
+import assert from "node:assert/strict";
+import { auditSeoPages, seoText } from "../src/lib/seo-audit";
+import { sumUnitAmounts } from "../src/lib/finance-analytics";
+const findings=auditSeoPages([{id:"1",path:"/fa/a",title:"",description:"",hasImage:false,missingAlt:true,internalLinkCount:0}]);
+assert.equal(findings.length,5);
+assert.equal(findings.filter(f=>f.repairable).length,3);
+assert.equal(auditSeoPages(["a","b"].map(id=>({id,path:`/${id}`,title:"same",description:"x".repeat(60),hasImage:true,missingAlt:false}))).length,2);
+assert.equal(seoText("<p>A   description</p>",100),"A description");
+assert.equal(sumUnitAmounts([{quantity:3,profit:"1400000"},{quantity:2,profit:null}],"profit"),4200000n);
+console.log("PASS SEO findings, metadata normalization and quantity-weighted finance");

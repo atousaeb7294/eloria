@@ -108,12 +108,12 @@ async function main(): Promise<void> {
     ],
     [
       "Payment callback uses configured site origin",
-      (await fileIncludes("src/app/api/payments/zarinpal/callback/route.ts", [
+      (await fileIncludes("src/app/api/payments/zibal/callback/route.ts", [
         "siteBaseUrl",
         'from "@/lib/site-url"',
       ])) &&
         !(await fileIncludes(
-          "src/app/api/payments/zarinpal/callback/route.ts",
+          "src/app/api/payments/zibal/callback/route.ts",
           ", request.url)",
         )),
     ],
@@ -173,7 +173,7 @@ async function main(): Promise<void> {
           "readJsonBody",
         )) &&
         (await fileIncludes(
-          "src/app/api/payments/zarinpal/start/route.ts",
+          "src/app/api/payments/zibal/start/route.ts",
           "readJsonBody",
         )) &&
         (await fileIncludes(
@@ -403,7 +403,7 @@ async function main(): Promise<void> {
         "createPaymentStartAuthorization",
         "timingSafeEqual",
       ])) &&
-        (await fileIncludes("src/app/api/payments/zarinpal/start/route.ts", [
+        (await fileIncludes("src/app/api/payments/zibal/start/route.ts", [
           "verifyPaymentStartAuthorization",
           "getCustomerFromRequest",
         ])),

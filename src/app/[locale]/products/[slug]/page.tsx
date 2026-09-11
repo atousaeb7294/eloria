@@ -1065,8 +1065,8 @@ export default async function ProductPage({
                   }
                   description={
                     isPersian
-                      ? "این اثر با ارسال رایگان و بسته‌بندی اختصاصی الوریا به دست شما می‌رسد."
-                      : "This piece reaches you with complimentary delivery and Eloria’s signature packaging."
+                      ? "این اثر با هزینه ارسال ۱۷۰ هزار تومان و بسته‌بندی اختصاصی الوریا به دست شما می‌رسد."
+                      : "This piece reaches you with delivery for 170,000 toman and Eloria’s signature packaging."
                   }
                 />
 

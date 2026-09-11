@@ -112,6 +112,7 @@ export default async function AdminContentPage({
           </div>
 
           <div className="flex flex-wrap items-center gap-3">
+            <Link href={`/${locale}/admin/content/seo`} className="rounded-xl border border-[#e2c36d]/35 px-4 py-3 text-xs text-[#f0d990]">بررسی و اصلاح سئو</Link>
             <form action={manualDraftAction}>
               <button
                 type="submit"

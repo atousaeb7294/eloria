@@ -1,5 +1,6 @@
+import { PACKAGING_TOMAN } from "@/lib/commerce-policy";
 import {
-  calculateJewelryPrice,
+  calculateEloriaJewelryPrice,
   type JewelryPriceResult,
   type MakingChargeType,
   type MaterialType,
@@ -169,7 +170,7 @@ export type ProductPriceResult = {
 
     formulaVersion:
       | JewelryPriceResult["formulaVersion"]
-      | "MANUAL_V1";
+      | "MANUAL_V1" | "MANUAL_2026_V2";
 
     breakdown:
       JewelryPriceResult | null;
@@ -580,9 +581,7 @@ export async function getProductLivePrice({
     );
 
   const product =
-    await getProductRecord(
-      normalizedSlug,
-    );
+    await (allowStaleRate ? getProductRecord(normalizedSlug) : withDatabaseRetry(() => loadProductRecord(normalizedSlug)));
 
   if (!product) {
     throw new ProductPricingError(
@@ -616,9 +615,7 @@ export async function getProductLivePrice({
     policy,
     metalPrice,
   } =
-    await getPricingReference(
-      product.material as MaterialType,
-    );
+    await (allowStaleRate ? getPricingReference(product.material as MaterialType) : withDatabaseRetry(() => loadPricingReference(product.material as MaterialType)));
 
   if (!policy) {
     throw new ProductPricingError(
@@ -742,13 +739,13 @@ export async function getProductLivePrice({
 
   const policyOutput = {
     defaultProfitPercent:
-      policy.defaultProfitPercent.toString(),
+      product.material === "GOLD" ? "7" : "0",
 
     defaultTaxPercent:
-      policy.defaultTaxPercent.toString(),
+      product.material === "GOLD" ? "9" : "0",
 
     taxMetalValue:
-      policy.taxMetalValue,
+      false,
 
     quoteTtlSeconds:
       policy.quoteTtlSeconds,
@@ -766,7 +763,7 @@ export async function getProductLivePrice({
       policy.closedMarketSafetyMarginPercent.toString(),
 
     roundingStep:
-      policy.roundingStep,
+      1,
   };
 
   /*
@@ -781,7 +778,7 @@ export async function getProductLivePrice({
       variant?.price ??
       product.price;
 
-    if (!manualPrice) {
+    if (!manualPrice || BigInt(manualPrice.toString()) <= 0n || product.currency !== "TOMAN") {
       throw new ProductPricingError(
         "MANUAL_PRICE_NOT_FOUND",
         "قیمت دستی این محصول ثبت نشده است.",
@@ -804,10 +801,10 @@ export async function getProductLivePrice({
           "TOMAN",
 
         finalPriceToman:
-          manualPrice.toString(),
+          (BigInt(manualPrice.toString()) + PACKAGING_TOMAN).toString(),
 
         formulaVersion:
-          "MANUAL_V1",
+          "MANUAL_2026_V2",
 
         breakdown:
           null,
@@ -849,11 +846,8 @@ export async function getProductLivePrice({
   }
 
   if (
-    !productPurityFineness ||
-    productPurityFineness <=
-      0 ||
-    productPurityFineness >
-      1000
+    product.material === "GOLD" && (!productPurityFineness ||
+    productPurityFineness <= 0 || productPurityFineness > 1000)
   ) {
     throw new ProductPricingError(
       "INVALID_PRODUCT_PURITY",
@@ -870,6 +864,11 @@ export async function getProductLivePrice({
       "نرخ فلز این محصول موجود نیست.",
       503,
     );
+  }
+
+  if (product.material === "SILVER" &&
+      (metalPrice.rawPayload as { pricingBasis?: string } | null)?.pricingBasis !== "ELORIA_SILVER_10_31_V2") {
+    throw new ProductPricingError("METAL_PRICE_STALE", "نرخ نقره باید با فرمول جدید از بورس به‌روزرسانی شود.", 503);
   }
 
   /*
@@ -966,7 +965,7 @@ export async function getProductLivePrice({
     policy.defaultTaxPercent;
 
   const calculation =
-    calculateJewelryPrice({
+    calculateEloriaJewelryPrice({
       material:
         product.material as MaterialType,
 
@@ -974,7 +973,7 @@ export async function getProductLivePrice({
         productWeight.toString(),
 
       productPurity:
-        productPurityFineness,
+        product.material === "SILVER" ? 999 : productPurityFineness!,
 
       referencePricePerGramToman:
         calculationPricePerGramToman,

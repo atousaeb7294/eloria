@@ -130,6 +130,7 @@ export default async function AdminDashboardPage({
       },
     }),
     prisma.metalPrice.findMany({
+      where: { material: "GOLD" },
       orderBy: {
         material:
           "asc",
@@ -386,7 +387,7 @@ export default async function AdminDashboardPage({
 
           <div className="mt-5 space-y-3">
             {metalPrices.length ? (
-              metalPrices.map(
+              metalPrices.filter((price) => price.material === "GOLD").map(
                 (price) => (
                   <div
                     key={price.material}

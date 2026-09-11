@@ -249,8 +249,10 @@ export function productionEnvironmentChecks(): Check[] {
 
     { key: "ZIBAL_MERCHANT", required: paymentEnabled, valid: !paymentEnabled || (Boolean(value("ZIBAL_MERCHANT")) && value("ZIBAL_MERCHANT").length >= 10), message: "Zibal Merchant" },
     { key: "ELORIA_PAYMENT_START_SECRET", required: paymentEnabled, valid: !paymentEnabled || present("ELORIA_PAYMENT_START_SECRET", 48), message: "Ú©Ù„ÛŒØ¯ Ù…Ø³ØªÙ‚Ù„ Ù…Ø¬ÙˆØ² Ø´Ø±ÙˆØ¹ Ù¾Ø±Ø¯Ø§Ø®Øª Guest" },
-    { key: "ZIBAL_REQUEST_BASE", required: false, valid: optionalOfficialHttpsEndpoint("ZIBAL_REQUEST_BASE", "payment.zarinpal.com", "/pg/v4/payment"), message: "API Ø²Ø±ÛŒÙ†â€ŒÙ¾Ø§Ù„ ÙÙ‚Ø· Ø±ÙˆÛŒ endpoint Ø±Ø³Ù…ÛŒ HTTPS" },
-    { key: "ZIBAL_START_BASE", required: false, valid: optionalOfficialHttpsEndpoint("ZIBAL_START_BASE", "payment.zarinpal.com", "/pg/StartPay"), message: "StartPay Ø²Ø±ÛŒÙ†â€ŒÙ¾Ø§Ù„ ÙÙ‚Ø· Ø±ÙˆÛŒ endpoint Ø±Ø³Ù…ÛŒ HTTPS" },
+    { key: "ZIBAL_REQUEST_BASE", required: false, valid: optionalOfficialHttpsEndpoint("ZIBAL_REQUEST_BASE", "gateway.zibal.ir", "/v1/request"), message: "نشانی رسمی درخواست زیبال" },
+    { key: "ZIBAL_VERIFY_BASE", required: false, valid: optionalOfficialHttpsEndpoint("ZIBAL_VERIFY_BASE", "gateway.zibal.ir", "/v1/verify"), message: "نشانی رسمی تأیید زیبال" },
+    { key: "ZIBAL_INQUIRY_BASE", required: false, valid: optionalOfficialHttpsEndpoint("ZIBAL_INQUIRY_BASE", "gateway.zibal.ir", "/v1/inquiry"), message: "نشانی رسمی استعلام زیبال" },
+    { key: "ZIBAL_START_BASE", required: false, valid: optionalOfficialHttpsEndpoint("ZIBAL_START_BASE", "gateway.zibal.ir", "/start"), message: "نشانی رسمی ورود به زیبال" },
 
     { key: "SUPABASE_URL", required: true, valid: isHttpsUrl("SUPABASE_URL"), message: "Ø¢Ø¯Ø±Ø³ Storage" },
     { key: "SUPABASE_SERVICE_ROLE_KEY", required: true, valid: present("SUPABASE_SERVICE_ROLE_KEY", 40), message: "Ú©Ù„ÛŒØ¯ Storage" },

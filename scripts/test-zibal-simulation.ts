@@ -24,7 +24,7 @@ import {
  * ============================================================
  */
 
-process.env.Zibal_MERCHANT_ID =
+process.env.ZIBAL_MERCHANT =
   "11111111-1111-1111-1111-111111111111";
 
 /*
@@ -261,8 +261,7 @@ async function createFixture(
     });
 
   const authority =
-    `A${randomUUID()
-      .replaceAll("-", "")}`;
+    BigInt(`0x${randomUUID().replaceAll("-", "").slice(0, 12)}`).toString();
 
   const attemptStatus =
     input.attemptStatus ??
@@ -275,7 +274,7 @@ async function createFixture(
           order.id,
 
         provider:
-          "Zibal",
+          "ZIBAL",
 
         status:
           attemptStatus,
@@ -295,7 +294,7 @@ async function createFixture(
         activeKey:
           attemptStatus ===
           "REDIRECTED"
-            ? `Zibal:${order.id}`
+            ? `ZIBAL:${order.id}`
             : null,
 
         redirectedAt:
@@ -378,88 +377,16 @@ async function cleanupFixture(
 }
 
 
-function mockVerifySuccess(
-  input: {
-    code:
-      100 | 101;
-
-    refId?:
-      string | number;
-  },
-) {
-  let calls =
-    0;
-
-  globalThis.fetch =
-    async (
-      request,
-    ) => {
-      calls +=
-        1;
-
-      const url =
-        typeof request ===
-        "string"
-          ? request
-          : request instanceof URL
-            ? request.toString()
-            : request.url;
-
-      assert.match(
-        url,
-        /\/verify\.json$/,
-      );
-
-      const data:
-        Record<
-          string,
-          unknown
-        > = {
-          code:
-            input.code,
-
-          message:
-            input.code ===
-            100
-              ? "Paid"
-              : "Already verified",
-
-          fee:
-            0,
-
-          fee_type:
-            "Merchant",
-        };
-
-      if (
-        input.refId !==
-        undefined
-      ) {
-        data.ref_id =
-          input.refId;
-      }
-
-      return new Response(
-        JSON.stringify({
-          data,
-        }),
-        {
-          status:
-            200,
-
-          headers: {
-            "Content-Type":
-              "application/json",
-          },
-        },
-      );
-    };
-
-  return {
-    calls() {
-      return calls;
-    },
+function mockVerifySuccess(input: {code: 100 | 201; refId?: string | number}) {
+  let calls = 0;
+  globalThis.fetch = async request => {
+    calls += 1;
+    const url = String(request);
+    if (input.code === 201 && url.endsWith("/verify")) return Response.json({result:201});
+    assert.match(url, /\/(verify|inquiry)$/);
+    return Response.json({result:100,status:2,amount:1000000,refNumber:input.refId,fee:0});
   };
+  return {calls:()=>calls};
 }
 
 
@@ -477,11 +404,8 @@ function mockVerifyProviderFailure(
 
       return new Response(
         JSON.stringify({
-          data: {
-            code,
-            message:
-              "Provider verification rejected",
-          },
+          result: code,
+          message: "Provider verification rejected",
         }),
         {
           status:
@@ -730,11 +654,11 @@ async function testSuccess100AndReplay() {
 /*
  * ============================================================
  * CASE 2
- * Zibal 101 is accepted as already-verified success.
+ * Zibal 201 is accepted as already-verified success.
  * ============================================================
  */
 
-async function testSuccess101() {
+async function testSuccess201() {
   const fixture =
     await createFixture();
 
@@ -742,7 +666,7 @@ async function testSuccess101() {
     const provider =
       mockVerifySuccess({
         code:
-          101,
+          201,
 
         refId:
           "101000001",
@@ -772,7 +696,7 @@ async function testSuccess101() {
 
     assert.equal(
       provider.calls(),
-      1,
+      2,
     );
 
     const order =
@@ -807,7 +731,7 @@ async function testSuccess101() {
     );
 
     console.log(
-      "PASS  Zibal 101 is treated as successful verification",
+      "PASS  Zibal 201 is treated as successful verification",
     );
   } finally {
     await cleanupFixture(
@@ -1329,7 +1253,7 @@ async function testStaleCallbackCannotDowngradePaidOrder() {
 async function main() {
   await testSuccess100AndReplay();
 
-  await testSuccess101();
+  await testSuccess201();
 
   await testCancelledCallback();
 

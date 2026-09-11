@@ -603,7 +603,7 @@ export function CartPageView({
                 <div className="flex items-end justify-between gap-4">
                   <span className="text-sm text-[#c9bb9a]/60">
                     {
-                      text.subtotal
+                      (isPersian ? "مبلغ با ارسال" : "Total with delivery")
                     }
                   </span>
 
@@ -611,7 +611,7 @@ export function CartPageView({
                     <span className="text-xl font-semibold text-[#f0d477]">
                       {formatPrice(
                         quote.summary
-                          .subtotalToman,
+                          .payableToman,
                       )}
                     </span>
 
@@ -718,13 +718,13 @@ export function CartPageView({
               <div className="mx-auto flex max-w-xl items-center gap-3">
                 <div className="min-w-0 flex-1">
                   <p className="text-[10px] text-[#c9bb9a]/55">
-                    {text.subtotal}
+                    {isPersian ? "مبلغ با ارسال" : "Total with delivery"}
                   </p>
 
                   <p className="mt-0.5 truncate text-base font-semibold text-[#f0d477]">
                     {formatPrice(
                       quote.summary
-                        .subtotalToman,
+                        .payableToman,
                     )}{" "}
                     <span className="text-[10px] font-normal text-[#c9bb9a]/55">
                       {text.toman}

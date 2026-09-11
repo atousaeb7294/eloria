@@ -19,7 +19,7 @@ const success = url.searchParams.get("success")?.trim() ?? "";
 const status = url.searchParams.get("status")?.trim() ?? "";
 
 const gatewayStatus =
-  success === "1" || success === "2" || status === "2"
+  success === "1" && (status === "1" || status === "2")
     ? "OK"
     : "FAILED";
   const locale = url.searchParams.get("locale") === "en" ? "en" : "fa";

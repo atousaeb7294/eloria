@@ -261,9 +261,7 @@ export async function getContentSeoHealth(): Promise<ContentSeoHealth> {
       !nonEmpty(product.descriptionFa) || !nonEmpty(product.descriptionEn),
   ).length;
   const productsMissingImageAlt = activeProducts.filter((product) => {
-    const primary = product.images[0];
-
-    return !primary || !nonEmpty(primary.altFa) || !nonEmpty(primary.altEn);
+    return product.images.length === 0 || product.images.some(image => !nonEmpty(image.altFa) || !nonEmpty(image.altEn));
   }).length;
   const productsMissingLegend = activeProducts.filter(
     (product) =>

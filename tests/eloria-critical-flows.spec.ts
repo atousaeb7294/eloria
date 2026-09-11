@@ -141,7 +141,7 @@ test.describe(
 
         const payment =
           await request.post(
-            "/api/payments/zarinpal/start",
+            "/api/payments/zibal/start",
             {
               headers:
                 malicious,
@@ -508,7 +508,7 @@ test.describe(
         try {
           const denied =
             await anonymous.post(
-              "/api/payments/zarinpal/start",
+              "/api/payments/zibal/start",
               {
                 data: {
                   orderId:
@@ -580,7 +580,7 @@ test.describe(
       }) => {
         const response =
           await request.get(
-            "/api/payments/zarinpal/callback?locale=en",
+            "/api/payments/zibal/callback?locale=en",
             {
               maxRedirects:
                 0,
@@ -618,7 +618,7 @@ test.describe(
       }) => {
         const response =
           await request.post(
-            "/api/payments/zarinpal/start",
+            "/api/payments/zibal/start",
             {
               headers:
                 trustedHeaders(),

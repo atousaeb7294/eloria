@@ -495,8 +495,8 @@ check(
   criticalE2e.includes("/api/customer/auth/request-otp") &&
     criticalE2e.includes("/api/customer/auth/verify-otp") &&
     criticalE2e.includes("/api/checkout/orders") &&
-    criticalE2e.includes("/api/payments/zarinpal/start") &&
-    criticalE2e.includes("/api/payments/zarinpal/callback") &&
+    criticalE2e.includes("/api/payments/zibal/start") &&
+    criticalE2e.includes("/api/payments/zibal/callback") &&
     criticalE2e.includes("/fa/admin") &&
     criticalE2e.includes("reusedOtp") &&
     criticalE2e.includes("secondPayload.reused"),
@@ -521,12 +521,12 @@ check(
     e2eCleanup.includes('"e2e:"'),
 );
 
-const paymentSimulation = read("scripts/test-zarinpal-simulation.ts");
+const paymentSimulation = read("scripts/test-zibal-simulation.ts");
 
 check(
-  "Zarinpal simulation covers success review retry cancellation and replay",
+  "Zibal simulation covers success review retry cancellation and replay",
   paymentSimulation.includes("testSuccess100AndReplay") &&
-    paymentSimulation.includes("testSuccess101") &&
+    paymentSimulation.includes("testSuccess201") &&
     paymentSimulation.includes("testCancelledCallback") &&
     paymentSimulation.includes("testMissingReferenceRequiresReview") &&
     paymentSimulation.includes("testTimeoutRemainsRetryable") &&
@@ -540,7 +540,7 @@ const packageJson = JSON.parse(read("package.json")) as {
 check(
   "Payment provider simulation is part of verification scripts",
   packageJson.scripts?.["test:payments"] ===
-    "tsx scripts/test-zarinpal-simulation.ts" &&
+    "node --import tsx scripts/test-zibal-contract.ts && node --import tsx scripts/test-zibal-simulation.ts" &&
     packageJson.scripts?.["verify:ci"]?.includes("npm run test:payments") ===
       true,
 );
@@ -558,8 +558,8 @@ check(
 
 const ci = read(".github/workflows/ci.yml");
 check(
-  "CI runs Zarinpal payment simulation",
-  ci.includes("Test Zarinpal payment simulation") &&
+  "CI runs Zibal payment simulation",
+  ci.includes("Test Zibal payment simulation") &&
     ci.includes("npm run test:payments"),
 );
 

@@ -1,5 +1,6 @@
-const TROY_OUNCE_GRAMS =
-  31.1034768;
+import { SILVER_PRICING_DIVISOR } from "@/lib/commerce-policy";
+// Commercial pricing divisor requested by Eloria; NOT troy-ounce grams.
+export const ELORIA_SILVER_PRICING_DIVISOR = SILVER_PRICING_DIVISOR;
 
 const REQUEST_TIMEOUT_MS =
   15_000;
@@ -613,7 +614,7 @@ export async function fetchBrsMetalRates(): Promise<
           silverOunceUsd *
           usdPriceToman
         ) /
-          TROY_OUNCE_GRAMS,
+          ELORIA_SILVER_PRICING_DIVISOR,
       );
 
     const silverRateTimestamp =
@@ -655,6 +656,8 @@ export async function fetchBrsMetalRates(): Promise<
 
       rawPayload: {
         silverOunce,
+        pricingBasis: "ELORIA_SILVER_10_31_V2",
+        pricingDivisor: ELORIA_SILVER_PRICING_DIVISOR,
 
         usd,
 

@@ -1,3 +1,4 @@
+import { calculateShipping } from "@/lib/shipping";
 import { readCartItems, type CartItem } from "@/lib/cart-storage";
 export type QuotedCartItem = {
   slug: string;
@@ -50,6 +51,8 @@ export type CartQuoteSummary = {
   uniqueItems: number;
   totalQuantity: number;
   subtotalToman: string;
+  shippingToman: string;
+  payableToman: string;
   canCheckout: boolean;
 };
 
@@ -308,6 +311,8 @@ export function calculateSummary(
     totalQuantity,
     subtotalToman:
       subtotalToman.toString(),
+    shippingToman: calculateShipping(subtotalToman).shippingToman,
+    payableToman: (subtotalToman + BigInt(calculateShipping(subtotalToman).shippingToman)).toString(),
     canCheckout:
       items.length > 0 &&
       failedItems.length === 0 &&

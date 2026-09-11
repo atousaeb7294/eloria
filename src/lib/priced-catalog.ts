@@ -1,3 +1,4 @@
+import { PACKAGING_TOMAN } from "@/lib/commerce-policy";
 import {
   getCatalogPricingCandidates,
   getCatalogPricingPage,
@@ -13,7 +14,7 @@ import {
 } from "@/lib/expiring-cache";
 import { getMetalRateFreshness } from "@/lib/metal-rate-freshness";
 import { getMetalRateSaleDecision } from "@/lib/metal-rate-sale-policy";
-import { calculateJewelryPrice } from "@/lib/pricing-engine";
+import { calculateEloriaJewelryPrice } from "@/lib/pricing-engine";
 import { prisma, withDatabaseRetry } from "@/lib/prisma";
 
 export type PricedCatalogFilters = ProductCatalogFilters & {
@@ -143,7 +144,7 @@ function calculateCatalogPrice({
   now: Date;
 }): bigint | null {
   if (product.pricingMode === "MANUAL") {
-    return product.manualPrice ? BigInt(product.manualPrice) : null;
+    return product.currency === "TOMAN" && product.manualPrice && BigInt(product.manualPrice) > 0n ? BigInt(product.manualPrice) + PACKAGING_TOMAN : null;
   }
 
   if (
@@ -151,10 +152,12 @@ function calculateCatalogPrice({
     !metalPrice ||
     product.currency !== "TOMAN" ||
     !product.metalWeight ||
-    !product.purityFineness
+    (product.material === "GOLD" && !product.purityFineness)
   ) {
     return null;
   }
+
+  if (product.material === "SILVER" && (metalPrice.rawPayload as { pricingBasis?: string } | null)?.pricingBasis !== "ELORIA_SILVER_10_31_V2") return null;
 
   const freshness = getMetalRateFreshness({
     sourceTimeUnix: metalPrice.sourceTimeUnix,
@@ -181,12 +184,12 @@ function calculateCatalogPrice({
     return null;
   }
 
-  const result = calculateJewelryPrice({
+  const result = calculateEloriaJewelryPrice({
     material: product.material,
     weightGrams: product.metalWeight,
-    productPurity: product.purityFineness,
+    productPurity: product.material === "SILVER" ? 999 : product.purityFineness!,
     referencePricePerGramToman: displayRate,
-    referencePurity: policy.referencePurity,
+    referencePurity: metalPrice.referencePurity,
     makingChargeType: product.makingChargeType,
     makingChargeFixedToman: product.makingChargeFixed,
     makingChargePerGramToman: product.makingChargePerGram,

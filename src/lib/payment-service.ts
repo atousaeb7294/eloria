@@ -1,3 +1,4 @@
+import { siteBaseUrl } from "@/lib/site-url";
 import { Prisma } from "@/generated/prisma/client";
 import { sendSms } from "@/lib/notifications/sms-ir";
 import {
@@ -47,12 +48,7 @@ function paymentVerificationSnapshot(
 }
 
 function callbackBase(): string {
-  const configured = process.env.NEXT_PUBLIC_SITE_URL?.trim().replace(/\/$/, "");
-  if (configured) return configured;
-  if (process.env.NODE_ENV === "production") {
-    throw new Error("NEXT_PUBLIC_SITE_URL برای پرداخت Production تنظیم نشده است.");
-  }
-  return "http://localhost:3000";
+  return siteBaseUrl().origin;
 }
 
 function activeKey(orderId: string): string {
@@ -330,13 +326,13 @@ export async function verifyOrderPayment(input: {
     });
   } catch (error) {
     /*
-     * اگر خود درگاه code موفق 100/101 داده ولی ref_id معتبر برنگرداند،
+     * اگر خود درگاه پاسخ موفق داده ولی مبلغ یا شناسه مرجع معتبر نباشد،
      * این یک خطای شبکه‌ای قابل Retry نیست: از دید مالی احتمال دریافت وجه
      * وجود دارد. Attempt و Order به بررسی دستی می‌روند و هرگز FAILED نمی‌شوند.
      */
     if (
       error instanceof ZibalError &&
-      (error.code === 100 || error.code === 101)
+      error.code === 100
     ) {
       const protocolReviewAt = new Date();
 
@@ -354,7 +350,7 @@ export async function verifyOrderPayment(input: {
             verificationPayload: json({
               code: error.code,
               message: error.message,
-              reason: "SUCCESS_WITHOUT_VALID_REFERENCE",
+              reason: "PROVIDER_SUCCESS_PROTOCOL_MISMATCH",
             }),
             errorMessage: error.message,
           },
@@ -395,7 +391,7 @@ export async function verifyOrderPayment(input: {
           provider: PROVIDER,
           orderNumber: order.orderNumber,
           attemptId: attempt.id,
-          reason: "provider-success-missing-reference",
+          reason: "provider-success-protocol-mismatch",
           code: error.code,
         },
         dispatchKey: "payment-reference-review:" + order.id,

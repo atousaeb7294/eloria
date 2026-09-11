@@ -316,6 +316,7 @@ export default async function AdminFinancePage({
 
   return (
     <div className="space-y-7">
+      {report.unallocatedItemQuantity > 0 && <p role="status" className="rounded-2xl border border-amber-300/25 bg-amber-950/20 p-4 text-sm leading-7 text-amber-100">{report.unallocatedItemQuantity} قطعه، قیمت دستی یا تفکیک مالی ناقص دارد. فروش و دریافت آن در گزارش هست؛ سود و مالیات تفکیک‌نشده در جمع اجزای مالی منظور نشده‌اند و نیاز به ثبت حسابداری دارند.</p>}
       <header className="flex flex-col gap-5 xl:flex-row xl:items-end xl:justify-between">
         <div>
           <p className="text-xs tracking-[0.25em] text-[#b99e4f]">
