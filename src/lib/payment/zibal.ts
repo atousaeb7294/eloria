@@ -79,10 +79,7 @@ export async function requestZibalPayment(input: any) {
     callbackUrl: input.callbackUrl,
   });
   
-  input: {
-  amountToman: string; description: string; callbackUrl: string;
-  mobile?: string | null; email?: string | null;
-}) {
+  
   const callback = new URL(input.callbackUrl);
   if (process.env.NODE_ENV === "production" && callback.protocol !== "https:") throw new ZibalError("Ù†Ø´Ø§Ù†ÛŒ Ø¨Ø§Ø²Ú¯Ø´Øª Ø¨Ø§ÛŒØ¯ HTTPS Ø¨Ø§Ø´Ø¯.");
   const data = await post("request", {
@@ -124,5 +121,6 @@ export function zibalStartUrl(trackId: string): string {
   if (!/^\d+$/.test(trackId)) throw new ZibalError("Ø´Ù†Ø§Ø³Ù‡ ØªØ±Ø§Ú©Ù†Ø´ Ù…Ø¹ØªØ¨Ø± Ù†ÛŒØ³Øª.");
   return `${endpoint("start")}${trackId}`;
 }
+
 
 
