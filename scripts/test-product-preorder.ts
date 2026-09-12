@@ -30,6 +30,7 @@ async function main() {
     messages.set(msg.id, { body: msg.body }); creates++;
     assert.equal(args.data.visitorPhone, "09121234567"); return { id: randomUUID() };
   }) as unknown as typeof createConversation;
+  prisma.$transaction = (async (fn: (tx: unknown) => Promise<unknown>) => fn({ preorderRequest: { create: async () => ({}) }, supportConversation: prisma.supportConversation })) as unknown as typeof prisma.$transaction;
   async function post(body: unknown, origin = "http://localhost:3000") {
     globalThis.__eloriaRateLimitFallback?.clear();
     return POST(new NextRequest("http://localhost:3000/api/products/test-ring/preorder", { method: "POST", headers: { origin, "Content-Type": "application/json" }, body: JSON.stringify(body) }), { params: Promise.resolve({ slug: "test-ring" }) });

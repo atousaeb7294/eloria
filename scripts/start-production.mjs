@@ -1,10 +1,12 @@
-﻿import { spawn } from "node:child_process";
+import { startSeoScheduler } from "./seo-scheduler.mjs";
+import { spawn } from "node:child_process";
 import { createRequire } from "node:module";
 import { cpSync, existsSync, mkdirSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 
 const port = process.env.PORT || "3000";
-const standaloneServer = resolve(process.cwd(), ".next", "standalone", "server.js");
+const nestedStandaloneServer = resolve(process.cwd(), ".next", "standalone", "server.js");
+const standaloneServer = existsSync(nestedStandaloneServer) ? nestedStandaloneServer : resolve(process.cwd(), "server.js");
 const standalone =
   process.env.ELORIA_STANDALONE === "true" || existsSync(standaloneServer);
 
@@ -203,6 +205,8 @@ async function startEmbeddedMetalSync() {
 
 void startEmbeddedMetalSync();
 
+const stopSeoScheduler = startSeoScheduler({ port });
+
 let stopping = false;
 
 function stop(signal) {
@@ -212,6 +216,7 @@ function stop(signal) {
 
   stopping = true;
   startupSyncCancelled = true;
+  stopSeoScheduler();
 
   if (metalSyncInterval) {
     clearInterval(metalSyncInterval);
@@ -234,6 +239,7 @@ child.on("error", error => {
 
 child.on("exit", code => {
   startupSyncCancelled = true;
+  stopSeoScheduler();
 
   if (metalSyncInterval) {
     clearInterval(metalSyncInterval);

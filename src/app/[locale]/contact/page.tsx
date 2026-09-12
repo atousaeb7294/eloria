@@ -1,3 +1,4 @@
+import { eloriaSocialLinks } from "@/lib/social-links";
 import type { CSSProperties } from "react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -40,6 +41,7 @@ export default async function ContactPage({ params }: ContactPageProps) {
   const isPersian = locale === "fa";
   const seller = legalBusinessIdentity();
   const phone = publicSupportPhone();
+  const socials = eloriaSocialLinks();
 
   return (
     <InternalPageShell locale={locale}>
@@ -88,11 +90,23 @@ export default async function ContactPage({ params }: ContactPageProps) {
         </div>
 
         <div className="mt-10 grid gap-6 lg:grid-cols-[1.25fr_0.75fr]">
-          <div className="overflow-hidden rounded-[2.25rem] border border-[#dfc16f]/18 bg-[linear-gradient(145deg,rgba(7,39,29,.92),rgba(2,20,14,.965))] p-1 shadow-[0_26px_90px_rgba(0,0,0,.30)]">
+          <div className="self-start overflow-hidden rounded-[2.25rem] border border-[#dfc16f]/18 bg-[linear-gradient(145deg,rgba(7,39,29,.92),rgba(2,20,14,.965))] p-1 shadow-[0_26px_90px_rgba(0,0,0,.30)]">
             <ContactRequestForm locale={locale} />
           </div>
 
           <div className="space-y-6">
+            <aside className="eloria-panel rounded-[2.2rem] p-6 sm:p-8">
+              <h2 className="text-xl font-semibold text-[#f2e4c5]">{isPersian ? "الوریا در شبکه‌های اجتماعی" : "Eloria on social media"}</h2>
+              <div className="mt-5 grid gap-3">
+                {Object.entries(socials).map(([key, href]) => (
+                  <a key={key} href={href} target="_blank" rel="noopener noreferrer" className="flex min-h-12 items-center justify-between rounded-xl border border-[#dfc16f]/25 px-4 py-3 text-[#f0d98d] hover:bg-white/5 focus-visible:outline-2 focus-visible:outline-offset-4">
+                    <span>{({instagram: isPersian ? "اینستاگرام" : "Instagram", telegram: isPersian ? "تلگرام" : "Telegram", bale: isPersian ? "بله" : "Bale"} as Record<string,string>)[key]}</span>
+                    <span aria-hidden="true">↗</span>
+                  </a>
+                ))}
+              </div>
+            </aside>
+
             <aside data-reveal="right" className="eloria-panel rounded-[2.2rem] p-6 sm:p-8">
               <span className="grid size-12 place-items-center rounded-2xl border border-[#dfc16f]/24 bg-[#dfc16f]/[0.055] text-[#e2c46f]">
                 <PhoneCall className="size-6" />

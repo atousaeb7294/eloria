@@ -1,3 +1,4 @@
+import { getCustomerFromRequest } from "@/lib/customer-auth";
 import { randomBytes } from "node:crypto";
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
@@ -41,11 +42,15 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     if (!existing && !isPreorderAvailable(product, variant)) return reply("این محصول اکنون موجود است؛ از افزودن به سبد خرید استفاده کنید.", 409);
     if (!existing) {
       try {
-        await prisma.supportConversation.create({ data: {
+        await prisma.$transaction(async tx => {
+        const auth = await getCustomerFromRequest(request);
+        await tx.preorderRequest.create({data:{id:input.requestId,productId:product.id,variantId:variant?.id ?? null,customerId:auth?.customer.mobileVerifiedAt && auth.customer.mobile===input.phone ? auth.customer.id : null,phone:input.phone,name:input.name,locale:input.locale,quantity:input.quantity,notes:input.notes}});
+        await tx.supportConversation.create({ data: {
           accessTokenHash: randomBytes(32).toString("hex"), locale: input.locale,
           visitorName: input.name, visitorPhone: input.phone, status: "OPEN",
           messages: { create: { id: input.requestId, author: "VISITOR", body } },
         }, select: { id: true } });
+        });
       } catch (error) {
         // The unique message ID makes simultaneous retries one persisted request.
         if (!(error && typeof error === "object" && "code" in error && error.code === "P2002")) throw error;

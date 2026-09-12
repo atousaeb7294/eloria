@@ -1,3 +1,4 @@
+import { BuyerReviews } from "@/components/buyer-reviews";
 import { canonicalProductStory } from "@/lib/canonical-product-story";
 import { productAudience } from "@/lib/product-audience";
 import type { Metadata } from "next";
@@ -1346,6 +1347,7 @@ export default async function ProductPage({
           </div>
         </article>
       </section>
+      <BuyerReviews productId={productRecord.id} slug={productRecord.slug} />
     </InternalPageShell>
   );
 }

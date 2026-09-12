@@ -16,5 +16,5 @@ export default async function ProfilePage({ params }: Props) {
   const auth = await getCurrentCustomer();
   if (!auth) redirect(`/${locale}/login?next=${encodeURIComponent(`/${locale}/profile`)}`);
   const data = await getCustomerDashboard(auth.customer.id);
-  return <InternalPageShell locale={locale}><CustomerProfileClient locale={locale} initialData={data} /></InternalPageShell>;
+  return <InternalPageShell locale={locale}><a className="block pt-24 px-6 text-[#d9b85f] underline" href={`/${locale}/profile/preorders`}>پیگیری پیش‌سفارش‌ها</a><CustomerProfileClient locale={locale} initialData={data} /></InternalPageShell>;
 }

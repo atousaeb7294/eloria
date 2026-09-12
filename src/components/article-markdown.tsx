@@ -1,10 +1,14 @@
+import Image from "next/image";
+import { isPublicArticleImage } from "@/lib/public-image-policy";
 import type { ReactNode } from "react";
+import { safeArticleHref } from "@/lib/seo-content-tools";
 
 type ArticleMarkdownProps = {
   value: string;
 };
 
 type Block =
+  | { type: "image"; alt: string; src: string }
   | {
       type: "heading";
       level: 2 | 3;
@@ -56,6 +60,11 @@ function parseBlocks(value: string): Block[] {
       continue;
     }
 
+    const image = line.match(/^!\[([^\]]*)\]\(([^)]+)\)$/u);
+    if (image && isPublicArticleImage(image[2])) {
+      flushParagraph(); flushList(); blocks.push({ type: "image", alt: image[1], src: image[2] }); continue;
+    }
+
     const heading = line.match(/^(#{1,3})\s+(.+)$/u);
 
     if (heading) {
@@ -87,10 +96,26 @@ function parseBlocks(value: string): Block[] {
   return blocks;
 }
 
+function inlineText(value: string): ReactNode[] {
+  const nodes: ReactNode[] = []; let last = 0;
+  const expression = /(?<!!)\[([^\]]+)\]\(([^)]+)\)|\*\*([^*]+)\*\*/g;
+  for (const match of value.matchAll(expression)) {
+    nodes.push(value.slice(last, match.index));
+    if (match[3]) nodes.push(<strong key={match.index}>{match[3]}</strong>);
+    else {
+      const href = safeArticleHref(match[2]);
+      nodes.push(href ? <a key={match.index} href={href} className="underline decoration-[#d8b85f]/60 underline-offset-4 break-words">{match[1]}</a> : match[1]);
+    }
+    last = match.index! + match[0].length;
+  }
+  nodes.push(value.slice(last)); return nodes;
+}
+
 export function ArticleMarkdown({ value }: ArticleMarkdownProps) {
   const blocks = parseBlocks(value);
 
   const content: ReactNode[] = blocks.map((block, index) => {
+    if (block.type === "image") return <figure key={`image-${index}`} className="my-8"><div className="relative aspect-[3/2] overflow-hidden rounded-xl"><Image src={block.src} alt={block.alt} fill sizes="(min-width: 1024px) 720px, 90vw" className="object-contain" /></div></figure>;
     if (block.type === "heading") {
       const Heading = block.level === 2 ? "h2" : "h3";
 
@@ -103,7 +128,7 @@ export function ArticleMarkdown({ value }: ArticleMarkdownProps) {
               : "mt-8 scroll-mt-32 text-xl font-medium leading-relaxed text-[#eedbad] sm:text-2xl"
           }
         >
-          {block.value}
+          {inlineText(block.value)}
         </Heading>
       );
     }
@@ -119,7 +144,7 @@ export function ArticleMarkdown({ value }: ArticleMarkdownProps) {
               key={`${item}-${itemIndex}`}
               className="relative ps-3 before:absolute before:start-0 before:top-[0.88rem] before:size-1.5 before:rounded-full before:bg-[#dfc16f] before:shadow-[0_0_10px_rgba(223,193,111,0.7)]"
             >
-              {item}
+              {inlineText(item)}
             </li>
           ))}
         </ul>
@@ -131,7 +156,7 @@ export function ArticleMarkdown({ value }: ArticleMarkdownProps) {
         key={`${block.type}-${index}`}
         className="mt-5 text-[15px] leading-8 text-[#d8c9aa]/78 sm:text-base sm:leading-9"
       >
-        {block.value}
+        {inlineText(block.value)}
       </p>
     );
   });

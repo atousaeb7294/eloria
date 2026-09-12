@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "next dev --webpack",
     "prebuild": "prisma generate",
-    "build": "next build --webpack",
+    "build": "node scripts/build-production.mjs",
     "start": "node scripts/start-production.mjs",
     "lint": "eslint",
     "test:visual": "playwright test",
@@ -78,7 +78,12 @@
     "test:eloria": "node --import tsx scripts/test-eloria-pricing-v2.ts && node --import tsx scripts/test-zibal-contract.ts && node --import tsx scripts/test-seo-audit.ts && node --import tsx scripts/test-shipping.ts && node --import tsx scripts/test-brs-eloria-policy.ts",
     "test:payments:db": "node --import tsx scripts/test-zibal-simulation.ts",
     "test:mens": "node --import tsx scripts/test-mens-treasury.ts",
-    "test:preorder": "node --import tsx scripts/test-product-preorder.ts"
+    "test:preorder": "node --import tsx scripts/test-product-preorder.ts",
+    "test:seo-automation": "node --import tsx scripts/test-seo-automation.ts && node scripts/test-seo-scheduler.mjs",
+    "backup:database": "node scripts/backup-database.mjs backup",
+    "operations:watch": "node scripts/operations-agent.mjs",
+    "test:buyer-commerce": "node --import tsx scripts/test-buyer-commerce.ts && node scripts/test-backup-tools.mjs && node scripts/test-operations-agent.mjs",
+    "prestart": "npm run db:migrate"
   },
   "dependencies": {
     "@base-ui/react": "^1.6.0",

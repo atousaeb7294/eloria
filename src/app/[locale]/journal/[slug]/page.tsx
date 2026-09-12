@@ -163,7 +163,7 @@ export default async function JournalArticlePage({
           <div className="relative mx-auto mt-12 aspect-[16/8] max-w-5xl overflow-hidden rounded-[2.4rem] border border-[#d9b85f]/20 bg-[#08271c] shadow-[0_30px_90px_rgba(0,0,0,0.42)]">
             <Image
               src={article.coverImageUrl}
-              alt={title}
+              alt={(article.sourceProduct?.images.find(image => image.imageUrl === article.coverImageUrl)?.[locale === "fa" ? "altFa" : "altEn"]) || (article.sourceProduct?.images.some(image => image.imageUrl === article.coverImageUrl) ? (locale === "fa" ? article.sourceProduct.nameFa : article.sourceProduct.nameEn) : title)}
               fill
               priority
               sizes="(min-width: 1024px) 900px, 100vw"

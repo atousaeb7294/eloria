@@ -1,4 +1,6 @@
 "use server";
+import { after } from "next/server";
+import { repairSeoBatch } from "@/lib/seo-autopilot";
 
 import { createHash } from "node:crypto";
 
@@ -185,6 +187,7 @@ async function requireSession(): Promise<void> {
 }
 
 function revalidateContentPaths(slug: string) {
+  after(async () => { try { await repairSeoBatch({}, { articleSlug: slug }); } catch (error) { console.error("[SEO] Article repair deferred to scheduled retry", error); } });
   for (const locale of ["fa", "en"] as const) {
     revalidatePath(`/${locale}/journal`);
     revalidatePath(`/${locale}/journal/${encodeURIComponent(slug)}`);

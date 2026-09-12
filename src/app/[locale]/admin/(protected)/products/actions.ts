@@ -1,4 +1,6 @@
 "use server";
+import { after } from "next/server";
+import { repairSeoBatch } from "@/lib/seo-autopilot";
 
 import { productAudience, withProductAudience, type ProductAudience } from "@/lib/product-audience";
 
@@ -850,6 +852,8 @@ await ensureUniqueIdentity({
     };
   }
 
+  after(async () => { try { await repairSeoBatch({}, { productSlug: input.slug }); } catch (error) { console.error("[SEO] Product repair deferred to scheduled retry", error); } });
+
   revalidatePath(
     `/${input.locale}/products`,
   );
@@ -1023,6 +1027,8 @@ await ensureUniqueIdentity({
         publicAdminProductError(error, "ذخیره تغییرات محصول انجام نشد.", "update"),
     };
   }
+
+  after(async () => { try { await repairSeoBatch({}, { productSlug: input.slug }); } catch (error) { console.error("[SEO] Product repair deferred to scheduled retry", error); } });
 
   revalidatePath(
     `/${input.locale}/products`,

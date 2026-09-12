@@ -1,3 +1,4 @@
+import { EnamadSeal } from "@/components/enamad-seal";
 import type { LucideIcon } from "lucide-react";
 import {
   ArrowUp,
@@ -341,24 +342,7 @@ export function SiteFooter({ locale }: SiteFooterProps) {
         </div>
 
         <div className="mt-6 flex justify-center">
-          <a
-            href="https://trustseal.enamad.ir/?id=7632947&Code=TKWqLb98pevDEO1yEhZaHGCVgpfLlxKr"
-            target="_blank"
-            referrerPolicy="origin"
-            aria-label="eNamad trust seal"
-            className="inline-flex rounded-xl border border-[#dfc16f]/20 bg-black/15 p-2 transition hover:border-[#dfc16f]/50"
-          >
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src="https://trustseal.enamad.ir/logo.aspx?id=7632947&Code=TKWqLb98pevDEO1yEhZaHGCVgpfLlxKr"
-              {...{ code: "TKWqLb98pevDEO1yEhZaHGCVgpfLlxKr" }}
-              alt="eNamad trust seal"
-              width="112"
-              height="112"
-              referrerPolicy="origin"
-              className="h-auto w-[112px] cursor-pointer"
-            />
-          </a>
+          <EnamadSeal />
         </div>
         <div className="flex flex-col items-center justify-between gap-4 pt-6 text-center text-xs text-[#c8b993]/52 sm:flex-row sm:text-start">
           <p>{copy.rights}</p>

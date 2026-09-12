@@ -1,3 +1,4 @@
+import { publicImageSources } from "@/lib/public-image-policy";
 import { NextResponse, type NextRequest } from "next/server";
 
 const isProduction = process.env.NODE_ENV === "production";
@@ -12,7 +13,7 @@ function contentSecurityPolicy(nonce: string): string {
     `style-src 'self' 'nonce-${nonce}'`,
     "style-src-attr 'unsafe-inline'",
     "script-src-attr 'none'",
-    "img-src 'self' data: blob: https://trustseal.enamad.ir https://*.supabase.co",
+    `img-src 'self' data: blob: ${publicImageSources().join(" ")}`,
     "font-src 'self' data:",
     "media-src 'self' blob:",
     "worker-src 'self' blob:",

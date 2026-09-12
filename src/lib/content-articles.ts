@@ -74,6 +74,7 @@ export async function getPublishedArticleBySlug(slug: string) {
             slug: true,
             nameFa: true,
             nameEn: true,
+            images: { select: { imageUrl: true, altFa: true, altEn: true }, take: 20 },
           },
         },
         sourceCollection: {
@@ -100,6 +101,7 @@ export async function getAdminContentArticle(id: string) {
             slug: true,
             nameFa: true,
             nameEn: true,
+            images: { select: { imageUrl: true, altFa: true, altEn: true }, take: 20 },
           },
         },
         sourceCollection: {

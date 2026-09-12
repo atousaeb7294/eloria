@@ -1,4 +1,6 @@
 "use server";
+import { after } from "next/server";
+import { repairSeoBatch } from "@/lib/seo-autopilot";
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
@@ -98,6 +100,7 @@ async function product(productId: string) {
   return item;
 }
 function refresh(productId: string, slug: string) {
+  after(async () => { try { await repairSeoBatch({}, { productSlug: slug }); } catch (error) { console.error("[SEO] Media repair deferred to scheduled retry", error); } });
   for (const locale of ["fa", "en"] as const) {
     revalidatePath(`/${locale}/admin/products/${productId}`);
     revalidatePath(`/${locale}/admin/products`);

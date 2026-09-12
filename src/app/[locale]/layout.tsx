@@ -59,17 +59,13 @@ export async function generateMetadata({
 
   const baseUrl = siteBaseUrl();
 
-  const defaultTitle = t("title");
-  // eNamad requires this value only during its title-verification step. Keep
-  // the switch server-side so it cannot be toggled by a visitor.
-  const title =
-    process.env.ELORIA_ENAMAD_TITLE_VERIFICATION === "true"
-      ? `${defaultTitle} | 26263305`
-      : defaultTitle;
+  // Public title is independent of the completed eNamad verification step.
+  const title = t("title");
   const description = t("description");
 
   return {
     metadataBase: baseUrl,
+    verification: process.env.GOOGLE_SITE_VERIFICATION ? {google:process.env.GOOGLE_SITE_VERIFICATION.trim()} : undefined,
     title,
     description,
     // Renders exactly: <meta name="enamad" content="26263305" />
