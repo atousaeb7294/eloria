@@ -1,7 +1,11 @@
 "use server";
 
+import { productAudience, withProductAudience, type ProductAudience } from "@/lib/product-audience";
+
 import {
   ELORIA_MYTH_LIBRARY,
+  ELORIA_MEN_MYTH_LIBRARY,
+  getProductMythByKey,
   generateUnusedProductMyth,
 } from "@/lib/product-myth-generator";
 
@@ -46,12 +50,13 @@ export async function reassignCanonicalProductLegendsAction(
           nameFa: true,
           nameEn: true,
           material: true,
+          specifications: true,
         },
       }),
     { attempts: 2, delayMilliseconds: 200 },
   );
 
-  if (products.length > ELORIA_MYTH_LIBRARY.length) {
+  if (products.filter(p => productAudience(p.specifications) === "WOMEN").length > ELORIA_MYTH_LIBRARY.length || products.filter(p => productAudience(p.specifications) === "MEN").length > ELORIA_MEN_MYTH_LIBRARY.length) {
     redirect(`/${locale}/admin/products?legends=too-many`);
   }
 
@@ -70,6 +75,7 @@ export async function reassignCanonicalProductLegendsAction(
               nameFa: product.nameFa,
               nameEn: product.nameEn,
               material: product.material,
+              audience: productAudience(product.specifications),
             },
             used,
           );
@@ -117,6 +123,7 @@ function publicAdminProductError(
 
 type ParsedProductInput = {
   locale: "fa" | "en";
+  audience: ProductAudience;
   collectionId: string;
   slug: string;
   sku: string | null;
@@ -451,6 +458,7 @@ function parseProductInput(
 
   return {
     locale,
+    audience: readEnum(formData, "audience", ["WOMEN", "MEN"] as const, "WOMEN"),
     collectionId:
       readText(
         formData,
@@ -766,6 +774,7 @@ export async function createAdminProductAction(
           nameFa: input.nameFa,
           nameEn: input.nameEn,
           material: input.material,
+          audience: input.audience,
         },
         new Set(
           assignedMyths.flatMap((item) => (item.mythKey ? [item.mythKey] : [])),
@@ -777,7 +786,7 @@ export async function createAdminProductAction(
         error.message === "ELORIA_MYTH_LIBRARY_EXHAUSTED"
       ) {
         throw new AdminProductActionError(
-          "هر ۲۰ افسانهٔ مجاز زنان الوریا به محصول اختصاص یافته‌اند؛ برای جلوگیری از تکرار، محصول تازه بدون افسانه ذخیره نشد.",
+          "همهٔ افسانه‌های مجاز گروه انتخاب‌شده به محصول اختصاص یافته‌اند؛ برای جلوگیری از تکرار، محصول تازه بدون افسانه ذخیره نشد.",
         );
       }
       throw error;
@@ -793,6 +802,7 @@ await ensureUniqueIdentity({
       prisma.product.create({
         data: {
           ...productData(input),
+          specifications: withProductAudience(null, input.audience),
           mythKey: myth.mythKey,
           mythNameFa: myth.mythNameFa,
           mythNameEn: myth.mythNameEn,
@@ -895,15 +905,37 @@ await ensureUniqueIdentity({
               stock: true,
               status: true,
               pricingMode: true,
+              specifications: true,
+              mythKey: true,
+              mythNameFa: true,
+              mythNameEn: true,
             },
           });
 
+          const mythInput = { nameFa: input.nameFa, nameEn: input.nameEn, material: input.material, audience: input.audience };
+          const currentMyth = before.mythKey ? getProductMythByKey(before.mythKey, mythInput) : null;
+          let myth = currentMyth;
+          if (!myth) {
+            const assigned = await transaction.product.findMany({
+              where: { id: { not: productId }, mythKey: { not: null } }, select: { mythKey: true },
+            });
+            myth = generateUnusedProductMyth(mythInput, new Set(assigned.flatMap(p => p.mythKey ? [p.mythKey] : [])));
+          }
           await transaction.product.update({
             where: { id: productId },
-            data: productData(input),
+            data: { ...productData(input), specifications: withProductAudience(before.specifications, input.audience),
+              mythKey: myth.mythKey, mythNameFa: myth.mythNameFa, mythNameEn: myth.mythNameEn,
+              legendFa: currentMyth && input.legendFa
+                ? (before.mythNameFa ? input.legendFa.split(before.mythNameFa).join(myth.mythNameFa) : input.legendFa)
+                : myth.legendFa,
+              legendEn: currentMyth && input.legendEn
+                ? (before.mythNameEn ? input.legendEn.split(before.mythNameEn).join(myth.mythNameEn) : input.legendEn)
+                : myth.legendEn,
+            },
           });
 
           const changedFields = [
+            productAudience(before.specifications) !== input.audience ? "audience" : null,
             before.slug !== input.slug ? "slug" : null,
             (before.sku ?? null) !== input.sku ? "sku" : null,
             (before.metalWeight?.toString() ?? null) !== input.metalWeight ? "metalWeight" : null,

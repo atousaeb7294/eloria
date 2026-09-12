@@ -240,6 +240,7 @@ export function CatalogProductCard({
           </span>
         </Link>
       </div>
+        {!product.isAvailable && <Link href={`/${locale}/preorder/${product.slug}`} className="mt-3 flex min-h-12 items-center justify-center rounded-full border border-[#d9b85f]/35 bg-[#d9b85f]/10 text-sm text-[#ead8aa]">{isPersian ? "پیش‌سفارش" : "Preorder"}</Link>}
       </article>
     </InteractiveTiltCard>
   );

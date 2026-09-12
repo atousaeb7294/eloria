@@ -1,3 +1,5 @@
+import { canonicalProductStory } from "@/lib/canonical-product-story";
+import { productAudience } from "@/lib/product-audience";
 import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
@@ -119,6 +121,7 @@ async function loadProductPageRecord(slug: string) {
       mythNameFa: true,
       mythNameEn: true,
       material: true,
+      specifications: true,
       status: true,
       stock: true,
       pricingMode: true,
@@ -316,7 +319,8 @@ export async function generateMetadata({
     }
 
     const productName = locale === "fa" ? product.nameFa : product.nameEn;
-    const mythName = locale === "fa" ? product.mythNameFa : product.mythNameEn;
+    const canonicalStoryMetadata = canonicalProductStory(product);
+    const mythName = locale === "fa" ? canonicalStoryMetadata.mythNameFa : canonicalStoryMetadata.mythNameEn;
     const materialName =
       locale === "fa"
         ? product.material === "GOLD"
@@ -597,9 +601,10 @@ export default async function ProductPage({
       ? "این قطعه با تمرکز بر ظرافت، دوام و هویت افسانه‌ای الوریا طراحی شده است."
       : "This piece is designed around refinement, durability, and Eloria’s legendary identity.");
 
+  const canonicalStory = canonicalProductStory(productRecord);
   const hiddenLegend = isPersian
-    ? productRecord.legendFa
-    : productRecord.legendEn;
+    ? canonicalStory.legendFa
+    : canonicalStory.legendEn;
 
   const generatedLegend =
     (productRecord.mythKey
@@ -607,12 +612,14 @@ export default async function ProductPage({
           nameFa: productRecord.nameFa,
           nameEn: productRecord.nameEn ?? undefined,
           material: productRecord.material,
+                      audience: productAudience(productRecord.specifications),
         })
       : null) ??
     generateProductMyth({
       nameFa: productRecord.nameFa,
       nameEn: productRecord.nameEn ?? undefined,
       material: productRecord.material,
+                      audience: productAudience(productRecord.specifications),
     });
 
   const legendText =
@@ -620,7 +627,7 @@ export default async function ProductPage({
     (isPersian ? generatedLegend.legendFa : generatedLegend.legendEn);
 
   const legendName =
-    (isPersian ? productRecord.mythNameFa : productRecord.mythNameEn)?.trim() ||
+    (isPersian ? canonicalStory.mythNameFa : canonicalStory.mythNameEn)?.trim() ||
     (isPersian ? generatedLegend.mythNameFa : generatedLegend.mythNameEn);
   const worldProfile = generatedLegend.worldProfile;
 
@@ -988,13 +995,17 @@ export default async function ProductPage({
               </div>
 
               <div className="mt-5">
-                <AddToCartButton
+                {(stock <= 0 || productRecord.status === "OUT_OF_STOCK") ? (
+                  <Link href={`/${locale}/preorder/${productRecord.slug}${selectedVariantId ? `?variant=${encodeURIComponent(selectedVariantId)}` : ""}`} className="flex min-h-14 w-full items-center justify-center rounded-full border border-[#d9b85f]/45 bg-[#d9b85f]/15 px-5 text-[#f6e8c6]">
+                    {isPersian ? "پیش‌سفارش" : "Preorder"}
+                  </Link>
+                ) : <AddToCartButton
                   locale={locale}
                   slug={productRecord.slug}
                   variantId={selectedVariantId}
                   maxQuantity={stock}
                   disabled={!canPurchase}
-                />
+                />}
                 <ProductWatchButton locale={locale} slug={productRecord.slug} />
                 <ProductShareActions
                   locale={locale}

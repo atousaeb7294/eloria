@@ -1,5 +1,5 @@
 export type EloriaGuardian = {
-  id: "yalda" | "mahora" | "atousa" | "anahid" | "parnia" | "vista" | "raha";
+  id: "yalda" | "mahora" | "atousa" | "vista" | "parnia" | "athena" | "raha";
   nameFa: string;
   nameEn: string;
   titleFa: string;
@@ -35,7 +35,7 @@ export const ELORIA_GUARDIANS: readonly EloriaGuardian[] = [
     realmEn: "the Silent Gardens of the Moon",
     symbolFa: "پروانهٔ شب",
     symbolEn: "night moth",
-    imageUrl: "/images/guardians/yalda.webp",
+    imageUrl: "/images/guardians/yalda-202609.webp",
     summaryFa:
       "یلدا نخستین کسی بود که صدای خاطرات فراموش‌شده را شنید؛ او رازهای گمشده را از میان سایه‌ها به درخت خاطره‌ها بازمی‌گرداند.",
     summaryEn:
@@ -55,7 +55,7 @@ export const ELORIA_GUARDIANS: readonly EloriaGuardian[] = [
     realmEn: "the Sky Palaces",
     symbolFa: "پرندهٔ ماه",
     symbolEn: "moon bird",
-    imageUrl: "/images/guardians/mahora.webp",
+    imageUrl: "/images/guardians/mahora-202609.webp",
     summaryFa:
       "ماهورا نگهبان رویاهایی است که هنوز فرصت تولد نیافته‌اند؛ نور ماه او خیال‌های خاموش را دوباره بیدار می‌کند.",
     summaryEn:
@@ -76,7 +76,7 @@ export const ELORIA_GUARDIANS: readonly EloriaGuardian[] = [
     realmEn: "the Halls of the Simurgh",
     symbolFa: "سیمرغ",
     symbolEn: "Simurgh",
-    imageUrl: "/images/guardians/atousa.webp",
+    imageUrl: "/images/guardians/atousa-202609.webp",
     summaryFa:
       "آتوسا حافظ تمدن‌های فراموش‌شده، هنرهای باستانی و داستان‌هایی است که نسل‌ها از مادران به فرزندان رسیده‌اند.",
     summaryEn:
@@ -85,9 +85,9 @@ export const ELORIA_GUARDIANS: readonly EloriaGuardian[] = [
     vowEn: "A people who forget their past will lose the road to their future.",
   },
   {
-    id: "anahid",
-    nameFa: "آناهید",
-    nameEn: "Anahid",
+    id: "vista",
+    nameFa: "ویستا",
+    nameEn: "Vista",
     titleFa: "نگهبان زندگی و احساس",
     titleEn: "Keeper of Life and Feeling",
     domainFa: "زندگی",
@@ -96,11 +96,11 @@ export const ELORIA_GUARDIANS: readonly EloriaGuardian[] = [
     realmEn: "the Living Springs",
     symbolFa: "نیلوفر آبی",
     symbolEn: "blue lotus",
-    imageUrl: "/images/guardians/anahid.webp",
+    imageUrl: "/images/guardians/vista-202609.webp",
     summaryFa:
-      "آناهید از سرچشمه‌های زندهٔ الوریا برخاست؛ او رودها، باغ‌ها و قلب‌های شکسته را پاس می‌دارد.",
+      "ویستا از سرچشمه‌های زندهٔ الوریا برخاست؛ او رودها، باغ‌ها و قلب‌های شکسته را پاس می‌دارد.",
     summaryEn:
-      "Anahid rose from Eloria’s living springs and protects rivers, gardens and broken hearts.",
+      "Vista rose from Eloria’s living springs and protects rivers, gardens and broken hearts.",
     vowFa: "تا زمانی که یک گل در الوریا شکوفه دهد، زندگی هنوز پیروز است.",
     vowEn: "As long as a flower blooms in Eloria, life still prevails.",
   },
@@ -116,7 +116,7 @@ export const ELORIA_GUARDIANS: readonly EloriaGuardian[] = [
     realmEn: "the Workshop of Golden Threads",
     symbolFa: "تارهای طلایی",
     symbolEn: "golden threads",
-    imageUrl: "/images/guardians/parnia.webp",
+    imageUrl: "/images/guardians/parnia-202609.webp",
     summaryFa:
       "پرنیا باور دارد هر چیز ساخته‌شده با عشق روحی درون خود دارد؛ او گره، بافت و یادگارهای دست‌ساز را زنده نگه می‌دارد.",
     summaryEn:
@@ -126,9 +126,9 @@ export const ELORIA_GUARDIANS: readonly EloriaGuardian[] = [
     vowEn: "Every knot tied with love keeps a story forever.",
   },
   {
-    id: "vista",
-    nameFa: "ویستا",
-    nameEn: "Vista",
+    id: "athena",
+    nameFa: "آتنا",
+    nameEn: "Athena",
     titleFa: "نگهبان خرد و کشف رازها",
     titleEn: "Keeper of Wisdom and Discovery",
     domainFa: "خرد",
@@ -137,11 +137,11 @@ export const ELORIA_GUARDIANS: readonly EloriaGuardian[] = [
     realmEn: "the Libraries of Light",
     symbolFa: "جغد دانا",
     symbolEn: "wise owl",
-    imageUrl: "/images/guardians/vista.webp",
+    imageUrl: "/images/guardians/athena-202609.webp",
     summaryFa:
-      "ویستا بزرگ‌ترین جستجوگر دانش است و در کتابخانه‌های نور، نشانه‌های گذشته و آینده را می‌خواند.",
+      "آتنا بزرگ‌ترین جستجوگر دانش است و در کتابخانه‌های نور، نشانه‌های گذشته و آینده را می‌خواند.",
     summaryEn:
-      "Vista is Eloria’s greatest seeker of knowledge, reading signs of past and future in the Libraries of Light.",
+      "Athena is Eloria’s greatest seeker of knowledge, reading signs of past and future in the Libraries of Light.",
     vowFa: "دانش، نوری است که حتی تاریکی از آن فرار می‌کند.",
     vowEn: "Knowledge is a light from which even darkness flees.",
   },
@@ -157,7 +157,7 @@ export const ELORIA_GUARDIANS: readonly EloriaGuardian[] = [
     realmEn: "the Wind Passage",
     symbolFa: "پرندهٔ مهاجر",
     symbolEn: "migrating bird",
-    imageUrl: "/images/guardians/raha.webp",
+    imageUrl: "/images/guardians/raha-202609.webp",
     summaryFa:
       "رها روح آزاد الوریاست؛ او بر بادها فرمان می‌راند، راه‌های بسته را می‌گشاید و آغازهای تازه را محافظت می‌کند.",
     summaryEn:

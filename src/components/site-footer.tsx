@@ -172,6 +172,7 @@ export function SiteFooter({ locale }: SiteFooterProps) {
       title: copy.categoryTitle,
       icon: LayoutGrid,
       links: [
+        { label: locale === "fa" ? "گنجینهٔ آقایان" : "Men’s Treasury", href: `/${locale}/collections/men`, icon: Gem },
         {
           label: copy.necklaces,
           href: `/${locale}/collections/necklaces`,
@@ -343,7 +344,6 @@ export function SiteFooter({ locale }: SiteFooterProps) {
           <a
             href="https://trustseal.enamad.ir/?id=7632947&Code=TKWqLb98pevDEO1yEhZaHGCVgpfLlxKr"
             target="_blank"
-            rel="noopener noreferrer"
             referrerPolicy="origin"
             aria-label="eNamad trust seal"
             className="inline-flex rounded-xl border border-[#dfc16f]/20 bg-black/15 p-2 transition hover:border-[#dfc16f]/50"
@@ -351,6 +351,7 @@ export function SiteFooter({ locale }: SiteFooterProps) {
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src="https://trustseal.enamad.ir/logo.aspx?id=7632947&Code=TKWqLb98pevDEO1yEhZaHGCVgpfLlxKr"
+              {...{ code: "TKWqLb98pevDEO1yEhZaHGCVgpfLlxKr" }}
               alt="eNamad trust seal"
               width="112"
               height="112"

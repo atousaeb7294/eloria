@@ -35,7 +35,8 @@ export function CatalogCategoryNavigation({
       productCount: collections.reduce((sum, item) => sum + item.productCount, 0),
       Icon: AllProductsRuneIcon,
     },
-    ...collections.map(collection => ({
+    { slug: "men", label: isPersian ? "گنجینهٔ آقایان" : "Men’s Treasury", productCount: null, Icon: AllProductsRuneIcon },
+    ...collections.filter(c => c.slug !== "men").map(collection => ({
       slug: collection.slug,
       label: isPersian ? collection.nameFa : collection.nameEn,
       productCount: collection.productCount,
@@ -53,7 +54,7 @@ export function CatalogCategoryNavigation({
         const href =
           slug === "all"
             ? `/${locale}/products`
-            : `/${locale}/products?collection=${encodeURIComponent(slug)}`;
+            : slug === "men" ? `/${locale}/collections/men` : `/${locale}/products?collection=${encodeURIComponent(slug)}`;
 
         return (
           <Link
@@ -80,7 +81,7 @@ export function CatalogCategoryNavigation({
 
             <span className="min-w-0 truncate">{label}</span>
             <span className="text-[10px] text-white/45">
-              {productCount.toLocaleString(isPersian ? "fa-IR" : "en-US")}
+              {productCount?.toLocaleString(isPersian ? "fa-IR" : "en-US")}
             </span>
           </Link>
         );

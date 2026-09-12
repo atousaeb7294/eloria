@@ -19,6 +19,7 @@ import {
 
 export type AdminProductFormValue = {
   id?: string;
+  audience?: "WOMEN" | "MEN";
   collectionId: string;
   slug: string;
   sku: string;
@@ -221,6 +222,12 @@ export function AdminProductForm({
             />
           </Field>
 
+          <Field label="مناسب برای" hint="انتخاب آقایان، اثر را به گنجینهٔ آقایان اضافه می‌کند و افسانه‌ای از شخصیت‌های مرد اختصاص می‌دهد.">
+            <select name="audience" defaultValue={value.audience ?? "WOMEN"} className={inputClassName}>
+              <option value="WOMEN">بانوان</option>
+              <option value="MEN">آقایان</option>
+            </select>
+          </Field>
           <Field label="گنجینه *">
             <select
               className={inputClassName}

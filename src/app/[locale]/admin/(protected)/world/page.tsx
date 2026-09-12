@@ -1,3 +1,5 @@
+import { canonicalProductStory } from "@/lib/canonical-product-story";
+import { productAudience } from "@/lib/product-audience";
 import Link from "next/link";
 import Image from "next/image";
 import { BookOpenText, MapPinned, Sparkles, UserRound } from "lucide-react";
@@ -29,27 +31,32 @@ export default async function AdminWorldPage({
       nameFa: true,
       nameEn: true,
       material: true,
+      specifications: true,
       mythKey: true,
       mythNameFa: true,
+      mythNameEn: true,
       legendFa: true,
+      legendEn: true,
       status: true,
     },
   });
 
   const profiles = products.map((product) => ({
-    product,
+    product: canonicalProductStory(product),
     myth:
       (product.mythKey
         ? getProductMythByKey(product.mythKey, {
             nameFa: product.nameFa,
             nameEn: product.nameEn,
             material: product.material,
+                      audience: productAudience(product.specifications),
           })
         : null) ??
       generateProductMyth({
         nameFa: product.nameFa,
         nameEn: product.nameEn,
         material: product.material,
+                      audience: productAudience(product.specifications),
       }),
   }));
 

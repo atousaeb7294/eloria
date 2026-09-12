@@ -116,8 +116,9 @@ export default async function ProductsPage({ params, searchParams }: ProductsPag
     console.error("[Eloria Products] Collection navigation is unavailable.", error);
   }
 
-  const collectionSlugs = new Set(collections.map(item => item.slug));
+  const collectionSlugs = new Set(["men", ...collections.map(item => item.slug)]);
 
+  const mensCollection = single(raw.collection) === "men";
   const rawSearch = single(raw.q)?.trim() ?? "";
   const smartQuery = parseSmartCatalogQuery(rawSearch);
   const search = smartQuery.search;
@@ -184,7 +185,7 @@ export default async function ProductsPage({ params, searchParams }: ProductsPag
 
           <p className="text-xs uppercase tracking-[0.28em] text-[#cfb66f]/75">Eloria Archive</p>
           <h1 className={isPersian ? "font-persian-title mt-2 pb-3 text-3xl font-semibold leading-[1.9] text-[#f6e8c6] sm:text-4xl" : "mt-2 text-3xl font-semibold text-[#f6e8c6] sm:text-4xl"}>
-            {isPersian ? "تمام آثار الوریا" : "All Eloria Creations"}
+            {isPersian ? (mensCollection ? "گنجینهٔ آقایان" : "تمام آثار الوریا") : (mensCollection ? "Men’s Treasury" : "All Eloria Creations")}
           </h1>
           <p className="mx-auto mt-1 max-w-2xl text-sm leading-8 text-[#cbbd9d]/75">
             {isPersian

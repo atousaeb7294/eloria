@@ -1,3 +1,4 @@
+import { canonicalProductStory } from "@/lib/canonical-product-story";
 import type { Prisma } from "@/generated/prisma/client";
 import { normalizeCatalogPage } from "@/lib/catalog-pagination";
 import { normalizePersianSearchText } from "@/lib/smart-catalog-query";
@@ -151,6 +152,7 @@ function normalizePagination(filters: ProductCatalogFilters) {
 
 async function findCollection(collectionSlug: string) {
   const slug = normalizeCollectionSlug(collectionSlug);
+  if (slug === "men") return { id: "men", slug };
   const collection = await withDatabaseRetry(() => prisma.collection.findFirst({
     where: { slug, isActive: true },
     select: { id: true, slug: true },
@@ -211,7 +213,9 @@ async function buildCatalogWhere(filters: ProductCatalogFilters) {
   const where: Prisma.ProductWhereInput = {
     status: { in: ["ACTIVE", "OUT_OF_STOCK"] },
     collection: { isActive: true },
-    ...(selectedCollection ? { collectionId: selectedCollection.id } : {}),
+    ...(selectedCollection?.slug === "men"
+      ? { specifications: { path: ["eloriaAudience"], equals: "MEN" } }
+      : selectedCollection ? { collectionId: selectedCollection.id } : {}),
     ...(filters.material ? { material: filters.material } : {}),
     ...(and.length ? { AND: and } : {}),
   };
@@ -220,6 +224,8 @@ async function buildCatalogWhere(filters: ProductCatalogFilters) {
 }
 
 const catalogCardSelect = {
+  mythKey: true,
+  specifications: true,
   id: true,
   slug: true,
   sku: true,
@@ -243,6 +249,8 @@ const catalogCardSelect = {
 } satisfies Prisma.ProductSelect;
 
 function mapCatalogProduct(product: {
+  mythKey: string | null;
+  specifications: unknown;
   id: string;
   slug: string;
   sku: string | null;
@@ -260,6 +268,7 @@ function mapCatalogProduct(product: {
   collection: { slug: string };
   images: Array<{ imageUrl: string; altFa: string | null; altEn: string | null }>;
 }): CatalogProduct {
+  product = canonicalProductStory(product);
   const image = product.images[0] ?? null;
   return {
     id: product.id,

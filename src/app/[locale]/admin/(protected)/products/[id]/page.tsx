@@ -1,3 +1,4 @@
+import { productAudience } from "@/lib/product-audience";
 import Link from "next/link";
 
 import { ArrowRight, ExternalLink, History } from "lucide-react";
@@ -160,6 +161,7 @@ export default async function EditAdminProductPage({
   const value: AdminProductFormValue = {
     id: product.id,
     collectionId: product.collectionId,
+    audience: productAudience(product.specifications),
     slug: product.slug,
     sku: product.sku ?? "",
     nameFa: product.nameFa,

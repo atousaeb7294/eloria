@@ -1,10 +1,12 @@
+import type { ProductAudience } from "@/lib/product-audience";
 import { ELORIA_GUARDIANS } from "@/lib/eloria-mythology";
 import {
   ELORIA_PRODUCT_LEGENDS,
+  ELORIA_MEN_PRODUCT_LEGENDS,
   type CanonicalProductLegend,
 } from "@/lib/eloria-product-legend-source";
 
-type ProductMythInput = { nameFa: string; nameEn?: string; material?: string };
+type ProductMythInput = { nameFa: string; nameEn?: string; material?: string; audience?: ProductAudience };
 
 export type ProductWorldProfile = {
   characterNameFa: string;
@@ -81,7 +83,7 @@ function toProductMyth(
       clothingFa: character.clothingFa,
       accessoryFa: character.accessoryFa,
       relicMeaningFa: `«${productNameFa}» یادگار فیزیکی انتخاب اخلاقی ${character.nameFa} در افسانهٔ پنهان اوست.`,
-      relicMeaningEn: `“${productNameEn}” is the physical relic of ${character.nameEn}’s moral choice in her hidden legend.`,
+      relicMeaningEn: `“${productNameEn}” is the physical relic of ${character.nameEn}’s moral choice in their hidden legend.`,
       motherLegendAnchor: "seven-guardians-first-covenant",
       guardianNameFa: guardian.nameFa,
       guardianNameEn: guardian.nameEn,
@@ -99,7 +101,7 @@ function toProductMyth(
   };
 }
 
-/** Only these 20 canonical young and middle-aged women may feed product myths. */
+/** Keep pools separate: men’s legends may only appear on explicitly marked men’s products. */
 export const ELORIA_MYTH_LIBRARY: readonly ProductMythOutput[] =
   ELORIA_PRODUCT_LEGENDS.map((character) =>
     toProductMyth(character, {
@@ -108,19 +110,26 @@ export const ELORIA_MYTH_LIBRARY: readonly ProductMythOutput[] =
     }),
   );
 
-function stableIndex(value: string): number {
+export const ELORIA_MEN_MYTH_LIBRARY = ELORIA_MEN_PRODUCT_LEGENDS.map(character =>
+  toProductMyth(character, { nameFa: character.nameFa, nameEn: character.nameEn, audience: "MEN" }));
+
+function pool(input: ProductMythInput) {
+  return input.audience === "MEN" ? ELORIA_MEN_PRODUCT_LEGENDS : ELORIA_PRODUCT_LEGENDS;
+}
+
+function stableIndex(value: string, length: number): number {
   let hash = 2166136261;
   for (const char of value) {
     hash ^= char.charCodeAt(0);
     hash = Math.imul(hash, 16777619);
   }
-  return (hash >>> 0) % ELORIA_PRODUCT_LEGENDS.length;
+  return (hash >>> 0) % length;
 }
 
 export function generateProductMyth(input: ProductMythInput): ProductMythOutput {
   return toProductMyth(
-    ELORIA_PRODUCT_LEGENDS[
-      stableIndex(`${input.nameFa}|${input.nameEn ?? ""}|${input.material ?? ""}`)
+    pool(input)[
+      stableIndex(`${input.nameFa}|${input.nameEn ?? ""}|${input.material ?? ""}`, pool(input).length)
     ],
     input,
   );
@@ -130,7 +139,7 @@ export function getProductMythByKey(
   mythKey: string,
   input: ProductMythInput,
 ): ProductMythOutput | null {
-  const character = ELORIA_PRODUCT_LEGENDS.find(
+  const character = pool(input).find(
     (candidate) => candidate.key === mythKey,
   );
   return character ? toProductMyth(character, input) : null;
@@ -140,12 +149,13 @@ export function generateUnusedProductMyth(
   input: ProductMythInput,
   usedKeys: ReadonlySet<string>,
 ): ProductMythOutput {
+  const characters = pool(input);
   const start = stableIndex(
-    `${input.nameFa}|${input.nameEn ?? ""}|${input.material ?? ""}`,
+    `${input.nameFa}|${input.nameEn ?? ""}|${input.material ?? ""}`, characters.length,
   );
-  for (let offset = 0; offset < ELORIA_PRODUCT_LEGENDS.length; offset += 1) {
+  for (let offset = 0; offset < characters.length; offset += 1) {
     const character =
-      ELORIA_PRODUCT_LEGENDS[(start + offset) % ELORIA_PRODUCT_LEGENDS.length];
+      characters[(start + offset) % characters.length];
     if (!usedKeys.has(character.key)) return toProductMyth(character, input);
   }
   throw new Error("ELORIA_MYTH_LIBRARY_EXHAUSTED");

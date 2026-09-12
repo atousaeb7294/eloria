@@ -61,6 +61,7 @@ const fallbackCollections: CollectionCard[] = [
 ];
 
 const descriptions = {
+  men: { fa: "آثاری برای آقایان؛ با روایت شخصیت‌های مرد جهان الوریا", en: "Creations for men, carrying stories of Eloria’s male characters" },
   necklaces: {
     fa: "روایت‌هایی آویخته از طلا، نقره، اصالت و افسانه",
     en: "Stories suspended in gold, silver, heritage and legend",
@@ -177,7 +178,7 @@ export default async function CollectionsPage({ params }: CollectionsPageProps) 
         </header>
 
         <div className="mt-14 grid gap-8 md:grid-cols-2 xl:grid-cols-3">
-          {collections.map((collection, index) => {
+          {[...collections.filter(c => c.slug !== "men"), { id: "men", slug: "men", nameFa: "گنجینهٔ آقایان", nameEn: "Men’s Treasury", imageUrl: "/images/collections/necklaces.webp", productCount: null }].map((collection, index) => {
             const title = isPersian ? collection.nameFa : collection.nameEn;
             const description = descriptionForCollection(
               collection.slug,
@@ -241,7 +242,11 @@ export default async function CollectionsPage({ params }: CollectionsPageProps) 
                       {description}
                     </p>
 
-                    <div className="mt-6 grid gap-3">
+                    {collection.slug === "men" ? (
+                      <Link href={`/${locale}/collections/men`} className="mt-6 flex min-h-14 items-center justify-center rounded-full border border-[#d9b85f]/48 bg-[#d9b85f]/10 px-5 text-sm text-[#f5e2a7] transition hover:bg-[#d9b85f]/20">
+                        {isPersian ? "کشف آثار آقایان" : "Explore men’s creations"}
+                      </Link>
+                    ) : <div className="mt-6 grid gap-3">
                       <Link
                         href={`/${locale}/collections/${collection.slug}/gold`}
                         className="group/gold relative flex min-h-14 items-center justify-between overflow-hidden rounded-full border border-[#d9b85f]/48 bg-[linear-gradient(100deg,rgba(95,67,15,0.2),rgba(221,184,81,0.27),rgba(95,67,15,0.2))] py-2 pe-2 ps-5 text-xs text-[#f5e2a7] transition duration-300 hover:-translate-y-0.5 hover:border-[#efd27d]/85 hover:shadow-[0_0_28px_rgba(217,181,84,0.14)]"
@@ -287,7 +292,7 @@ export default async function CollectionsPage({ params }: CollectionsPageProps) 
                           />
                         </span>
                       </Link>
-                    </div>
+                    </div>}
                   </div>
                 </article>
               </InteractiveTiltCard>

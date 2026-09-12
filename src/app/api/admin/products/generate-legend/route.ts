@@ -37,7 +37,7 @@ export async function POST(request: Request) {
       );
     }
 
-    const legend = await generateProductMyth({ nameFa, nameEn, material });
+    const legend = await generateProductMyth({ nameFa, nameEn, material, audience: product.audience === "MEN" ? "MEN" : "WOMEN" });
     return NextResponse.json(
       { success: true, legend },
       { status: 200, headers: { "Cache-Control": "no-store" } },

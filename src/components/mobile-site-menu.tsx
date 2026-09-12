@@ -400,6 +400,9 @@ export function MobileSiteMenu() {
                 </div>
 
                 <div className="grid grid-cols-3 gap-2">
+                  <Link href={`/${locale}/collections/men`} onClick={closeMenu} className="flex min-h-[76px] items-center justify-center rounded-[0.95rem] border border-[#dfc16f]/30 px-2 text-center text-xs text-[#f0d891]">
+                    {isPersian ? "گنجینهٔ آقایان" : "Men’s Treasury"}
+                  </Link>
                   {categories.map((category) => {
                     const Icon = category.icon;
 

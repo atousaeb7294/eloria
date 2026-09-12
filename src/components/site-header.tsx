@@ -405,6 +405,9 @@ export function SiteHeader({ locale }: SiteHeaderProps) {
                         </Link>
 
                         <div className="space-y-2">
+                          <Link href={`/${resolvedLocale}/collections/men`} onClick={() => setWorldOpen(false)} className="block rounded-2xl border border-[#d9b85f]/25 px-5 py-4 text-[#ead8aa] hover:bg-white/5">
+                            {resolvedLocale === "fa" ? "گنجینهٔ آقایان" : "Men’s Treasury"}
+                          </Link>
                           {collectionItems.map((item, index) => {
                             const Icon = item.icon;
 

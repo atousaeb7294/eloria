@@ -21,6 +21,7 @@ export default async function AdminSupportPage({
         <p className="mt-2 max-w-3xl text-sm leading-7 text-[#9f9279]">این صندوق به گفت‌وگوی پایین فروشگاه متصل است. باز بودن همین صفحه، وضعیت واقعی آنلاین بودن پشتیبان را برای مشتری‌ها فعال می‌کند.</p>
       </header>
 
+      <p className="rounded-xl border border-[#d9b85f]/20 p-4 text-sm leading-7 text-[#d5c7a7]">درخواست‌های پیش‌سفارش با عنوان [PREORDER] در همین صندوق ثبت می‌شوند. برای تأیید تأمین، زمان تحویل و قیمت با شمارهٔ درج‌شده تماس بگیرید؛ این درخواست‌ها پرداخت یا رزرو موجودی ندارند.</p>
       <AdminSupportInboxClient />
     </div>
   );

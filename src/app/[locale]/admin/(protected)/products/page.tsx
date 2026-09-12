@@ -213,19 +213,19 @@ export default async function AdminProductsPage({
 
       {singleValue(raw.legends) === "synced" ? (
         <div className="rounded-2xl border border-emerald-300/20 bg-emerald-950/20 px-5 py-4 text-sm text-emerald-100">
-          افسانه‌های پنهان همه محصولات با زنان جوان و میانسال رسمی الوریا همگام شدند.
+          افسانه‌های پنهان همه محصولات با شخصیت‌های رسمی گروه بانوان و آقایان همگام شدند.
         </div>
       ) : null}
 
       {singleValue(raw.legends) === "too-many" ? (
         <div className="rounded-2xl border border-amber-300/20 bg-amber-950/20 px-5 py-4 text-sm text-amber-100">
-          تعداد محصولات از ۲۰ افسانه رسمی بیشتر است؛ برای جلوگیری از تکرار، چیزی تغییر نکرد.
+          تعداد محصولات یکی از گروه‌ها از ظرفیت افسانه‌های همان گروه بیشتر است؛ برای جلوگیری از تکرار، چیزی تغییر نکرد.
         </div>
       ) : null}
 
       <section className="rounded-[22px] border border-[#d0b359]/15 bg-[#041d15]/82 p-4">
         <p className="text-sm leading-7 text-[#cdbd9e]">
-          این کار افسانه‌های قدیمی محصولات را با مجموعه رسمی زنان جوان و میانسال الوریا جایگزین می‌کند.
+          این کار افسانه‌های قدیمی محصولات را با مجموعه رسمی متناسب با گروه بانوان یا آقایان جایگزین می‌کند.
         </p>
         <form
           action={reassignCanonicalProductLegendsAction.bind(null, locale)}

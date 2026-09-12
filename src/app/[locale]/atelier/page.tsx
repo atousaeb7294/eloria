@@ -1,3 +1,5 @@
+import { canonicalProductStory } from "@/lib/canonical-product-story";
+import { productAudience } from "@/lib/product-audience";
 import type { Metadata } from "next";
 
 import Image from "next/image";
@@ -66,6 +68,7 @@ export default async function AtelierPage({
         nameFa: true,
         nameEn: true,
         material: true,
+      specifications: true,
         mythKey: true,
         mythNameFa: true,
         mythNameEn: true,
@@ -150,11 +153,11 @@ export default async function AtelierPage({
                     src={guardian.imageUrl}
                     alt={fa ? `پرترهٔ ${guardian.nameFa}، ${guardian.titleFa}` : `Portrait of ${guardian.nameEn}, ${guardian.titleEn}`}
                     fill
-                    sizes="(max-width:640px) 50vw,(max-width:1280px) 25vw,300px"
-                    className="object-cover"
+                    sizes="(max-width:640px) 100vw,(max-width:1280px) 50vw,340px"
+                    className="object-contain"
                     priority={guardian.id === "yalda"}
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-[#03130e] via-transparent to-transparent" />
+
                   <p className="absolute bottom-4 start-4 rounded-full border border-white/15 bg-[#04150f]/75 px-3 py-1.5 text-[10px] text-[#f0ddab] backdrop-blur-sm">
                     {fa ? guardian.realmFa : guardian.realmEn}
                   </p>
@@ -181,19 +184,22 @@ export default async function AtelierPage({
             </p>
           </div>
           <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
-            {products.map((product) => {
+            {products.map((record) => {
+              const product = canonicalProductStory(record);
               const myth =
                 (product.mythKey
                   ? getProductMythByKey(product.mythKey, {
                       nameFa: product.nameFa,
                       nameEn: product.nameEn,
                       material: product.material,
+                      audience: productAudience(product.specifications),
                     })
                   : null) ??
                 generateProductMyth({
                   nameFa: product.nameFa,
                   nameEn: product.nameEn,
                   material: product.material,
+                      audience: productAudience(product.specifications),
                 });
               const profile = myth.worldProfile;
               const imageUrl = product.worldSceneImageUrl || product.characterImageUrl || product.images[0]?.imageUrl;

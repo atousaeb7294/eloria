@@ -1,4 +1,4 @@
-﻿import { isPaymentEnabled } from "@/lib/runtime-features";
+import { isPaymentEnabled } from "@/lib/runtime-features";
 
 const ENDPOINTS = {
   request: "https://gateway.zibal.ir/v1/request",
@@ -18,7 +18,7 @@ function endpoint(kind: keyof typeof ENDPOINTS): string {
   const url = new URL(value);
   const expected = new URL(ENDPOINTS[kind]);
   if (url.origin !== expected.origin || url.pathname !== expected.pathname || url.search || url.hash || url.username || url.password) {
-    throw new ZibalError("Ù†Ø´Ø§Ù†ÛŒ Ø¯Ø±Ú¯Ø§Ù‡ Ø¨Ø§ÛŒØ¯ Ø¯Ù‚ÛŒÙ‚Ø§Ù‹ Ù†Ø´Ø§Ù†ÛŒ Ø±Ø³Ù…ÛŒ Ø²ÛŒØ¨Ø§Ù„ Ø¨Ø§Ø´Ø¯.");
+    throw new ZibalError("نشانی درگاه باید دقیقاً نشانی رسمی زیبال باشد.");
   }
   return url.href;
 }
@@ -26,7 +26,7 @@ function endpoint(kind: keyof typeof ENDPOINTS): string {
 function merchant(): string {
   const value = process.env.ZIBAL_MERCHANT?.trim() || "";
   if (!value || (process.env.NODE_ENV === "production" && value.toLowerCase() === "zibal")) {
-    throw new ZibalError("Ø´Ù†Ø§Ø³Ù‡ Ù¾Ø°ÛŒØ±Ù†Ø¯Ù‡ ÙˆØ§Ù‚Ø¹ÛŒ Ø²ÛŒØ¨Ø§Ù„ ØªÙ†Ø¸ÛŒÙ… Ù†Ø´Ø¯Ù‡ Ø§Ø³Øª.");
+    throw new ZibalError("شناسه پذیرنده واقعی زیبال تنظیم نشده است.");
   }
   return value;
 }
@@ -38,9 +38,9 @@ export function isZibalConfigured(): boolean {
 }
 
 export function zibalAmountRial(toman: string): number {
-  if (!/^\d+$/.test(toman)) throw new ZibalError("Ù…Ø¨Ù„Øº Ù¾Ø±Ø¯Ø§Ø®Øª Ù…Ø¹ØªØ¨Ø± Ù†ÛŒØ³Øª.");
+  if (!/^\d+$/.test(toman)) throw new ZibalError("مبلغ پرداخت معتبر نیست.");
   const rial = BigInt(toman) * 10n;
-  if (rial <= 0n || rial > BigInt(Number.MAX_SAFE_INTEGER)) throw new ZibalError("Ù…Ø¨Ù„Øº Ù¾Ø±Ø¯Ø§Ø®Øª Ø®Ø§Ø±Ø¬ Ø§Ø² Ù…Ø­Ø¯ÙˆØ¯Ù‡ Ù…Ø¬Ø§Ø² Ø§Ø³Øª.");
+  if (rial <= 0n || rial > BigInt(Number.MAX_SAFE_INTEGER)) throw new ZibalError("مبلغ پرداخت خارج از محدوده مجاز است.");
   return Number(rial);
 }
 
@@ -54,72 +54,65 @@ async function post(kind: "request" | "verify" | "inquiry", body: Record<string,
       body: JSON.stringify({ merchant: merchant(), ...body }), cache: "no-store",
       signal: AbortSignal.timeout(timeout),
     });
-    if (!response.ok) throw new ZibalError("Ù¾Ø§Ø³Ø® Ø³Ø±ÙˆÛŒØ³ Ø²ÛŒØ¨Ø§Ù„ Ù†Ø§Ù…ÙˆÙÙ‚ Ø¨ÙˆØ¯Ø› Ø¯ÙˆØ¨Ø§Ø±Ù‡ ØªÙ„Ø§Ø´ Ú©Ù†ÛŒØ¯.", response.status);
+    if (!response.ok) throw new ZibalError("پاسخ سرویس زیبال ناموفق بود؛ دوباره تلاش کنید.", response.status);
     const data: unknown = await response.json();
-    console.log('ZIBAL RAW RESPONSE:', data);
-    if (!data || typeof data !== "object" || Array.isArray(data)) throw new ZibalError("Ù¾Ø§Ø³Ø® Ø²ÛŒØ¨Ø§Ù„ Ù…Ø¹ØªØ¨Ø± Ù†ÛŒØ³Øª.");
+    if (!data || typeof data !== "object" || Array.isArray(data)) throw new ZibalError("پاسخ زیبال معتبر نیست.");
     return data as GatewayResponse;
   } catch (error) {
     if (error instanceof ZibalError) throw error;
-    throw new ZibalError("Ø§Ø±ØªØ¨Ø§Ø· Ø¨Ø§ Ø²ÛŒØ¨Ø§Ù„ Ø¨Ø±Ù‚Ø±Ø§Ø± Ù†Ø´Ø¯Ø› Ø§ØªØµØ§Ù„ Ø³Ø±ÙˆØ± Ùˆ Ø²Ù…Ø§Ù† Ù¾Ø§Ø³Ø® Ø¯Ø±Ú¯Ø§Ù‡ Ø±Ø§ Ø¨Ø±Ø±Ø³ÛŒ Ú©Ù†ÛŒØ¯.");
+    throw new ZibalError("ارتباط با زیبال برقرار نشد؛ اتصال سرور و زمان پاسخ درگاه را بررسی کنید.");
   }
 }
 
 const resultMessages: Record<number, string> = {
-  102: "Ø´Ù†Ø§Ø³Ù‡ Ù¾Ø°ÛŒØ±Ù†Ø¯Ù‡ Ø²ÛŒØ¨Ø§Ù„ Ù¾ÛŒØ¯Ø§ Ù†Ø´Ø¯Ø› ØªÙ†Ø¸ÛŒÙ… ZIBAL_MERCHANT Ø±Ø§ Ø¨Ø±Ø±Ø³ÛŒ Ú©Ù†ÛŒØ¯.",
-  103: "Ù¾Ø°ÛŒØ±Ù†Ø¯Ù‡ Ø²ÛŒØ¨Ø§Ù„ ØºÛŒØ±ÙØ¹Ø§Ù„ Ø§Ø³ØªØ› ÙˆØ¶Ø¹ÛŒØª Ø¯Ø±Ú¯Ø§Ù‡ Ø±Ø§ Ø¯Ø± Ù¾Ù†Ù„ Ø²ÛŒØ¨Ø§Ù„ Ø¨Ø±Ø±Ø³ÛŒ Ú©Ù†ÛŒØ¯.",
-  104: "Ù¾Ø°ÛŒØ±Ù†Ø¯Ù‡ Ø²ÛŒØ¨Ø§Ù„ Ù†Ø§Ù…Ø¹ØªØ¨Ø± Ø§Ø³Øª.",
-  105: "Ù…Ø¨Ù„Øº Ù¾Ø±Ø¯Ø§Ø®Øª Ú©Ù…ØªØ± Ø§Ø² Ø­Ø¯ Ù…Ø¬Ø§Ø² Ø²ÛŒØ¨Ø§Ù„ Ø§Ø³Øª.",
-  106: "Ù†Ø´Ø§Ù†ÛŒ Ø¨Ø§Ø²Ú¯Ø´Øª Ø¨Ø§ Ø¯Ø§Ù…Ù†Ù‡ Ø«Ø¨Øªâ€ŒØ´Ø¯Ù‡ Ø¯Ø± Ø²ÛŒØ¨Ø§Ù„ Ù…Ø·Ø§Ø¨Ù‚Øª Ù†Ø¯Ø§Ø±Ø¯.",
-  113: "Ù…Ø¨Ù„Øº Ù¾Ø±Ø¯Ø§Ø®Øª Ø¨ÛŒØ´ Ø§Ø² Ø­Ø¯ Ù…Ø¬Ø§Ø² Ø²ÛŒØ¨Ø§Ù„ Ø§Ø³Øª.",
+  102: "شناسه پذیرنده زیبال پیدا نشد؛ تنظیم ZIBAL_MERCHANT را بررسی کنید.",
+  103: "پذیرنده زیبال غیرفعال است؛ وضعیت درگاه را در پنل زیبال بررسی کنید.",
+  104: "پذیرنده زیبال نامعتبر است.",
+  105: "مبلغ پرداخت کمتر از حد مجاز زیبال است.",
+  106: "نشانی بازگشت با دامنه ثبت‌شده در زیبال مطابقت ندارد.",
+  113: "مبلغ پرداخت بیش از حد مجاز زیبال است.",
 };
 
-export async function requestZibalPayment(input: any) {
-  console.log("========== ZIBAL FUNCTION CALLED ==========", {
-    amountToman: input.amountToman,
-    callbackUrl: input.callbackUrl,
-  });
-  
-  
+export async function requestZibalPayment(input: { amountToman: string; callbackUrl: string; description: string; mobile?: string | null; email?: string | null }) {
   const callback = new URL(input.callbackUrl);
-  if (process.env.NODE_ENV === "production" && callback.protocol !== "https:") throw new ZibalError("Ù†Ø´Ø§Ù†ÛŒ Ø¨Ø§Ø²Ú¯Ø´Øª Ø¨Ø§ÛŒØ¯ HTTPS Ø¨Ø§Ø´Ø¯.");
+  if (process.env.NODE_ENV === "production" && callback.protocol !== "https:") throw new ZibalError("نشانی بازگشت باید HTTPS باشد.");
   const data = await post("request", {
     amount: zibalAmountRial(input.amountToman), description: input.description,
     callbackUrl: input.callbackUrl, ...(input.mobile ? { mobile: input.mobile } : {}),
   });
   const code = Number(data.result);
   if (code !== 100 || !/^\d+$/.test(String(data.trackId)) || (typeof data.trackId === "number" && !Number.isSafeInteger(data.trackId))) {
-    throw new ZibalError(resultMessages[code] || "Ø´Ø±ÙˆØ¹ Ù¾Ø±Ø¯Ø§Ø®Øª Ø²ÛŒØ¨Ø§Ù„ Ù†Ø§Ù…ÙˆÙÙ‚ Ø¨ÙˆØ¯.", code);
+    throw new ZibalError(resultMessages[code] || "شروع پرداخت زیبال ناموفق بود.", code);
   }
-  return { authority: String(data.trackId), code, message: "Ø¯Ø±Ø®ÙˆØ§Ø³Øª Ø²ÛŒØ¨Ø§Ù„ Ø§ÛŒØ¬Ø§Ø¯ Ø´Ø¯." };
+  return { authority: String(data.trackId), code, message: "درخواست زیبال ایجاد شد." };
 }
 
 export async function verifyZibalPayment(input: { authority: string; amountToman: string }) {
-  if (!/^\d+$/.test(input.authority)) throw new ZibalError("Ø´Ù†Ø§Ø³Ù‡ ØªØ±Ø§Ú©Ù†Ø´ Ø²ÛŒØ¨Ø§Ù„ Ù…Ø¹ØªØ¨Ø± Ù†ÛŒØ³Øª.");
+  if (!/^\d+$/.test(input.authority)) throw new ZibalError("شناسه تراکنش زیبال معتبر نیست.");
   const expected = zibalAmountRial(input.amountToman);
   let data = await post("verify", { trackId: input.authority });
   // 201 means already verified. Confirm status and amount through server inquiry.
   if (Number(data.result) === 201) {
     data = await post("inquiry", { trackId: input.authority });
-    if (Number(data.result) !== 100 || Number(data.status) !== 2) throw new ZibalError("Ø§Ø³ØªØ¹Ù„Ø§Ù… ØªØ±Ø§Ú©Ù†Ø´ ØªØ£ÛŒÛŒØ¯Ø´Ø¯Ù‡ Ø²ÛŒØ¨Ø§Ù„ Ù†Ø§Ù…ÙˆÙÙ‚ Ø¨ÙˆØ¯.", 201);
+    if (Number(data.result) !== 100 || Number(data.status) !== 2) throw new ZibalError("استعلام تراکنش تأییدشده زیبال ناموفق بود.", 201);
   } else if (Number(data.result) !== 100) {
-    throw new ZibalError("ØªØ£ÛŒÛŒØ¯ Ù¾Ø±Ø¯Ø§Ø®Øª Ø²ÛŒØ¨Ø§Ù„ Ù†Ø§Ù…ÙˆÙÙ‚ Ø¨ÙˆØ¯Ø› Ù†ÛŒØ§Ø² Ø¨Ù‡ ØªÙ„Ø§Ø´ Ù…Ø¬Ø¯Ø¯ Ø¯Ø§Ø±Ø¯.", Number(data.result));
+    throw new ZibalError("تأیید پرداخت زیبال ناموفق بود؛ نیاز به تلاش مجدد دارد.", Number(data.result));
   }
   const amount = String(data.amount ?? "");
   if (!/^\d+$/.test(amount) || BigInt(amount) !== BigInt(expected)) {
     // A successful provider response with missing/mismatched money needs review, never fulfilment.
-    throw new ZibalError("Ù…Ø¨Ù„Øº ØªØ£ÛŒÛŒØ¯Ø´Ø¯Ù‡ Ø²ÛŒØ¨Ø§Ù„ Ø¨Ø§ Ø³ÙØ§Ø±Ø´ Ù…Ø·Ø§Ø¨Ù‚Øª Ù†Ø¯Ø§Ø±Ø¯Ø› Ø¨Ø±Ø±Ø³ÛŒ Ù…Ø§Ù„ÛŒ Ù„Ø§Ø²Ù… Ø§Ø³Øª.", 100);
+    throw new ZibalError("مبلغ تأییدشده زیبال با سفارش مطابقت ندارد؛ بررسی مالی لازم است.", 100);
   }
   const referenceId = String(data.refNumber ?? "");
   if (!/^\d+$/.test(referenceId) || BigInt(referenceId) <= 0n || (typeof data.refNumber === "number" && !Number.isSafeInteger(data.refNumber))) {
-    throw new ZibalError("Ø´Ù†Ø§Ø³Ù‡ Ù…Ø±Ø¬Ø¹ Ù…Ø¹ØªØ¨Ø± Ø¯Ø± Ù¾Ø§Ø³Ø® Ù…ÙˆÙÙ‚ Ø²ÛŒØ¨Ø§Ù„ Ù…ÙˆØ¬ÙˆØ¯ Ù†ÛŒØ³ØªØ› Ø¨Ø±Ø±Ø³ÛŒ Ù…Ø§Ù„ÛŒ Ù„Ø§Ø²Ù… Ø§Ø³Øª.", 100);
+    throw new ZibalError("شناسه مرجع معتبر در پاسخ موفق زیبال موجود نیست؛ بررسی مالی لازم است.", 100);
   }
-  return { code: 100, message: "Ù¾Ø±Ø¯Ø§Ø®Øª ØªØ£ÛŒÛŒØ¯ Ø´Ø¯.", referenceId,
+  return { code: 100, message: "پرداخت تأیید شد.", referenceId,
     fee: Number(data.fee ?? 0), feeType: String(data.fee_type ?? "") };
 }
 
 export function zibalStartUrl(trackId: string): string {
-  if (!/^\d+$/.test(trackId)) throw new ZibalError("Ø´Ù†Ø§Ø³Ù‡ ØªØ±Ø§Ú©Ù†Ø´ Ù…Ø¹ØªØ¨Ø± Ù†ÛŒØ³Øª.");
+  if (!/^\d+$/.test(trackId)) throw new ZibalError("شناسه تراکنش معتبر نیست.");
   return `${endpoint("start")}${trackId}`;
 }
 
