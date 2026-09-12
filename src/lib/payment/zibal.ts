@@ -73,7 +73,13 @@ const resultMessages: Record<number, string> = {
   113: "Ù…Ø¨Ù„Øº Ù¾Ø±Ø¯Ø§Ø®Øª Ø¨ÛŒØ´ Ø§Ø² Ø­Ø¯ Ù…Ø¬Ø§Ø² Ø²ÛŒØ¨Ø§Ù„ Ø§Ø³Øª.",
 };
 
-export async function requestZibalPayment(input: {
+export async function requestZibalPayment(input: any) {
+  console.log("========== ZIBAL FUNCTION CALLED ==========", {
+    amountToman: input.amountToman,
+    callbackUrl: input.callbackUrl,
+  });
+  
+  input: {
   amountToman: string; description: string; callbackUrl: string;
   mobile?: string | null; email?: string | null;
 }) {
@@ -118,4 +124,5 @@ export function zibalStartUrl(trackId: string): string {
   if (!/^\d+$/.test(trackId)) throw new ZibalError("Ø´Ù†Ø§Ø³Ù‡ ØªØ±Ø§Ú©Ù†Ø´ Ù…Ø¹ØªØ¨Ø± Ù†ÛŒØ³Øª.");
   return `${endpoint("start")}${trackId}`;
 }
+
 
