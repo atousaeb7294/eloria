@@ -56,6 +56,7 @@ async function post(kind: "request" | "verify" | "inquiry", body: Record<string,
     });
     if (!response.ok) throw new ZibalError("Ù¾Ø§Ø³Ø® Ø³Ø±ÙˆÛŒØ³ Ø²ÛŒØ¨Ø§Ù„ Ù†Ø§Ù…ÙˆÙÙ‚ Ø¨ÙˆØ¯Ø› Ø¯ÙˆØ¨Ø§Ø±Ù‡ ØªÙ„Ø§Ø´ Ú©Ù†ÛŒØ¯.", response.status);
     const data: unknown = await response.json();
+    console.log('ZIBAL RAW RESPONSE:', data);
     if (!data || typeof data !== "object" || Array.isArray(data)) throw new ZibalError("Ù¾Ø§Ø³Ø® Ø²ÛŒØ¨Ø§Ù„ Ù…Ø¹ØªØ¨Ø± Ù†ÛŒØ³Øª.");
     return data as GatewayResponse;
   } catch (error) {
@@ -121,6 +122,4 @@ export function zibalStartUrl(trackId: string): string {
   if (!/^\d+$/.test(trackId)) throw new ZibalError("Ø´Ù†Ø§Ø³Ù‡ ØªØ±Ø§Ú©Ù†Ø´ Ù…Ø¹ØªØ¨Ø± Ù†ÛŒØ³Øª.");
   return `${endpoint("start")}${trackId}`;
 }
-
-
 
