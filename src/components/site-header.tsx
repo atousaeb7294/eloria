@@ -20,12 +20,9 @@ import { CustomerAccountHeaderButton } from "@/components/customer-account-heade
 import { FloatingLogo } from "@/components/floating-logo";
 
 import {
-  BraceletRuneIcon,
   ContactRuneIcon,
-  EarringRuneIcon,
   HomeRuneIcon,
   type LuxuryIconProps,
-  NecklaceRuneIcon,
   WorldRuneIcon,
 } from "@/components/luxury-icons";
 
@@ -38,7 +35,7 @@ import { GoldRuneIcon, SilverRuneIcon } from "@/components/material-rune-icons";
 type CollectionMenuItem = {
   label: string;
   slug: string;
-
+  href: string;
   icon: ComponentType<LuxuryIconProps>;
 };
 
@@ -167,27 +164,22 @@ export function SiteHeader({ locale }: SiteHeaderProps) {
 
   const collectionItems: CollectionMenuItem[] = [
     {
-      label: labels.necklaces,
-
-      slug: "necklaces",
-
-      icon: NecklaceRuneIcon,
+      label: isPersian ? "گنجینهٔ طلا" : "Gold Treasury",
+      slug: "gold",
+      href: `/${resolvedLocale}/products?material=gold`,
+      icon: GoldRuneIcon,
     },
-
     {
-      label: labels.bracelets,
-
-      slug: "bracelets",
-
-      icon: BraceletRuneIcon,
+      label: isPersian ? "گنجینهٔ نقره" : "Silver Treasury",
+      slug: "silver",
+      href: `/${resolvedLocale}/products?material=silver`,
+      icon: SilverRuneIcon,
     },
-
     {
-      label: labels.earrings,
-
-      slug: "earrings",
-
-      icon: EarringRuneIcon,
+      label: isPersian ? "گنجینهٔ آقایان" : "Men’s Treasury",
+      slug: "men",
+      href: `/${resolvedLocale}/collections/men`,
+      icon: WorldRuneIcon,
     },
   ];
 
@@ -294,6 +286,9 @@ export function SiteHeader({ locale }: SiteHeaderProps) {
               <div
                 ref={worldMenuRef}
                 className="relative"
+                onMouseEnter={() => setWorldOpen(true)}
+                onMouseLeave={() => setWorldOpen(false)}
+                onFocusCapture={() => setWorldOpen(true)}
               >
                 <div
                   className={[
@@ -405,9 +400,6 @@ export function SiteHeader({ locale }: SiteHeaderProps) {
                         </Link>
 
                         <div className="space-y-2">
-                          <Link href={`/${resolvedLocale}/collections/men`} onClick={() => setWorldOpen(false)} className="block rounded-2xl border border-[#d9b85f]/25 px-5 py-4 text-[#ead8aa] hover:bg-white/5">
-                            {resolvedLocale === "fa" ? "گنجینهٔ آقایان" : "Men’s Treasury"}
-                          </Link>
                           {collectionItems.map((item, index) => {
                             const Icon = item.icon;
 
@@ -429,43 +421,14 @@ export function SiteHeader({ locale }: SiteHeaderProps) {
 
                                   duration: 0.25,
                                 }}
-                                className="rounded-2xl border border-white/[0.06] bg-white/[0.025] p-2.5"
+                                className="rounded-2xl border border-white/[0.06] bg-white/[0.025] p-1.5"
                               >
-                                <div className="flex items-center gap-3 px-1 pb-2">
+                                <Link href={item.href} onClick={() => setWorldOpen(false)} className="flex items-center gap-3 rounded-xl px-2 py-3 transition hover:bg-white/[0.045]">
                                   <span className="grid size-10 place-items-center rounded-xl border border-[#e1c16f]/25 bg-[#d4b258]/[0.055] text-[#e8cb7c]">
                                     <Icon className="size-6" />
                                   </span>
-
-                                  <Link
-                                    href={`${collectionsHref}#${item.slug}`}
-                                    onClick={() => setWorldOpen(false)}
-                                    className="text-sm font-medium text-white/75 transition hover:text-[#f1d790]"
-                                  >
-                                    {item.label}
-                                  </Link>
-                                </div>
-
-                                <div className="grid grid-cols-2 gap-2">
-                                  <Link
-                                    href={`/${resolvedLocale}/collections/${item.slug}/gold`}
-                                    onClick={() => setWorldOpen(false)}
-                                    className="flex min-h-10 items-center justify-center gap-2 rounded-xl border border-[#d9b85f]/30 bg-[#d4b258]/[0.07] px-2 text-[10px] text-[#efd995] transition hover:border-[#efd17a]/58 hover:bg-[#d4b258]/[0.11]"
-                                  >
-                                    <GoldRuneIcon className="h-4 w-4" />
-
-                                    <span>{isPersian ? "طلا" : "Gold"}</span>
-                                  </Link>
-
-                                  <Link
-                                    href={`/${resolvedLocale}/collections/${item.slug}/silver`}
-                                    onClick={() => setWorldOpen(false)}
-                                    className="flex min-h-10 items-center justify-center gap-2 rounded-xl border border-[#d8e2e5]/22 bg-[#dce6e9]/[0.045] px-2 text-[10px] text-[#dfe8ea] transition hover:border-[#dfe8eb]/42 hover:bg-[#dce6e9]/[0.075]"
-                                  >
-                                    <SilverRuneIcon className="h-4 w-4" />
-
-                                    <span>{isPersian ? "نقره" : "Silver"}</span>
-                                  </Link>
-                                </div>
+                                  <span className="text-sm font-medium text-white/75 transition group-hover:text-[#f1d790]">{item.label}</span>
+                                </Link>
                               </motion.div>
                             );
                           })}

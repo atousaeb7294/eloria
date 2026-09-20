@@ -72,6 +72,10 @@ function formatPercentage(
   ).format(value)}٪`;
 }
 
+function formatMetalWeight(weightMilliGrams: bigint): string {
+  return `${new Intl.NumberFormat("fa-IR", { maximumFractionDigits: 3 }).format(Number(weightMilliGrams) / 1000)} گرم`;
+}
+
 function periodHref(
   locale: string,
   period: FinancePeriod,
@@ -378,6 +382,18 @@ export default async function AdminFinancePage({
       ) : null}
 
       <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+        <article className="rounded-[22px] border border-[#d0b359]/20 bg-[#3b2c08]/20 p-5 shadow-[0_18px_55px_rgba(0,0,0,0.17)]">
+          <p className="text-sm text-[#d8c58e]">حسابرسی طلای فروخته‌شده</p>
+          <p className="mt-3 text-xl font-semibold text-[#f5df98]">{formatMetalWeight(report.metalAudit.gold.weightMilliGrams)}</p>
+          <p className="mt-2 text-xs leading-6 text-[#a99c82]">ارزش فلز هنگام سفارش: {formatAdminMoney(report.metalAudit.gold.valueToman)} · {new Intl.NumberFormat("fa-IR").format(report.metalAudit.gold.itemQuantity)} قلم</p>
+        </article>
+
+        <article className="rounded-[22px] border border-slate-300/15 bg-slate-400/[0.04] p-5 shadow-[0_18px_55px_rgba(0,0,0,0.17)]">
+          <p className="text-sm text-slate-300">حسابرسی نقرهٔ فروخته‌شده</p>
+          <p className="mt-3 text-xl font-semibold text-slate-100">{formatMetalWeight(report.metalAudit.silver.weightMilliGrams)}</p>
+          <p className="mt-2 text-xs leading-6 text-[#a99c82]">ارزش فلز هنگام سفارش: {formatAdminMoney(report.metalAudit.silver.valueToman)} · {new Intl.NumberFormat("fa-IR").format(report.metalAudit.silver.itemQuantity)} قلم</p>
+        </article>
+
         <article className="rounded-[22px] border border-[#d0b359]/15 bg-[#041d15]/82 p-5 shadow-[0_18px_55px_rgba(0,0,0,0.17)]">
           <div className="flex items-start justify-between gap-3">
             <div>

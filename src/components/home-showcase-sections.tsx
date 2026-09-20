@@ -9,8 +9,8 @@ type HomeShowcaseSectionsProps = {
 export function HomeShowcaseSections({ locale }: HomeShowcaseSectionsProps) {
   const isPersian = locale === "fa";
   const copy = isPersian
-    ? { finalEyebrow: "روایت‌های برگزیده الوریا", finalTitle: "هر قطعه، نشانی از یک افسانه" }
-    : { finalEyebrow: "The Eloria collection", finalTitle: "Every creation, a story made to endure" };
+    ? { finalEyebrow: "ویترین زندهٔ الوریا", finalTitle: "هر اثر، یک فصل" }
+    : { finalEyebrow: "The living Eloria edit", finalTitle: "Every creation, a chapter" };
 
   return (
     <div dir={isPersian ? "rtl" : "ltr"} className="relative z-10">

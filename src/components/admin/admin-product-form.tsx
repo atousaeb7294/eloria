@@ -32,6 +32,10 @@ export type AdminProductFormValue = {
   characterImageUrl: string;
   worldSceneImageUrl: string;
   material: "GOLD" | "SILVER";
+  hasGold: boolean;
+  hasSilver: boolean;
+  goldComponentWeight: string;
+  silverComponentWeight: string;
   pricingMode: "DYNAMIC" | "MANUAL";
   price: string;
   compareAtPrice: string;
@@ -135,6 +139,8 @@ export function AdminProductForm({
   value: AdminProductFormValue;
 }) {
   const [selectedMaterial, setSelectedMaterial] = useState(value.material);
+  const [hasGold, setHasGold] = useState(value.hasGold);
+  const [hasSilver, setHasSilver] = useState(value.hasSilver);
   const action: (
     state: AdminProductActionState,
     formData: FormData,
@@ -228,7 +234,7 @@ export function AdminProductForm({
               <option value="MEN">آقایان</option>
             </select>
           </Field>
-          <Field label="گنجینه *">
+          <Field label="نوع اثر *" hint="این گزینه فقط نوع محصول را برای فیلتر تمام آثار مشخص می‌کند؛ گنجینه‌ها بر اساس فلز و مخاطب ساخته می‌شوند.">
             <select
               className={inputClassName}
               defaultValue={value.collectionId}
@@ -236,7 +242,7 @@ export function AdminProductForm({
               required
             >
               <option value="">
-                انتخاب گنجینه
+                انتخاب نوع اثر
               </option>
               {collections.map(
                 (collection) => (
@@ -251,7 +257,7 @@ export function AdminProductForm({
             </select>
           </Field>
 
-          <Field label="جنس اثر">
+          <Field label="فلز مبنای قیمت‌گذاری">
             <select
               className={inputClassName}
               value={selectedMaterial}
@@ -262,6 +268,21 @@ export function AdminProductForm({
               <option value="SILVER">نقره</option>
             </select>
           </Field>
+
+          <div className="md:col-span-2 rounded-2xl border border-[#cfb45f]/18 bg-[#061f17]/65 p-4">
+            <p className="text-sm text-[#ead79f]">ترکیب فلز و عضویت در گنجینه‌ها</p>
+            <p className="mt-1 text-xs leading-6 text-[#9f9278]">هر دو گزینه را برای اثر ترکیبی فعال کنید. اثر به‌صورت هم‌زمان در گنجینهٔ طلا و نقره نمایش داده می‌شود.</p>
+            <div className="mt-4 grid gap-3 sm:grid-cols-2">
+              <label className="flex items-center gap-3 rounded-xl border border-[#d9b85f]/20 p-3 text-sm text-[#e8d39a]">
+                <input name="hasGold" type="checkbox" checked={hasGold} onChange={(event) => setHasGold(event.target.checked)} className="size-4 accent-[#d8ba62]" /> دارای طلا
+              </label>
+              <label className="flex items-center gap-3 rounded-xl border border-[#d8e2e5]/16 p-3 text-sm text-[#dfe8ea]">
+                <input name="hasSilver" type="checkbox" checked={hasSilver} onChange={(event) => setHasSilver(event.target.checked)} className="size-4 accent-[#c9d5d9]" /> دارای نقره
+              </label>
+              {hasGold ? <Field label="وزن طلای به‌کاررفته (گرم)"><input className={inputClassName} defaultValue={value.goldComponentWeight} inputMode="decimal" name="goldComponentWeight" /></Field> : null}
+              {hasSilver ? <Field label="وزن نقرهٔ به‌کاررفته (گرم)"><input className={inputClassName} defaultValue={value.silverComponentWeight} inputMode="decimal" name="silverComponentWeight" /></Field> : null}
+            </div>
+          </div>
 
           <Field label="آدرس تصویر اصلی">
             <input

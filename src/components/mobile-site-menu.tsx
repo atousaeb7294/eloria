@@ -10,15 +10,14 @@ import { useEffect, useState } from "react";
 import { BookOpenText, Menu, Sparkles, UserRound, X } from "lucide-react";
 
 import {
-  BraceletRuneIcon,
   ContactRuneIcon,
-  EarringRuneIcon,
   HomeRuneIcon,
   NecklaceRuneIcon,
   WorldRuneIcon,
 } from "@/components/luxury-icons";
 
 import { LocaleSwitcher } from "@/components/locale-switcher";
+import { GoldRuneIcon, SilverRuneIcon } from "@/components/material-rune-icons";
 
 export function MobileSiteMenu() {
   const pathname = usePathname() ?? "/fa";
@@ -198,19 +197,22 @@ export function MobileSiteMenu() {
 
   const categories = [
     {
-      label: labels.necklaces,
-      slug: "necklaces",
-      icon: NecklaceRuneIcon,
+      label: isPersian ? "گنجینهٔ طلا" : "Gold Treasury",
+      slug: "gold",
+      href: `/${locale}/products?material=gold`,
+      icon: GoldRuneIcon,
     },
     {
-      label: labels.bracelets,
-      slug: "bracelets",
-      icon: BraceletRuneIcon,
+      label: isPersian ? "گنجینهٔ نقره" : "Silver Treasury",
+      slug: "silver",
+      href: `/${locale}/products?material=silver`,
+      icon: SilverRuneIcon,
     },
     {
-      label: labels.earrings,
-      slug: "earrings",
-      icon: EarringRuneIcon,
+      label: isPersian ? "گنجینهٔ آقایان" : "Men’s Treasury",
+      slug: "men",
+      href: `/${locale}/collections/men`,
+      icon: WorldRuneIcon,
     },
   ];
 
@@ -394,22 +396,19 @@ export function MobileSiteMenu() {
               <div className="mt-3 rounded-[1.2rem] border border-[#dfc16c]/15 bg-black/12 p-3">
                 <div className="mb-2 flex items-center justify-between px-1">
                   <p className="text-[10px] uppercase tracking-[0.18em] text-[#e5ca80]/58">
-                    {isPersian ? "دسته‌بندی‌ها" : "Categories"}
+                    {isPersian ? "گنجینه‌ها" : "Treasuries"}
                   </p>
                   <WorldRuneIcon className="size-4 text-[#e1c573]/55" />
                 </div>
 
                 <div className="grid grid-cols-3 gap-2">
-                  <Link href={`/${locale}/collections/men`} onClick={closeMenu} className="flex min-h-[76px] items-center justify-center rounded-[0.95rem] border border-[#dfc16f]/30 px-2 text-center text-xs text-[#f0d891]">
-                    {isPersian ? "گنجینهٔ آقایان" : "Men’s Treasury"}
-                  </Link>
                   {categories.map((category) => {
                     const Icon = category.icon;
 
                     return (
                       <Link
                         key={category.slug}
-                        href={`/${locale}/collections/${category.slug}`}
+                        href={category.href}
                         onClick={closeMenu}
                         className="flex min-h-[76px] flex-col items-center justify-center gap-2 rounded-[0.95rem] border border-white/[0.07] bg-white/[0.025] px-2 text-center text-[10px] text-white/62 transition hover:border-[#dfc16f]/30 hover:bg-[#d6af4d]/[0.055] hover:text-[#f0d891]"
                       >

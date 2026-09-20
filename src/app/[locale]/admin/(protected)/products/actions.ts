@@ -138,6 +138,10 @@ type ParsedProductInput = {
   characterImageUrl: string | null;
   worldSceneImageUrl: string | null;
   material: "GOLD" | "SILVER";
+  hasGold: boolean;
+  hasSilver: boolean;
+  goldComponentWeight: string | null;
+  silverComponentWeight: string | null;
   pricingMode: "DYNAMIC" | "MANUAL";
   price: string | null;
   compareAtPrice: string | null;
@@ -458,6 +462,13 @@ function parseProductInput(
       "OUT_OF_STOCK";
   }
 
+  const material = readEnum(formData, "material", ["GOLD", "SILVER"] as const, "GOLD");
+  const hasGold = formData.get("hasGold") === "on";
+  const hasSilver = formData.get("hasSilver") === "on";
+  if (!hasGold && !hasSilver) {
+    throw new AdminProductActionError("حداقل یکی از فلزهای طلا یا نقره را انتخاب کنید.");
+  }
+
   return {
     locale,
     audience: readEnum(formData, "audience", ["WOMEN", "MEN"] as const, "WOMEN"),
@@ -515,16 +526,11 @@ function parseProductInput(
       ),
     characterImageUrl: readProductImageUrl(formData, "characterImageUrl"),
     worldSceneImageUrl: readProductImageUrl(formData, "worldSceneImageUrl"),
-    material:
-      readEnum(
-        formData,
-        "material",
-        [
-          "GOLD",
-          "SILVER",
-        ] as const,
-        "GOLD",
-      ),
+    material,
+    hasGold,
+    hasSilver,
+    goldComponentWeight: readDecimal(formData, "goldComponentWeight", material === "GOLD" ? readDecimal(formData, "metalWeight", null) : null),
+    silverComponentWeight: readDecimal(formData, "silverComponentWeight", material === "SILVER" ? readDecimal(formData, "metalWeight", null) : null),
     pricingMode,
     price,
     compareAtPrice:
@@ -707,6 +713,10 @@ function productData(
     worldSceneImageUrl: input.worldSceneImageUrl,
     material:
       input.material,
+    hasGold: input.hasGold,
+    hasSilver: input.hasSilver,
+    goldComponentWeight: input.hasGold ? input.goldComponentWeight : null,
+    silverComponentWeight: input.hasSilver ? input.silverComponentWeight : null,
     pricingMode:
       input.pricingMode,
     price:
@@ -1047,6 +1057,5 @@ await ensureUniqueIdentity({
     `/${input.locale}/admin/products/${productId}?saved=1`,
   );
 }
-
 
 

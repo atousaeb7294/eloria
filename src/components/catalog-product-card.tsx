@@ -152,8 +152,8 @@ export function CatalogProductCard({
                 ? "موجود"
                 : "Available"
               : isPersian
-                ? "ناموجود"
-                : "Out of stock"}
+                ? "فروخته شده"
+                : "Sold"}
           </span>
         </div>
 

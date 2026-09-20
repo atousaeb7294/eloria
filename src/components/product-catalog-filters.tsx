@@ -27,6 +27,7 @@ import {
   SearchRuneIcon,
   SilverRuneIcon,
 } from "@/components/material-rune-icons";
+import { BraceletRuneIcon, EarringRuneIcon, NecklaceRuneIcon } from "@/components/luxury-icons";
 
 type MaterialFilter =
   | "all"
@@ -342,9 +343,16 @@ export function ProductCatalogFilters({
     },
     {
       value: "out-of-stock",
-      label: isPersian ? "ناموجود" : "Out of stock",
+      label: isPersian ? "فروخته شده" : "Sold",
       Icon: CircleOff,
     },
+  ] as const;
+
+  const typeChoices = [
+    { value: "all", label: isPersian ? "همه" : "All", Icon: AllProductsRuneIcon },
+    { value: "necklaces", label: isPersian ? "گردنبند" : "Necklace", Icon: NecklaceRuneIcon },
+    { value: "bracelets", label: isPersian ? "دستبند" : "Bracelet", Icon: BraceletRuneIcon },
+    { value: "earrings", label: isPersian ? "گوشواره" : "Earring", Icon: EarringRuneIcon },
   ] as const;
 
   return (
@@ -425,6 +433,16 @@ export function ProductCatalogFilters({
               ].join(" ")}
             />
           </button>
+        </div>
+
+        <div className={filtersOpen ? "block" : "hidden lg:block"}>
+          <span className="mb-1.5 block text-xs text-[#d8c79a]/80">{isPersian ? "نوع اثر" : "Creation type"}</span>
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+            {typeChoices.map(({ value, label, Icon }) => {
+              const active = collection === value;
+              return <button key={value} type="button" onMouseEnter={() => setCollection(value)} onFocus={() => setCollection(value)} onClick={() => setCollection(value)} className={["flex min-h-11 items-center justify-center gap-2 rounded-xl border px-3 text-xs transition", active ? "border-[#e4c873]/48 bg-[#d7b65c]/10 text-[#f4df9e]" : "border-white/[0.07] bg-white/[0.025] text-white/50 hover:border-[#d9b85f]/28 hover:text-[#e5d5ad]"].join(" ")}><Icon className="size-[17px]" />{label}</button>;
+            })}
+          </div>
         </div>
 
         {/* جست‌وجو */}

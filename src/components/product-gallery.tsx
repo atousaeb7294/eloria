@@ -327,7 +327,7 @@ export function ProductGallery({
             {unavailable && (
               <span className="rounded-full border border-rose-200/20 bg-[#47131b]/80 px-3 py-1.5 text-[11px] text-rose-100 backdrop-blur-xl sm:px-4 sm:py-2">
                 {isPersian
-                  ? "ناموجود"
+                  ? "فروخته شده"
                   : "Unavailable"}
               </span>
             )}

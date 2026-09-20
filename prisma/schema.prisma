@@ -93,6 +93,10 @@ model Product {
   descriptionEn       String?
   material            MaterialType     @default(GOLD)
   metalWeight         Decimal?         @map("goldWeight") @db.Decimal(10, 3)
+  hasGold             Boolean          @default(true)
+  hasSilver           Boolean          @default(false)
+  goldComponentWeight Decimal?         @db.Decimal(10, 3)
+  silverComponentWeight Decimal?       @db.Decimal(10, 3)
   purity              String?
   purityFineness      Int?
   pricingMode         PricingMode      @default(DYNAMIC)
@@ -134,6 +138,8 @@ model Product {
 
   @@index([collectionId, status, displayOrder])
   @@index([material, status])
+  @@index([hasGold, status])
+  @@index([hasSilver, status])
   @@index([pricingMode, status])
   @@index([isFeatured, status])
   @@map("products")

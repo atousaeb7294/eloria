@@ -935,7 +935,7 @@ export default async function ProductPage({
                             ? "خرید موقتاً متوقف"
                             : "Purchasing temporarily paused"
                           : isPersian
-                            ? "ناموجود"
+                            ? "فروخته شده"
                             : "Unavailable"}
                   </span>
                 </div>
@@ -1054,8 +1054,8 @@ export default async function ProductPage({
                             isPersian ? "fa-IR" : "en-US",
                           )} ${isPersian ? "عدد" : "items"}`
                         : isPersian
-                          ? "ناموجود"
-                          : "Out of stock"
+                          ? "فروخته شده"
+                          : "Sold"
                     }
                   />
 

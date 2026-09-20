@@ -216,7 +216,11 @@ async function buildCatalogWhere(filters: ProductCatalogFilters) {
     ...(selectedCollection?.slug === "men"
       ? { specifications: { path: ["eloriaAudience"], equals: "MEN" } }
       : selectedCollection ? { collectionId: selectedCollection.id } : {}),
-    ...(filters.material ? { material: filters.material } : {}),
+    ...(filters.material === "GOLD"
+      ? { hasGold: true }
+      : filters.material === "SILVER"
+        ? { hasSilver: true }
+        : {}),
     ...(and.length ? { AND: and } : {}),
   };
 

@@ -153,7 +153,7 @@ export async function getAdminFinanceReport(
     }),
     prisma.orderItem.findMany({
       where: itemWhere,
-      select: { productSlug: true, quantity: true, lineTotalToman: true, profitToman: true, makingChargeToman: true, artisticFeeToman: true, taxToman: true },
+      select: { productSlug: true, quantity: true, lineTotalToman: true, profitToman: true, makingChargeToman: true, artisticFeeToman: true, taxToman: true, pricingSnapshot: true },
     }),
     prisma.orderItem.groupBy({
       by: [
@@ -294,6 +294,24 @@ export async function getAdminFinanceReport(
   }};
   const marginByProduct = new Map<string, bigint>();
   for (const row of itemRows) marginByProduct.set(row.productSlug, (marginByProduct.get(row.productSlug) ?? 0n) + tomanValue(row.profitToman) * BigInt(row.quantity));
+
+  const metalAudit = itemRows.reduce((totals, row) => {
+    const snapshot = row.pricingSnapshot as { pricing?: { breakdown?: { components?: Array<{ material?: string; weightGrams?: string; metalValueToman?: string }> } } } | null;
+    const components = snapshot?.pricing?.breakdown?.components ?? [];
+    for (const component of components) {
+      if (component.material !== "GOLD" && component.material !== "SILVER") continue;
+      const target = component.material === "GOLD" ? totals.gold : totals.silver;
+      const quantity = BigInt(row.quantity);
+      const weightMilli = BigInt(Math.round(Number(component.weightGrams ?? "0") * 1000));
+      target.weightMilliGrams += weightMilli * quantity;
+      target.valueToman += BigInt(component.metalValueToman ?? "0") * quantity;
+      target.itemQuantity += row.quantity;
+    }
+    return totals;
+  }, {
+    gold: { weightMilliGrams: 0n, valueToman: 0n, itemQuantity: 0 },
+    silver: { weightMilliGrams: 0n, valueToman: 0n, itemQuantity: 0 },
+  });
 
   const salesToman =
     tomanValue(
@@ -452,6 +470,7 @@ export async function getAdminFinanceReport(
     taxToman: tomanValue(
       itemTotals._sum.taxToman,
     ),
+    metalAudit,
     expenses: {
       count:
         currentExpenseTotals._count._all,

@@ -170,23 +170,22 @@ export function SiteFooter({ locale }: SiteFooterProps) {
       ],
     },
     {
-      title: copy.categoryTitle,
+      title: locale === "fa" ? "گنجینه‌ها" : "Treasuries",
       icon: LayoutGrid,
       links: [
-        { label: locale === "fa" ? "گنجینهٔ آقایان" : "Men’s Treasury", href: `/${locale}/collections/men`, icon: Gem },
         {
-          label: copy.necklaces,
-          href: `/${locale}/collections/necklaces`,
+          label: locale === "fa" ? "گنجینهٔ طلا" : "Gold Treasury",
+          href: `/${locale}/products?material=gold`,
           icon: Gem,
         },
         {
-          label: copy.bracelets,
-          href: `/${locale}/collections/bracelets`,
+          label: locale === "fa" ? "گنجینهٔ نقره" : "Silver Treasury",
+          href: `/${locale}/products?material=silver`,
           icon: CircleDot,
         },
         {
-          label: copy.earrings,
-          href: `/${locale}/collections/earrings`,
+          label: locale === "fa" ? "گنجینهٔ آقایان" : "Men’s Treasury",
+          href: `/${locale}/collections/men`,
           icon: Sparkles,
         },
       ],

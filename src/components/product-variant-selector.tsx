@@ -102,8 +102,8 @@ export function ProductVariantSelector({
                     <span className={isUnavailable ? "text-rose-200/75" : "text-emerald-100/60"}>
                       {isUnavailable
                         ? isPersian
-                          ? "ناموجود"
-                          : "Out of stock"
+                          ? "فروخته شده"
+                          : "Sold"
                         : isPersian
                           ? `${variant.stock.toLocaleString("fa-IR")} موجود`
                           : `${variant.stock.toLocaleString("en-US")} available`}

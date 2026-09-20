@@ -26,9 +26,7 @@ export function HomeNarrativeShowcase({ locale, copy }: HomeNarrativeShowcasePro
         <header className="mx-auto mb-10 grid max-w-[1180px] gap-7 border-b border-[#ddc16e]/10 pb-8 sm:mb-12 sm:grid-cols-[.72fr_1.28fr] sm:items-end sm:pb-10 lg:mb-14">
           <div>
             <p className="text-[9px] font-semibold tracking-[.26em] text-[#dec16e]/56">ELORIA EDIT / 2026</p>
-            <p className="mt-3 text-[10px] leading-6 text-[#bfae89]/38">
-              {isPersian ? "جواهر، بافت و روایت در یک ویترین زنده" : "Jewellery, textile and story in a living edit"}
-            </p>
+            <p className="mt-3 text-[10px] leading-6 text-[#bfae89]/38">{isPersian ? "ورق بزنید؛ هر اثر یک فصل است" : "Scroll on; every creation is a chapter"}</p>
           </div>
 
           <div className={isPersian ? "sm:text-right" : "sm:text-left"}>
@@ -36,11 +34,7 @@ export function HomeNarrativeShowcase({ locale, copy }: HomeNarrativeShowcasePro
             <h2 className={isPersian ? "font-persian-title mt-3 max-w-3xl text-2xl text-[#f3e6ca] sm:text-3xl lg:text-4xl" : "mt-3 max-w-3xl font-serif text-3xl leading-tight text-[#f3e6ca] sm:text-4xl lg:text-5xl"}>
               {copy.finalTitle}
             </h2>
-            <p className="mt-4 max-w-2xl text-xs leading-7 text-[#c8b995]/48 sm:text-[13px]">
-              {isPersian
-                ? "آثار الوریا مانند فصل‌های یک روایت کنار هم قرار می‌گیرند؛ هر بار مجموعه‌ای تازه از قطعات شاخص، محبوب و تازه‌وارد پیش روی شما قرار می‌گیرد."
-                : "Eloria unfolds like a luxury lookbook, bringing together a fresh edit of signature, loved and newly arrived creations."}
-            </p>
+            <p className="mt-4 max-w-2xl text-xs leading-7 text-[#c8b995]/48 sm:text-[13px]">{isPersian ? "آرام اسکرول کنید و اثر خودتان را پیدا کنید." : "Scroll slowly and find the piece that feels like yours."}</p>
           </div>
         </header>
 

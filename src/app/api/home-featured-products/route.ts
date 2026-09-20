@@ -7,8 +7,6 @@ export const dynamic = "force-dynamic";
 const DATABASE_TIMEOUT_MS = 2_500;
 const FAILURE_COOLDOWN_MS = 60_000;
 const SMART_LOOKBACK_DAYS = 14;
-const SMART_CANDIDATE_LIMIT = 56;
-const SMART_RESULT_LIMIT = 16;
 
 type HomeFeaturedItem = {
   slug: string;
@@ -18,6 +16,10 @@ type HomeFeaturedItem = {
   badge?: string;
   collectionName?: string;
   material?: "GOLD" | "SILVER";
+  hasGold?: boolean;
+  hasSilver?: boolean;
+  audience?: "WOMEN" | "MEN";
+  stock?: number;
 };
 
 let retryAfterTimestamp = 0;
@@ -25,11 +27,10 @@ let retryAfterTimestamp = 0;
 const configuredSlugs = (process.env.HOME_FEATURED_PRODUCT_SLUGS ?? "")
   .split(",")
   .map((slug) => slug.trim())
-  .filter(Boolean)
-  .slice(0, SMART_RESULT_LIMIT);
+  .filter(Boolean);
 
-function jsonResponse(items: HomeFeaturedItem[], source: "database-smart" | "cooldown" | "fallback") {
-  const cacheControl = source === "database-smart"
+function jsonResponse(items: HomeFeaturedItem[], source: "database-smart" | "database-compatible" | "cooldown" | "fallback") {
+  const cacheControl = source === "database-smart" || source === "database-compatible"
     ? "public, max-age=60, s-maxage=300, stale-while-revalidate=1800"
     : "public, max-age=10, s-maxage=20";
 
@@ -113,7 +114,6 @@ export async function GET(request: Request) {
   try {
     const result = await withDatabaseStatementTimeout(DATABASE_TIMEOUT_MS, async (transaction) => {
       const products = await transaction.product.findMany({
-        take: SMART_CANDIDATE_LIMIT,
         where: { status: { in: ["ACTIVE", "OUT_OF_STOCK"] }, collection: { isActive: true } },
         orderBy: [{ isFeatured: "desc" }, { createdAt: "desc" }],
         select: {
@@ -123,6 +123,9 @@ export async function GET(request: Request) {
           nameEn: true,
           collectionId: true,
           material: true,
+          hasGold: true,
+          hasSilver: true,
+          specifications: true,
           stock: true,
           isFeatured: true,
           createdAt: true,
@@ -215,7 +218,6 @@ export async function GET(request: Request) {
     const usedCollections = new Set<string>();
 
     for (const entry of ranked) {
-      if (selected.length >= SMART_RESULT_LIMIT) break;
       if (usedCollections.has(entry.product.collectionId) && configuredSlugs.length === 0) continue;
       selected.push(entry);
       selectedSlugs.add(entry.product.slug);
@@ -223,7 +225,6 @@ export async function GET(request: Request) {
     }
 
     for (const entry of ranked) {
-      if (selected.length >= SMART_RESULT_LIMIT) break;
       if (selectedSlugs.has(entry.product.slug)) continue;
       selected.push(entry);
       selectedSlugs.add(entry.product.slug);
@@ -236,6 +237,10 @@ export async function GET(request: Request) {
       href: `/${locale}/products/${product.slug}`,
       collectionName: locale === "fa" ? product.collection.nameFa : product.collection.nameEn,
       material: product.material,
+      hasGold: product.hasGold,
+      hasSilver: product.hasSilver,
+      audience: product.specifications !== null && typeof product.specifications === "object" && !Array.isArray(product.specifications) && (product.specifications as Record<string, unknown>).eloriaAudience === "MEN" ? "MEN" : "WOMEN",
+      stock: product.stock,
       badge: editorialBadge({
         locale,
         sales,
@@ -250,8 +255,60 @@ export async function GET(request: Request) {
 
     return jsonResponse(items, "database-smart");
   } catch (error) {
-    retryAfterTimestamp = Date.now() + FAILURE_COOLDOWN_MS;
-    console.warn("[Eloria Home] Smart featured products unavailable; local fallback remains active.", error);
-    return jsonResponse([], "fallback");
+    console.warn("[Eloria Home] Smart ranking unavailable; trying the pre-migration compatible product feed.", error);
+
+    try {
+      const products = await withDatabaseStatementTimeout(DATABASE_TIMEOUT_MS, (transaction) =>
+        transaction.product.findMany({
+          where: { status: { in: ["ACTIVE", "OUT_OF_STOCK"] }, collection: { isActive: true } },
+          orderBy: [{ isFeatured: "desc" }, { createdAt: "desc" }],
+          select: {
+            slug: true,
+            nameFa: true,
+            nameEn: true,
+            material: true,
+            specifications: true,
+            stock: true,
+            collection: { select: { nameFa: true, nameEn: true } },
+            images: {
+              take: 1,
+              orderBy: [{ isPrimary: "desc" }, { displayOrder: "asc" }, { createdAt: "asc" }],
+              select: { imageUrl: true },
+            },
+          },
+        }),
+      );
+
+      const items: HomeFeaturedItem[] = products
+        .filter((product) => Boolean(product.images[0]?.imageUrl))
+        .map((product) => {
+          const specifications = product.specifications !== null && typeof product.specifications === "object" && !Array.isArray(product.specifications)
+            ? product.specifications as Record<string, unknown>
+            : {};
+          const hasGold = product.material === "GOLD" || specifications.hasGold === true;
+          const hasSilver = product.material === "SILVER" || specifications.hasSilver === true;
+
+          return {
+            slug: product.slug,
+            name: locale === "fa" ? product.nameFa : product.nameEn,
+            imageUrl: product.images[0]?.imageUrl ?? "",
+            href: `/${locale}/products/${product.slug}`,
+            collectionName: locale === "fa" ? product.collection.nameFa : product.collection.nameEn,
+            material: product.material,
+            hasGold,
+            hasSilver,
+            audience: specifications.eloriaAudience === "MEN" ? "MEN" : "WOMEN",
+            stock: product.stock,
+            badge: locale === "fa" ? "اثر الوریا" : "Eloria creation",
+          };
+        });
+
+      retryAfterTimestamp = 0;
+      return jsonResponse(items, "database-compatible");
+    } catch (compatibleError) {
+      retryAfterTimestamp = Date.now() + FAILURE_COOLDOWN_MS;
+      console.warn("[Eloria Home] Product feed unavailable; local treasury fallback remains active.", compatibleError);
+      return jsonResponse([], "fallback");
+    }
   }
 }

@@ -152,8 +152,8 @@ export function AddToCartButton({
   const unavailableText =
     safeMaximum <= 0
       ? isPersian
-        ? "ناموجود"
-        : "Out of stock"
+        ? "فروخته شده"
+        : "Sold"
       : isPersian
         ? "این محصول قابل سفارش نیست"
         : "This product is unavailable";

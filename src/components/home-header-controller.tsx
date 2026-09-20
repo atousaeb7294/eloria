@@ -1,8 +1,9 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { CartHeaderButton } from "@/components/cart-header-button";
 import { CustomerAccountHeaderButton } from "@/components/customer-account-header-button";
@@ -156,6 +157,8 @@ function NavigationIcon({
 }
 
 export function HomeHeaderController({ locale }: HomeHeaderControllerProps) {
+  const router = useRouter();
+  const hoverNavigationTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const reducedMotion = useReducedMotion();
 
   const isPersian = locale === "fa";
@@ -165,6 +168,22 @@ export function HomeHeaderController({ locale }: HomeHeaderControllerProps) {
   const [fullHeaderVisible, setFullHeaderVisible] = useState(false);
 
   const [menuOpen, setMenuOpen] = useState(false);
+
+  const beginHoverNavigation = (href: string) => {
+    if (window.matchMedia("(hover: hover) and (pointer: fine)").matches) {
+      router.prefetch(href);
+      if (hoverNavigationTimer.current) clearTimeout(hoverNavigationTimer.current);
+      hoverNavigationTimer.current = setTimeout(() => {
+        setMenuOpen(false);
+        router.push(href);
+      }, 620);
+    }
+  };
+
+  const cancelHoverNavigation = () => {
+    if (hoverNavigationTimer.current) clearTimeout(hoverNavigationTimer.current);
+    hoverNavigationTimer.current = null;
+  };
 
   const navigationItems: NavigationItem[] = isPersian
     ? [
@@ -267,6 +286,8 @@ export function HomeHeaderController({ locale }: HomeHeaderControllerProps) {
       window.removeEventListener("resize", scheduleHeaderUpdate);
     };
   }, []);
+
+  useEffect(() => cancelHoverNavigation, []);
 
   useEffect(() => {
     const handleEscape = (event: KeyboardEvent) => {
@@ -561,6 +582,8 @@ export function HomeHeaderController({ locale }: HomeHeaderControllerProps) {
                       <Link
                         href={item.href}
                         onClick={closeMenu}
+                        onMouseEnter={() => beginHoverNavigation(item.href)}
+                        onMouseLeave={cancelHoverNavigation}
                         className="group relative flex min-h-[66px] items-center gap-3 overflow-hidden rounded-[17px] border border-transparent px-3 transition duration-300 hover:border-[#d9bb68]/22 hover:bg-[#d5ad50]/[0.05] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[#d9bb68]/45"
                       >
                         {/* آیکون */}

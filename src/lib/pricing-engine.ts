@@ -143,6 +143,25 @@ export type JewelryPriceResult = {
   finalBeforeRoundingToman: string;
   roundingAdjustmentToman: string;
   finalPriceToman: string;
+  components?: Array<{
+    material: MaterialType;
+    weightGrams: string;
+    productPurity: number;
+    referencePurity: number;
+    referencePricePerGramToman: string;
+    metalValueToman: string;
+    makingChargeToman: string;
+    profitToman: string;
+    taxToman: string;
+  }>;
+};
+
+export type CompositeMetalInput = {
+  material: MaterialType;
+  weightGrams: DecimalInput;
+  productPurity: number;
+  referencePricePerGramToman: DecimalInput;
+  referencePurity: number;
 };
 
 const WEIGHT_SCALE = 3;
@@ -678,6 +697,18 @@ export function calculateJewelryPrice(
 
     finalPriceToman:
       finalPrice.toString(),
+
+    components: [{
+      material: input.material,
+      weightGrams: formatScaledValue(weightMilliGrams, WEIGHT_SCALE),
+      productPurity,
+      referencePurity,
+      referencePricePerGramToman: referencePricePerGram.toString(),
+      metalValueToman: metalValue.toString(),
+      makingChargeToman: makingChargeTotal.toString(),
+      profitToman: profit.toString(),
+      taxToman: tax.toString(),
+    }],
   };
 }
 /** Store policy: packaging per piece; delivery is charged once per order. */
@@ -696,4 +727,89 @@ export function calculateEloriaJewelryPrice(input: JewelryPriceInput): JewelryPr
     taxMetalValue: false,
     roundingStepToman: "1",
   });
+}
+
+/**
+ * حسابرسی محصول ترکیبی بدون تغییر فرمول ELORIA_2026_V2:
+ * هر فلز با قواعد فعلی خودش محاسبه می‌شود، سپس هزینهٔ هنری و بسته‌بندی
+ * فقط یک‌بار در سطح محصول افزوده می‌شوند.
+ */
+export function calculateEloriaCompositeJewelryPrice(input: {
+  primaryMaterial: MaterialType;
+  metals: CompositeMetalInput[];
+  artisticFeeToman?: DecimalInput;
+  roundingStepToman?: DecimalInput;
+}): JewelryPriceResult {
+  if (input.metals.length < 2) throw new Error("محصول ترکیبی باید حداقل دو جزء فلزی داشته باشد.");
+
+  const components = input.metals.map((metal) => calculateEloriaJewelryPrice({
+    material: metal.material,
+    weightGrams: metal.weightGrams,
+    productPurity: metal.productPurity,
+    referencePricePerGramToman: metal.referencePricePerGramToman,
+    referencePurity: metal.referencePurity,
+    makingChargeType: "NONE",
+    artisticFeeToman: "0",
+    profitPercent: "0",
+    taxPercent: "0",
+    taxMetalValue: false,
+    roundingStepToman: "1",
+  }));
+
+  const sum = (key: keyof JewelryPriceResult) => components.reduce((total, part) => {
+    const value = part[key];
+    return total + BigInt(typeof value === "string" ? value : "0");
+  }, 0n);
+  const artisticFee = parseNonNegativeScaled(input.artisticFeeToman ?? "0", 0, "هزینه کار هنری");
+  const packaging = PACKAGING_TOMAN;
+  const metalValue = sum("metalValueToman");
+  const makingCharge = sum("makingChargeTotalToman");
+  const profit = sum("profitToman");
+  const tax = sum("taxToman");
+  const subtotalBeforeTax = metalValue + makingCharge + artisticFee + profit;
+  const finalBeforeRounding = subtotalBeforeTax + tax + packaging;
+  const roundingStep = parsePositiveScaled(input.roundingStepToman ?? "1", 0, "گام گرد کردن");
+  const finalPrice = roundToStep(finalBeforeRounding, roundingStep);
+  const totalWeight = input.metals.reduce((total, metal) => total + parseNonNegativeScaled(metal.weightGrams, WEIGHT_SCALE, "وزن فلز"), 0n);
+  const primary = components.find((part) => part.material === input.primaryMaterial) ?? components[0];
+
+  return {
+    formulaVersion: "ELORIA_2026_V2",
+    packagingToman: packaging.toString(),
+    currency: "TOMAN",
+    material: input.primaryMaterial,
+    weightGrams: formatScaledValue(totalWeight, WEIGHT_SCALE),
+    productPurity: primary.productPurity,
+    referencePurity: primary.referencePurity,
+    referencePricePerGramToman: primary.referencePricePerGramToman,
+    purityRatio: primary.purityRatio,
+    metalValueToman: metalValue.toString(),
+    makingChargeFixedToman: sum("makingChargeFixedToman").toString(),
+    makingChargePerGramTotalToman: sum("makingChargePerGramTotalToman").toString(),
+    makingChargePercentTotalToman: sum("makingChargePercentTotalToman").toString(),
+    makingChargeTotalToman: makingCharge.toString(),
+    artisticFeeToman: artisticFee.toString(),
+    profitBaseToman: sum("profitBaseToman").toString(),
+    profitPercent: "0.000",
+    profitToman: profit.toString(),
+    taxBaseToman: sum("taxBaseToman").toString(),
+    taxPercent: "0.000",
+    taxMetalValue: false,
+    taxToman: tax.toString(),
+    subtotalBeforeTaxToman: subtotalBeforeTax.toString(),
+    finalBeforeRoundingToman: finalBeforeRounding.toString(),
+    roundingAdjustmentToman: (finalPrice - finalBeforeRounding).toString(),
+    finalPriceToman: finalPrice.toString(),
+    components: components.map((part) => ({
+      material: part.material,
+      weightGrams: part.weightGrams,
+      productPurity: part.productPurity,
+      referencePurity: part.referencePurity,
+      referencePricePerGramToman: part.referencePricePerGramToman,
+      metalValueToman: part.metalValueToman,
+      makingChargeToman: part.makingChargeTotalToman,
+      profitToman: part.profitToman,
+      taxToman: part.taxToman,
+    })),
+  };
 }

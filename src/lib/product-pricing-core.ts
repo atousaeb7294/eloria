@@ -1,5 +1,6 @@
 import { PACKAGING_TOMAN } from "@/lib/commerce-policy";
 import {
+  calculateEloriaCompositeJewelryPrice,
   calculateEloriaJewelryPrice,
   type JewelryPriceResult,
   type MakingChargeType,
@@ -111,6 +112,13 @@ export type ProductPriceResult = {
 
     weightGrams:
       string | null;
+
+    metalComponents?: {
+      hasGold: boolean;
+      hasSilver: boolean;
+      goldWeightGrams: string | null;
+      silverWeightGrams: string | null;
+    };
 
     status:
       | "DRAFT"
@@ -379,6 +387,10 @@ async function loadProductRecord(normalizedSlug: string) {
       nameFa: true,
       nameEn: true,
       material: true,
+      hasGold: true,
+      hasSilver: true,
+      goldComponentWeight: true,
+      silverComponentWeight: true,
       purity: true,
       purityFineness: true,
       metalWeight: true,
@@ -685,6 +697,13 @@ export async function getProductLivePrice({
       productWeight?.toString() ??
       null,
 
+    metalComponents: {
+      hasGold: product.hasGold,
+      hasSilver: product.hasSilver,
+      goldWeightGrams: product.goldComponentWeight?.toString() ?? null,
+      silverWeightGrams: product.silverComponentWeight?.toString() ?? null,
+    },
+
     status:
       product.status,
 
@@ -965,7 +984,72 @@ export async function getProductLivePrice({
     policy.defaultTaxPercent;
 
   const calculation =
-    calculateEloriaJewelryPrice({
+    product.hasGold && product.hasSilver
+      ? await (async () => {
+          if (!product.goldComponentWeight || !product.silverComponentWeight) {
+            throw new ProductPricingError("INVALID_PRODUCT_WEIGHT", "وزن تفکیکی طلا و نقره برای محصول ترکیبی ثبت نشده است.", 422);
+          }
+
+          const secondaryMaterial: MaterialType = product.material === "GOLD" ? "SILVER" : "GOLD";
+          const secondaryReference = allowStaleRate
+            ? await getPricingReference(secondaryMaterial)
+            : await withDatabaseRetry(() => loadPricingReference(secondaryMaterial));
+          if (!secondaryReference.policy) {
+            throw new ProductPricingError("PRICING_POLICY_NOT_FOUND", "سیاست قیمت‌گذاری فلز دوم تنظیم نشده است.", 503);
+          }
+          if (!secondaryReference.metalPrice) {
+            throw new ProductPricingError("METAL_PRICE_NOT_FOUND", "نرخ فلز دوم محصول ترکیبی موجود نیست.", 503);
+          }
+          if (secondaryMaterial === "SILVER" &&
+              (secondaryReference.metalPrice.rawPayload as { pricingBasis?: string } | null)?.pricingBasis !== "ELORIA_SILVER_10_31_V2") {
+            throw new ProductPricingError("METAL_PRICE_STALE", "نرخ نقره باید با فرمول جدید از بورس به‌روزرسانی شود.", 503);
+          }
+
+          const secondaryFreshness = getMetalRateFreshness({
+            sourceTimeUnix: secondaryReference.metalPrice.sourceTimeUnix,
+            staleAfterMinutes: secondaryReference.policy.staleAfterMinutes,
+            now,
+          });
+          const secondaryDecision = getMetalRateSaleDecision({
+            material: secondaryMaterial,
+            referencePricePerGramToman: secondaryReference.metalPrice.pricePerGram.toString(),
+            freshness: secondaryFreshness,
+            closedMarketPricingEnabled: secondaryReference.policy.closedMarketPricingEnabled,
+            closedMarketMaxAgeMinutes: secondaryReference.policy.closedMarketMaxAgeMinutes,
+            closedMarketSafetyMarginPercent: secondaryReference.policy.closedMarketSafetyMarginPercent.toString(),
+          });
+          if (!secondaryDecision.isUsableForSale && !allowStaleRate) {
+            throw new ProductPricingError("METAL_PRICE_STALE", getUnavailableRateMessage(secondaryDecision.reason, secondaryFreshness.reason), 503);
+          }
+          const secondaryRate = secondaryDecision.effectivePricePerGramToman ?? secondaryReference.metalPrice.pricePerGram.toString();
+          const rates: Record<MaterialType, { price: string; purity: number }> = {
+            [product.material as MaterialType]: { price: calculationPricePerGramToman, purity: metalPrice.referencePurity },
+            [secondaryMaterial]: { price: secondaryRate, purity: secondaryReference.metalPrice.referencePurity },
+          } as Record<MaterialType, { price: string; purity: number }>;
+
+          return calculateEloriaCompositeJewelryPrice({
+            primaryMaterial: product.material as MaterialType,
+            metals: [
+              {
+                material: "GOLD",
+                weightGrams: product.goldComponentWeight.toString(),
+                productPurity: productPurityFineness ?? 750,
+                referencePricePerGramToman: rates.GOLD.price,
+                referencePurity: rates.GOLD.purity,
+              },
+              {
+                material: "SILVER",
+                weightGrams: product.silverComponentWeight.toString(),
+                productPurity: rates.SILVER.purity,
+                referencePricePerGramToman: rates.SILVER.price,
+                referencePurity: rates.SILVER.purity,
+              },
+            ],
+            artisticFeeToman: artisticFee.toString(),
+            roundingStepToman: policy.roundingStep.toString(),
+          });
+        })()
+      : calculateEloriaJewelryPrice({
       material:
         product.material as MaterialType,
 
@@ -1007,7 +1091,7 @@ export async function getProductLivePrice({
 
       roundingStepToman:
         policy.roundingStep.toString(),
-    });
+        });
 
   return {
     product:
