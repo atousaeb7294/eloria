@@ -22,6 +22,21 @@ type HomeFeaturedItem = {
   stock?: number;
 };
 
+const DEFAULT_STORY_IMAGE = "/images/hero/eloria-hero.webp";
+
+function storyImage(product: {
+  images: Array<{ imageUrl: string }>;
+  worldSceneImageUrl?: string | null;
+  characterImageUrl?: string | null;
+  collection: { imageUrl?: string | null };
+}) {
+  return product.images[0]?.imageUrl?.trim()
+    || product.worldSceneImageUrl?.trim()
+    || product.characterImageUrl?.trim()
+    || product.collection.imageUrl?.trim()
+    || DEFAULT_STORY_IMAGE;
+}
+
 let retryAfterTimestamp = 0;
 
 const configuredSlugs = (process.env.HOME_FEATURED_PRODUCT_SLUGS ?? "")
@@ -129,7 +144,9 @@ export async function GET(request: Request) {
           stock: true,
           isFeatured: true,
           createdAt: true,
-          collection: { select: { nameFa: true, nameEn: true } },
+          characterImageUrl: true,
+          worldSceneImageUrl: true,
+          collection: { select: { nameFa: true, nameEn: true, imageUrl: true } },
           images: {
             take: 1,
             orderBy: [{ isPrimary: "desc" }, { displayOrder: "asc" }, { createdAt: "asc" }],
@@ -187,7 +204,6 @@ export async function GET(request: Request) {
     const configuredPriority = new Map(configuredSlugs.map((slug, index) => [slug, configuredSlugs.length - index]));
 
     const ranked = result.products
-      .filter((product) => Boolean(product.images[0]?.imageUrl))
       .map((product) => {
         const currentViews = currentViewMap.get(product.slug) ?? 0;
         const previousViews = previousViewMap.get(product.slug) ?? 0;
@@ -233,7 +249,7 @@ export async function GET(request: Request) {
     const items: HomeFeaturedItem[] = selected.map(({ product, currentViews, previousViews, sales, favorites }) => ({
       slug: product.slug,
       name: locale === "fa" ? product.nameFa : product.nameEn,
-      imageUrl: product.images[0]?.imageUrl ?? "",
+      imageUrl: storyImage(product),
       href: `/${locale}/products/${product.slug}`,
       collectionName: locale === "fa" ? product.collection.nameFa : product.collection.nameEn,
       material: product.material,
@@ -269,7 +285,9 @@ export async function GET(request: Request) {
             material: true,
             specifications: true,
             stock: true,
-            collection: { select: { nameFa: true, nameEn: true } },
+            characterImageUrl: true,
+            worldSceneImageUrl: true,
+            collection: { select: { nameFa: true, nameEn: true, imageUrl: true } },
             images: {
               take: 1,
               orderBy: [{ isPrimary: "desc" }, { displayOrder: "asc" }, { createdAt: "asc" }],
@@ -280,7 +298,6 @@ export async function GET(request: Request) {
       );
 
       const items: HomeFeaturedItem[] = products
-        .filter((product) => Boolean(product.images[0]?.imageUrl))
         .map((product) => {
           const specifications = product.specifications !== null && typeof product.specifications === "object" && !Array.isArray(product.specifications)
             ? product.specifications as Record<string, unknown>
@@ -291,7 +308,7 @@ export async function GET(request: Request) {
           return {
             slug: product.slug,
             name: locale === "fa" ? product.nameFa : product.nameEn,
-            imageUrl: product.images[0]?.imageUrl ?? "",
+            imageUrl: storyImage(product),
             href: `/${locale}/products/${product.slug}`,
             collectionName: locale === "fa" ? product.collection.nameFa : product.collection.nameEn,
             material: product.material,
