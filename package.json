@@ -18,7 +18,7 @@
     "test:pricing": "node --import tsx scripts/test-pricing-engine.ts && node --import tsx scripts/test-metal-rate-freshness.ts && node --import tsx scripts/test-metal-rate-sale-policy.ts && node --import tsx scripts/test-brs-derived-rate-timestamp.ts && node --import tsx scripts/test-metal-price-write-decision.ts && node --import tsx scripts/test-metal-rate-anomaly.ts",
     "stock:sync": "tsx scripts/sync-product-stock.ts",
     "check:inventory": "tsx scripts/check-inventory-consistency.ts",
-    "db:migrate": "prisma migrate deploy",
+    "db:migrate": "node scripts/deploy-migrations.mjs",
     "db:status": "prisma migrate status",
     "start:production": "node scripts/start-production.mjs",
     "admin:totp-secret": "node scripts/generate-totp-secret.mjs",
