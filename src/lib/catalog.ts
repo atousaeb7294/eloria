@@ -11,6 +11,7 @@ export type ProductCatalogFilters = {
   search?: string;
   collectionSlug?: string;
   material?: CatalogMaterial;
+  weaveOnly?: boolean;
   availability?: CatalogAvailability;
   page?: number;
   pageSize?: number;
@@ -216,11 +217,13 @@ async function buildCatalogWhere(filters: ProductCatalogFilters) {
     ...(selectedCollection?.slug === "men"
       ? { specifications: { path: ["eloriaAudience"], equals: "MEN" } }
       : selectedCollection ? { collectionId: selectedCollection.id } : {}),
-    ...(filters.material === "GOLD"
-      ? { hasGold: true }
-      : filters.material === "SILVER"
-        ? { hasSilver: true }
-        : {}),
+    ...(filters.weaveOnly
+      ? { hasGold: false, hasSilver: false }
+      : filters.material === "GOLD"
+        ? { hasGold: true }
+        : filters.material === "SILVER"
+          ? { hasSilver: true }
+          : {}),
     ...(and.length ? { AND: and } : {}),
   };
 

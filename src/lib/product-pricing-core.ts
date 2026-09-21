@@ -191,7 +191,7 @@ export type ProductPriceResult = {
     /**
      * نرخی که واقعاً وارد موتور محاسبه شده است.
      *
-     * در حالت بازار بسته، شامل حاشیه امنیت است.
+     * در حالت بازار بسته، برابر آخرین نرخ ثبت‌شده است.
      */
     pricePerGramToman:
       string;
@@ -760,8 +760,7 @@ export async function getProductLivePrice({
     defaultProfitPercent:
       product.material === "GOLD" ? "7" : "0",
 
-    defaultTaxPercent:
-      product.material === "GOLD" ? "9" : "0",
+    defaultTaxPercent: "0",
 
     taxMetalValue:
       false,
@@ -948,12 +947,7 @@ export async function getProductLivePrice({
     );
   }
 
-  /*
-   * نرخ قابل‌فروش بازار بسته شامل حاشیه امنیت است.
-   *
-   * اگر نرخ کاملاً غیرقابل‌فروش باشد ولی صرفاً برای نمایش
-   * اجازه عبور داشته باشد، نرخ خام نمایش داده می‌شود.
-   */
+  /* نرخ بازار بسته بدون افزایش، عین آخرین نرخ ثبت‌شده است. */
   const calculationPricePerGramToman =
     saleDecision
       .effectivePricePerGramToman ??

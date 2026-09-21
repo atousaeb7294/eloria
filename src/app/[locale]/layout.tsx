@@ -59,7 +59,6 @@ export async function generateMetadata({
 
   const baseUrl = siteBaseUrl();
 
-  // Public title is independent of the completed eNamad verification step.
   const title = t("title");
   const description = t("description");
 
@@ -68,11 +67,6 @@ export async function generateMetadata({
     verification: process.env.GOOGLE_SITE_VERIFICATION ? {google:process.env.GOOGLE_SITE_VERIFICATION.trim()} : undefined,
     title,
     description,
-    // Renders exactly: <meta name="enamad" content="26263305" />
-    other: {
-      enamad: "26263305",
-    },
-
     alternates: {
       canonical: `/${locale}`,
       languages: {

@@ -407,6 +407,10 @@ const reviewedAdminRawImageFiles = new Set([
   // eNamad serves its own dynamically verified seal URL, which cannot be
   // safely proxied through Next/Image. The element has an explicit lint waiver.
   "src/components/site-footer.tsx",
+  "src/components/enamad-seal.tsx",
+  // This module scans fetched HTML for missing alt attributes; its <img token
+  // is a regular expression, not a rendered React image element.
+  "src/lib/seo-page-scan.ts",
 ]);
 
 for (const file of sourceFiles) {

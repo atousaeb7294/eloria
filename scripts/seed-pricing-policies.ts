@@ -14,7 +14,7 @@ async function main() {
 
         defaultProfitPercent: "7",
 
-        defaultTaxPercent: "10",
+        defaultTaxPercent: "0",
 
         // اصل طلای به‌کاررفته مشمول مالیات نیست.
         taxMetalValue: false,
@@ -33,9 +33,9 @@ async function main() {
         closedMarketMaxAgeMinutes:
           14400,
 
-        // حداقل حاشیه امنیت طلا: ۳ درصد؛ مقدار نهایی پلکانی است
+        // بازار بسته بدون افزایش: آخرین نرخ ثبت‌شده عیناً استفاده می‌شود.
         closedMarketSafetyMarginPercent:
-          "3",
+          "0",
 
         // گردکردن قیمت نهایی به نزدیک‌ترین هزار تومان
         roundingStep: 1000,
@@ -50,7 +50,7 @@ async function main() {
 
         defaultProfitPercent: "7",
 
-        defaultTaxPercent: "10",
+        defaultTaxPercent: "0",
 
         taxMetalValue: false,
 
@@ -65,7 +65,7 @@ async function main() {
           14400,
 
         closedMarketSafetyMarginPercent:
-          "3",
+          "0",
 
         roundingStep: 1000,
 
@@ -84,7 +84,7 @@ async function main() {
 
         defaultProfitPercent: "7",
 
-        defaultTaxPercent: "10",
+        defaultTaxPercent: "0",
 
         /*
          * سیاست مالیاتی نقره مستقل از طلا است.
@@ -103,7 +103,7 @@ async function main() {
           14400,
 
         closedMarketSafetyMarginPercent:
-          "5",
+          "0",
 
         roundingStep: 1000,
 
@@ -117,7 +117,7 @@ async function main() {
 
         defaultProfitPercent: "7",
 
-        defaultTaxPercent: "10",
+        defaultTaxPercent: "0",
 
         taxMetalValue: false,
 
@@ -132,7 +132,7 @@ async function main() {
           14400,
 
         closedMarketSafetyMarginPercent:
-          "5",
+          "0",
 
         roundingStep: 1000,
 

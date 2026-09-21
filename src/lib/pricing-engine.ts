@@ -723,7 +723,7 @@ export function calculateEloriaJewelryPrice(input: JewelryPriceInput): JewelryPr
     makingChargeFixedToman: "0",
     makingChargePerGramToman: "0",
     profitPercent: gold ? "7" : "0",
-    taxPercent: gold ? "9" : "0",
+    taxPercent: "0",
     taxMetalValue: false,
     roundingStepToman: "1",
   });

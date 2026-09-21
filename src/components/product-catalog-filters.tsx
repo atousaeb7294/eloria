@@ -32,7 +32,8 @@ import { BraceletRuneIcon, EarringRuneIcon, NecklaceRuneIcon } from "@/component
 type MaterialFilter =
   | "all"
   | "gold"
-  | "silver";
+  | "silver"
+  | "weave";
 
 type CollectionFilter = string;
 
@@ -43,6 +44,7 @@ type AvailabilityFilter =
 
 type ProductCatalogFiltersProps = {
   locale: string;
+  lockedTreasury?: Exclude<MaterialFilter, "all">;
 
   initialFilters: {
     search: string;
@@ -89,6 +91,7 @@ function normalizeNumericInput(
 export function ProductCatalogFilters({
   locale,
   initialFilters,
+  lockedTreasury,
 }: ProductCatalogFiltersProps) {
   const router =
     useRouter();
@@ -121,7 +124,7 @@ export function ProductCatalogFilters({
     setMaterial,
   ] =
     useState<MaterialFilter>(
-      initialFilters.material,
+      lockedTreasury ?? initialFilters.material,
     );
 
   const [
@@ -256,7 +259,7 @@ export function ProductCatalogFilters({
 
   const resetFilters = () => {
     setSearch("");
-    setMaterial("all");
+    setMaterial(lockedTreasury ?? "all");
     setCollection("all");
     setMinPrice("");
     setMaxPrice("");
@@ -328,6 +331,11 @@ export function ProductCatalogFilters({
       Icon:
         SilverRuneIcon,
     },
+    {
+      value: "weave",
+      label: isPersian ? "بافت" : "Woven",
+      Icon: AllProductsRuneIcon,
+    },
   ] as const;
 
   const availabilityChoices = [
@@ -353,6 +361,7 @@ export function ProductCatalogFilters({
     { value: "necklaces", label: isPersian ? "گردنبند" : "Necklace", Icon: NecklaceRuneIcon },
     { value: "bracelets", label: isPersian ? "دستبند" : "Bracelet", Icon: BraceletRuneIcon },
     { value: "earrings", label: isPersian ? "گوشواره" : "Earring", Icon: EarringRuneIcon },
+    { value: "men", label: isPersian ? "آقایان" : "Men", Icon: AllProductsRuneIcon },
   ] as const;
 
   return (
@@ -437,7 +446,7 @@ export function ProductCatalogFilters({
 
         <div className={filtersOpen ? "block" : "hidden lg:block"}>
           <span className="mb-1.5 block text-xs text-[#d8c79a]/80">{isPersian ? "نوع اثر" : "Creation type"}</span>
-          <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-5">
             {typeChoices.map(({ value, label, Icon }) => {
               const active = collection === value;
               return <button key={value} type="button" onMouseEnter={() => setCollection(value)} onFocus={() => setCollection(value)} onClick={() => setCollection(value)} className={["flex min-h-11 items-center justify-center gap-2 rounded-xl border px-3 text-xs transition", active ? "border-[#e4c873]/48 bg-[#d7b65c]/10 text-[#f4df9e]" : "border-white/[0.07] bg-white/[0.025] text-white/50 hover:border-[#d9b85f]/28 hover:text-[#e5d5ad]"].join(" ")}><Icon className="size-[17px]" />{label}</button>;
@@ -501,7 +510,7 @@ export function ProductCatalogFilters({
           </div>
 
           {/* جنس اثر */}
-          <div
+          {!lockedTreasury ? <div
             id="catalog-material-filters"
             className={[
               filtersOpen
@@ -516,7 +525,7 @@ export function ProductCatalogFilters({
                 : "Material"}
             </span>
 
-            <div className="grid grid-cols-3 gap-1.5">
+            <div className="grid grid-cols-2 gap-1.5 sm:grid-cols-4">
               {materialChoices.map(
                 ({
                   value,
@@ -558,7 +567,7 @@ export function ProductCatalogFilters({
                 },
               )}
             </div>
-          </div>
+          </div> : <div className="hidden lg:block"><span className="mb-1.5 block text-xs text-[#d8c79a]/80">{isPersian ? "گنجینه" : "Treasury"}</span><div className="flex h-12 items-center justify-center rounded-xl border border-[#d9b85f]/18 bg-white/[0.025] text-xs text-[#e8d7aa]">{lockedTreasury === "gold" ? (isPersian ? "طلا" : "Gold") : lockedTreasury === "silver" ? (isPersian ? "نقره" : "Silver") : (isPersian ? "بافت" : "Woven")}</div></div>}
 
           {/* وضعیت موجودی */}
           <div

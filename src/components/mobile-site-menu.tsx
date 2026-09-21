@@ -199,19 +199,19 @@ export function MobileSiteMenu() {
     {
       label: isPersian ? "گنجینهٔ طلا" : "Gold Treasury",
       slug: "gold",
-      href: `/${locale}/products?material=gold`,
+      href: `/${locale}/collections/gold`,
       icon: GoldRuneIcon,
     },
     {
       label: isPersian ? "گنجینهٔ نقره" : "Silver Treasury",
       slug: "silver",
-      href: `/${locale}/products?material=silver`,
+      href: `/${locale}/collections/silver`,
       icon: SilverRuneIcon,
     },
     {
-      label: isPersian ? "گنجینهٔ آقایان" : "Men’s Treasury",
-      slug: "men",
-      href: `/${locale}/collections/men`,
+      label: isPersian ? "گنجینهٔ بافت" : "Woven Treasury",
+      slug: "weave",
+      href: `/${locale}/collections/weave`,
       icon: WorldRuneIcon,
     },
   ];

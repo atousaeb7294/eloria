@@ -145,16 +145,16 @@ export default async function AtelierPage({
               {fa ? "هر نگهبان یک قلمرو، نشانه و نقش مشخص دارد؛ تمام شخصیت‌های محصولات زیرمجموعهٔ یکی از این هفت جهان‌اند." : "Every Guardian has a realm, symbol and role; every product character belongs to one of these seven worlds."}
             </p>
           </div>
-          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          <div className="grid auto-rows-fr items-stretch gap-4 sm:grid-cols-2 xl:grid-cols-4">
             {ELORIA_GUARDIANS.map((guardian) => (
-              <article id={`guardian-${guardian.id}`} key={guardian.id} className="scroll-mt-28 overflow-hidden rounded-[2rem] border border-[#d8ba64]/18 bg-[#061c15]/88 shadow-[0_28px_75px_rgba(0,0,0,.32)]">
-                <div className="relative aspect-[3/4] overflow-hidden">
+              <article id={`guardian-${guardian.id}`} key={guardian.id} className="flex h-full scroll-mt-28 flex-col overflow-hidden rounded-[2rem] border border-[#d8ba64]/18 bg-[#061c15]/88 shadow-[0_28px_75px_rgba(0,0,0,.32)]">
+                <div className="relative h-[420px] shrink-0 overflow-hidden bg-[#03130e] sm:h-[440px] xl:h-[390px] 2xl:h-[430px]">
                   <Image
                     src={guardian.imageUrl}
                     alt={fa ? `پرترهٔ ${guardian.nameFa}، ${guardian.titleFa}` : `Portrait of ${guardian.nameEn}, ${guardian.titleEn}`}
                     fill
                     sizes="(max-width:640px) 100vw,(max-width:1280px) 50vw,340px"
-                    className="object-contain"
+                    className="object-cover object-top"
                     priority={guardian.id === "yalda"}
                   />
 
@@ -162,11 +162,11 @@ export default async function AtelierPage({
                     {fa ? guardian.realmFa : guardian.realmEn}
                   </p>
                 </div>
-                <div className="p-5">
+                <div className="flex flex-1 flex-col p-5">
                   <p className="text-[10px] text-[#d8bb70]/58">{fa ? guardian.titleFa : guardian.titleEn}</p>
                   <h3 className="mt-1 text-xl text-[#f1e0b9]">{fa ? guardian.nameFa : guardian.nameEn}</h3>
                   <p className="mt-3 text-xs leading-7 text-[#d0c09f]/66">{fa ? guardian.summaryFa : guardian.summaryEn}</p>
-                  <p className="mt-3 border-s border-[#dfc36d]/28 ps-3 text-[11px] leading-6 text-[#e4cf93]/72">{fa ? guardian.vowFa : guardian.vowEn}</p>
+                  <p className="mt-auto border-s border-[#dfc36d]/28 pt-3 ps-3 text-[11px] leading-6 text-[#e4cf93]/72">{fa ? guardian.vowFa : guardian.vowEn}</p>
                 </div>
               </article>
             ))}

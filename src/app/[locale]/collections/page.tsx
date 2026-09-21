@@ -15,9 +15,9 @@ export default async function CollectionsPage({ params }: { params: Promise<{ lo
   setRequestLocale(locale);
   const fa = locale === "fa";
   const treasuries = [
-    { slug: "gold", href: `/${locale}/products?material=gold`, name: fa ? "گنجینهٔ طلا" : "Gold Treasury", description: fa ? "گرمای طلا، در بافت و نقش الوریا." : "Gold, woven into the forms of Eloria.", image: "/images/collections/necklaces.webp", Icon: GoldRuneIcon },
-    { slug: "silver", href: `/${locale}/products?material=silver`, name: fa ? "گنجینهٔ نقره" : "Silver Treasury", description: fa ? "روشنی نقره، آرام و ماندگار." : "Silver with a quiet, lasting light.", image: "/images/collections/earring.webp", Icon: SilverRuneIcon },
-    { slug: "men", href: `/${locale}/collections/men`, name: fa ? "گنجینهٔ آقایان" : "Men’s Treasury", description: fa ? "نشان‌هایی برای حضور بی‌هیاهو." : "Pieces shaped for a quiet presence.", image: "/images/collections/bracelet.webp", Icon: AllProductsRuneIcon },
+    { slug: "gold", href: `/${locale}/collections/gold`, name: fa ? "گنجینهٔ طلا" : "Gold Treasury", description: fa ? "گرمای طلا، در بافت و نقش الوریا." : "Gold, woven into the forms of Eloria.", image: "/images/collections/necklaces.webp", Icon: GoldRuneIcon },
+    { slug: "silver", href: `/${locale}/collections/silver`, name: fa ? "گنجینهٔ نقره" : "Silver Treasury", description: fa ? "روشنی نقره، آرام و ماندگار." : "Silver with a quiet, lasting light.", image: "/images/collections/earring.webp", Icon: SilverRuneIcon },
+    { slug: "weave", href: `/${locale}/collections/weave`, name: fa ? "گنجینهٔ بافت" : "Woven Treasury", description: fa ? "نخ و گره؛ بی‌حضور طلا و نقره." : "Thread and knot, without gold or silver.", image: "/images/collections/bracelet.webp", Icon: AllProductsRuneIcon },
   ];
 
   return (

@@ -1072,8 +1072,8 @@ export default async function ProductPage({
                   icon={<Truck className="h-4 w-4" />}
                   title={
                     isPersian
-                      ? "ارسال مهمانِ الوریا"
-                      : "Complimentary Eloria delivery"
+                      ? "ارسال اختصاصی الوریا"
+                      : "Eloria delivery"
                   }
                   description={
                     isPersian

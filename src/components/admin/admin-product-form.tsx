@@ -228,7 +228,7 @@ export function AdminProductForm({
             />
           </Field>
 
-          <Field label="مناسب برای" hint="انتخاب آقایان، اثر را به گنجینهٔ آقایان اضافه می‌کند و افسانه‌ای از شخصیت‌های مرد اختصاص می‌دهد.">
+          <Field label="مناسب برای" hint="انتخاب آقایان، اثر را در فیلتر مخاطب آقایان نمایش می‌دهد و افسانه‌ای از شخصیت‌های مرد اختصاص می‌دهد.">
             <select name="audience" defaultValue={value.audience ?? "WOMEN"} className={inputClassName}>
               <option value="WOMEN">بانوان</option>
               <option value="MEN">آقایان</option>
@@ -355,7 +355,7 @@ export function AdminProductForm({
 
       <FormSection
         title="قیمت‌گذاری"
-        description="طلا: اجرت ۸٪ و سود ۷٪ اصل طلا، مالیات قراردادی ۹٪ اجرت و سود، سپس کار هنری. نقره: اونس دلاری ÷ ۱۰٫۳۱ × دلار × وزن + کار هنری. بسته‌بندی هر قطعه ۷۰٬۰۰۰؛ ارسال هر سفارش ۱۷۰٬۰۰۰ تومان. نرخ‌های زیر مطابق فرمول ثابت فروشگاه نمایش داده می‌شوند."
+        description="طلا: ارزش طلا + اجرت ۸٪ + سود ۷٪ اصل طلا + کار هنری؛ مالیات فروش صفر است. نقره: اونس دلاری ÷ ۱۰٫۳۱ × دلار × وزن + کار هنری. بسته‌بندی هر قطعه ۷۰٬۰۰۰؛ ارسال هر سفارش ۱۷۰٬۰۰۰ تومان. در بازار بسته، آخرین نرخ ثبت‌شده بدون افزایش استفاده می‌شود."
       >
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
           <Field label="روش قیمت‌گذاری">
@@ -484,10 +484,10 @@ export function AdminProductForm({
             />
           </Field>
 
-          <Field label="درصد مالیات">
+          <Field label="درصد مالیات فروش">
             <input
               className={inputClassName}
-              value={selectedMaterial === "GOLD" ? "9" : "0"}
+              value="0"
               readOnly
               inputMode="decimal"
               name="taxPercent"

@@ -15,7 +15,7 @@ export function HomeNarrativeShowcase({ locale, copy }: HomeNarrativeShowcasePro
   return (
     <section
       dir={isPersian ? "rtl" : "ltr"}
-      className="eloria-home-lazy-section relative isolate overflow-hidden py-16 sm:py-22 lg:py-28"
+      className="eloria-home-lazy-section relative isolate overflow-visible py-16 sm:py-22 lg:py-28"
       data-eloria-narrative-section="true"
     >
       <div aria-hidden="true" className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_20%,rgba(16,116,82,.12),transparent_34%),radial-gradient(circle_at_16%_66%,rgba(221,186,93,.035),transparent_24%)]" />

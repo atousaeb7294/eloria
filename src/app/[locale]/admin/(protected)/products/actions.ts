@@ -608,12 +608,7 @@ function parseProductInput(
         "profitPercent",
         null,
       ),
-    taxPercent:
-      readDecimal(
-        formData,
-        "taxPercent",
-        null,
-      ),
+    taxPercent: "0",
     stock,
     status,
     isFeatured:
@@ -1057,5 +1052,4 @@ await ensureUniqueIdentity({
     `/${input.locale}/admin/products/${productId}?saved=1`,
   );
 }
-
 

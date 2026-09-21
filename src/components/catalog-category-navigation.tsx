@@ -35,7 +35,7 @@ export function CatalogCategoryNavigation({
       productCount: collections.reduce((sum, item) => sum + item.productCount, 0),
       Icon: AllProductsRuneIcon,
     },
-    { slug: "men", label: isPersian ? "گنجینهٔ آقایان" : "Men’s Treasury", productCount: null, Icon: AllProductsRuneIcon },
+    { slug: "weave", label: isPersian ? "گنجینهٔ بافت" : "Woven Treasury", productCount: null, Icon: AllProductsRuneIcon },
     ...collections.filter(c => c.slug !== "men").map(collection => ({
       slug: collection.slug,
       label: isPersian ? collection.nameFa : collection.nameEn,
@@ -54,7 +54,7 @@ export function CatalogCategoryNavigation({
         const href =
           slug === "all"
             ? `/${locale}/products`
-            : slug === "men" ? `/${locale}/collections/men` : `/${locale}/products?collection=${encodeURIComponent(slug)}`;
+            : slug === "weave" ? `/${locale}/collections/weave` : `/${locale}/products?collection=${encodeURIComponent(slug)}`;
 
         return (
           <Link

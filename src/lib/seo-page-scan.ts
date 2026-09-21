@@ -7,13 +7,13 @@ export function inspectSeoHtml(html: string, expectedUrl: string) {
   const links = [...html.matchAll(/<link\b[^>]*>/gi)].map(m=>m[0]);
   const title = tagValue("title");
   if (!title) findings.push("عنوان صفحه خالی است");
-  if (/26263305/.test(title)) findings.push("کد تأیید اینماد در عنوان عمومی است؛ پس از اتمام تأیید، متغیر ELORIA_ENAMAD_TITLE_VERIFICATION را false کنید");
   if (!meta.some(t=>attrs(t,"name")?.toLowerCase()==="description" && attrs(t,"content")?.trim())) findings.push("توضیح متا موجود نیست");
   const canonical = links.find(t=>attrs(t,"rel")==="canonical");
   if (!canonical) findings.push("canonical موجود نیست");
   else { try { if (new URL((attrs(canonical,"href") || "").replace(/&amp;/g,"&"), expectedUrl).href !== new URL(expectedUrl).href) findings.push("canonical با آدرس بررسی متفاوت است؛ علت را بررسی کنید"); } catch { findings.push("canonical نامعتبر است"); } }
   const h1 = (html.match(/<h1\b/gi)||[]).length;
   if (h1 !== 1) findings.push(`تعداد H1: ${h1}؛ ساختار عنوان اصلی را بررسی کنید`);
+  // @next/next/no-img-element -- this matches HTML text for SEO auditing; it does not render an image.
   const images = [...html.matchAll(/<img\b[^>]*>/gi)].map(m=>m[0]);
   const missingAlt = images.filter(t=>attrs(t,"alt")===undefined).length;
   if (missingAlt) findings.push(`${missingAlt} تصویر فاقد ویژگی alt است`);
@@ -34,7 +34,7 @@ export async function scanSeoPages(offset = 0) {
     prisma.product.findMany({where:{status:{in:["ACTIVE","OUT_OF_STOCK"]},collection:{isActive:true}},select:{slug:true},orderBy:{id:"asc"}}),
     prisma.contentArticle.findMany({where:{status:"PUBLISHED"},select:{slug:true},orderBy:{id:"asc"}}),
   ]);
-  const paths = ["", "/products", "/collections", "/collections/men", "/atelier", "/journal", "/contact", "/about", ...products.map(p=>`/products/${encodeURIComponent(p.slug)}`), ...articles.map(a=>`/journal/${encodeURIComponent(a.slug)}`)].flatMap(p=>["/fa"+p,"/en"+p]);
+  const paths = ["", "/products", "/collections", "/collections/gold", "/collections/silver", "/collections/weave", "/atelier", "/journal", "/contact", "/about", ...products.map(p=>`/products/${encodeURIComponent(p.slug)}`), ...articles.map(a=>`/journal/${encodeURIComponent(a.slug)}`)].flatMap(p=>["/fa"+p,"/en"+p]);
   const pages = [];
   for (let i=0;i<3;i++) {
     const url = new URL(paths[(offset+i)%paths.length],root).href;

@@ -221,7 +221,8 @@ requireMatch({
 });
 
 /*
- * نرخ مؤثر شامل حاشیه امنیت باید وارد موتور محاسبه شود.
+ * نرخ مؤثر بازار بسته باید وارد موتور محاسبه شود؛ سیاست فعلی
+ * این نرخ را بدون حاشیه و برابر آخرین نرخ ثبت‌شده نگه می‌دارد.
  */
 requireMatch({
   source:
@@ -246,7 +247,7 @@ requireMatch({
 });
 
 /*
- * خروجی باید وضعیت و جزئیات حاشیه امنیت را افشا کند.
+ * خروجی برای سازگاری حسابرسی، فیلدهای حاشیه را با مقدار صفر نگه می‌دارد.
  */
 requireMatch({
   source:
@@ -313,5 +314,5 @@ if (
 }
 
 console.log(
-  "PASS: Cart Quote uses strict server pricing, accepts configured closed-market rates, applies the safety margin, and rejects unavailable rates.",
+  "PASS: Cart Quote uses strict server pricing and preserves the last closed-market rate without an uplift.",
 );

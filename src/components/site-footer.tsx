@@ -175,17 +175,17 @@ export function SiteFooter({ locale }: SiteFooterProps) {
       links: [
         {
           label: locale === "fa" ? "گنجینهٔ طلا" : "Gold Treasury",
-          href: `/${locale}/products?material=gold`,
+          href: `/${locale}/collections/gold`,
           icon: Gem,
         },
         {
           label: locale === "fa" ? "گنجینهٔ نقره" : "Silver Treasury",
-          href: `/${locale}/products?material=silver`,
+          href: `/${locale}/collections/silver`,
           icon: CircleDot,
         },
         {
-          label: locale === "fa" ? "گنجینهٔ آقایان" : "Men’s Treasury",
-          href: `/${locale}/collections/men`,
+          label: locale === "fa" ? "گنجینهٔ بافت" : "Woven Treasury",
+          href: `/${locale}/collections/weave`,
           icon: Sparkles,
         },
       ],

@@ -3,7 +3,6 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { setRequestLocale } from "next-intl/server";
 
-import { CatalogCategoryNavigation } from "@/components/catalog-category-navigation";
 import { CatalogProductCard } from "@/components/catalog-product-card";
 import { InternalPageShell } from "@/components/internal-page-shell";
 import { AllProductsRuneIcon } from "@/components/material-rune-icons";
@@ -122,7 +121,9 @@ export default async function ProductsPage({ params, searchParams }: ProductsPag
   const rawSearch = single(raw.q)?.trim() ?? "";
   const smartQuery = parseSmartCatalogQuery(rawSearch);
   const search = smartQuery.search;
-  const rawMaterial = single(raw.material) ?? (smartQuery.material === "GOLD" ? "gold" : smartQuery.material === "SILVER" ? "silver" : undefined);
+  const rawTreasury = single(raw.treasury);
+  const lockedTreasury = rawTreasury === "gold" || rawTreasury === "silver" || rawTreasury === "weave" ? rawTreasury : undefined;
+  const rawMaterial = lockedTreasury ?? single(raw.material) ?? (smartQuery.material === "GOLD" ? "gold" : smartQuery.material === "SILVER" ? "silver" : undefined);
   const rawCollection = single(raw.collection) ?? smartQuery.collectionSlug;
   const minPrice = single(raw.minPrice) ?? smartQuery.minPriceToman ?? "";
   const maxPrice = single(raw.maxPrice) ?? smartQuery.maxPriceToman ?? "";
@@ -138,9 +139,19 @@ export default async function ProductsPage({ params, searchParams }: ProductsPag
 
   const material: CatalogMaterial | undefined =
     rawMaterial === "gold" ? "GOLD" : rawMaterial === "silver" ? "SILVER" : undefined;
+  const weaveOnly = rawMaterial === "weave";
   const collectionSlug = rawCollection && collectionSlugs.has(rawCollection)
     ? rawCollection
     : undefined;
+  const treasuryTitle = weaveOnly
+    ? (isPersian ? "گنجینهٔ بافت" : "Woven Treasury")
+    : mensCollection
+      ? (isPersian ? "آثار آقایان" : "Men’s Creations")
+    : material === "GOLD"
+      ? (isPersian ? "گنجینهٔ طلا" : "Gold Treasury")
+      : material === "SILVER"
+        ? (isPersian ? "گنجینهٔ نقره" : "Silver Treasury")
+        : (isPersian ? "تمام آثار الوریا" : "All Eloria Creations");
 
   let catalog = {
     products: [],
@@ -157,6 +168,7 @@ export default async function ProductsPage({ params, searchParams }: ProductsPag
       catalog = await getPricedProductsCatalog({
         search,
         material,
+        weaveOnly,
         collectionSlug,
         availability,
         minPriceToman: minPrice,
@@ -185,7 +197,7 @@ export default async function ProductsPage({ params, searchParams }: ProductsPag
 
           <p className="text-xs uppercase tracking-[0.28em] text-[#cfb66f]/75">Eloria Archive</p>
           <h1 className={isPersian ? "font-persian-title mt-2 pb-3 text-3xl font-semibold leading-[1.9] text-[#f6e8c6] sm:text-4xl" : "mt-2 text-3xl font-semibold text-[#f6e8c6] sm:text-4xl"}>
-            {isPersian ? (mensCollection ? "گنجینهٔ آقایان" : "تمام آثار الوریا") : (mensCollection ? "Men’s Treasury" : "All Eloria Creations")}
+            {treasuryTitle}
           </h1>
           <p className="mx-auto mt-1 max-w-2xl text-sm leading-8 text-[#cbbd9d]/75">
             {isPersian
@@ -194,19 +206,14 @@ export default async function ProductsPage({ params, searchParams }: ProductsPag
           </p>
         </header>
 
-        <CatalogCategoryNavigation
-          locale={locale}
-          activeCollection={collectionSlug}
-          collections={collections}
-        />
-
         <div className="mt-8">
           <ProductCatalogFilters
             key={`${search}:${rawMaterial ?? "all"}:${collectionSlug ?? "all"}:${minPrice}:${maxPrice}:${rawAvailability ?? "all"}`}
             locale={locale}
+            lockedTreasury={lockedTreasury}
             initialFilters={{
               search,
-              material: rawMaterial === "gold" || rawMaterial === "silver" ? rawMaterial : "all",
+              material: rawMaterial === "gold" || rawMaterial === "silver" || rawMaterial === "weave" ? rawMaterial : "all",
               collection: collectionSlug ?? "all",
               minPrice,
               maxPrice,

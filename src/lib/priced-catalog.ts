@@ -124,6 +124,7 @@ function getCatalogCacheKey(filters: PricedCatalogFilters): string {
     search: filters.search?.trim() ?? "",
     collectionSlug: filters.collectionSlug?.trim().toLowerCase() ?? "",
     material: filters.material ?? "",
+    weaveOnly: filters.weaveOnly === true,
     availability: filters.availability ?? "ALL",
     page: normalizePage(filters.page),
     pageSize: normalizePageSize(filters.pageSize),

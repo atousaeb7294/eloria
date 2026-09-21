@@ -166,19 +166,19 @@ export function SiteHeader({ locale }: SiteHeaderProps) {
     {
       label: isPersian ? "گنجینهٔ طلا" : "Gold Treasury",
       slug: "gold",
-      href: `/${resolvedLocale}/products?material=gold`,
+      href: `/${resolvedLocale}/collections/gold`,
       icon: GoldRuneIcon,
     },
     {
       label: isPersian ? "گنجینهٔ نقره" : "Silver Treasury",
       slug: "silver",
-      href: `/${resolvedLocale}/products?material=silver`,
+      href: `/${resolvedLocale}/collections/silver`,
       icon: SilverRuneIcon,
     },
     {
-      label: isPersian ? "گنجینهٔ آقایان" : "Men’s Treasury",
-      slug: "men",
-      href: `/${resolvedLocale}/collections/men`,
+      label: isPersian ? "گنجینهٔ بافت" : "Woven Treasury",
+      slug: "weave",
+      href: `/${resolvedLocale}/collections/weave`,
       icon: WorldRuneIcon,
     },
   ];

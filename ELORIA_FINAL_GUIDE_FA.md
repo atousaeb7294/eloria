@@ -153,23 +153,7 @@ docker compose -f docker-compose.parspack.yml up -d --force-recreate
 
 ## ۶. eNamad
 
-سه تغییر لازم در خود پروژه انجام شده است: فایل خالی `public/26263305.txt`، متاتگ `<meta name="enamad" content="26263305" />` و مسیر داخلی دامنهٔ اصلی به صفحهٔ فارسی. پس از استقرار این دو آدرس را باز کنید:
-
-```text
-https://eloriagallery.ir/26263305.txt
-https://eloriagallery.ir
-```
-
-برای تأیید عنوان، در `.env` سرور مقدار زیر را موقتاً `true` کنید، سرویس را بازسازی کنید، در eNamad روی «تأیید عنوان» بزنید و بلافاصله دوباره مقدار را `false` کنید و سرویس را بازسازی کنید:
-
-```dotenv
-ELORIA_ENAMAD_TITLE_VERIFICATION="true"
-```
-
-```bash
-cd /opt/eloria
-docker compose -f docker-compose.parspack.yml up -d --force-recreate
-```
+مرحلهٔ آزمایشی تأیید پایان یافته است. فایل و متاتگ عددی آزمایش از خروجی عمومی حذف شده‌اند و فقط نشان رسمی اینماد باقی می‌ماند.
 
 ## ۷. DNS و امنیت ایمیل: SPF و DMARC
 
@@ -190,7 +174,7 @@ docker compose -f docker-compose.parspack.yml up -d --force-recreate
 2. مسیرهای `/fa/about`، `/fa/world` و یک صفحهٔ محصول باز شوند.
 3. پنل ادمین: یک محصول آزمایشی بسازید؛ افسانهٔ یکتا، انتخاب عکس شخصیت و فضای افسانه را کنترل کنید.
 4. در پنل محتوا، شمارندهٔ سئو و صف ایرادها را ببینید.
-5. `https://eloriagallery.ir/26263305.txt` با پاسخ 200 باز شود و متاتگ eNamad در HTML صفحهٔ اصلی وجود داشته باشد.
+5. نشان رسمی اینماد درست نمایش داده شود و هیچ کد آزمایشی در عنوان یا بالای صفحه وجود نداشته باشد.
 6. در Search Console، دامنه را تأیید و `https://eloriagallery.ir/sitemap.xml` را ثبت کنید. عنوان، توضیح، URLهای توصیفی، متن alt، لینک داخلی و محتوای مفید مهم‌اند؛ «تعداد کلمهٔ جادویی» یا تکرار مصنوعی کلمات کلیدی نیست.
 
 Google صراحتاً می‌گوید هیچ ترفند خودکاری رتبهٔ اول را تضمین نمی‌کند؛ تمرکز باید بر محتوای منحصربه‌فرد، مفید، قابل‌خواندن و ساختار قابل‌خزش باشد. مرجع‌ها: [SEO Starter Guide گوگل](https://developers.google.com/search/docs/fundamentals/seo-starter-guide)، [Product structured data](https://developers.google.com/search/docs/appearance/structured-data/product-snippet)، و [راهنمای Sitemap گوگل](https://developers.google.com/search/docs/crawling-indexing/sitemaps/overview).

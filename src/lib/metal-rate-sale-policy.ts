@@ -78,83 +78,6 @@ export type MetalRateSaleDecision = {
     string;
 };
 
-const PERCENT_SCALE =
-  3;
-
-const PERCENT_FACTOR =
-  BigInt(1000);
-
-const PERCENT_DENOMINATOR =
-  BigInt(100) *
-  PERCENT_FACTOR;
-
-const CLOSED_MARKET_MARGIN_TIERS = {
-  GOLD: [
-    { maxAgeHours: 24, percent: "3" },
-    { maxAgeHours: 48, percent: "5" },
-    { maxAgeHours: 72, percent: "8" },
-    { maxAgeHours: 96, percent: "12" },
-    { maxAgeHours: 240, percent: "15" },
-  ],
-
-  SILVER: [
-    { maxAgeHours: 24, percent: "5" },
-    { maxAgeHours: 48, percent: "8" },
-    { maxAgeHours: 72, percent: "12" },
-    { maxAgeHours: 96, percent: "18" },
-    { maxAgeHours: 240, percent: "25" },
-  ],
-} as const;
-
-function getTierSafetyMarginPercent({
-  material,
-  ageSeconds,
-  configuredMinimumPercent,
-}: {
-  material:
-    GetMetalRateSaleDecisionInput["material"];
-
-  ageSeconds:
-    number;
-
-  configuredMinimumPercent:
-    DecimalInput;
-}): bigint {
-  const configuredMinimum =
-    parseSafetyMarginPercent(
-      configuredMinimumPercent,
-    );
-
-  const ageHours =
-    ageSeconds / 3600;
-
-  const tier =
-    CLOSED_MARKET_MARGIN_TIERS[
-      material
-    ].find(
-      (item) =>
-        ageHours <=
-        item.maxAgeHours,
-    ) ??
-    CLOSED_MARKET_MARGIN_TIERS[
-      material
-    ][
-      CLOSED_MARKET_MARGIN_TIERS[
-        material
-      ].length - 1
-    ];
-
-  const tierMinimum =
-    parseSafetyMarginPercent(
-      tier.percent,
-    );
-
-  return configuredMinimum >
-    tierMinimum
-    ? configuredMinimum
-    : tierMinimum;
-}
-
 function normalizeDecimalInput(
   value: DecimalInput,
   label: string,
@@ -234,153 +157,6 @@ function parsePositiveInteger(
   return parsed;
 }
 
-function parseSafetyMarginPercent(
-  value: DecimalInput,
-): bigint {
-  const normalized =
-    normalizeDecimalInput(
-      value,
-      "درصد حاشیه امنیت",
-    );
-
-  if (
-    !/^\d+(?:\.\d+)?$/.test(
-      normalized,
-    )
-  ) {
-    throw new Error(
-      "درصد حاشیه امنیت معتبر نیست.",
-    );
-  }
-
-  const [
-    wholePart,
-    fractionPart = "",
-  ] =
-    normalized.split(
-      ".",
-    );
-
-  const extraFraction =
-    fractionPart.slice(
-      PERCENT_SCALE,
-    );
-
-  if (
-    extraFraction.length >
-      0 &&
-    /[1-9]/.test(
-      extraFraction,
-    )
-  ) {
-    throw new Error(
-      "درصد حاشیه امنیت حداکثر سه رقم اعشار می‌پذیرد.",
-    );
-  }
-
-  const normalizedFraction =
-    fractionPart
-      .slice(
-        0,
-        PERCENT_SCALE,
-      )
-      .padEnd(
-        PERCENT_SCALE,
-        "0",
-      );
-
-  const parsed =
-    BigInt(
-      wholePart,
-    ) *
-      PERCENT_FACTOR +
-    BigInt(
-      normalizedFraction,
-    );
-
-  const maximumPercent =
-    BigInt(100) *
-    PERCENT_FACTOR;
-
-  if (
-    parsed >
-    maximumPercent
-  ) {
-    throw new Error(
-      "درصد حاشیه امنیت نمی‌تواند بیشتر از ۱۰۰ درصد باشد.",
-    );
-  }
-
-  return parsed;
-}
-
-function formatScaledPercent(
-  value: bigint,
-): string {
-  const whole =
-    value /
-    PERCENT_FACTOR;
-
-  const fraction =
-    (
-      value %
-      PERCENT_FACTOR
-    )
-      .toString()
-      .padStart(
-        PERCENT_SCALE,
-        "0",
-      )
-      .replace(
-        /0+$/,
-        "",
-      );
-
-  return fraction
-    ? `${whole.toString()}.${fraction}`
-    : whole.toString();
-}
-
-/**
- * برای جلوگیری از کمتر محاسبه‌شدن حاشیه امنیت،
- * تقسیم همیشه رو به بالا گرد می‌شود.
- */
-function divideRoundUp(
-  numerator: bigint,
-  denominator: bigint,
-): bigint {
-  if (
-    denominator <=
-    BigInt(0)
-  ) {
-    throw new Error(
-      "مخرج محاسبه باید بیشتر از صفر باشد.",
-    );
-  }
-
-  if (
-    numerator <
-    BigInt(0)
-  ) {
-    throw new Error(
-      "مقدار منفی در این محاسبه پشتیبانی نمی‌شود.",
-    );
-  }
-
-  if (
-    numerator ===
-    BigInt(0)
-  ) {
-    return BigInt(0);
-  }
-
-  return (
-    numerator +
-    denominator -
-    BigInt(1)
-  ) / denominator;
-}
-
 function createUnavailableDecision({
   referencePrice,
   freshness,
@@ -433,8 +209,7 @@ function createUnavailableDecision({
  *    بدون حاشیه امنیت و در حالت LIVE استفاده می‌شود.
  *
  * ۲. نرخ قدیمی با زمان معتبر:
- *    فقط تا سقف closedMarketMaxAgeMinutes و با حاشیه امنیت
- *    پلکانی متناسب با نوع فلز و عمر نرخ در حالت CLOSED_MARKET
+ *    بدون هیچ افزایش تا رسیدن نرخ جدید در حالت CLOSED_MARKET
  *    استفاده می‌شود.
  *
  * ۳. نرخ دارای زمان مفقود، نامعتبر یا آینده:
@@ -450,12 +225,9 @@ export function getMetalRateSaleDecision(
   input: GetMetalRateSaleDecisionInput,
 ): MetalRateSaleDecision {
   const {
-    material,
     referencePricePerGramToman,
     freshness,
     closedMarketPricingEnabled,
-    closedMarketMaxAgeMinutes,
-    closedMarketSafetyMarginPercent,
   } =
     input;
 
@@ -543,46 +315,6 @@ export function getMetalRateSaleDecision(
     });
   }
 
-  const normalizedMaxAgeMinutes =
-    Number.isFinite(closedMarketMaxAgeMinutes)
-      ? Math.max(0, Math.trunc(closedMarketMaxAgeMinutes))
-      : 0;
-
-  const maximumAgeSeconds =
-    normalizedMaxAgeMinutes * 60;
-
-  if (
-    maximumAgeSeconds <= 0 ||
-    freshness.ageSeconds > maximumAgeSeconds
-  ) {
-    return createUnavailableDecision({
-      referencePrice,
-      freshness,
-      reason: "RATE_TOO_OLD",
-    });
-  }
-
-  const safetyMarginPercent =
-    getTierSafetyMarginPercent({
-      material,
-      ageSeconds:
-        freshness.ageSeconds,
-      configuredMinimumPercent:
-        closedMarketSafetyMarginPercent,
-    });
-
-  const safetyMarginAmount =
-    divideRoundUp(
-      referencePrice *
-        safetyMarginPercent,
-
-      PERCENT_DENOMINATOR,
-    );
-
-  const effectivePrice =
-    referencePrice +
-    safetyMarginAmount;
-
   return {
     mode:
       "CLOSED_MARKET",
@@ -603,14 +335,12 @@ export function getMetalRateSaleDecision(
       referencePrice.toString(),
 
     effectivePricePerGramToman:
-      effectivePrice.toString(),
+      referencePrice.toString(),
 
     appliedSafetyMarginPercent:
-      formatScaledPercent(
-        safetyMarginPercent,
-      ),
+      "0",
 
     safetyMarginAmountToman:
-      safetyMarginAmount.toString(),
+      "0",
   };
 }

@@ -306,6 +306,30 @@ export async function GET(request: Request) {
       retryAfterTimestamp = 0;
       return jsonResponse(items, "database-compatible");
     } catch (compatibleError) {
+      const productionSite = process.env.NEXT_PUBLIC_SITE_URL?.trim();
+      const alreadyMirrored = request.headers.get("x-eloria-product-mirror") === "1";
+      if (productionSite && !alreadyMirrored) {
+        try {
+          const productionOrigin = new URL(productionSite).origin;
+          if (productionOrigin !== new URL(request.url).origin) {
+            const mirroredResponse = await fetch(`${productionOrigin}/api/home-featured-products?locale=${locale}`, {
+              headers: { "x-eloria-product-mirror": "1" },
+              cache: "no-store",
+              signal: AbortSignal.timeout(DATABASE_TIMEOUT_MS * 2),
+            });
+            if (mirroredResponse.ok) {
+              const mirroredPayload = await mirroredResponse.json() as { items?: HomeFeaturedItem[] };
+              if (mirroredPayload.items?.length) {
+                retryAfterTimestamp = 0;
+                return jsonResponse(mirroredPayload.items, "database-compatible");
+              }
+            }
+          }
+        } catch (mirrorError) {
+          console.warn("[Eloria Home] Production product mirror unavailable.", mirrorError);
+        }
+      }
+
       retryAfterTimestamp = Date.now() + FAILURE_COOLDOWN_MS;
       console.warn("[Eloria Home] Product feed unavailable; local treasury fallback remains active.", compatibleError);
       return jsonResponse([], "fallback");
