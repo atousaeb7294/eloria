@@ -220,13 +220,13 @@ model PricingPolicy {
   material                        MaterialType @unique
   referencePurity                 Int
   defaultProfitPercent            Decimal      @default(7) @db.Decimal(7, 3)
-  defaultTaxPercent               Decimal      @default(10) @db.Decimal(7, 3)
+  defaultTaxPercent               Decimal      @default(0) @db.Decimal(7, 3)
   taxMetalValue                   Boolean      @default(false)
   quoteTtlSeconds                 Int          @default(120)
   staleAfterMinutes               Int          @default(15)
   closedMarketPricingEnabled      Boolean      @default(true)
   closedMarketMaxAgeMinutes       Int          @default(14400)
-  closedMarketSafetyMarginPercent Decimal      @default(3) @db.Decimal(7, 3)
+  closedMarketSafetyMarginPercent Decimal      @default(0) @db.Decimal(7, 3)
   roundingStep                    Int          @default(1)
   isActive                        Boolean      @default(true)
   createdAt                       DateTime     @default(now())
