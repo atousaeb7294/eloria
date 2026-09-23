@@ -271,7 +271,7 @@ export function AdminProductForm({
 
           <div className="md:col-span-2 rounded-2xl border border-[#cfb45f]/18 bg-[#061f17]/65 p-4">
             <p className="text-sm text-[#ead79f]">ترکیب فلز و عضویت در گنجینه‌ها</p>
-            <p className="mt-1 text-xs leading-6 text-[#9f9278]">هر دو گزینه را برای اثر ترکیبی فعال کنید. اثر به‌صورت هم‌زمان در گنجینهٔ طلا و نقره نمایش داده می‌شود.</p>
+            <p className="mt-1 text-xs leading-6 text-[#9f9278]">برای اثر ترکیبی، هر دو گزینه و وزن جداگانهٔ هر فلز را وارد کنید. اثر در هر دو گنجینه نمایش داده می‌شود؛ هنر دست و بسته‌بندی یک‌بار حساب می‌شوند. برای بافت بدون فلز، هر دو گزینه را بردارید و قیمت ثابت بگذارید.</p>
             <div className="mt-4 grid gap-3 sm:grid-cols-2">
               <label className="flex items-center gap-3 rounded-xl border border-[#d9b85f]/20 p-3 text-sm text-[#e8d39a]">
                 <input name="hasGold" type="checkbox" checked={hasGold} onChange={(event) => setHasGold(event.target.checked)} className="size-4 accent-[#d8ba62]" /> دارای طلا
@@ -279,8 +279,8 @@ export function AdminProductForm({
               <label className="flex items-center gap-3 rounded-xl border border-[#d8e2e5]/16 p-3 text-sm text-[#dfe8ea]">
                 <input name="hasSilver" type="checkbox" checked={hasSilver} onChange={(event) => setHasSilver(event.target.checked)} className="size-4 accent-[#c9d5d9]" /> دارای نقره
               </label>
-              {hasGold ? <Field label="وزن طلای به‌کاررفته (گرم)"><input className={inputClassName} defaultValue={value.goldComponentWeight} inputMode="decimal" name="goldComponentWeight" /></Field> : null}
-              {hasSilver ? <Field label="وزن نقرهٔ به‌کاررفته (گرم)"><input className={inputClassName} defaultValue={value.silverComponentWeight} inputMode="decimal" name="silverComponentWeight" /></Field> : null}
+              {hasGold ? <Field label="وزن طلای به‌کاررفته (گرم)"><input className={inputClassName} defaultValue={value.goldComponentWeight} inputMode="decimal" name="goldComponentWeight" required={hasGold && hasSilver} /></Field> : null}
+              {hasSilver ? <Field label="وزن نقرهٔ به‌کاررفته (گرم)"><input className={inputClassName} defaultValue={value.silverComponentWeight} inputMode="decimal" name="silverComponentWeight" required={hasGold && hasSilver} /></Field> : null}
             </div>
           </div>
 

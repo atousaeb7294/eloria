@@ -1,3 +1,4 @@
+import { TreasuryProductSalon } from "@/components/treasury-product-salon";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -28,20 +29,11 @@ function single(value: string | string[] | undefined): string | undefined {
 }
 
 function positivePage(value: string | undefined): number {
-  if (
-    !value ||
-    !/^\d+$/.test(
-      value,
-    )
-  ) {
+  if (!value || !/^\d+$/.test(value)) {
     return 1;
   }
 
-  return normalizeCatalogPage(
-    Number(
-      value,
-    ),
-  );
+  return normalizeCatalogPage(Number(value));
 }
 
 function pageHref(
@@ -98,7 +90,10 @@ export async function generateMetadata({
   };
 }
 
-export default async function ProductsPage({ params, searchParams }: ProductsPageProps) {
+export default async function ProductsPage({
+  params,
+  searchParams,
+}: ProductsPageProps) {
   const { locale } = await params;
   if (locale !== "fa" && locale !== "en") notFound();
   setRequestLocale(locale);
@@ -112,18 +107,36 @@ export default async function ProductsPage({ params, searchParams }: ProductsPag
     collections = await getActiveCatalogCollections();
   } catch (error) {
     catalogUnavailable = true;
-    console.error("[Eloria Products] Collection navigation is unavailable.", error);
+    console.error(
+      "[Eloria Products] Collection navigation is unavailable.",
+      error,
+    );
   }
 
-  const collectionSlugs = new Set(["men", ...collections.map(item => item.slug)]);
+  const collectionSlugs = new Set([
+    "men",
+    ...collections.map((item) => item.slug),
+  ]);
 
   const mensCollection = single(raw.collection) === "men";
   const rawSearch = single(raw.q)?.trim() ?? "";
   const smartQuery = parseSmartCatalogQuery(rawSearch);
   const search = smartQuery.search;
   const rawTreasury = single(raw.treasury);
-  const lockedTreasury = rawTreasury === "gold" || rawTreasury === "silver" || rawTreasury === "weave" ? rawTreasury : undefined;
-  const rawMaterial = lockedTreasury ?? single(raw.material) ?? (smartQuery.material === "GOLD" ? "gold" : smartQuery.material === "SILVER" ? "silver" : undefined);
+  const lockedTreasury =
+    rawTreasury === "gold" ||
+    rawTreasury === "silver" ||
+    rawTreasury === "weave"
+      ? rawTreasury
+      : undefined;
+  const rawMaterial =
+    lockedTreasury ??
+    single(raw.material) ??
+    (smartQuery.material === "GOLD"
+      ? "gold"
+      : smartQuery.material === "SILVER"
+        ? "silver"
+        : undefined);
   const rawCollection = single(raw.collection) ?? smartQuery.collectionSlug;
   const minPrice = single(raw.minPrice) ?? smartQuery.minPriceToman ?? "";
   const maxPrice = single(raw.maxPrice) ?? smartQuery.maxPriceToman ?? "";
@@ -138,20 +151,35 @@ export default async function ProductsPage({ params, searchParams }: ProductsPag
         : "ALL";
 
   const material: CatalogMaterial | undefined =
-    rawMaterial === "gold" ? "GOLD" : rawMaterial === "silver" ? "SILVER" : undefined;
+    rawMaterial === "gold"
+      ? "GOLD"
+      : rawMaterial === "silver"
+        ? "SILVER"
+        : undefined;
   const weaveOnly = rawMaterial === "weave";
-  const collectionSlug = rawCollection && collectionSlugs.has(rawCollection)
-    ? rawCollection
-    : undefined;
+  const collectionSlug =
+    rawCollection && collectionSlugs.has(rawCollection)
+      ? rawCollection
+      : undefined;
   const treasuryTitle = weaveOnly
-    ? (isPersian ? "گنجینهٔ بافت" : "Woven Treasury")
+    ? isPersian
+      ? "گنجینهٔ بافت"
+      : "Woven Treasury"
     : mensCollection
-      ? (isPersian ? "آثار آقایان" : "Men’s Creations")
-    : material === "GOLD"
-      ? (isPersian ? "گنجینهٔ طلا" : "Gold Treasury")
-      : material === "SILVER"
-        ? (isPersian ? "گنجینهٔ نقره" : "Silver Treasury")
-        : (isPersian ? "تمام آثار الوریا" : "All Eloria Creations");
+      ? isPersian
+        ? "آثار آقایان"
+        : "Men’s Creations"
+      : material === "GOLD"
+        ? isPersian
+          ? "گنجینهٔ طلا"
+          : "Gold Treasury"
+        : material === "SILVER"
+          ? isPersian
+            ? "گنجینهٔ نقره"
+            : "Silver Treasury"
+          : isPersian
+            ? "تمام آثار الوریا"
+            : "All Eloria Creations";
 
   let catalog = {
     products: [],
@@ -195,8 +223,16 @@ export default async function ProductsPage({ params, searchParams }: ProductsPag
             <span className="h-px w-14 bg-gradient-to-l from-transparent to-[#d3b35b]/70 sm:w-24" />
           </div>
 
-          <p className="text-xs uppercase tracking-[0.28em] text-[#cfb66f]/75">Eloria Archive</p>
-          <h1 className={isPersian ? "font-persian-title mt-2 pb-3 text-3xl font-semibold leading-[1.9] text-[#f6e8c6] sm:text-4xl" : "mt-2 text-3xl font-semibold text-[#f6e8c6] sm:text-4xl"}>
+          <p className="text-xs uppercase tracking-[0.28em] text-[#cfb66f]/75">
+            Eloria Archive
+          </p>
+          <h1
+            className={
+              isPersian
+                ? "font-persian-title mt-2 pb-3 text-3xl font-semibold leading-[1.9] text-[#f6e8c6] sm:text-4xl"
+                : "mt-2 text-3xl font-semibold text-[#f6e8c6] sm:text-4xl"
+            }
+          >
             {treasuryTitle}
           </h1>
           <p className="mx-auto mt-1 max-w-2xl text-sm leading-8 text-[#cbbd9d]/75">
@@ -213,12 +249,18 @@ export default async function ProductsPage({ params, searchParams }: ProductsPag
             lockedTreasury={lockedTreasury}
             initialFilters={{
               search,
-              material: rawMaterial === "gold" || rawMaterial === "silver" || rawMaterial === "weave" ? rawMaterial : "all",
+              material:
+                rawMaterial === "gold" ||
+                rawMaterial === "silver" ||
+                rawMaterial === "weave"
+                  ? rawMaterial
+                  : "all",
               collection: collectionSlug ?? "all",
               minPrice,
               maxPrice,
               availability:
-                rawAvailability === "available" || rawAvailability === "out-of-stock"
+                rawAvailability === "available" ||
+                rawAvailability === "out-of-stock"
                   ? rawAvailability
                   : "all",
             }}
@@ -226,7 +268,10 @@ export default async function ProductsPage({ params, searchParams }: ProductsPag
         </div>
 
         {catalogUnavailable && (
-          <div role="status" className="mx-auto mt-8 max-w-3xl rounded-2xl border border-amber-200/20 bg-amber-100/[0.05] px-5 py-4 text-center text-sm leading-7 text-amber-50/80">
+          <div
+            role="status"
+            className="mx-auto mt-8 max-w-3xl rounded-2xl border border-amber-200/20 bg-amber-100/[0.05] px-5 py-4 text-center text-sm leading-7 text-amber-50/80"
+          >
             {isPersian
               ? "ارتباط با فهرست آثار موقتاً برقرار نیست. صفحه را دوباره بارگذاری کنید؛ سایر بخش‌های سایت همچنان در دسترس‌اند."
               : "The live catalog is temporarily unavailable. Reload the page; the rest of the site remains accessible."}
@@ -269,10 +314,15 @@ export default async function ProductsPage({ params, searchParams }: ProductsPag
                 ? "اثری با این مشخصات پیدا نشد. فیلترها را تغییر دهید."
                 : "No creation matches these filters. Adjust the filters and try again."}
             </p>
-            <Link href={`/${locale}/products`} className="mx-auto mt-7 inline-flex min-h-11 items-center justify-center rounded-full border border-[#d9b85f]/35 bg-[#d9b85f]/[0.06] px-6 text-xs text-[#efd88e] transition hover:border-[#ecd17b]/65">
+            <Link
+              href={`/${locale}/products`}
+              className="mx-auto mt-7 inline-flex min-h-11 items-center justify-center rounded-full border border-[#d9b85f]/35 bg-[#d9b85f]/[0.06] px-6 text-xs text-[#efd88e] transition hover:border-[#ecd17b]/65"
+            >
               {isPersian ? "نمایش تمام آثار" : "Show all creations"}
             </Link>
           </div>
+        ) : lockedTreasury ? (
+          <TreasuryProductSalon products={catalog.products} locale={locale} />
         ) : (
           <div className="mt-8 grid gap-5 sm:grid-cols-2 sm:gap-7 lg:grid-cols-3">
             {catalog.products.map((product, index) => (
@@ -288,7 +338,10 @@ export default async function ProductsPage({ params, searchParams }: ProductsPag
         )}
 
         {catalog.pageCount > 1 && (
-          <nav aria-label={isPersian ? "صفحه‌بندی آثار" : "Catalog pagination"} className="mt-12 flex items-center justify-center gap-3">
+          <nav
+            aria-label={isPersian ? "صفحه‌بندی آثار" : "Catalog pagination"}
+            className="mt-12 flex items-center justify-center gap-3"
+          >
             {catalog.page === 1 ? (
               <span
                 aria-disabled="true"

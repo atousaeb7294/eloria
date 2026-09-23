@@ -1,3 +1,4 @@
+import { TreasuryTransitionProvider } from "@/components/treasury-transition";
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
 
@@ -139,7 +140,7 @@ export default async function LocaleLayout({
               locale={locale}
               enabled={isSiteMeasurementEnabled()}
             />
-            {children}
+            <TreasuryTransitionProvider>{children}</TreasuryTransitionProvider>
             <DeferredSiteTools locale={locale} />
           </PageBackgroundProvider>
         </NextIntlClientProvider>

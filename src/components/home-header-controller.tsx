@@ -167,6 +167,8 @@ export function HomeHeaderController({ locale }: HomeHeaderControllerProps) {
 
   const [fullHeaderVisible, setFullHeaderVisible] = useState(false);
 
+  const [storyActive, setStoryActive] = useState(false);
+
   const [menuOpen, setMenuOpen] = useState(false);
 
   const beginHoverNavigation = (href: string) => {
@@ -249,8 +251,20 @@ export function HomeHeaderController({ locale }: HomeHeaderControllerProps) {
 
       const shouldShowFullHeader = window.scrollY >= threshold;
 
+      const storyStage = document.querySelector<HTMLElement>(
+        '[data-eloria-story-stage="true"]',
+      );
+      const storyRect = storyStage?.getBoundingClientRect();
+      const shouldUseStoryHeader = Boolean(
+        storyRect && storyRect.top <= 0 && storyRect.bottom >= window.innerHeight,
+      );
+
       setFullHeaderVisible((current) =>
         current === shouldShowFullHeader ? current : shouldShowFullHeader,
+      );
+
+      setStoryActive((current) =>
+        current === shouldUseStoryHeader ? current : shouldUseStoryHeader,
       );
 
       if (shouldShowFullHeader) {
@@ -315,7 +329,7 @@ export function HomeHeaderController({ locale }: HomeHeaderControllerProps) {
     <>
       {/* هدر مینیمال روی Hero */}
       <AnimatePresence>
-        {!fullHeaderVisible && (
+        {(!fullHeaderVisible || storyActive) && (
           <motion.header
             initial={
               reducedMotion
@@ -463,7 +477,7 @@ export function HomeHeaderController({ locale }: HomeHeaderControllerProps) {
 
       {/* پنجره منو */}
       <AnimatePresence>
-        {menuOpen && !fullHeaderVisible && (
+        {menuOpen && (!fullHeaderVisible || storyActive) && (
           <>
             <motion.button
               type="button"
@@ -641,7 +655,7 @@ export function HomeHeaderController({ locale }: HomeHeaderControllerProps) {
 
       {/* هدر کامل پس از عبور از Hero */}
       <AnimatePresence>
-        {fullHeaderVisible && (
+        {fullHeaderVisible && !storyActive && (
           <motion.div
             initial={
               reducedMotion

@@ -20,6 +20,8 @@ type HomeFeaturedItem = {
   hasSilver?: boolean;
   audience?: "WOMEN" | "MEN";
   stock?: number;
+  previewPriceToman?: string;
+  previewOnly?: boolean;
 };
 
 const DEFAULT_STORY_IMAGE = "/images/hero/eloria-hero.webp";
@@ -38,6 +40,20 @@ function storyImage(product: {
 }
 
 let retryAfterTimestamp = 0;
+
+function developmentPreview(locale:"fa"|"en"):HomeFeaturedItem[] {
+  if(process.env.NODE_ENV==="production")return [];
+  const fa=locale==="fa";
+  const products=[
+    ["preview-gold-necklace",fa?"گردنبند خورشید":"Sun necklace","/images/collections/necklaces.webp","GOLD","24500000"],
+    ["preview-gold-bracelet",fa?"دستبند روشنایی":"Light bracelet","/images/collections/bracelet.webp","GOLD","18750000"],
+    ["preview-silver-earring",fa?"گوشواره مهتاب":"Moonlight earrings","/images/collections/earring.webp","SILVER","6950000"],
+    ["preview-silver-bracelet",fa?"دستبند سپیدار":"Silver bracelet","/images/collections/bracelet.jpg","SILVER","8300000"],
+    ["preview-woven-one",fa?"نشان بافتهٔ هفت نگهبان":"Seven guardians weave","/images/guardians/atousa-202609.webp","WEAVE","3200000"],
+    ["preview-woven-two",fa?"بافت افسانهٔ آناهید":"Anahid story weave","/images/guardians/anahid.webp","WEAVE","2850000"],
+  ] as const;
+  return products.map(([slug,name,imageUrl,material,previewPriceToman])=>({slug,name,imageUrl,href:`/${locale}/collections`,material:material==="GOLD"||material==="SILVER"?material:undefined,hasGold:material==="GOLD",hasSilver:material==="SILVER",stock:1,badge:fa?"پیش‌نمایش محلی چیدمان":"Local layout preview",previewPriceToman,previewOnly:true}));
+}
 
 const configuredSlugs = (process.env.HOME_FEATURED_PRODUCT_SLUGS ?? "")
   .split(",")
@@ -119,7 +135,7 @@ export async function GET(request: Request) {
   const url = new URL(request.url);
   const locale: "fa" | "en" = url.searchParams.get("locale") === "en" ? "en" : "fa";
 
-  if (Date.now() < retryAfterTimestamp) return jsonResponse([], "cooldown");
+  if (Date.now() < retryAfterTimestamp) return jsonResponse(developmentPreview(locale), "cooldown");
 
   const now = new Date();
   const recentSince = new Date(now.getTime() - SMART_LOOKBACK_DAYS * 86_400_000);
@@ -323,6 +339,13 @@ export async function GET(request: Request) {
       retryAfterTimestamp = 0;
       return jsonResponse(items, "database-compatible");
     } catch (compatibleError) {
+      const localPreview = developmentPreview(locale);
+      if (localPreview.length) {
+        retryAfterTimestamp = Date.now() + FAILURE_COOLDOWN_MS;
+        console.warn("[Eloria Home] Local database is unavailable; using the development story preview.", compatibleError);
+        return jsonResponse(localPreview, "fallback");
+      }
+
       const productionSite = process.env.NEXT_PUBLIC_SITE_URL?.trim();
       const alreadyMirrored = request.headers.get("x-eloria-product-mirror") === "1";
       if (productionSite && !alreadyMirrored) {
@@ -349,7 +372,7 @@ export async function GET(request: Request) {
 
       retryAfterTimestamp = Date.now() + FAILURE_COOLDOWN_MS;
       console.warn("[Eloria Home] Product feed unavailable; local treasury fallback remains active.", compatibleError);
-      return jsonResponse([], "fallback");
+      return jsonResponse(developmentPreview(locale), "fallback");
     }
   }
 }

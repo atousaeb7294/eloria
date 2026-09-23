@@ -37,10 +37,10 @@ export type CartLivePriceEventDetail = {
  * Quote صفحه قیمت و موجودی را مستقل و دقیق بررسی می‌کند.
  */
 const VISIBLE_REFRESH_INTERVAL_MS =
-  120_000;
+  30_000;
 
 const INITIAL_REFRESH_DELAY_MS =
-  45_000;
+  10_000;
 
 const REQUEST_TIMEOUT_MS =
   20_000;

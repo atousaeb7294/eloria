@@ -3,9 +3,6 @@ import {
 } from "next-intl/server";
 
 import {
-  DeferredHomeEffects,
-} from "@/components/deferred-home-effects";
-import {
   EloriaIntroExperience,
 } from "@/components/eloria-intro-experience";
 import {
@@ -14,9 +11,7 @@ import {
 import {
   HomeHeaderController,
 } from "@/components/home-header-controller";
-import {
-  HomeShowcaseSections,
-} from "@/components/home-showcase-sections";
+import { TreasuryPromenade } from "@/components/treasury-promenade";
 import {
   SiteFooter,
 } from "@/components/site-footer";
@@ -39,8 +34,7 @@ export default async function HomePage({
   );
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-[#02140e] text-[#f8f0df]">
-      <DeferredHomeEffects />
+    <div className="relative min-h-screen overflow-x-clip bg-[#02140e] text-[#f8f0df]">
 
 <HomeHeaderController
         locale={
@@ -53,6 +47,7 @@ export default async function HomePage({
         tabIndex={-1}
         className="relative z-10 outline-none"
       >
+        <TreasuryPromenade locale={locale}>
         <HeroShowcase
           locale={
             locale
@@ -62,10 +57,8 @@ export default async function HomePage({
           }
         />
 
-        <HomeShowcaseSections
-          locale={locale}
-          persianTitleClassName="font-persian-title"
-        />
+        </TreasuryPromenade>
+        <div id="promenade-end" />
       </main>
 
       <div className="relative z-10">

@@ -559,6 +559,19 @@ export function useCheckoutPageController({
     };
   }, []);
 
+  useEffect(() => {
+    if (submitting || createdOrder || storedItems.length === 0) return;
+    const refresh = () => {
+      if (document.visibilityState === "visible" && !quoteRequestRef.current) {
+        void loadQuote(storedItems, { background: true, notifyOnChange: true });
+      }
+    };
+    const interval = window.setInterval(refresh, 30000);
+    window.addEventListener("focus", refresh);
+    window.addEventListener("online", refresh);
+    return () => { window.clearInterval(interval); window.removeEventListener("focus", refresh); window.removeEventListener("online", refresh); };
+  }, [submitting, createdOrder, storedItems, loadQuote]);
+
   const getIdempotencyKey =
     useCallback(() => {
       const fingerprint =

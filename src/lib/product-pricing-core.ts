@@ -1027,7 +1027,7 @@ export async function getProductLivePrice({
               {
                 material: "GOLD",
                 weightGrams: product.goldComponentWeight.toString(),
-                productPurity: productPurityFineness ?? 750,
+                productPurity: product.material === "GOLD" ? productPurityFineness ?? 750 : 750,
                 referencePricePerGramToman: rates.GOLD.price,
                 referencePurity: rates.GOLD.purity,
               },

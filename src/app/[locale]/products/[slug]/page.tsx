@@ -1,3 +1,4 @@
+import { LivePurchaseBox } from "@/components/live-purchase-box";
 import { BuyerReviews } from "@/components/buyer-reviews";
 import { canonicalProductStory } from "@/lib/canonical-product-story";
 import { productAudience } from "@/lib/product-audience";
@@ -19,7 +20,6 @@ import {
   Truck,
 } from "lucide-react";
 
-import { AddToCartButton } from "@/components/add-to-cart-button";
 
 import { InternalPageShell } from "@/components/internal-page-shell";
 
@@ -39,13 +39,11 @@ import {
 import { prisma, withDatabaseRetry } from "@/lib/prisma";
 
 import {
-  PriceInformationItem,
   PurchaseAssuranceItem,
   SpecificationItem,
   collectionNames,
   fallbackImages,
   formatDecimal,
-  formatToman,
 } from "@/components/product-detail/product-detail-ui";
 import { truncateMetaDescription } from "@/lib/seo";
 
@@ -485,22 +483,6 @@ export default async function ProductPage({
       ? "نقره"
       : "Silver";
 
-  const weightLabel = isGold
-    ? isPersian
-      ? "وزن طلا"
-      : "Gold weight"
-    : isPersian
-      ? "وزن نقره"
-      : "Silver weight";
-
-  const liveRateLabel = isGold
-    ? isPersian
-      ? "نرخ خام لحظه‌ای طلا"
-      : "Live raw gold rate"
-    : isPersian
-      ? "نرخ خام لحظه‌ای نقره"
-      : "Live raw silver rate";
-
   const productName = isPersian ? productRecord.nameFa : productRecord.nameEn;
 
   const secondaryName = isPersian ? productRecord.nameEn : productRecord.nameFa;
@@ -567,31 +549,6 @@ export default async function ProductPage({
     baseProductPurchasable &&
     rateUsableForSale,
   );
-
-  const finalPrice = result
-    ? `${formatToman(
-        result.pricing.finalPriceToman,
-        locale,
-      )} ${isPersian ? "تومان" : "Toman"}`
-    : isPersian
-      ? "قیمت موقتاً در دسترس نیست"
-      : "Price temporarily unavailable";
-
-  const formattedWeight = weight
-    ? `${formatDecimal(weight, locale)} ${isPersian ? "گرم" : "g"}`
-    : "—";
-
-  const formattedLiveRate = result?.liveRate
-    ? `${formatToman(result.liveRate.originalPricePerGramToman, locale)} ${
-        isPersian ? "تومان" : "Toman"
-      }`
-    : result?.pricing.mode === "MANUAL"
-      ? isPersian
-        ? "قیمت ثابت"
-        : "Manual price"
-      : isPersian
-        ? "نرخ در دسترس نیست"
-        : "Rate unavailable";
 
   const productDescription =
     (isPersian
@@ -878,135 +835,8 @@ export default async function ProductPage({
                 isGold={isGold}
               />
 
-              <div
-                className={[
-                  "mt-6 rounded-[1.8rem] border p-5",
-
-                  isGold
-                    ? "border-[#d9b85f]/30 bg-[radial-gradient(circle_at_top,rgba(213,178,79,0.12),rgba(3,27,19,0.75)_65%)]"
-                    : "border-[#dce6e9]/22 bg-[radial-gradient(circle_at_top,rgba(220,230,233,0.08),rgba(3,27,19,0.75)_65%)]",
-                ].join(" ")}
-              >
-                <div className="flex items-center justify-between gap-4">
-                  <div>
-                    <span className="block text-[10px] text-white/45">
-                      {isPersian ? "قیمت نهایی" : "Final price"}
-                    </span>
-
-                    <span className="mt-1 block text-[9px] text-white/30">
-                      {isPersian
-                        ? "با فرمول مالی ثبت‌شده و نرخ معتبر بازار محاسبه می‌شود"
-                        : "Calculated by the recorded financial formula and a valid market rate"}
-                    </span>
-                  </div>
-
-                  <span
-                    className={[
-                      "inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-[10px]",
-                      !result || (baseProductPurchasable && !rateUsableForSale)
-                        ? "border-amber-200/18 bg-amber-950/30 text-amber-100/75"
-                        : canPurchase
-                          ? "border-emerald-200/15 bg-emerald-950/35 text-emerald-100/75"
-                          : "border-rose-200/18 bg-rose-950/35 text-rose-100/75",
-                    ].join(" ")}
-                  >
-                    <span
-                      className={[
-                        "h-1.5 w-1.5 rounded-full",
-                        !result ||
-                        (baseProductPurchasable && !rateUsableForSale)
-                          ? "bg-amber-300"
-                          : canPurchase
-                            ? "bg-emerald-300"
-                            : "bg-rose-300",
-                      ].join(" ")}
-                    />
-
-                    {!result
-                      ? isPersian
-                        ? "قیمت در حال بازیابی"
-                        : "Price recovery in progress"
-                      : canPurchase
-                        ? isPersian
-                          ? "آماده سفارش"
-                          : "Ready to order"
-                        : baseProductPurchasable
-                          ? isPersian
-                            ? "خرید موقتاً متوقف"
-                            : "Purchasing temporarily paused"
-                          : isPersian
-                            ? "فروخته شده"
-                            : "Unavailable"}
-                  </span>
-                </div>
-
-                <strong
-                  className={[
-                    "mt-3 block text-2xl font-semibold sm:text-3xl",
-
-                    isGold ? "text-[#f4dc95]" : "text-[#e5edef]",
-                  ].join(" ")}
-                >
-                  {finalPrice}
-                </strong>
-
-                {!result ? (
-                  <p
-                    role="status"
-                    className="mt-3 rounded-xl border border-amber-300/15 bg-amber-950/20 px-3 py-2 text-[11px] leading-6 text-amber-100/75"
-                  >
-                    {isPersian
-                      ? "اطلاعات محصول در دسترس است، اما منبع قیمت لحظه‌ای موقتاً پاسخ نمی‌دهد. خرید تا دریافت نرخ معتبر غیرفعال شده است."
-                      : "Product details are available, but the live pricing source is temporarily unavailable. Purchasing is paused until a valid rate is restored."}
-                  </p>
-                ) : result.liveRate && !result.liveRate.isUsableForSale ? (
-                  <p
-                    role="status"
-                    className="mt-3 rounded-xl border border-amber-300/15 bg-amber-950/20 px-3 py-2 text-[11px] leading-6 text-amber-100/75"
-                  >
-                    {isPersian
-                      ? "این نرخ فقط برای اطلاع نمایش داده می‌شود و تا تازه‌شدن نرخ، خرید غیرفعال است."
-                      : "This rate is display-only. Purchasing remains disabled until the market rate is refreshed."}
-                  </p>
-                ) : null}
-
-                <div className="mt-5 grid gap-2 sm:grid-cols-2">
-                  <PriceInformationItem
-                    icon={<Scale className="h-4 w-4" />}
-                    label={weightLabel}
-                    value={formattedWeight}
-                    isGold={isGold}
-                  />
-
-                  <PriceInformationItem
-                    icon={<MaterialIcon className="h-4 w-4" />}
-                    label={liveRateLabel}
-                    value={formattedLiveRate}
-                    isGold={isGold}
-                  />
-                </div>
-
-                <p className="mt-3 rounded-2xl border border-white/[0.055] bg-black/10 px-3.5 py-3 text-[10px] leading-6 text-[#cdbf9f]/62">
-                  {isPersian
-                    ? isGold
-                      ? "قیمت نهایی این اثر، حاصل ارزش روز طلای به‌کاررفته به‌همراه اجرت ساخت، سهم سود و ارزش هنری قطعهٔ دست‌بافت الوریاست؛ همهٔ این موارد در مبلغ نهایی لحاظ شده‌اند."
-                      : "قیمت نهایی این اثر، حاصل ارزش روز نقرهٔ به‌کاررفته به‌همراه اجرت ساخت، سهم سود و ارزش هنری قطعهٔ دست‌بافت الوریاست؛ همهٔ این موارد در مبلغ نهایی لحاظ شده‌اند."
-                    : "The final price combines the live value of the precious metal with craftsmanship, margin, and the artistic value of Eloria’s handwoven element; all are already included in the displayed total."}
-                </p>
-              </div>
-
+              <LivePurchaseBox key={`${productRecord.slug}:${selectedVariantId ?? "base"}`} locale={locale} slug={productRecord.slug} variantId={selectedVariantId} initial={result} />
               <div className="mt-5">
-                {(stock <= 0 || productRecord.status === "OUT_OF_STOCK") ? (
-                  <Link href={`/${locale}/preorder/${productRecord.slug}${selectedVariantId ? `?variant=${encodeURIComponent(selectedVariantId)}` : ""}`} className="flex min-h-14 w-full items-center justify-center rounded-full border border-[#d9b85f]/45 bg-[#d9b85f]/15 px-5 text-[#f6e8c6]">
-                    {isPersian ? "پیش‌سفارش" : "Preorder"}
-                  </Link>
-                ) : <AddToCartButton
-                  locale={locale}
-                  slug={productRecord.slug}
-                  variantId={selectedVariantId}
-                  maxQuantity={stock}
-                  disabled={!canPurchase}
-                />}
                 <ProductWatchButton locale={locale} slug={productRecord.slug} />
                 <ProductShareActions
                   locale={locale}

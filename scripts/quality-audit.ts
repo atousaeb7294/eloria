@@ -12,6 +12,103 @@ const root = process.cwd();
 const checks: Check[] = [];
 const warnings: string[] = [];
 
+const homeRootPage = readFileSync(
+  path.join(root, "src/app/[locale]/page.tsx"),
+  "utf8",
+);
+const homeStory = readFileSync(
+  path.join(root, "src/components/home-featured-album.tsx"),
+  "utf8",
+);
+const homeStoryCompact = homeStory.replace(/\s+/g, "");
+const homeNarrative = readFileSync(
+  path.join(root, "src/components/home-narrative-showcase.tsx"),
+  "utf8",
+);
+const homeEffects = readFileSync(
+  path.join(root, "src/components/home-premium-effects.tsx"),
+  "utf8",
+);
+
+check(
+  "Home hero remains pinned behind the rising narrative surface",
+  homeRootPage.includes('className="sticky top-0 z-0 h-[100svh]') &&
+    homeRootPage.includes('className="relative z-20"'),
+);
+check(
+  "Narrative worlds use the full viewport without a desktop max-width cage",
+  homeNarrative.includes('className="relative w-full"') &&
+    !homeNarrative.includes("max-w-[1600px]"),
+);
+check(
+  "Every product receives fixed viewport pacing independent of catalog size",
+  homeStory.includes("const introViewports = 0.85") &&
+    homeStory.includes("const sceneViewports = 0.72") &&
+    homeStory.includes("const exitViewports = 0.55") &&
+    homeStoryCompact.includes("sceneDistance/sceneViewports"),
+);
+check(
+  "Story scroll settles smoothly to the nearest product chapter",
+  homeStory.includes("settleToNearestScene") &&
+    homeStory.includes('behavior: "smooth"') &&
+    homeStory.includes("snapTimer"),
+);
+check(
+  "Story background avoids a continuously animated full-screen blur",
+  !homeStory.includes("repeat: Infinity") &&
+    !homeStory.includes('className="absolute -inset-[15%]'),
+);
+
+check(
+  "Story home keeps independent sticky world pages compatible",
+  homeRootPage.includes("overflow-x-clip") &&
+    !homeNarrative.includes("eloria-home-lazy-section") &&
+    !homeEffects.includes("'[data-eloria-narrative-section=\"true\"]'") &&
+    homeStory.includes("data-eloria-world-section") &&
+    homeStory.includes('className="sticky top-0 h-[100svh]'),
+);
+check(
+  "Each world owns a scroll-linked product timeline",
+  homeStoryCompact.includes('addEventListener("scroll",schedule') &&
+    homeStoryCompact.includes("sceneDistance/sceneViewports") &&
+    homeStoryCompact.includes("products.length+1") &&
+    homeStory.includes("data-eloria-product-chapter"),
+);
+check(
+  "Story home supports dual-metal products in both worlds",
+  homeStoryCompact.includes('world==="gold"?gold:world==="silver"?silver') &&
+    homeStoryCompact.includes("items.filter((item)=>belongs(item,world))"),
+);
+check(
+  "Each treasury owns an independent billboard and next-product preview",
+  homeStory.includes("data-eloria-world-section") &&
+    homeStory.includes("data-eloria-world-billboard") &&
+    homeStory.includes("function NextProduct") &&
+    homeStory.includes("nextProduct"),
+);
+check(
+  "Treasuries scroll continuously without a redundant overlay navigator",
+  !homeStory.includes("scrollIntoView") &&
+    !homeStory.includes("Direct treasury access") &&
+    !homeStory.includes("data-eloria-world-hub") &&
+    homeStory.includes("data-eloria-world-billboard") &&
+    homeStoryCompact.includes("groups.map(({world,products},index)"),
+);
+check(
+  "World pages keep a fixed shell and GPU-safe inner camera",
+  homeStory.includes("function worldExitTransform") &&
+    homeStory.includes("data-camera-entry") &&
+    homeStory.includes("data-camera-exit") &&
+    homeStory.includes("visual.current.style.transform") &&
+    homeStory.includes("translate3d"),
+);
+check(
+  "Story products always expose a quick-buy interface",
+  homeStoryCompact.includes('fa?"خریدسریع":"Quickbuy"') &&
+    homeStory.includes("<AddToCartButton") &&
+    homeStory.includes("ShoppingBag"),
+);
+
 function read(relativePath: string): string {
   return readFileSync(path.join(root, relativePath), "utf8").replace(
     /\r\n/g,
@@ -376,7 +473,9 @@ try {
   // distributable root is the audit boundary.
   tracked = readdirSync(root, { recursive: true, encoding: "utf8" })
     .map((file) => String(file).replaceAll("\\", "/"))
-    .filter((file) => !/(^|\/)(?:node_modules|\.next|generated)(\/|$)/.test(file));
+    .filter(
+      (file) => !/(^|\/)(?:node_modules|\.next|generated)(\/|$)/.test(file),
+    );
 }
 
 const trackedSecrets = tracked.filter((file) => {
@@ -551,7 +650,8 @@ check(
 
 check(
   "Quality audit is part of package scripts",
-  packageJson.scripts?.["audit:quality"] === "node --import tsx scripts/quality-audit.ts",
+  packageJson.scripts?.["audit:quality"] ===
+    "node --import tsx scripts/quality-audit.ts",
 );
 
 check(

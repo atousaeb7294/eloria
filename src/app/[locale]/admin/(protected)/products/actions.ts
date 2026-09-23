@@ -465,8 +465,13 @@ function parseProductInput(
   const material = readEnum(formData, "material", ["GOLD", "SILVER"] as const, "GOLD");
   const hasGold = formData.get("hasGold") === "on";
   const hasSilver = formData.get("hasSilver") === "on";
-  if (!hasGold && !hasSilver) {
-    throw new AdminProductActionError("حداقل یکی از فلزهای طلا یا نقره را انتخاب کنید.");
+  if (!hasGold && !hasSilver && pricingMode !== "MANUAL") {
+    throw new AdminProductActionError("برای گنجینهٔ بافت بدون فلز، قیمت‌گذاری ثابت را انتخاب کنید.");
+  }
+  const goldComponentWeight = readDecimal(formData, "goldComponentWeight", material === "GOLD" ? readDecimal(formData, "metalWeight", null) : null);
+  const silverComponentWeight = readDecimal(formData, "silverComponentWeight", material === "SILVER" ? readDecimal(formData, "metalWeight", null) : null);
+  if (hasGold && hasSilver && (!goldComponentWeight || !silverComponentWeight || Number(goldComponentWeight) <= 0 || Number(silverComponentWeight) <= 0)) {
+    throw new AdminProductActionError("برای اثر ترکیبی، وزن طلا و وزن نقره را جداگانه و بیشتر از صفر وارد کنید.");
   }
 
   return {
@@ -529,8 +534,8 @@ function parseProductInput(
     material,
     hasGold,
     hasSilver,
-    goldComponentWeight: readDecimal(formData, "goldComponentWeight", material === "GOLD" ? readDecimal(formData, "metalWeight", null) : null),
-    silverComponentWeight: readDecimal(formData, "silverComponentWeight", material === "SILVER" ? readDecimal(formData, "metalWeight", null) : null),
+    goldComponentWeight,
+    silverComponentWeight,
     pricingMode,
     price,
     compareAtPrice:

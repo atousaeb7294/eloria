@@ -45,6 +45,7 @@ export type GetMetalRateSaleDecisionInput = {
   closedMarketMaxAgeMinutes:
     number;
 
+  /** Legacy DB field retained for compatibility; deliberately ignored. Closed-market markup is always zero. */
   closedMarketSafetyMarginPercent:
     DecimalInput;
 };
@@ -218,8 +219,8 @@ function createUnavailableDecision({
  * ۴. اگر قیمت‌گذاری بازار بسته غیرفعال باشد:
  *    نرخ قدیمی قابل استفاده نیست.
  *
- * بازه پیش‌فرض بازار بسته تا ۱۰ روز است. بعد از عبور از سقف
- * تنظیم‌شده، نرخ برای فروش غیرقابل استفاده می‌شود.
+ * فیلدهای قدیمی سقف زمان و درصد حاشیه برای سازگاری نگه داشته شده‌اند؛
+ * نرخ معتبر ثبت‌شده بدون افزایش استفاده می‌شود.
  */
 export function getMetalRateSaleDecision(
   input: GetMetalRateSaleDecisionInput,

@@ -14,7 +14,7 @@ import {
 } from "@/lib/expiring-cache";
 import { getMetalRateFreshness } from "@/lib/metal-rate-freshness";
 import { getMetalRateSaleDecision } from "@/lib/metal-rate-sale-policy";
-import { calculateEloriaJewelryPrice } from "@/lib/pricing-engine";
+import { calculateEloriaCompositeJewelryPrice, calculateEloriaJewelryPrice } from "@/lib/pricing-engine";
 import { prisma, withDatabaseRetry } from "@/lib/prisma";
 
 export type PricedCatalogFilters = ProductCatalogFilters & {
@@ -133,12 +133,16 @@ function getCatalogCacheKey(filters: PricedCatalogFilters): string {
   });
 }
 
-function calculateCatalogPrice({
+export function calculateCatalogPrice({
   product,
   policy,
   metalPrice,
   now,
+  policies,
+  prices,
 }: {
+  policies: Map<string, PricingPolicyRecord>;
+  prices: Map<string, MetalPriceRecord>;
   product: CatalogPricingCandidate;
   policy: PricingPolicyRecord | undefined;
   metalPrice: MetalPriceRecord | undefined;
@@ -146,6 +150,21 @@ function calculateCatalogPrice({
 }): bigint | null {
   if (product.pricingMode === "MANUAL") {
     return product.currency === "TOMAN" && product.manualPrice && BigInt(product.manualPrice) > 0n ? BigInt(product.manualPrice) + PACKAGING_TOMAN : null;
+  }
+
+  if (product.hasGold && product.hasSilver) {
+    if (!product.goldComponentWeight || !product.silverComponentWeight) return null;
+    const metals = (["GOLD", "SILVER"] as const).map(material => {
+      const p = policies.get(material);
+      const rate = prices.get(material);
+      if (!p || !rate || (material === "SILVER" && (rate.rawPayload as { pricingBasis?: string } | null)?.pricingBasis !== "ELORIA_SILVER_10_31_V2")) return null;
+      const decision = getMetalRateSaleDecision({ material, referencePricePerGramToman: rate.pricePerGram.toString(), freshness: getMetalRateFreshness({ sourceTimeUnix: rate.sourceTimeUnix, staleAfterMinutes: p.staleAfterMinutes, now }), closedMarketPricingEnabled: p.closedMarketPricingEnabled, closedMarketMaxAgeMinutes: p.closedMarketMaxAgeMinutes, closedMarketSafetyMarginPercent: "0" });
+      if (!decision.isUsableForSale || !decision.effectivePricePerGramToman) return null;
+      return { material, weightGrams: material === "GOLD" ? product.goldComponentWeight! : product.silverComponentWeight!, productPurity: material === "GOLD" ? (product.material === "GOLD" ? product.purityFineness ?? 750 : 750) : rate.referencePurity, referencePurity: rate.referencePurity, referencePricePerGramToman: decision.effectivePricePerGramToman };
+    });
+    if (metals.some(metal => !metal)) return null;
+    const result = calculateEloriaCompositeJewelryPrice({ primaryMaterial: product.material, metals: metals.filter(metal => metal !== null), artisticFeeToman: product.artisticFee, roundingStepToman: policy?.roundingStep.toString() ?? "1" });
+    return BigInt(result.finalPriceToman);
   }
 
   if (
@@ -252,6 +271,8 @@ async function loadPricedProductsCatalog(
           policy: policiesByMaterial.get(product.material),
           metalPrice: pricesByMaterial.get(product.material),
           now,
+          policies: policiesByMaterial,
+          prices: pricesByMaterial,
         });
       } catch (error) {
         console.error(`[Eloria Catalog] Unable to price ${product.slug}.`, error);
@@ -289,6 +310,8 @@ async function loadPricedProductsCatalog(
         policy: policiesByMaterial.get(product.material),
         metalPrice: pricesByMaterial.get(product.material),
         now,
+        policies: policiesByMaterial,
+        prices: pricesByMaterial,
       });
     } catch (error) {
       console.error(`[Eloria Catalog] Unable to price ${product.slug}.`, error);

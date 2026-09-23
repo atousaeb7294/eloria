@@ -6,6 +6,8 @@ type ProductCardLivePriceProps = {
   slug: string;
   locale: string;
   initialPriceToman?: string | null;
+  previewOnly?: boolean;
+  compact?: boolean;
 };
 
 type PriceResponse = {
@@ -27,12 +29,15 @@ export function ProductCardLivePrice({
   slug,
   locale,
   initialPriceToman = null,
+  previewOnly = false,
+  compact = false,
 }: ProductCardLivePriceProps) {
   const [price, setPrice] = useState<string | null>(initialPriceToman);
   const [failed, setFailed] = useState(false);
   const isPersian = locale === "fa";
 
   useEffect(() => {
+    if (previewOnly) return;
     const controller = new AbortController();
 
     async function loadPrice() {
@@ -79,7 +84,7 @@ export function ProductCardLivePrice({
       window.clearInterval(intervalId);
       controller.abort();
     };
-  }, [slug]);
+  }, [previewOnly, slug]);
 
   if (failed && !price) {
     return (
@@ -91,19 +96,19 @@ export function ProductCardLivePrice({
 
   if (!price) {
     return (
-      <div
-        className="h-7 w-36 animate-pulse rounded-full bg-white/[0.07]"
-        aria-label={isPersian ? "در حال دریافت قیمت" : "Loading price"}
-      />
+      <p className="flex items-center gap-2 text-xs text-[#d8c79e]/75" aria-live="polite">
+        <span className="size-2 animate-pulse rounded-full bg-[#e2c671]" />
+        {isPersian ? "در حال دریافت قیمت…" : "Loading price…"}
+      </p>
     );
   }
 
   return (
     <p className="flex items-baseline gap-2 text-[#f3d98c]">
-      <strong className="text-xl font-semibold tracking-tight">
+      <strong className={`${compact ? "text-xs" : "text-xl"} font-semibold tracking-tight`}>
         {formatPrice(price, locale)}
       </strong>
-      <span className="text-xs text-[#d9c28b]/80">
+      <span className={`${compact ? "text-[9px]" : "text-xs"} text-[#d9c28b]/80`}>
         {isPersian ? "تومان" : "Toman"}
       </span>
     </p>

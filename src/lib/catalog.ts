@@ -71,6 +71,10 @@ export type CollectionCatalog = {
 };
 
 export type CatalogPricingCandidate = CatalogProduct & {
+  hasGold: boolean;
+  hasSilver: boolean;
+  goldComponentWeight: string | null;
+  silverComponentWeight: string | null;
   pricingMode: "DYNAMIC" | "MANUAL";
   currency: "TOMAN" | "USD";
   manualPrice: string | null;
@@ -429,6 +433,10 @@ export async function getProductsCatalog(
 
 const catalogPricingSelect = {
   ...catalogCardSelect,
+  hasGold: true,
+  hasSilver: true,
+  goldComponentWeight: true,
+  silverComponentWeight: true,
   pricingMode: true,
   currency: true,
   price: true,
@@ -448,6 +456,10 @@ function mapCatalogPricingCandidate(product: Prisma.ProductGetPayload<{
 }>): CatalogPricingCandidate {
   return {
     ...mapCatalogProduct(product),
+    hasGold: product.hasGold,
+    hasSilver: product.hasSilver,
+    goldComponentWeight: product.goldComponentWeight?.toString() ?? null,
+    silverComponentWeight: product.silverComponentWeight?.toString() ?? null,
     pricingMode: product.pricingMode,
     currency: product.currency,
     manualPrice: product.price?.toString() ?? null,

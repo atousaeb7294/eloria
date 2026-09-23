@@ -1,3 +1,4 @@
+import { TreasuryLink } from "@/components/treasury-transition";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -15,9 +16,9 @@ export default async function CollectionsPage({ params }: { params: Promise<{ lo
   setRequestLocale(locale);
   const fa = locale === "fa";
   const treasuries = [
-    { slug: "gold", href: `/${locale}/collections/gold`, name: fa ? "گنجینهٔ طلا" : "Gold Treasury", description: fa ? "گرمای طلا، در بافت و نقش الوریا." : "Gold, woven into the forms of Eloria.", image: "/images/collections/necklaces.webp", Icon: GoldRuneIcon },
-    { slug: "silver", href: `/${locale}/collections/silver`, name: fa ? "گنجینهٔ نقره" : "Silver Treasury", description: fa ? "روشنی نقره، آرام و ماندگار." : "Silver with a quiet, lasting light.", image: "/images/collections/earring.webp", Icon: SilverRuneIcon },
-    { slug: "weave", href: `/${locale}/collections/weave`, name: fa ? "گنجینهٔ بافت" : "Woven Treasury", description: fa ? "نخ و گره؛ بی‌حضور طلا و نقره." : "Thread and knot, without gold or silver.", image: "/images/collections/bracelet.webp", Icon: AllProductsRuneIcon },
+    { slug: "gold", href: `/${locale}/collections/gold`, name: fa ? "گنجینهٔ طلا" : "Gold Treasury", description: fa ? "گرمای طلا، در بافت و نقش الوریا." : "Gold, woven into the forms of Eloria.", image: "/images/treasuries/gold.webp", Icon: GoldRuneIcon },
+    { slug: "silver", href: `/${locale}/collections/silver`, name: fa ? "گنجینهٔ نقره" : "Silver Treasury", description: fa ? "روشنی نقره، آرام و ماندگار." : "Silver with a quiet, lasting light.", image: "/images/treasuries/silver.webp", Icon: SilverRuneIcon },
+    { slug: "weave", href: `/${locale}/collections/weave`, name: fa ? "گنجینهٔ بافت" : "Woven Treasury", description: fa ? "نخ و گره؛ بی‌حضور طلا و نقره." : "Thread and knot, without gold or silver.", image: "/images/treasuries/weave.webp", Icon: AllProductsRuneIcon },
   ];
 
   return (
@@ -32,14 +33,14 @@ export default async function CollectionsPage({ params }: { params: Promise<{ lo
         <div className="mt-14 grid gap-8 md:grid-cols-3">
           {treasuries.map(({ slug, href, name, description, image, Icon }) => (
             <InteractiveTiltCard key={slug} maxTilt={3} lift={5} className="group rounded-[2.2rem]">
-              <Link href={href} className="block overflow-hidden rounded-[2.2rem] border border-[#d8b860]/20 bg-[#041b14] p-3 transition duration-500 hover:border-[#e8cc78]/55 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#e8cc78]">
+              <TreasuryLink href={href} className="block overflow-hidden rounded-[2.2rem] border border-[#d8b860]/20 bg-[#041b14] p-3 transition duration-500 hover:border-[#e8cc78]/55 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#e8cc78]">
                 <div className="relative aspect-[4/5] overflow-hidden rounded-[1.75rem]">
                   <Image src={image} alt={name} fill sizes="(max-width: 768px) 100vw, 33vw" className="object-cover transition duration-1000 group-hover:scale-105" />
                   <div className="absolute inset-0 bg-gradient-to-t from-[#01120c]/95 via-transparent to-black/10" />
                   <div className="absolute inset-x-0 bottom-6 flex justify-center"><span className="grid size-16 place-items-center rounded-full border border-[#efd17a]/40 bg-[#052218]/88 text-[#e3c574] backdrop-blur-md"><Icon className="size-8" /></span></div>
                 </div>
                 <div className="px-3 pb-4 pt-6 text-center"><h2 className={fa ? "font-persian-title text-3xl text-[#f4e8cc]" : "text-2xl font-medium text-[#f4e8cc]"}>{name}</h2><p className="mt-3 text-sm leading-7 text-[#cbbd9d]/72">{description}</p><span className="mt-5 inline-block border-b border-[#d9b85f]/35 pb-1 text-xs text-[#ead18a]">{fa ? "ورود به گنجینه" : "Enter treasury"}</span></div>
-              </Link>
+              </TreasuryLink>
             </InteractiveTiltCard>
           ))}
         </div>

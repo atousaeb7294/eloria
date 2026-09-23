@@ -1,14 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import {
-  motion,
-  useReducedMotion,
-} from "motion/react";
+import { motion, useReducedMotion } from "motion/react";
 
-import {
-  SectionBackground,
-} from "@/components/section-background";
+import { SectionBackground } from "@/components/section-background";
 
 type HeroShowcaseProps = {
   locale: string;
@@ -30,82 +25,57 @@ export function HeroShowcase({
   locale,
   persianTitleClassName,
 }: HeroShowcaseProps) {
-  const reducedMotion =
-    useReducedMotion();
+  const reducedMotion = useReducedMotion();
 
-  const isPersian =
-    locale === "fa";
+  const isPersian = locale === "fa";
 
-  const copy: HeroCopy =
-    isPersian
-      ? {
-          eyebrow:
-            "الهام‌گرفته از شکوه ایران کهن",
+  const copy: HeroCopy = isPersian
+    ? {
+        eyebrow: "الهام‌گرفته از شکوه ایران کهن",
 
-          titleFirst:
-            "هر اثر،",
+        titleFirst: "هر اثر،",
 
-          titleHighlight:
-            "روایتی ماندگار",
+        titleHighlight: "روایتی ماندگار",
 
-          description:
-            "در الوریا فقط زیور انتخاب نمی‌کنید؛ اثر متناسب با داستان خودتان را پیدا می‌کنید.",
+        description:
+          "طلا و نقره، در آغوش بافتی ظریف؛ ساختهٔ دست، با یاد ایران.",
 
-          primaryAction:
-            "اثر من را پیدا کن",
+        primaryAction: "اثر من را پیدا کن",
 
-          secondaryAction:
-            "مشاهده تمام آثار",
+        secondaryAction: "مشاهده تمام آثار",
 
-          collectionsAction:
-            "گنجینه‌های الوریا",
+        collectionsAction: "گنجینه‌های الوریا",
 
-          welcome:
-            "به جهان الوریا خوش آمدید",
-        }
-      : {
-          eyebrow:
-            "Inspired by the Splendour of Ancient Persia",
+        welcome: "به جهان الوریا خوش آمدید",
+      }
+    : {
+        eyebrow: "Inspired by the Splendour of Ancient Persia",
 
-          titleFirst:
-            "Every Piece,",
+        titleFirst: "Every Piece,",
 
-          titleHighlight:
-            "an Enduring Story",
+        titleHighlight: "an Enduring Story",
 
-          description:
-            "At Eloria, you do not simply choose jewellery; you discover the creation that belongs to your story.",
+        description:
+          "At Eloria, you do not simply choose jewellery; you discover the creation that belongs to your story.",
 
-          primaryAction:
-            "Find my creation",
+        primaryAction: "Find my creation",
 
-          secondaryAction:
-            "View all creations",
+        secondaryAction: "View all creations",
 
-          collectionsAction:
-            "Eloria collections",
+        collectionsAction: "Eloria collections",
 
-          welcome:
-            "Welcome to the World of Eloria",
-        };
+        welcome: "Welcome to the World of Eloria",
+      };
 
-  const titleFontClass =
-    isPersian
-      ? [
-          "font-persian-calligraphy",
-          persianTitleClassName ?? "",
-        ].join(" ")
-      : "font-serif";
+  const titleFontClass = isPersian
+    ? ["font-persian-calligraphy", persianTitleClassName ?? ""].join(" ")
+    : "font-serif";
 
   return (
     <section
       id="hero"
       aria-labelledby="eloria-hero-title"
-      dir={
-        isPersian
-          ? "rtl"
-          : "ltr"
-      }
+      dir={isPersian ? "rtl" : "ltr"}
       className="relative min-h-[100svh] scroll-mt-0 overflow-hidden bg-[#02140e] p-2.5 text-[#f8f0df] sm:p-5"
     >
       <div className="relative isolate flex min-h-[calc(100svh-20px)] w-full items-center justify-center overflow-hidden rounded-[1.65rem] border border-[#dec06d]/24 bg-[#02140e] shadow-[0_34px_110px_rgba(0,0,0,0.7),0_0_55px_rgba(216,180,88,0.08)] sm:min-h-[calc(100svh-40px)] sm:rounded-[2.4rem]">
@@ -117,7 +87,6 @@ export function HeroShowcase({
           objectPosition="center 46%"
           imageClassName="scale-[1.02]"
         />
-
 
         {/* پوشش تصویر */}
         <div
@@ -139,16 +108,8 @@ export function HeroShowcase({
             reducedMotion
               ? undefined
               : {
-                  opacity: [
-                    0.48,
-                    0.88,
-                    0.48,
-                  ],
-                  scale: [
-                    0.95,
-                    1.07,
-                    0.95,
-                  ],
+                  opacity: [0.48, 0.88, 0.48],
+                  scale: [0.95, 1.07, 0.95],
                 }
           }
           transition={{
@@ -163,7 +124,6 @@ export function HeroShowcase({
           aria-hidden="true"
           className="pointer-events-none absolute inset-y-0 left-1/2 z-[4] w-[34rem] max-w-[76vw] -translate-x-1/2 bg-[linear-gradient(90deg,transparent,rgba(248,219,145,0.045),rgba(255,235,181,0.085),rgba(248,219,145,0.045),transparent)] blur-[46px]"
         />
-
 
         {/* خط طلایی بالا */}
         <div
@@ -235,25 +195,18 @@ export function HeroShowcase({
                 : {
                     opacity: 0,
                     y: 26,
-                    filter:
-                      "blur(9px)",
+                    filter: "blur(9px)",
                   }
             }
             animate={{
               opacity: 1,
               y: 0,
-              filter:
-                "blur(0px)",
+              filter: "blur(0px)",
             }}
             transition={{
               delay: 0.2,
               duration: 1.05,
-              ease: [
-                0.16,
-                1,
-                0.3,
-                1,
-              ],
+              ease: [0.16, 1, 0.3, 1],
             }}
             className={[
               titleFontClass,
@@ -261,9 +214,7 @@ export function HeroShowcase({
               "max-w-5xl pb-2 text-center text-[clamp(2.25rem,11vw,6rem)] font-normal leading-[1.48] text-[#fff7e6] drop-shadow-[0_16px_40px_rgba(0,0,0,0.68)] sm:pb-3 sm:text-[clamp(3rem,6vw,6rem)] sm:leading-[1.65]",
             ].join(" ")}
           >
-            <span className="block sm:inline">
-              {copy.titleFirst}
-            </span>
+            <span className="block sm:inline">{copy.titleFirst}</span>
 
             <span className="mt-1 block bg-[linear-gradient(100deg,#fff2c8_0%,#f0ce75_32%,#c68c24_66%,#ffe7a2_100%)] bg-clip-text text-transparent drop-shadow-[0_0_30px_rgba(225,181,80,0.2)] sm:mx-3 sm:mt-0 sm:inline">
               {copy.titleHighlight}
@@ -311,12 +262,14 @@ export function HeroShowcase({
               delay: 0.5,
               duration: 0.85,
             }}
-            className="mt-6 grid w-full max-w-[660px] grid-cols-1 gap-3 min-[470px]:grid-cols-2 sm:mt-7 lg:grid-cols-3"
+            className="mt-6 grid w-full max-w-[440px] grid-cols-1 gap-3 min-[470px]:grid-cols-2 sm:mt-7"
           >
             {/* دکمه اصلی */}
             <button
               type="button"
-              onClick={() => window.dispatchEvent(new Event("eloria-open-selection"))}
+              onClick={() =>
+                window.dispatchEvent(new Event("eloria-open-selection"))
+              }
               className="group relative isolate flex h-[50px] flex-1 items-center justify-center overflow-hidden rounded-[13px] border border-[#efd181]/62 bg-[linear-gradient(140deg,rgba(12,91,64,0.98),rgba(3,49,34,0.99)_52%,rgba(44,32,8,0.98))] px-5 text-[12px] font-semibold text-[#fff0bd] shadow-[0_16px_40px_rgba(0,0,0,0.42),0_0_28px_rgba(223,181,78,0.12)] transition duration-500 hover:-translate-y-1 hover:border-[#ffe7a4] hover:shadow-[0_22px_52px_rgba(0,0,0,0.52),0_0_36px_rgba(230,187,82,0.26)] sm:text-[13px]"
             >
               <span className="pointer-events-none absolute inset-[3px] rounded-[10px] border border-[#f5dc98]/13" />
@@ -353,9 +306,7 @@ export function HeroShowcase({
                   />
                 </svg>
 
-                <span>
-                  {copy.primaryAction}
-                </span>
+                <span>{copy.primaryAction}</span>
               </span>
             </button>
 
@@ -396,25 +347,7 @@ export function HeroShowcase({
                   />
                 </svg>
 
-                <span>
-                  {copy.secondaryAction}
-                </span>
-              </span>
-            </Link>
-
-            {/* مسیر مستقیم گنجینه‌ها */}
-            <Link
-              href={`/${locale}/collections`}
-              className="group relative isolate flex h-[50px] items-center justify-center overflow-hidden rounded-[13px] border border-[#dfc16f]/34 bg-[linear-gradient(140deg,rgba(30,20,5,0.78),rgba(7,48,34,0.68))] px-5 text-[12px] font-medium text-[#f8e9c8] shadow-[inset_0_1px_0_rgba(255,255,255,0.07),0_16px_38px_rgba(0,0,0,0.34)] backdrop-blur-xl transition duration-500 hover:-translate-y-1 hover:border-[#eccd77]/66 hover:text-[#ffe4a0] min-[470px]:col-span-2 lg:col-span-1 sm:text-[13px]"
-            >
-              <span className="pointer-events-none absolute inset-[3px] rounded-[10px] border border-white/[0.04]" />
-              <span className="pointer-events-none absolute inset-x-7 bottom-0 h-px bg-gradient-to-r from-transparent via-[#e5c56d]/62 to-transparent" />
-              <span className="relative z-10 flex items-center justify-center gap-2.5">
-                <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" className="size-[16px] text-[#e7c970]">
-                  <path d="M5 7.5L12 3L19 7.5V16.5L12 21L5 16.5V7.5Z" stroke="currentColor" strokeWidth="1.2" />
-                  <path d="M8.5 10L12 7.7L15.5 10V14L12 16.3L8.5 14V10Z" stroke="currentColor" strokeWidth="1" opacity=".75" />
-                </svg>
-                <span>{copy.collectionsAction}</span>
+                <span>{copy.secondaryAction}</span>
               </span>
             </Link>
           </motion.div>
@@ -443,7 +376,7 @@ export function HeroShowcase({
           <span className="h-px w-8 bg-gradient-to-l from-[#dabb68]/55 to-transparent sm:w-16" />
 
           <a
-            href="#trust"
+            href="#treasury-gold"
             className="group flex items-center gap-2 whitespace-nowrap text-[9px] font-medium tracking-[0.08em] text-[#ecd184]/66 transition hover:text-[#ffe3a0] sm:text-[10px]"
           >
             <span>{copy.welcome}</span>
