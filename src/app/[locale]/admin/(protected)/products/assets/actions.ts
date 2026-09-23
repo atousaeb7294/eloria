@@ -100,7 +100,13 @@ async function product(productId: string) {
   return item;
 }
 function refresh(productId: string, slug: string) {
-  after(async () => { try { await repairSeoBatch({}, { productSlug: slug }); } catch (error) { console.error("[SEO] Media repair deferred to scheduled retry", error); } });
+  after(async () => {
+    try {
+      await repairSeoBatch({}, { productSlug: slug });
+    } catch (error) {
+      console.error("[SEO] Media repair deferred to scheduled retry", error);
+    }
+  });
   for (const locale of ["fa", "en"] as const) {
     revalidatePath(`/${locale}/admin/products/${productId}`);
     revalidatePath(`/${locale}/admin/products`);
@@ -196,6 +202,51 @@ export async function uploadAdminProductImagesAction(
   }
   refresh(productId, item.slug);
   redirect(messageUrl(locale, productId, "mediaSaved"));
+}
+
+/** One file per request keeps the upload below the 10 MiB Server Action limit.
+ * Session validation and image decoding remain server-side. */
+export async function uploadAdminProductImageFileAction(
+  productId: string,
+  form: FormData,
+): Promise<{ successful: boolean; message: string }> {
+  let storedUrl: string | undefined;
+  try {
+    await session();
+    const item = await product(productId);
+    const file = form.get("image");
+    if (!(file instanceof File) || file.size === 0) {
+      throw new AdminProductAssetError("یک تصویر انتخاب کنید.");
+    }
+    storedUrl = await storeProductImage(productId, file);
+    await prisma.$transaction(async (tx) => {
+      // Concurrent admin tabs must not create two primary images.
+      await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${`product-media:${productId}`}))`;
+      const count = await tx.productImage.count({ where: { productId } });
+      await tx.productImage.create({
+        data: {
+          productId,
+          imageUrl: storedUrl!,
+          altFa: item.nameFa,
+          altEn: item.nameEn,
+          isPrimary: count === 0,
+          displayOrder: count,
+        },
+      });
+    });
+    storedUrl = undefined;
+    refresh(productId, item.slug);
+    return { successful: true, message: "تصویر ذخیره شد." };
+  } catch (error) {
+    if (storedUrl) await removeStoredProductImage(storedUrl);
+    return {
+      successful: false,
+      message: publicAssetError(
+        error,
+        "بارگذاری انجام نشد. اتصال سرور به دیتابیس و فضای تصاویر را بررسی کنید.",
+      ),
+    };
+  }
 }
 
 export async function addAdminProductImageUrlAction(

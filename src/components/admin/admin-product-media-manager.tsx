@@ -1,10 +1,10 @@
-import { ImagePlus, Save, Star, Trash2, Upload } from "lucide-react";
+import { AdminImageUploader } from "@/components/admin/admin-image-uploader";
+import { ImagePlus, Save, Star, Trash2 } from "lucide-react";
 import {
   addAdminProductImageUrlAction,
   deleteAdminProductImageAction,
   setAdminProductLegendImageAction,
   updateAdminProductImageAction,
-  uploadAdminProductImagesAction,
 } from "@/app/[locale]/admin/(protected)/products/assets/actions";
 
 type ImageValue = {
@@ -65,31 +65,7 @@ export function AdminProductMediaManager({
           </div>
         ) : null}
         <div className="grid gap-4 lg:grid-cols-2">
-          <form
-            action={uploadAdminProductImagesAction.bind(
-              null,
-              productId,
-              locale,
-            )}
-            className="rounded-2xl border border-dashed border-[#d7bc65]/25 bg-black/10 p-4"
-          >
-            <p className="text-sm text-[#e2cc91]">آپلود فایل</p>
-            <p className="mt-1 text-xs leading-6 text-[#8f846f]">
-              JPG، PNG یا WebP؛ حداکثر ۸ فایل و ۸ مگابایت برای هر فایل
-            </p>
-            <input
-              accept="image/jpeg,image/png,image/webp"
-              className="mt-4 block w-full rounded-xl border border-[#cfb45f]/18 bg-[#031a13] p-3 text-xs text-[#cfc0a3]"
-              multiple
-              name="images"
-              required
-              type="file"
-            />
-            <button className="mt-4 inline-flex h-11 items-center gap-2 rounded-xl bg-[linear-gradient(135deg,#a98a36,#e4c96f)] px-5 text-sm font-semibold text-[#10251c]">
-              <Upload className="size-4" />
-              بارگذاری
-            </button>
-          </form>
+          <AdminImageUploader productId={productId} />
           <form
             action={addAdminProductImageUrlAction.bind(null, productId, locale)}
             className="rounded-2xl border border-[#d7bc65]/16 bg-black/10 p-4"

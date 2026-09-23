@@ -850,265 +850,68 @@ html[lang="fa"] :where(p, li, label, button, a, h1, h2, h3, h4, h5, h6) {
   }
 }
 
-/* Native scroll supplies the motion. Only the arriving chapter covers the previous one. */
-.eloria-promenade {
-  position: relative;
-  isolation: isolate;
-  background: #02140e;
+/* Story viewport: one sticky layer; the controller only transforms two chapters. */
+.eloria-promenade { position:relative; isolation:isolate; background:#071f17; }
+.eloria-promenade-stage { position:relative; }
+.eloria-promenade-chapter { position:relative; min-height:100svh; outline:none; }
+.eloria-promenade-surface { height:100svh; min-height:560px; background:#071f17; overflow:hidden; }
+.eloria-promenade[data-story-enhanced] { height:400svh; }
+.eloria-promenade[data-story-enhanced] .eloria-promenade-stage {
+  position:sticky; top:0; height:100svh; overflow:hidden; perspective:1400px; isolation:isolate;
 }
-.eloria-promenade-chapter {
-  position: sticky;
-  top: 0;
-  height: 100svh;
-  overflow: hidden;
+.eloria-promenade[data-story-enhanced] .eloria-promenade-chapter { position:absolute; inset:0; height:100%; min-height:0; backface-visibility:hidden; transform-origin:50% 55%; }
+.eloria-promenade[data-story-enhanced] .eloria-promenade-surface { height:100%; min-height:0; }
+.eloria-treasury-scene { position:relative; height:100%; overflow:hidden; background:#09241c; color:#f8f0df; }
+.eloria-treasury-backdrop-layer { position:absolute; inset:-2%; transform:scale(1.025); pointer-events:none; }
+.eloria-treasury-backdrop { object-fit:cover; object-position:50% 52%; }
+.eloria-treasury-shade { position:absolute; inset:0; pointer-events:none; background:linear-gradient(180deg,#01130bcc,transparent 32%,#01130b22 55%,#01130bdd),linear-gradient(90deg,#03130b99,transparent 55%); }
+.eloria-treasury-counter { position:absolute; z-index:4; top:max(100px,13svh); left:6%; display:flex; align-items:center; gap:12px; color:#f6e8c1ad; direction:ltr; font-size:11px; letter-spacing:.15em; }
+.eloria-treasury-counter i { width:46px; height:1px; background:#ead3a05e; }
+.eloria-treasury-heading { position:absolute; z-index:4; top:42%; left:6%; width:min(390px,34vw); text-align:start; pointer-events:none; }
+.eloria-treasury-eyebrow { font-size:11px; letter-spacing:.08em; color:#f0dfb4; }
+.eloria-treasury-heading h2 { margin:8px 0; font-size:clamp(46px,5.5vw,84px); font-weight:400; line-height:1.5; color:#fff1cc; }
+.eloria-treasury-heading > p:not(.eloria-treasury-eyebrow) { margin:0; max-width:340px; font-size:13px; line-height:2.1; color:#f4ead5cf; }
+.eloria-treasury-enter { position:absolute; z-index:6; bottom:22%; left:6%; display:inline-flex; align-items:center; gap:22px; min-height:48px; padding:8px 0; border-bottom:1px solid #eed3a088; color:#fff0c8; font-size:13px; transition:gap .25s,transform .25s; }
+.eloria-treasury-enter:hover { gap:32px; transform:translateY(-2px); }
+.eloria-treasury-main-link { position:absolute; z-index:2; inset:0; }
+.eloria-treasury-rail-wrap { position:absolute; z-index:6; bottom:max(46px,6svh); left:50%; transform:translateX(-50%); width:min(620px,calc(100% - 40px)); text-align:center; }
+.eloria-treasury-rail-wrap > p { margin:0 0 8px; color:#f0dfb499; font-size:10px; }
+.eloria-treasury-miniatures { display:flex; align-items:center; justify-content:safe center; gap:10px; overflow-x:auto; padding:5px; scrollbar-width:none; }
+.eloria-treasury-miniatures > a { position:relative; flex:0 0 56px; height:62px; overflow:hidden; border:1px solid #e5cc9159; border-radius:8px; background:#09241c; transition:transform .22s,border-color .22s; }
+.eloria-treasury-miniatures > a:hover { transform:translateY(-3px); border-color:#fff1cc; }
+.eloria-treasury-miniatures > .eloria-treasury-all { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; color:#f0dbab; font-size:10px; }
+.eloria-treasury-next { position:absolute; z-index:7; bottom:8px; left:50%; transform:translateX(-50%); display:flex; align-items:center; gap:10px; min-height:32px; padding:4px 16px; font-size:10px; color:#ecd9aaab; }
+.eloria-story-navigation { display:none; }
+.eloria-promenade[data-story-enhanced] .eloria-story-navigation { position:absolute; z-index:10; inset-inline-end:24px; top:50%; display:flex; flex-direction:column; gap:12px; transform:translateY(-50%); }
+.eloria-story-navigation a { display:flex; align-items:center; justify-content:flex-end; min-width:44px; min-height:32px; gap:10px; font-size:10px; color:#e8d4a1; }
+.eloria-story-navigation a::after { content:""; width:5px; height:5px; border:1px solid #e8d4a199; border-radius:50%; transition:transform .25s,background .25s; }
+.eloria-story-navigation a[aria-current="step"]::after { background:#f6dfa7; transform:scale(1.7); }
+.eloria-story-navigation a span { opacity:0; transition:opacity .2s; }
+.eloria-story-navigation a:hover span, .eloria-story-navigation a:focus-visible span { opacity:1; }
+.eloria-hero-story-link { position:absolute; z-index:25; inset-inline-end:36px; bottom:32px; display:flex; align-items:center; gap:12px; font-size:11px; color:#f5deb0; min-height:44px; }
+@media(max-width:700px) {
+  .eloria-treasury-heading { top:28%; left:7%; width:86%; }
+  .eloria-treasury-heading h2 { font-size:clamp(44px,14vw,65px); }
+  .eloria-treasury-heading > p:not(.eloria-treasury-eyebrow) { max-width:260px; font-size:12px; }
+  .eloria-treasury-enter { bottom:25%; left:7%; }
+  .eloria-treasury-counter { top:100px; left:7%; }
+  .eloria-treasury-shade { background:linear-gradient(180deg,#01130bba,transparent 20%,#01130b55 40%,#01130bdd),linear-gradient(90deg,#03130b66,transparent); }
+  .eloria-treasury-miniatures { gap:7px; }
+  .eloria-treasury-miniatures > a { flex-basis:46px; height:52px; }
+  .eloria-promenade[data-story-enhanced] .eloria-story-navigation { inset-inline-end:8px; }
+  .eloria-story-navigation a span { display:none; }
+  .eloria-hero-story-link { bottom:70px; inset-inline-end:0; width:100%; justify-content:center; }
 }
-.eloria-promenade-surface {
-  height: 100%;
-  overflow: hidden;
-  background: #02140e;
+@media(max-height:650px) and (min-height:521px) {
+  .eloria-treasury-counter { top:78px; }
+  .eloria-treasury-heading { top:24%; }
+  .eloria-treasury-heading h2 { font-size:42px; }
+  .eloria-treasury-enter { bottom:26%; }
+  .eloria-treasury-rail-wrap { bottom:44px; }
 }
-.eloria-treasury-scene {
-  position: relative;
-  height: 100%;
-  min-height: 0;
-  overflow: hidden;
-  border-radius: clamp(20px, 2.8vw, 48px) clamp(20px, 2.8vw, 48px) 0 0;
-  border-top: 1px solid rgba(238, 213, 151, 0.25);
-  background: #09241c;
-  color: #f8f0df;
-  box-shadow: 0 -30px 90px rgba(0, 0, 0, 0.48);
-}
-.eloria-treasury-backdrop-layer {
-  position: absolute;
-  inset: -4%;
-  transform: scale(1.05);
-}
-.eloria-treasury-gold .eloria-treasury-backdrop-layer {
-  transform: scale(1.05) translateY(1%);
-}
-.eloria-treasury-silver .eloria-treasury-backdrop-layer {
-  transform: perspective(1400px) rotateY(-3deg) scale(1.1);
-  transform-origin: 75% 50%;
-}
-.eloria-treasury-weave .eloria-treasury-backdrop-layer {
-  transform: perspective(1400px) rotateX(3deg) scale(1.1);
-  transform-origin: 50% 70%;
-}
-.eloria-treasury-backdrop {
-  object-fit: cover;
-  object-position: 50% 52%;
-}
-.eloria-treasury-shade {
-  position: absolute;
-  inset: 0;
-  background:
-    linear-gradient(
-      180deg,
-      rgba(1, 13, 9, 0.68),
-      rgba(1, 13, 9, 0.14) 36%,
-      rgba(1, 13, 9, 0.12) 54%,
-      rgba(1, 13, 9, 0.9) 91%,
-      #010b08
-    ),
-    linear-gradient(
-      90deg,
-      rgba(1, 13, 9, 0.22),
-      transparent 28%,
-      transparent 72%,
-      rgba(1, 13, 9, 0.22)
-    );
-  pointer-events: none;
-}
-.eloria-treasury-counter {
-  position: absolute;
-  z-index: 4;
-  top: clamp(28px, 4svh, 44px);
-  left: 50%;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 9px;
-  color: rgba(247, 230, 188, 0.55);
-  direction: ltr;
-  transform: translateX(-50%) translateZ(46px);
-}
-.eloria-treasury-counter i {
-  display: block;
-  width: 28px;
-  height: 1px;
-  background: rgba(232, 211, 160, 0.42);
-}
-.eloria-treasury-heading {
-  position: absolute;
-  z-index: 4;
-  top: 50%;
-  left: clamp(24px, 5vw, 78px);
-  width: min(390px, 38vw);
-  transform: translateY(-50%) translateZ(72px);
-  padding: clamp(22px, 2.8vw, 38px);
-  border: 1px solid rgba(235, 210, 151, 0.25);
-  border-left-color: rgba(252, 232, 184, 0.58);
-  border-radius: 18px;
-  background: linear-gradient(
-    135deg,
-    rgba(1, 16, 11, 0.84),
-    rgba(3, 30, 21, 0.58)
-  );
-  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.32);
-  text-align: start;
-
-}
-.eloria-treasury-eyebrow {
-  font-size: 10px;
-  letter-spacing: 0.16em;
-  color: rgba(244, 222, 166, 0.75);
-}
-.eloria-treasury-heading h2 {
-  margin: clamp(5px, 1svh, 12px) 0 2px;
-  font-size: clamp(38px, 4.5vw, 66px);
-  font-weight: 400;
-  line-height: 1.45;
-  color: #fff1cc;
-  text-shadow: 0 3px 30px rgba(0, 0, 0, 0.62);
-}
-.eloria-treasury-heading > p:not(.eloria-treasury-eyebrow) {
-  max-width: 520px;
-  margin: 0;
-  font-size: clamp(11px, 1vw, 13px);
-  line-height: 2;
-  color: rgba(248, 235, 203, 0.76);
-  text-shadow: 0 2px 18px #000;
-}
-.eloria-treasury-enter {
-  position: absolute;
-  top: auto;
-  bottom: clamp(128px, 18svh, 182px);
-  right: clamp(24px, 5vw, 78px);
-  z-index: 6;
-  display: inline-flex;
-  align-items: center;
-  gap: 13px;
-  min-height: 54px;
-  margin: 0;
-  padding: 0 20px;
-  border: 1px solid rgba(238, 211, 160, 0.48);
-  border-radius: 12px;
-  background: linear-gradient(
-    135deg,
-    rgba(1, 20, 14, 0.9),
-    rgba(13, 55, 39, 0.72)
-  );
-  box-shadow:
-    0 18px 48px rgba(0, 0, 0, 0.34),
-    inset 0 1px rgba(255, 255, 255, 0.06);
-  font-size: 12px;
-  color: #fff0c8;
-  pointer-events: auto;
-  transition:
-    gap 0.35s,
-    border-color 0.35s,
-    color 0.35s,
-    transform 0.35s,
-    background 0.35s;
-  transform: translateZ(76px);
-}
-.eloria-treasury-enter:hover {
-  gap: 20px;
-  border-color: #fff0c8;
-  color: #fff;
-  background: linear-gradient(
-    135deg,
-    rgba(3, 42, 29, 0.96),
-    rgba(23, 77, 55, 0.82)
-  );
-  transform: translateY(-3px) translateZ(76px);
-}
-.eloria-treasury-main-link {
-  position: absolute;
-  z-index: 2;
-  inset: 0;
-}
-.eloria-treasury-rail-wrap {
-  position: absolute;
-  z-index: 6;
-  left: 50%;
-  bottom: clamp(48px, 6.5svh, 72px);
-  width: min(720px, calc(100% - 28px));
-  transform: translateX(-50%) translateZ(54px);
-  text-align: center;
-}
-.eloria-treasury-rail-wrap > p {
-  margin-bottom: 9px;
-  font-size: 9px;
-  color: rgba(236, 217, 170, 0.58);
-}
-.eloria-treasury-miniatures {
-  display: flex;
-  align-items: center;
-  justify-content: safe center;
-  gap: clamp(7px, 1vw, 12px);
-  max-width: 100%;
-  overflow-x: auto;
-  padding: 4px 2px 7px;
-  scrollbar-width: none;
-  direction: inherit;
-}
-.eloria-treasury-miniatures::-webkit-scrollbar {
-  display: none;
-}
-.eloria-treasury-miniatures > a {
-  position: relative;
-  flex: 0 0 clamp(50px, 5vw, 68px);
-  height: clamp(58px, 6.2vw, 82px);
-  overflow: hidden;
-  border: 1px solid rgba(229, 204, 145, 0.4);
-  border-radius: 10px;
-  background: #0b251c;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.28);
-  transition:
-    transform 0.35s,
-    border-color 0.35s,
-    opacity 0.35s;
-}
-.eloria-treasury-miniatures > a:hover {
-  transform: translateY(-6px);
-  border-color: #f8ebc9;
-}
-.eloria-treasury-miniatures > .eloria-treasury-all {
-  flex-basis: clamp(50px, 5vw, 68px);
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  gap: 4px;
-  border-color: rgba(229, 204, 145, 0.26);
-  background: rgba(1, 13, 9, 0.68);
-  font-size: 9px;
-  color: #f0dbab;
-  backdrop-filter: blur(9px);
-}
-.eloria-treasury-next {
-  position: absolute;
-  z-index: 7;
-  bottom: 12px;
-  left: 50%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  transform: translateX(-50%) translateZ(44px);
-  padding: 4px 14px;
-  font-size: 8px;
-  line-height: 1.4;
-  color: rgba(236, 217, 170, 0.62);
-}
-.eloria-treasury-next span:last-child {
-  font-size: 14px;
-  animation: eloria-scroll-cue 1.7s ease-in-out infinite;
-}
-@keyframes eloria-scroll-cue {
-  50% {
-    transform: translateY(4px);
-  }
+@media(max-height:520px) {
+  .eloria-promenade-surface { height:auto; min-height:600px; }
+  .eloria-treasury-scene { min-height:600px; }
 }
 .eloria-promenade a:focus-visible,
 .eloria-product-salon a:focus-visible,
@@ -1118,133 +921,19 @@ html[lang="fa"] :where(p, li, label, button, a, h1, h2, h3, h4, h5, h6) {
 }
 html[data-treasury-transition]::view-transition-old(root),
 html[data-treasury-transition]::view-transition-new(root) {
-  animation-duration: 720ms;
-  animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
-  mix-blend-mode: normal;
-  backface-visibility: hidden;
-  transform-style: preserve-3d;
+  animation-duration:480ms;
+  animation-timing-function:cubic-bezier(.22,1,.36,1);
+  mix-blend-mode:normal;
 }
-html[data-treasury-transition]::view-transition-group(root) {
-  perspective: 1600px;
-  background: #02140e;
-}
-html[data-treasury-transition="left"]::view-transition-old(root) {
-  z-index: 2;
-  transform-origin: 0% 50%;
-  animation: eloria-exit-left-3d 560ms cubic-bezier(0.55, 0, 0.35, 1) both;
-}
-html[data-treasury-transition="left"]::view-transition-new(root) {
-  z-index: 3;
-  transform-origin: 50% 100%;
-  animation: eloria-enter-bottom-3d 680ms cubic-bezier(0.16, 1, 0.3, 1) 140ms
-    both;
-}
-html[data-treasury-transition="up"]::view-transition-old(root) {
-  animation-name: eloria-exit-up;
-}
-html[data-treasury-transition="up"]::view-transition-new(root) {
-  animation-name: eloria-enter-bottom;
-}
-@keyframes eloria-exit-left {
-  to {
-    transform: translateX(-100%);
-  }
-}
-@keyframes eloria-exit-left-3d {
-  0% {
-    transform: perspective(1600px) translate3d(0, 0, 0) rotateY(0deg);
-    filter: brightness(1);
-  }
-  100% {
-    transform: perspective(1600px) translate3d(-108%, 0, -220px) rotateY(-18deg);
-    filter: brightness(0.62);
-  }
-}
-@keyframes eloria-enter-bottom-3d {
-  0% {
-    transform: perspective(1600px) translate3d(0, 108%, -280px) rotateX(16deg)
-      scale(0.94);
-    filter: brightness(0.58);
-  }
-  100% {
-    transform: perspective(1600px) translate3d(0, 0, 0) rotateX(0deg) scale(1);
-    filter: brightness(1);
-  }
-}
-@keyframes eloria-exit-up {
-  to {
-    transform: translateY(-100%);
-  }
-}
-@keyframes eloria-enter-bottom {
-  from {
-    transform: translateY(100%);
-  }
-}
-@media (max-width: 640px) {
-  .eloria-treasury-scene {
-    border-radius: 20px 20px 0 0;
-  }
-  .eloria-treasury-heading {
-    top: 47%;
-    left: 14px;
-    width: min(310px, calc(100% - 28px));
-    padding: 20px;
-    border-radius: 14px;
-  }
-  .eloria-treasury-heading h2 {
-    font-size: clamp(38px, 13vw, 56px);
-  }
-  .eloria-treasury-heading > p:not(.eloria-treasury-eyebrow) {
-    max-width: 310px;
-    font-size: 11px;
-    line-height: 1.9;
-  }
-  .eloria-treasury-counter {
-    top: 28px;
-  }
-  .eloria-treasury-enter {
-    top: auto;
-    bottom: 150px;
-    right: 14px;
-    min-height: 48px;
-    padding-inline: 16px;
-  }
-  .eloria-treasury-rail-wrap {
-    bottom: 48px;
-    width: calc(100% - 20px);
-  }
-  .eloria-treasury-miniatures {
-    justify-content: flex-start;
-    padding-inline: calc((100vw - 5 * 50px - 4 * 7px) / 2);
-  }
-  .eloria-treasury-miniatures > a {
-    flex-basis: 50px;
-    height: 62px;
-    border-radius: 8px;
-  }
-  .eloria-treasury-backdrop {
-    object-position: 50% 55%;
-  }
-}
-@media (max-height: 650px) {
-  .eloria-treasury-heading {
-    top: 76px;
-  }
-  .eloria-treasury-heading h2 {
-    font-size: 38px;
-    line-height: 1.35;
-  }
-  .eloria-treasury-enter {
-    bottom: 112px;
-  }
-  .eloria-treasury-rail-wrap {
-    bottom: 40px;
-  }
-  .eloria-treasury-rail-wrap > p {
-    display: none;
-  }
-}
+html[data-treasury-transition]::view-transition-group(root) { background:#02140e; }
+html[data-treasury-transition="left"]::view-transition-old(root) { animation-name:eloria-exit-left; }
+html[data-treasury-transition="left"]::view-transition-new(root) { animation-name:eloria-enter-right; }
+html[data-treasury-transition="up"]::view-transition-old(root) { animation-name:eloria-exit-up; }
+html[data-treasury-transition="up"]::view-transition-new(root) { animation-name:eloria-enter-bottom; }
+@keyframes eloria-exit-left { to { transform:translateX(-100%); } }
+@keyframes eloria-enter-right { from { transform:translateX(100%); } }
+@keyframes eloria-exit-up { to { transform:translateY(-100%); } }
+@keyframes eloria-enter-bottom { from { transform:translateY(100%); } }
 @media (prefers-reduced-motion: reduce) {
   .eloria-promenade-surface {
     transform: none !important;
@@ -1259,88 +948,33 @@ html[data-treasury-transition="up"]::view-transition-new(root) {
     animation: none !important;
   }
 }
-.eloria-product-salon {
-  margin: 32px -16px 0;
-  padding: 25px 0 36px;
-  background: radial-gradient(ellipse at 50% 25%, #22463888, transparent 65%);
+.eloria-product-salon { position:relative; margin:24px -16px 0; padding:20px 0 28px; isolation:isolate; }
+.eloria-salon-instruction { text-align:center; font-size:11px; color:#d9c79c99; margin:0 0 18px; }
+.eloria-salon-viewport { padding-block:22px; overflow:hidden; touch-action:pan-y pinch-zoom; outline-offset:-3px; }
+.eloria-salon-rail { display:flex; align-items:center; }
+.eloria-salon-piece { flex:0 0 31%; min-width:0; padding:0 1.25%; text-align:center; perspective:1100px; }
+.eloria-salon-piece-inner { padding:18px; border:1px solid #dcc58b44; border-radius:120px 120px 16px 16px; background:linear-gradient(160deg,#15372b,#071e17); opacity:.62; transform:scale(.9) rotateY(-5deg); transition:transform .45s cubic-bezier(.22,1,.36,1),opacity .35s; }
+.eloria-salon-piece[data-side="before"] .eloria-salon-piece-inner { transform:scale(.9) rotateY(5deg); }
+.eloria-salon-piece[data-emphasized="true"] .eloria-salon-piece-inner { opacity:1; transform:scale(1.035) rotateY(0); border-color:#f1d59b99; }
+.eloria-salon-image { position:relative; display:block; width:100%; height:clamp(200px,30svh,330px); overflow:hidden; border-radius:105px 105px 8px 8px; background:#e9e1cc; }
+.eloria-salon-piece h2 { font-size:clamp(23px,2.2vw,30px); margin:12px 0 8px; line-height:1.7; }
+.eloria-quick-button { min-height:44px; padding:10px 28px; border-bottom:1px solid #ddc48b88; margin:14px 0; color:#f1deb1; cursor:pointer; font-size:12px; transition:transform .2s,background .2s; }
+.eloria-quick-button:hover { background:#ddc48b14; transform:translateY(-2px); }
+.eloria-salon-controls { display:flex; align-items:center; justify-content:center; gap:25px; font-size:11px; margin-top:8px; }
+.eloria-salon-controls button { width:44px; height:44px; border:1px solid #ddc48b44; border-radius:50%; cursor:pointer; }
+.eloria-salon-controls button:disabled { opacity:.25; cursor:default; }
+.eloria-salon-thumbnails { display:flex; justify-content:safe center; gap:10px; padding:20px; overflow-x:auto; }
+.eloria-salon-thumbnails button { position:relative; flex:0 0 48px; height:48px; border:1px solid #ddc48b44; border-radius:50%; overflow:hidden; cursor:pointer; }
+.eloria-salon-thumbnails button[aria-pressed="true"] { border:2px solid #f3da9d; }
+@media(max-width:640px) {
+ .eloria-salon-piece { flex-basis:70%; padding-inline:2.5%; }
+ .eloria-salon-image { height:27svh; min-height:190px; }
+ .eloria-salon-piece-inner { transform:scale(.88); }
+ .eloria-salon-piece[data-side="before"] .eloria-salon-piece-inner { transform:scale(.88); }
 }
-.eloria-salon-rail {
-  display: flex;
-  overflow-x: auto;
-  scroll-snap-type: x mandatory;
-  scrollbar-width: none;
-  gap: 5vw;
-  padding-inline: 23%;
-  overscroll-behavior-inline: contain;
-}
-.eloria-salon-rail::-webkit-scrollbar {
-  display: none;
-}
-.eloria-salon-piece {
-  flex: 0 0 100%;
-  min-width: 0;
-  scroll-snap-align: center;
-  text-align: center;
-}
-.eloria-salon-image {
-  display: block;
-  position: relative;
-  width: 100%;
-  height: clamp(280px, 48svh, 560px);
-}
-.eloria-salon-piece h2 {
-  font-size: clamp(24px, 3vw, 38px);
-  margin: 22px 0 10px;
-  line-height: 1.8;
-}
-.eloria-quick-button {
-  min-height: 44px;
-  padding: 10px 32px;
-  border-bottom: 1px solid #ddc48b88;
-  margin: 15px 0;
-  color: #f1deb1;
-  cursor: pointer;
-  font-size: 12px;
-}
-.eloria-quick-button:hover {
-  background: #ddc48b14;
-}
-.eloria-salon-controls {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 25px;
-  font-size: 11px;
-}
-.eloria-salon-controls button {
-  width: 48px;
-  height: 48px;
-  border: 1px solid #ddc48b44;
-  border-radius: 50%;
-  cursor: pointer;
-}
-.eloria-salon-controls button:disabled {
-  opacity: 0.25;
-  cursor: default;
-}
-.eloria-salon-thumbnails {
-  display: flex;
-  justify-content: safe center;
-  gap: 10px;
-  padding: 22px;
-  overflow-x: auto;
-}
-.eloria-salon-thumbnails button {
-  position: relative;
-  flex: 0 0 52px;
-  height: 52px;
-  border: 1px solid #ddc48b44;
-  border-radius: 50%;
-  overflow: hidden;
-  cursor: pointer;
-}
-.eloria-salon-thumbnails button[aria-pressed="true"] {
-  border: 2px solid #f3da9d;
+@media(prefers-reduced-motion:reduce) {
+ .eloria-salon-piece-inner { transition:none; }
+ .eloria-treasury-enter,.eloria-treasury-miniatures > a { transition:none; }
 }
 .eloria-quick-dialog {
   margin: auto;
@@ -1375,13 +1009,15 @@ html[data-treasury-transition="up"]::view-transition-new(root) {
   background: #041c15e8;
   margin-top: 20px;
 }
-@media (max-width: 640px) {
-  .eloria-salon-rail {
-    padding-inline: 7%;
-    gap: 4vw;
-  }
-  .eloria-salon-image {
-    height: 42svh;
-    min-height: 250px;
-  }
+
+.eloria-piece-details { display:block; min-height:36px; padding:8px; color:#dfceaa; font-size:11px; }
+.eloria-raw-gold { display:flex; justify-content:center; align-items:center; flex-wrap:wrap; gap:8px 16px; margin:18px auto; color:#dfc99e; font-size:11px; line-height:1.8; }
+.eloria-raw-gold strong { font-weight:500; color:#f6e6c1; }
+.eloria-raw-gold small { font-size:10px; opacity:.75; }
+.eloria-story-rate { position:absolute; top:max(88px,12svh); right:6%; z-index:9; max-width:42%; pointer-events:none; }
+.eloria-story-rate .eloria-raw-gold { justify-content:flex-start; margin:0; gap:5px 12px; }
+@media(max-width:700px) {
+ .eloria-story-rate { top:88px; right:7%; max-width:62%; }
+ .eloria-story-rate .eloria-raw-gold { font-size:9px; }
+ .eloria-story-rate .eloria-raw-gold small { display:none; }
 }

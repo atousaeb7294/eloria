@@ -1,3 +1,4 @@
+import { RawGoldPrice } from "@/components/raw-gold-price";
 import { TreasuryProductSalon } from "@/components/treasury-product-salon";
 import type { Metadata } from "next";
 import Link from "next/link";
@@ -49,7 +50,12 @@ function pageHref(
   }
   if (page > 1) query.set("page", String(page));
   const encoded = query.toString();
-  return `/${locale}/products${encoded ? `?${encoded}` : ""}`;
+  const treasury = single(raw.treasury);
+  const base =
+    treasury === "gold" || treasury === "silver" || treasury === "weave"
+      ? `/${locale}/collections/${treasury}`
+      : `/${locale}/products`;
+  return `${base}${encoded ? `?${encoded}` : ""}`;
 }
 
 // ELORIA_FILTERED_CATALOG_SEO_V1
@@ -242,6 +248,7 @@ export default async function ProductsPage({
           </p>
         </header>
 
+        <RawGoldPrice locale={locale} />
         <div className="mt-8">
           <ProductCatalogFilters
             key={`${search}:${rawMaterial ?? "all"}:${collectionSlug ?? "all"}:${minPrice}:${maxPrice}:${rawAvailability ?? "all"}`}
@@ -322,7 +329,23 @@ export default async function ProductsPage({
             </Link>
           </div>
         ) : lockedTreasury ? (
-          <TreasuryProductSalon products={catalog.products} locale={locale} />
+          <TreasuryProductSalon
+            key={`${search}:${minPrice}:${maxPrice}:${collectionSlug}:${availability}:${catalog.products.map((product) => product.id).join(":")}`}
+            products={catalog.products}
+            locale={locale}
+            pagination={{
+              page: catalog.page,
+              pageCount: catalog.pageCount,
+              query: new URLSearchParams({
+                treasury: lockedTreasury,
+                q: search,
+                collection: collectionSlug ?? "",
+                availability: single(raw.availability) ?? "",
+                minPrice,
+                maxPrice,
+              }).toString(),
+            }}
+          />
         ) : (
           <div className="mt-8 grid gap-5 sm:grid-cols-2 sm:gap-7 lg:grid-cols-3">
             {catalog.products.map((product, index) => (
@@ -337,7 +360,7 @@ export default async function ProductsPage({
           </div>
         )}
 
-        {catalog.pageCount > 1 && (
+        {catalog.pageCount > 1 && !lockedTreasury && (
           <nav
             aria-label={isPersian ? "صفحه‌بندی آثار" : "Catalog pagination"}
             className="mt-12 flex items-center justify-center gap-3"

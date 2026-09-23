@@ -127,6 +127,7 @@ export type JewelryPriceResult = {
   makingChargePerGramTotalToman: string;
   makingChargePercentTotalToman: string;
   makingChargeTotalToman: string;
+  makingChargePercent?: string;
 
   artisticFeeToman: string;
 
@@ -151,6 +152,8 @@ export type JewelryPriceResult = {
     referencePricePerGramToman: string;
     metalValueToman: string;
     makingChargeToman: string;
+    makingChargePercent?: string;
+    profitPercent?: string;
     profitToman: string;
     taxToman: string;
   }>;
@@ -655,6 +658,7 @@ export function calculateJewelryPrice(
 
     makingChargeTotalToman:
       makingChargeTotal.toString(),
+    makingChargePercent: formatScaledValue(makingChargePercent, PERCENT_SCALE),
 
     artisticFeeToman:
       artisticFee.toString(),
@@ -706,6 +710,8 @@ export function calculateJewelryPrice(
       referencePricePerGramToman: referencePricePerGram.toString(),
       metalValueToman: metalValue.toString(),
       makingChargeToman: makingChargeTotal.toString(),
+      makingChargePercent: formatScaledValue(makingChargePercent, PERCENT_SCALE),
+      profitPercent: formatScaledValue(profitPercent, PERCENT_SCALE),
       profitToman: profit.toString(),
       taxToman: tax.toString(),
     }],
@@ -808,6 +814,8 @@ export function calculateEloriaCompositeJewelryPrice(input: {
       referencePricePerGramToman: part.referencePricePerGramToman,
       metalValueToman: part.metalValueToman,
       makingChargeToman: part.makingChargeTotalToman,
+      makingChargePercent: part.makingChargePercent,
+      profitPercent: part.profitPercent,
       profitToman: part.profitToman,
       taxToman: part.taxToman,
     })),

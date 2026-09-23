@@ -100,31 +100,6 @@ export function HeroShowcase({
           className="pointer-events-none absolute inset-0 z-[3] bg-[radial-gradient(ellipse_at_center,transparent_13%,rgba(1,19,12,0.13)_47%,rgba(0,7,4,0.82)_100%)]"
         />
 
-        {/* نور طلایی مرکزی */}
-        <motion.div
-          aria-hidden="true"
-          className="pointer-events-none absolute left-1/2 top-[43%] z-[4] size-[45rem] max-h-[86vw] max-w-[86vw] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[radial-gradient(circle,rgba(255,230,161,0.17),rgba(208,164,61,0.065)_35%,rgba(16,105,75,0.055)_58%,transparent_74%)] blur-[42px]"
-          animate={
-            reducedMotion
-              ? undefined
-              : {
-                  opacity: [0.48, 0.88, 0.48],
-                  scale: [0.95, 1.07, 0.95],
-                }
-          }
-          transition={{
-            duration: 6.5,
-            repeat: Infinity,
-            ease: "easeInOut",
-          }}
-        />
-
-        {/* نور عمودی */}
-        <div
-          aria-hidden="true"
-          className="pointer-events-none absolute inset-y-0 left-1/2 z-[4] w-[34rem] max-w-[76vw] -translate-x-1/2 bg-[linear-gradient(90deg,transparent,rgba(248,219,145,0.045),rgba(255,235,181,0.085),rgba(248,219,145,0.045),transparent)] blur-[46px]"
-        />
-
         {/* خط طلایی بالا */}
         <div
           aria-hidden="true"
@@ -195,13 +170,11 @@ export function HeroShowcase({
                 : {
                     opacity: 0,
                     y: 26,
-                    filter: "blur(9px)",
                   }
             }
             animate={{
               opacity: 1,
               y: 0,
-              filter: "blur(0px)",
             }}
             transition={{
               delay: 0.2,
@@ -353,6 +326,9 @@ export function HeroShowcase({
           </motion.div>
         </div>
 
+        <a href="#treasury-gold" className="eloria-hero-story-link">
+          {copy.collectionsAction}<span aria-hidden="true">↓</span>
+        </a>
         {/* متن خوش‌آمد پایین Hero */}
         <motion.div
           initial={

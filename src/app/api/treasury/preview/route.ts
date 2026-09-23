@@ -9,7 +9,7 @@ export async function GET(request: Request) {
   const fa = new URL(request.url).searchParams.get("locale") !== "en";
   if (Date.now() < retryAt)
     return NextResponse.json(
-      { items: [] },
+      { items: [], source: "unavailable" },
       { headers: { "Cache-Control": "public, max-age=10" } },
     );
   try {
@@ -21,7 +21,12 @@ export async function GET(request: Request) {
           { hasGold: false, hasSilver: false },
         ].map((metal) =>
           tx.product.findMany({
-            where: { ...metal, status: { in: ["ACTIVE", "OUT_OF_STOCK"] } },
+            where: {
+              ...metal,
+              status: { in: ["ACTIVE", "OUT_OF_STOCK"] },
+              collection: { isActive: true },
+              images: { some: { imageUrl: { not: "" } } },
+            },
             take: 6,
             orderBy: [{ isFeatured: "desc" }, { createdAt: "desc" }],
             select: {
@@ -31,6 +36,7 @@ export async function GET(request: Request) {
               hasGold: true,
               hasSilver: true,
               images: {
+                where: { imageUrl: { not: "" } },
                 take: 1,
                 orderBy: [{ isPrimary: "desc" }, { displayOrder: "asc" }],
                 select: { imageUrl: true },
@@ -47,6 +53,7 @@ export async function GET(request: Request) {
     ];
     return NextResponse.json(
       {
+        source: "database",
         items: products
           .filter((p) => p.images[0]?.imageUrl)
           .map((p) => ({
@@ -60,14 +67,14 @@ export async function GET(request: Request) {
       {
         headers: {
           "Cache-Control":
-            "public, max-age=60, s-maxage=120, stale-while-revalidate=300",
+            "public, max-age=15, s-maxage=30, stale-while-revalidate=60",
         },
       },
     );
   } catch {
     retryAt = Date.now() + 15000;
     return NextResponse.json(
-      { items: [] },
+      { items: [], source: "unavailable" },
       { headers: { "Cache-Control": "public, max-age=10" } },
     );
   }

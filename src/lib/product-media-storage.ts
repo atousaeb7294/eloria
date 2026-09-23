@@ -28,13 +28,14 @@ export class ProductMediaStorageError extends Error {
 
 function safeSegment(value: string): string {
   const normalized = value.replace(/[^a-zA-Z0-9_-]/g, "");
-  if (!normalized) throw new ProductMediaStorageError("شناسه مسیر تصویر معتبر نیست.");
+  if (!normalized)
+    throw new ProductMediaStorageError("شناسه مسیر تصویر معتبر نیست.");
   return normalized;
 }
 
 function storageConfig() {
   return {
-    url: process.env.SUPABASE_URL?.replace(/\/$/, "") ?? "",
+    url: process.env.SUPABASE_URL?.trim().replace(/\/$/, "") ?? "",
     key: process.env.SUPABASE_SERVICE_ROLE_KEY?.trim() ?? "",
     bucket: process.env.ELORIA_STORAGE_BUCKET?.trim() ?? "",
   };
@@ -88,7 +89,12 @@ export function isAllowedProductImageUrl(value: string): boolean {
 }
 
 function detectKind(bytes: Buffer): ImageKind | null {
-  if (bytes.length >= 3 && bytes[0] === 0xff && bytes[1] === 0xd8 && bytes[2] === 0xff) {
+  if (
+    bytes.length >= 3 &&
+    bytes[0] === 0xff &&
+    bytes[1] === 0xd8 &&
+    bytes[2] === 0xff
+  ) {
     return "jpeg";
   }
   if (
@@ -109,13 +115,17 @@ function detectKind(bytes: Buffer): ImageKind | null {
 
 async function validateImage(file: File): Promise<ValidatedImage> {
   if (file.size <= 0 || file.size > MAX_IMAGE_BYTES) {
-    throw new ProductMediaStorageError("حجم هر تصویر باید حداکثر ۸ مگابایت باشد.");
+    throw new ProductMediaStorageError(
+      "حجم هر تصویر باید حداکثر ۸ مگابایت باشد.",
+    );
   }
 
   const original = Buffer.from(await file.arrayBuffer());
   const kind = detectKind(original);
   if (!kind) {
-    throw new ProductMediaStorageError("محتوای فایل باید JPEG، PNG یا WebP معتبر باشد.");
+    throw new ProductMediaStorageError(
+      "محتوای فایل باید JPEG، PNG یا WebP معتبر باشد.",
+    );
   }
 
   const expectedMime = {
@@ -125,7 +135,9 @@ async function validateImage(file: File): Promise<ValidatedImage> {
   }[kind] as ValidatedImage["contentType"];
 
   if (file.type && file.type !== expectedMime) {
-    throw new ProductMediaStorageError("نوع اعلام‌شده فایل با محتوای واقعی تصویر یکسان نیست.");
+    throw new ProductMediaStorageError(
+      "نوع اعلام‌شده فایل با محتوای واقعی تصویر یکسان نیست.",
+    );
   }
 
   try {
@@ -160,11 +172,15 @@ async function validateImage(file: File): Promise<ValidatedImage> {
       height > MAX_IMAGE_DIMENSION ||
       width * height > MAX_IMAGE_PIXELS
     ) {
-      throw new ProductMediaStorageError("ابعاد یا تعداد پیکسل‌های تصویر بیش از حد مجاز است.");
+      throw new ProductMediaStorageError(
+        "ابعاد یا تعداد پیکسل‌های تصویر بیش از حد مجاز است.",
+      );
     }
 
     if (output.data.length > MAX_IMAGE_BYTES) {
-      throw new ProductMediaStorageError("حجم تصویر پردازش‌شده بیش از حد مجاز است.");
+      throw new ProductMediaStorageError(
+        "حجم تصویر پردازش‌شده بیش از حد مجاز است.",
+      );
     }
 
     return {
@@ -178,7 +194,9 @@ async function validateImage(file: File): Promise<ValidatedImage> {
   } catch (error) {
     if (error instanceof ProductMediaStorageError) throw error;
     console.error("[Eloria Media] Image decode or re-encode failed.", error);
-    throw new ProductMediaStorageError("تصویر قابل پردازش نیست یا ساختار آن آسیب‌دیده است.");
+    throw new ProductMediaStorageError(
+      "تصویر قابل پردازش نیست یا ساختار آن آسیب‌دیده است.",
+    );
   }
 }
 
@@ -196,7 +214,10 @@ function supabaseHeaders(key: string): Record<string, string> {
   return headers;
 }
 
-async function uploadToSupabase(objectPath: string, image: ValidatedImage): Promise<string> {
+async function uploadToSupabase(
+  objectPath: string,
+  image: ValidatedImage,
+): Promise<string> {
   const config = storageConfig();
   const response = await fetch(
     `${config.url}/storage/v1/object/${encodeURIComponent(config.bucket)}/${objectPath}`,
@@ -218,9 +239,15 @@ async function uploadToSupabase(objectPath: string, image: ValidatedImage): Prom
       status: response.status,
       detail: detail.slice(0, 500),
     });
-    throw new ProductMediaStorageError(
-      "آپلود تصویر در فضای ذخیره‌سازی انجام نشد.",
-    );
+    const message =
+      response.status === 401 || response.status === 403
+        ? "فضای تصاویر دسترسی را نپذیرفت. کلید سرور Supabase و دسترسی bucket را بررسی کنید."
+        : response.status === 404
+          ? "فضای تصاویر پیدا نشد. نام bucket و نشانی Supabase را بررسی کنید."
+          : response.status === 413
+            ? "فضای تصاویر این حجم فایل را نمی‌پذیرد. عکس کوچک‌تری انتخاب کنید."
+            : "فضای تصاویر پاسخ موفق نداد. اتصال سرور به فضای ذخیره‌سازی را بررسی کنید.";
+    throw new ProductMediaStorageError(message);
   }
   return `${config.url}/storage/v1/object/public/${encodeURIComponent(config.bucket)}/${objectPath}`;
 }
@@ -231,23 +258,38 @@ async function uploadLocally(
   image: ValidatedImage,
 ): Promise<string> {
   const relativeDirectory = path.join("uploads", "products", productId);
-  const absoluteDirectory = path.join(process.cwd(), "public", relativeDirectory);
+  const absoluteDirectory = path.join(
+    process.cwd(),
+    "public",
+    relativeDirectory,
+  );
   await mkdir(absoluteDirectory, { recursive: true });
-  await writeFile(path.join(absoluteDirectory, filename), image.bytes, { flag: "wx" });
+  await writeFile(path.join(absoluteDirectory, filename), image.bytes, {
+    flag: "wx",
+  });
   return `/${relativeDirectory.replaceAll(path.sep, "/")}/${filename}`;
 }
 
-export async function storeProductImage(productIdValue: string, file: File): Promise<string> {
+export async function storeProductImage(
+  productIdValue: string,
+  file: File,
+): Promise<string> {
   const productId = safeSegment(productIdValue);
   const image = await validateImage(file);
   const filename = `${Date.now()}-${randomUUID()}.${image.extension}`;
   const objectPath = `products/${productId}/${filename}`;
   const config = storageConfig();
 
-  if (config.url && config.key && config.bucket) return uploadToSupabase(objectPath, image);
-  if (process.env.NODE_ENV === "production") {
+  if (config.url && config.key && config.bucket)
+    return uploadToSupabase(objectPath, image);
+  if (
+    process.env.NODE_ENV === "production" ||
+    config.url ||
+    config.key ||
+    config.bucket
+  ) {
     throw new ProductMediaStorageError(
-      "برای آپلود روی سرور، متغیرهای Supabase Storage را در .env تنظیم کنید.",
+      "تنظیمات فضای تصاویر کامل نیست: SUPABASE_URL، SUPABASE_SERVICE_ROLE_KEY و ELORIA_STORAGE_BUCKET باید روی سرور تنظیم شوند. اتصال دیتابیس به‌تنهایی برای آپلود عکس کافی نیست.",
     );
   }
   return uploadLocally(productId, filename, image);
@@ -277,7 +319,9 @@ function generatedProductObjectPath(rawPath: string): string | null {
   return decoded;
 }
 
-export async function removeStoredProductImage(imageUrl: string): Promise<void> {
+export async function removeStoredProductImage(
+  imageUrl: string,
+): Promise<void> {
   const config = storageConfig();
   const publicPrefix =
     config.url && config.bucket
@@ -313,10 +357,14 @@ export async function removeStoredProductImage(imageUrl: string): Promise<void> 
   }
 
   if (imageUrl.startsWith("/uploads/products/")) {
-    const absolutePath = path.resolve(process.cwd(), "public", imageUrl.replace(/^\//, ""));
+    const absolutePath = path.resolve(
+      process.cwd(),
+      "public",
+      imageUrl.replace(/^\//, ""),
+    );
     const root = `${path.resolve(process.cwd(), "public", "uploads", "products")}${path.sep}`;
     if (absolutePath.startsWith(root)) {
-      await unlink(absolutePath).catch(error => {
+      await unlink(absolutePath).catch((error) => {
         if ((error as NodeJS.ErrnoException).code !== "ENOENT") {
           console.error("[Eloria Media] Unable to remove local object.", error);
         }
