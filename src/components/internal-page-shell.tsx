@@ -1,5 +1,7 @@
 "use client";
 
+import { TreasuryPageTransition } from "@/components/treasury-transition";
+
 import type {
   ReactNode,
 } from "react";
@@ -252,6 +254,7 @@ export function InternalPageShell({
 
       <SiteHeader locale={locale} />
 
+      <TreasuryPageTransition>
       <main
         id="main-content"
         tabIndex={-1}
@@ -259,6 +262,7 @@ export function InternalPageShell({
       >
         {children}
       </main>
+      </TreasuryPageTransition>
 
       <div className="relative z-10">
         <SiteFooter locale={locale} />

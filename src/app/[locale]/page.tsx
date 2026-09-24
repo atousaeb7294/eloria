@@ -1,3 +1,4 @@
+import { TreasuryPageTransition } from "@/components/treasury-transition";
 import {
   setRequestLocale,
 } from "next-intl/server";
@@ -42,6 +43,7 @@ export default async function HomePage({
         }
       />
 
+      <TreasuryPageTransition>
       <main
         id="main-content"
         tabIndex={-1}
@@ -60,6 +62,7 @@ export default async function HomePage({
         </TreasuryPromenade>
         <div id="promenade-end" />
       </main>
+      </TreasuryPageTransition>
 
       <div className="relative z-10">
         <SiteFooter locale={locale} />

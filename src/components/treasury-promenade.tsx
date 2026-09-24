@@ -1,8 +1,16 @@
 "use client";
 
 import Image from "next/image";
+import { ProductImage } from "@/components/product-image";
 import { RawGoldPrice } from "@/components/raw-gold-price";
-import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import {
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+  type ReactNode,
+} from "react";
 import { mountTreasuryStory } from "@/lib/treasury-story";
 import { TreasuryLink } from "@/components/treasury-transition";
 import { treasuryEditorial, type TreasurySlug } from "@/lib/treasury-editorial";
@@ -58,7 +66,7 @@ export function TreasuryPromenade({
 }) {
   const fa = locale === "fa";
   const root = useRef<HTMLDivElement>(null);
-  useEffect(
+  useLayoutEffect(
     () => (root.current ? mountTreasuryStory(root.current) : undefined),
     [],
   );
@@ -106,7 +114,7 @@ export function TreasuryPromenade({
       Object.fromEntries(
         treasuryEditorial.map((treasury) => [
           treasury.slug,
-          items.filter((item) => belongs(item, treasury.slug)).slice(0, 5),
+          items.filter((item) => belongs(item, treasury.slug)).slice(0, 4),
         ]),
       ) as Record<TreasurySlug, Featured[]>,
     [items],
@@ -161,62 +169,57 @@ export function TreasuryPromenade({
                 </div>
                 <TreasuryLink
                   href={collectionHref}
-                  className="eloria-treasury-enter"
-                  aria-label={
-                    fa ? `ورود به ${treasury.fa}` : `Enter ${treasury.en}`
-                  }
-                >
-                  <span>{fa ? "ورود به گنجینه" : "Enter the treasury"}</span>
-                  <span aria-hidden="true">↗</span>
-                </TreasuryLink>
-                <TreasuryLink
-                  href={collectionHref}
                   className="eloria-treasury-main-link"
                   aria-label={
                     fa ? `مشاهدهٔ ${treasury.fa}` : `View ${treasury.en}`
                   }
                 />
-                {products.length > 0 && (
-                  <div className="eloria-treasury-rail-wrap">
-                    <p>
-                      {fa
-                        ? "گزیده‌ای از این گنجینه"
-                        : "A glimpse of the treasury"}
-                    </p>
-                    <nav
-                      className="eloria-treasury-miniatures"
-                      aria-label={
-                        fa ? `آثار ${treasury.fa}` : `${treasury.en} creations`
-                      }
-                      data-native-scroll
-                    >
-                      {products.map((item) => (
-                        <TreasuryLink
-                          key={item.slug}
-                          direction="up"
-                          href={`/${locale}/products/${encodeURIComponent(item.slug)}`}
-                          title={item.name}
-                          aria-label={item.name}
-                        >
-                          <Image
-                            src={item.imageUrl}
-                            alt={item.name}
-                            fill
-                            sizes="72px"
-                            className="object-cover"
-                          />
-                        </TreasuryLink>
-                      ))}
+                <div className="eloria-treasury-rail-wrap">
+                  <p>
+                    {fa
+                      ? "گزیده‌ای از این گنجینه"
+                      : "A glimpse of the treasury"}
+                  </p>
+                  <nav
+                    className="eloria-treasury-miniatures"
+                    aria-label={
+                      fa ? `آثار ${treasury.fa}` : `${treasury.en} creations`
+                    }
+                    data-native-scroll
+                  >
+                    {products.map((item) => (
                       <TreasuryLink
-                        href={collectionHref}
-                        className="eloria-treasury-all"
+                        key={item.slug}
+                        direction="up"
+                        href={`/${locale}/products/${encodeURIComponent(item.slug)}`}
+                        title={item.name}
+                        aria-label={item.name}
                       >
-                        <span>{fa ? "همه" : "All"}</span>
-                        <span aria-hidden="true">↗</span>
+                        <ProductImage
+                          src={item.imageUrl}
+                          alt={item.name}
+                          fill
+                          sizes="72px"
+                          className="object-cover"
+                        />
                       </TreasuryLink>
-                    </nav>
-                  </div>
-                )}
+                    ))}
+                  </nav>
+                  {products.length === 0 && (
+                    <p className="eloria-treasury-empty">
+                      {fa
+                        ? "برای دیدن آثار، وارد گنجینه شوید"
+                        : "Explore the treasury to discover its creations"}
+                    </p>
+                  )}
+                  <TreasuryLink
+                    href={collectionHref}
+                    className="eloria-treasury-enter"
+                  >
+                    <span>{fa ? "گنجینهٔ خرید" : "Shop the treasury"}</span>
+                    <span aria-hidden="true">↗</span>
+                  </TreasuryLink>
+                </div>
                 <a
                   className="eloria-treasury-next"
                   href={

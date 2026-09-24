@@ -1,8 +1,14 @@
 "use client";
 
-import Image from "next/image";
+import { ProductImage as Image } from "@/components/product-image";
 import useEmblaCarousel from "embla-carousel-react";
-import { useCallback, useEffect, useRef, useState } from "react";
+import {
+  ViewTransition,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import { TreasuryLink } from "@/components/treasury-transition";
 import { ProductCardLivePrice } from "@/components/product-card-live-price";
 import { LivePurchaseBox } from "@/components/live-purchase-box";
@@ -84,7 +90,7 @@ export function TreasuryProductSalon({
   const trigger = useRef<HTMLButtonElement | null>(null);
   const name = (item: CatalogProduct) => (fa ? item.nameFa : item.nameEn);
   const picture = (item: CatalogProduct) =>
-    item.image?.imageUrl ?? "/images/collections/necklaces.webp";
+    item.image?.imageUrl ?? "/images/brand/eloria-logo.webp";
 
   useEffect(() => {
     if (!carousel) return;
@@ -233,14 +239,20 @@ export function TreasuryProductSalon({
                   }}
                   tabIndex={index === selected ? 0 : -1}
                 >
-                  <Image
-                    src={picture(item)}
-                    alt={name(item)}
-                    fill
-                    sizes="(max-width:640px) 78vw, 42vw"
-                    loading={index < 3 ? "eager" : "lazy"}
-                    className="object-contain"
-                  />
+                  <ViewTransition
+                    name={`eloria-product-${item.slug}`}
+                    share="eloria-product-morph"
+                    default="none"
+                  >
+                    <Image
+                      src={picture(item)}
+                      alt={name(item)}
+                      fill
+                      sizes="(max-width:640px) 70vw, 31vw"
+                      loading={index < 3 ? "eager" : "lazy"}
+                      className="object-cover"
+                    />
+                  </ViewTransition>
                 </TreasuryLink>
                 <h2 className={fa ? "font-persian-calligraphy" : "font-serif"}>
                   <TreasuryLink

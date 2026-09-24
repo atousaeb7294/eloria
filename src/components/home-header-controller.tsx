@@ -173,12 +173,10 @@ export function HomeHeaderController({ locale }: HomeHeaderControllerProps) {
 
   const beginHoverNavigation = (href: string) => {
     if (window.matchMedia("(hover: hover) and (pointer: fine)").matches) {
-      router.prefetch(href);
       if (hoverNavigationTimer.current) clearTimeout(hoverNavigationTimer.current);
       hoverNavigationTimer.current = setTimeout(() => {
-        setMenuOpen(false);
-        router.push(href);
-      }, 620);
+        router.prefetch(href);
+      }, 150);
     }
   };
 
@@ -328,17 +326,10 @@ export function HomeHeaderController({ locale }: HomeHeaderControllerProps) {
   return (
     <>
       {/* هدر مینیمال روی Hero */}
-      <AnimatePresence>
+      <>
         {(!fullHeaderVisible || storyActive) && (
           <motion.header
-            initial={
-              reducedMotion
-                ? false
-                : {
-                    opacity: 0,
-                    y: -16,
-                  }
-            }
+            initial={false}
             animate={{
               opacity: 1,
               y: 0,
@@ -346,9 +337,10 @@ export function HomeHeaderController({ locale }: HomeHeaderControllerProps) {
             exit={{
               opacity: 0,
               y: -14,
+              transition: { duration: 0 },
             }}
             transition={{
-              duration: 0.42,
+              duration: reducedMotion ? 0 : 0.42,
               ease: [0.16, 1, 0.3, 1],
             }}
             dir={isPersian ? "rtl" : "ltr"}
@@ -473,7 +465,7 @@ export function HomeHeaderController({ locale }: HomeHeaderControllerProps) {
             </div>
           </motion.header>
         )}
-      </AnimatePresence>
+      </>
 
       {/* پنجره منو */}
       <AnimatePresence>
@@ -654,7 +646,7 @@ export function HomeHeaderController({ locale }: HomeHeaderControllerProps) {
       </AnimatePresence>
 
       {/* هدر کامل پس از عبور از Hero */}
-      <AnimatePresence>
+      <>
         {fullHeaderVisible && !storyActive && (
           <motion.div
             initial={
@@ -682,7 +674,7 @@ export function HomeHeaderController({ locale }: HomeHeaderControllerProps) {
             <SiteHeader />
           </motion.div>
         )}
-      </AnimatePresence>
+      </>
     </>
   );
 }

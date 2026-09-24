@@ -83,7 +83,9 @@
     "backup:database": "node scripts/backup-database.mjs backup",
     "operations:watch": "node scripts/operations-agent.mjs",
     "test:buyer-commerce": "node --import tsx scripts/test-buyer-commerce.ts && node scripts/test-backup-tools.mjs && node scripts/test-operations-agent.mjs",
-    "prestart": "npm run db:migrate"
+    "prestart": "npm run db:migrate",
+    "test:media": "node --import tsx scripts/test-product-media-storage.ts",
+    "test:seo-snapshots": "node --import tsx scripts/test-seo-snapshot-immutability.ts"
   },
   "dependencies": {
     "@base-ui/react": "^1.6.0",

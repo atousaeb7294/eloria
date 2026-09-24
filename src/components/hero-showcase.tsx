@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { motion, useReducedMotion } from "motion/react";
+import { motion } from "motion/react";
 
 import { SectionBackground } from "@/components/section-background";
 
@@ -25,7 +25,6 @@ export function HeroShowcase({
   locale,
   persianTitleClassName,
 }: HeroShowcaseProps) {
-  const reducedMotion = useReducedMotion();
 
   const isPersian = locale === "fa";
 
@@ -134,14 +133,7 @@ export function HeroShowcase({
         <div className="relative z-20 mx-auto flex w-full max-w-6xl -translate-y-[1.5vh] flex-col items-center justify-center px-5 pb-24 pt-28 text-center sm:-translate-y-[5vh] sm:px-10 sm:pb-20 sm:pt-24">
           {/* عنوان کوچک */}
           <motion.div
-            initial={
-              reducedMotion
-                ? false
-                : {
-                    opacity: 0,
-                    y: 14,
-                  }
-            }
+            initial={false}
             animate={{
               opacity: 1,
               y: 0,
@@ -164,14 +156,7 @@ export function HeroShowcase({
           {/* تیتر نستعلیق */}
           <motion.h1
             id="eloria-hero-title"
-            initial={
-              reducedMotion
-                ? false
-                : {
-                    opacity: 0,
-                    y: 26,
-                  }
-            }
+            initial={false}
             animate={{
               opacity: 1,
               y: 0,
@@ -196,14 +181,7 @@ export function HeroShowcase({
 
           {/* توضیح */}
           <motion.p
-            initial={
-              reducedMotion
-                ? false
-                : {
-                    opacity: 0,
-                    y: 16,
-                  }
-            }
+            initial={false}
             animate={{
               opacity: 1,
               y: 0,
@@ -219,14 +197,7 @@ export function HeroShowcase({
 
           {/* دکمه‌ها */}
           <motion.div
-            initial={
-              reducedMotion
-                ? false
-                : {
-                    opacity: 0,
-                    y: 18,
-                  }
-            }
+            initial={false}
             animate={{
               opacity: 1,
               y: 0,
@@ -331,14 +302,7 @@ export function HeroShowcase({
         </a>
         {/* متن خوش‌آمد پایین Hero */}
         <motion.div
-          initial={
-            reducedMotion
-              ? false
-              : {
-                  opacity: 0,
-                  y: 12,
-                }
-          }
+          initial={false}
           animate={{
             opacity: 1,
             y: 0,

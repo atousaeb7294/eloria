@@ -27,10 +27,11 @@ export async function GET(request: Request) {
               collection: { isActive: true },
               images: { some: { imageUrl: { not: "" } } },
             },
-            take: 6,
-            orderBy: [{ isFeatured: "desc" }, { createdAt: "desc" }],
+            take: 4,
+            orderBy: [{ createdAt: "desc" }, { id: "desc" }],
             select: {
               slug: true,
+              createdAt: true,
               nameFa: true,
               nameEn: true,
               hasGold: true,
@@ -50,7 +51,11 @@ export async function GET(request: Request) {
       ...new Map(
         groups.flat().map((product) => [product.slug, product]),
       ).values(),
-    ];
+    ].sort(
+      (a, b) =>
+        b.createdAt.getTime() - a.createdAt.getTime() ||
+        b.slug.localeCompare(a.slug),
+    );
     return NextResponse.json(
       {
         source: "database",

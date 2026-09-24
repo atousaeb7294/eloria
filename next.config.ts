@@ -33,8 +33,16 @@ function productImageConfiguration(): {
   remotePatterns: RemotePattern[];
   cspSources: string[];
 } {
-  const patterns: RemotePattern[] = [];
-  const sources = new Set<string>();
+  // Supabase host is also supplied at runtime in Parspack/standalone builds.
+  // Restrict the build-time fallback to public object URLs, not arbitrary paths.
+  const patterns: RemotePattern[] = [
+    {
+      protocol: "https",
+      hostname: "*.supabase.co",
+      pathname: "/storage/v1/object/public/**",
+    },
+  ];
+  const sources = new Set<string>(["https://*.supabase.co"]);
 
   const supabase = process.env.SUPABASE_URL?.trim();
 

@@ -1,4 +1,3 @@
-import { TreasuryTransitionProvider } from "@/components/treasury-transition";
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
 
@@ -21,7 +20,6 @@ import { SiteMeasurementTracker } from "@/components/site-measurement-tracker";
 import { SiteStructuredData } from "@/components/site-structured-data";
 import { PwaRegistration } from "@/components/pwa-registration";
 import { MarketingAttributionTracker } from "@/components/marketing-attribution-tracker";
-import { NavigationAccelerator } from "@/components/navigation-accelerator";
 
 import { routing } from "@/i18n/routing";
 import { siteBaseUrl } from "@/lib/site-url";
@@ -65,7 +63,9 @@ export async function generateMetadata({
 
   return {
     metadataBase: baseUrl,
-    verification: process.env.GOOGLE_SITE_VERIFICATION ? {google:process.env.GOOGLE_SITE_VERIFICATION.trim()} : undefined,
+    verification: process.env.GOOGLE_SITE_VERIFICATION
+      ? { google: process.env.GOOGLE_SITE_VERIFICATION.trim() }
+      : undefined,
     title,
     description,
     alternates: {
@@ -135,12 +135,11 @@ export default async function LocaleLayout({
             <SiteStructuredData />
             <PwaRegistration />
             <MarketingAttributionTracker />
-            <NavigationAccelerator />
             <SiteMeasurementTracker
               locale={locale}
               enabled={isSiteMeasurementEnabled()}
             />
-            <TreasuryTransitionProvider>{children}</TreasuryTransitionProvider>
+            {children}
             <DeferredSiteTools locale={locale} />
           </PageBackgroundProvider>
         </NextIntlClientProvider>

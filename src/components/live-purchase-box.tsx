@@ -93,27 +93,21 @@ export function LivePurchaseBox({
     !error &&
     !!quote?.product.isPurchasable &&
     (!quote.liveRate || quote.liveRate.isUsableForSale);
-  const goldPart = b?.components?.find((part) => part.material === "GOLD");
-  const percent = (value: string | undefined) =>
-    `${Number(value ?? "0").toLocaleString(fa ? "fa-IR" : "en-US", { maximumFractionDigits: 3 })}${fa ? "٪" : "%"}`;
-  const chargePercent = goldPart?.makingChargePercent ?? b?.makingChargePercent;
-  const profitPercent = goldPart?.profitPercent ?? b?.profitPercent;
-  const rows: Array<[string, string | undefined, boolean?]> = b
-    ? [
-        [fa ? "ارزش فلز" : "Metal value", b.metalValueToman],
-        [fa ? "اجرت ساخت" : "Making charge", chargePercent, true],
-        [fa ? "سود فروش" : "Retail profit", profitPercent, true],
-        [fa ? "هنر دست" : "Handwork", b.artisticFeeToman],
-        [fa ? "مالیات" : "Tax", b.taxToman],
-      ]
-    : [];
+  const weight =
+    quote?.variant?.weightGrams ?? b?.weightGrams ?? quote?.product.weightGrams;
+  const hasGold =
+    quote?.product.metalComponents?.hasGold ??
+    quote?.product.material === "GOLD";
+  const hasSilver =
+    quote?.product.metalComponents?.hasSilver ??
+    quote?.product.material === "SILVER";
   return (
     <section
       className="eloria-live-purchase"
-      aria-label={fa ? "حسابرسی قیمت و خرید" : "Price breakdown and purchase"}
+      aria-label={fa ? "مشخصات محصول و خرید" : "Product details and purchase"}
     >
       <div className="flex items-center justify-between gap-3">
-        <h3>{fa ? "قیمت این اثر" : "Your creation"}</h3>
+        <h3>{fa ? "مشخصات محصول" : "Product details"}</h3>
         <span className="text-[10px] opacity-70">
           {updated
             ? `${fa ? "به‌روز در" : "Updated"} ${updated}`
@@ -125,65 +119,83 @@ export function LivePurchaseBox({
       <RawGoldPrice locale={locale} />
       {quote ? (
         <>
-          <p className="my-4 text-2xl text-[#f1d99c]" aria-live="polite">
+          <p className="mt-4 text-xs opacity-75">
+            {fa ? "قیمت محصول" : "Product price"}
+          </p>
+          <p className="mb-4 mt-2 text-2xl text-[#f1d99c]" aria-live="polite">
             {format(quote.pricing.finalPriceToman)}{" "}
             <small className="text-xs">{fa ? "تومان" : "toman"}</small>
           </p>
-          <details className="mb-4 text-xs">
-            <summary className="cursor-pointer py-2">
-              {fa ? "ریز محاسبهٔ قیمت" : "Price breakdown"}
-            </summary>
-            <dl className="space-y-2 py-3">
-              {rows.map(([label, value, isPercent]) =>
-                value !== undefined ? (
-                  <div key={label} className="flex justify-between gap-4">
-                    <dt>{label}</dt>
+          <div className="mb-4 rounded-2xl border border-[#ddc48b]/20 bg-[#ddc48b]/5 p-4 text-xs">
+            <dl className="space-y-3">
+              <div className="flex justify-between gap-4">
+                <dt>{fa ? "وزن محصول" : "Product weight"}</dt>
+                <dd>
+                  {weight !== null && weight !== undefined
+                    ? `${Number(weight).toLocaleString(fa ? "fa-IR" : "en-US", { maximumFractionDigits: 3 })} ${fa ? "گرم" : "g"}`
+                    : fa
+                      ? "ثبت نشده"
+                      : "Not specified"}
+                </dd>
+              </div>
+              {b?.components &&
+                b.components.length > 1 &&
+                b.components.map((part) => (
+                  <div
+                    key={part.material}
+                    className="flex justify-between gap-4"
+                  >
+                    <dt>
+                      {part.material === "GOLD"
+                        ? fa
+                          ? "وزن طلا"
+                          : "Gold weight"
+                        : fa
+                          ? "وزن نقره"
+                          : "Silver weight"}
+                    </dt>
                     <dd>
-                      {isPercent
-                        ? percent(value)
-                        : `${format(value)} ${fa ? "تومان" : "toman"}`}
+                      {Number(part.weightGrams).toLocaleString(
+                        fa ? "fa-IR" : "en-US",
+                        { maximumFractionDigits: 3 },
+                      )}{" "}
+                      {fa ? "گرم" : "g"}
                     </dd>
                   </div>
-                ) : null,
-              )}
+                ))}
             </dl>
-            {goldPart && (
-              <p className="text-[11px] leading-7 opacity-75">
-                {fa
-                  ? "درصد اجرت و سود بر ارزش بخش طلای اثر محاسبه می‌شود."
-                  : "Making charge and profit percentages apply to the gold component."}
-              </p>
-            )}
-            {b?.components?.map((part) => (
-              <p key={part.material} className="text-[11px] leading-7">
-                {part.material === "GOLD"
+            <p className="mt-4 leading-7 text-[#ead9b3]">
+              {quote.pricing.mode === "MANUAL"
+                ? fa
+                  ? "قیمت نمایش‌داده‌شده، قیمت نهایی ثبت‌شده برای این اثر است."
+                  : "The displayed price is the final listed price for this creation."
+                : hasGold
                   ? fa
-                    ? "طلا"
-                    : "Gold"
-                  : fa
-                    ? "نقره"
-                    : "Silver"}
-                : {part.weightGrams} {fa ? "گرم" : "g"} ·{" "}
-                {format(part.metalValueToman)} {fa ? "تومان" : "toman"}
-              </p>
-            ))}
-            {!b && (
-              <p className="leading-7">
+                    ? `قیمت نهایی این اثر شامل ارزش طلای به‌کاررفته${hasSilver ? " و نقره" : ""}، اجرت ساخت طلا، سود فروشنده و ارزش هنر دست است.`
+                    : `The final price includes the value of gold${hasSilver ? " and silver" : ""}, gold making charges, the seller’s profit and the value of handcraft.`
+                  : hasSilver
+                    ? fa
+                      ? "قیمت نهایی این اثر شامل ارزش نقره، اجرت ساخت نقره، سود فروشنده و ارزش هنر دست است."
+                      : "The final price includes silver, silver making charges, the seller’s profit and the value of handcraft."
+                    : fa
+                      ? "قیمت نهایی این اثر بر پایهٔ مواد به‌کاررفته و ارزش هنر دست تعیین می‌شود."
+                      : "The final price reflects the materials and the value of handcraft."}
+            </p>
+            {b && BigInt(b.taxToman) > 0n && (
+              <p className="mt-2 leading-7 opacity-75">
                 {fa
-                  ? "قیمت ثابتِ ثبت‌شده برای این اثر."
-                  : "The listed fixed price for this creation."}
+                  ? "مالیات در قیمت نهایی لحاظ شده است."
+                  : "Tax is included in the final price."}
               </p>
             )}
-            <p className="mt-3 leading-7">
-              {fa ? "ارسال کل سفارش: " : "Order delivery: "}
-              {format(DELIVERY_TOMAN.toString())} {fa ? "تومان" : "toman"}
-            </p>
-            <p className="mt-3 leading-7 opacity-75">
+            <p className="mt-3 border-t border-[#ddc48b]/15 pt-3 leading-7 opacity-75">
+              {fa ? "هزینهٔ ارسال: " : "Delivery: "}
+              {format(DELIVERY_TOMAN.toString())}{" "}
               {fa
-                ? "ارسال، یک‌بار برای کل سفارش در سبد خرید اضافه می‌شود. در بازار بسته افزایش نرخ نداریم."
-                : "Delivery is added once per order in your bag. Closed-market rates carry no extra markup."}
+                ? "تومان؛ یک‌بار برای کل سفارش در سبد خرید اضافه می‌شود."
+                : "toman, added once per order in your bag."}
             </p>
-          </details>
+          </div>
           {quote.variant && (
             <p className="mb-3 text-xs">
               {fa ? quote.variant.titleFa : quote.variant.titleEn}

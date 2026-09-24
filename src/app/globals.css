@@ -871,13 +871,13 @@ html[lang="fa"] :where(p, li, label, button, a, h1, h2, h3, h4, h5, h6) {
 .eloria-treasury-eyebrow { font-size:11px; letter-spacing:.08em; color:#f0dfb4; }
 .eloria-treasury-heading h2 { margin:8px 0; font-size:clamp(46px,5.5vw,84px); font-weight:400; line-height:1.5; color:#fff1cc; }
 .eloria-treasury-heading > p:not(.eloria-treasury-eyebrow) { margin:0; max-width:340px; font-size:13px; line-height:2.1; color:#f4ead5cf; }
-.eloria-treasury-enter { position:absolute; z-index:6; bottom:22%; left:6%; display:inline-flex; align-items:center; gap:22px; min-height:48px; padding:8px 0; border-bottom:1px solid #eed3a088; color:#fff0c8; font-size:13px; transition:gap .25s,transform .25s; }
+.eloria-treasury-enter { position:relative; display:inline-flex; align-items:center; justify-content:center; gap:22px; min-height:48px; margin-top:16px; padding:10px 24px; border:1px solid #eed3a088; border-radius:999px; background:#09241ccc; color:#fff0c8; font-size:13px; transition:gap .25s,transform .25s; }
 .eloria-treasury-enter:hover { gap:32px; transform:translateY(-2px); }
 .eloria-treasury-main-link { position:absolute; z-index:2; inset:0; }
-.eloria-treasury-rail-wrap { position:absolute; z-index:6; bottom:max(46px,6svh); left:50%; transform:translateX(-50%); width:min(620px,calc(100% - 40px)); text-align:center; }
+.eloria-treasury-rail-wrap { position:absolute; z-index:6; top:42%; right:6%; width:min(390px,38vw); text-align:center; padding:22px 16px; border:1px solid #e5cc914d; border-radius:28px; background:#051d17c9; }
 .eloria-treasury-rail-wrap > p { margin:0 0 8px; color:#f0dfb499; font-size:10px; }
 .eloria-treasury-miniatures { display:flex; align-items:center; justify-content:safe center; gap:10px; overflow-x:auto; padding:5px; scrollbar-width:none; }
-.eloria-treasury-miniatures > a { position:relative; flex:0 0 56px; height:62px; overflow:hidden; border:1px solid #e5cc9159; border-radius:8px; background:#09241c; transition:transform .22s,border-color .22s; }
+.eloria-treasury-miniatures > a { position:relative; flex:0 0 64px; height:64px; overflow:hidden; border:1px solid #e5cc9159; border-radius:50%; background:#09241c; transition:transform .22s,border-color .22s; }
 .eloria-treasury-miniatures > a:hover { transform:translateY(-3px); border-color:#fff1cc; }
 .eloria-treasury-miniatures > .eloria-treasury-all { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; color:#f0dbab; font-size:10px; }
 .eloria-treasury-next { position:absolute; z-index:7; bottom:8px; left:50%; transform:translateX(-50%); display:flex; align-items:center; gap:10px; min-height:32px; padding:4px 16px; font-size:10px; color:#ecd9aaab; }
@@ -893,11 +893,11 @@ html[lang="fa"] :where(p, li, label, button, a, h1, h2, h3, h4, h5, h6) {
   .eloria-treasury-heading { top:28%; left:7%; width:86%; }
   .eloria-treasury-heading h2 { font-size:clamp(44px,14vw,65px); }
   .eloria-treasury-heading > p:not(.eloria-treasury-eyebrow) { max-width:260px; font-size:12px; }
-  .eloria-treasury-enter { bottom:25%; left:7%; }
+  .eloria-treasury-rail-wrap { top:auto; bottom:max(96px,12svh); right:7%; width:86%; padding:14px; }
   .eloria-treasury-counter { top:100px; left:7%; }
   .eloria-treasury-shade { background:linear-gradient(180deg,#01130bba,transparent 20%,#01130b55 40%,#01130bdd),linear-gradient(90deg,#03130b66,transparent); }
   .eloria-treasury-miniatures { gap:7px; }
-  .eloria-treasury-miniatures > a { flex-basis:46px; height:52px; }
+  .eloria-treasury-miniatures > a { flex-basis:52px; height:52px; }
   .eloria-promenade[data-story-enhanced] .eloria-story-navigation { inset-inline-end:8px; }
   .eloria-story-navigation a span { display:none; }
   .eloria-hero-story-link { bottom:70px; inset-inline-end:0; width:100%; justify-content:center; }
@@ -906,8 +906,8 @@ html[lang="fa"] :where(p, li, label, button, a, h1, h2, h3, h4, h5, h6) {
   .eloria-treasury-counter { top:78px; }
   .eloria-treasury-heading { top:24%; }
   .eloria-treasury-heading h2 { font-size:42px; }
-  .eloria-treasury-enter { bottom:26%; }
-  .eloria-treasury-rail-wrap { bottom:44px; }
+
+  .eloria-treasury-rail-wrap { top:auto; bottom:96px; }
 }
 @media(max-height:520px) {
   .eloria-promenade-surface { height:auto; min-height:600px; }
@@ -919,21 +919,23 @@ html[lang="fa"] :where(p, li, label, button, a, h1, h2, h3, h4, h5, h6) {
   outline: 2px solid #ffe2a0;
   outline-offset: 5px;
 }
-html[data-treasury-transition]::view-transition-old(root),
-html[data-treasury-transition]::view-transition-new(root) {
-  animation-duration:480ms;
-  animation-timing-function:cubic-bezier(.22,1,.36,1);
-  mix-blend-mode:normal;
-}
-html[data-treasury-transition]::view-transition-group(root) { background:#02140e; }
-html[data-treasury-transition="left"]::view-transition-old(root) { animation-name:eloria-exit-left; }
-html[data-treasury-transition="left"]::view-transition-new(root) { animation-name:eloria-enter-right; }
-html[data-treasury-transition="up"]::view-transition-old(root) { animation-name:eloria-exit-up; }
-html[data-treasury-transition="up"]::view-transition-new(root) { animation-name:eloria-enter-bottom; }
-@keyframes eloria-exit-left { to { transform:translateX(-100%); } }
-@keyframes eloria-enter-right { from { transform:translateX(100%); } }
-@keyframes eloria-exit-up { to { transform:translateY(-100%); } }
-@keyframes eloria-enter-bottom { from { transform:translateY(100%); } }
+/* One React-owned transition: keep the live background/chrome stationary. */
+::view-transition { pointer-events:none; }
+::view-transition-group(.eloria-product-morph) { animation-duration:360ms; }
+::view-transition-old(root) { display:none; }
+::view-transition-new(root) { animation:none; }
+::view-transition-group(.eloria-page-forward),
+::view-transition-group(.eloria-page-up),
+::view-transition-group(.eloria-page-fade) { animation-duration:360ms; }
+::view-transition-old(.eloria-page-forward) { --slide-offset:-36px; animation:150ms ease-in both eloria-fade reverse,360ms ease-in-out both eloria-slide reverse; }
+::view-transition-new(.eloria-page-forward) { --slide-offset:36px; animation:210ms ease-out 150ms both eloria-fade,360ms ease-in-out both eloria-slide; }
+::view-transition-old(.eloria-page-up) { --slide-y-offset:-24px; animation:150ms ease-in both eloria-fade reverse,360ms ease-in-out both eloria-slide-y reverse; }
+::view-transition-new(.eloria-page-up) { --slide-y-offset:24px; animation:210ms ease-out 150ms both eloria-fade,360ms ease-in-out both eloria-slide-y; }
+::view-transition-old(.eloria-page-fade) { animation:150ms ease-in both eloria-fade reverse; }
+::view-transition-new(.eloria-page-fade) { animation:210ms ease-out 150ms both eloria-fade; }
+@keyframes eloria-fade { from { opacity:0; } to { opacity:1; } }
+@keyframes eloria-slide { from { translate:var(--slide-offset); } to { translate:0; } }
+@keyframes eloria-slide-y { from { transform:translateY(var(--slide-y-offset)); } to { transform:translateY(0); } }
 @media (prefers-reduced-motion: reduce) {
   .eloria-promenade-surface {
     transform: none !important;
@@ -946,6 +948,8 @@ html[data-treasury-transition="up"]::view-transition-new(root) { animation-name:
   html::view-transition-old(*),
   html::view-transition-new(*) {
     animation: none !important;
+    animation-duration:0s !important;
+    animation-delay:0s !important;
   }
 }
 .eloria-product-salon { position:relative; margin:24px -16px 0; padding:20px 0 28px; isolation:isolate; }
@@ -953,11 +957,11 @@ html[data-treasury-transition="up"]::view-transition-new(root) { animation-name:
 .eloria-salon-viewport { padding-block:22px; overflow:hidden; touch-action:pan-y pinch-zoom; outline-offset:-3px; }
 .eloria-salon-rail { display:flex; align-items:center; }
 .eloria-salon-piece { flex:0 0 31%; min-width:0; padding:0 1.25%; text-align:center; perspective:1100px; }
-.eloria-salon-piece-inner { padding:18px; border:1px solid #dcc58b44; border-radius:120px 120px 16px 16px; background:linear-gradient(160deg,#15372b,#071e17); opacity:.62; transform:scale(.9) rotateY(-5deg); transition:transform .45s cubic-bezier(.22,1,.36,1),opacity .35s; }
+.eloria-salon-piece-inner { position:relative; padding:10px 10px 22px; opacity:.82; transform:scale(.9) rotateY(-5deg); transition:transform .45s cubic-bezier(.22,1,.36,1),opacity .35s; }
 .eloria-salon-piece[data-side="before"] .eloria-salon-piece-inner { transform:scale(.9) rotateY(5deg); }
 .eloria-salon-piece[data-emphasized="true"] .eloria-salon-piece-inner { opacity:1; transform:scale(1.035) rotateY(0); border-color:#f1d59b99; }
-.eloria-salon-image { position:relative; display:block; width:100%; height:clamp(200px,30svh,330px); overflow:hidden; border-radius:105px 105px 8px 8px; background:#e9e1cc; }
-.eloria-salon-piece h2 { font-size:clamp(23px,2.2vw,30px); margin:12px 0 8px; line-height:1.7; }
+.eloria-salon-image { position:relative; display:block; width:100%; aspect-ratio:1; overflow:hidden; border:2px solid #ddc48b88; border-radius:50%; background:#09241c; box-shadow:0 0 0 6px #ddc48b12,0 18px 45px #0005; }
+.eloria-salon-piece h2 { position:relative; z-index:1; width:fit-content; max-width:92%; margin:-28px auto 14px; padding:4px 22px; border:1px solid #ddc48b66; border-radius:999px; background:#09241cf5; box-shadow:0 8px 22px #0005; color:#f4e3bb; font-size:clamp(23px,2.2vw,30px); line-height:1.7; overflow-wrap:anywhere; }
 .eloria-quick-button { min-height:44px; padding:10px 28px; border-bottom:1px solid #ddc48b88; margin:14px 0; color:#f1deb1; cursor:pointer; font-size:12px; transition:transform .2s,background .2s; }
 .eloria-quick-button:hover { background:#ddc48b14; transform:translateY(-2px); }
 .eloria-salon-controls { display:flex; align-items:center; justify-content:center; gap:25px; font-size:11px; margin-top:8px; }
@@ -968,7 +972,7 @@ html[data-treasury-transition="up"]::view-transition-new(root) { animation-name:
 .eloria-salon-thumbnails button[aria-pressed="true"] { border:2px solid #f3da9d; }
 @media(max-width:640px) {
  .eloria-salon-piece { flex-basis:70%; padding-inline:2.5%; }
- .eloria-salon-image { height:27svh; min-height:190px; }
+
  .eloria-salon-piece-inner { transform:scale(.88); }
  .eloria-salon-piece[data-side="before"] .eloria-salon-piece-inner { transform:scale(.88); }
 }
@@ -1020,4 +1024,10 @@ html[data-treasury-transition="up"]::view-transition-new(root) { animation-name:
  .eloria-story-rate { top:88px; right:7%; max-width:62%; }
  .eloria-story-rate .eloria-raw-gold { font-size:9px; }
  .eloria-story-rate .eloria-raw-gold small { display:none; }
+}
+
+.eloria-treasury-empty { min-height:64px; display:grid; place-items:center; font-size:11px; color:#ead9b3; }
+
+@media(max-width:639px) {
+ body:has(.eloria-promenade) [data-support-widget] { bottom:calc(20px + env(safe-area-inset-bottom)); }
 }

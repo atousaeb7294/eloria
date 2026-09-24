@@ -1,3 +1,4 @@
+import { latestSeoAutomationReport } from "@/lib/seo-automation-report";
 import { SeoRunReport } from "@/components/admin/seo-run-report";
 import { restoreSeoChange } from "./restore";
 import { editorialFindings } from "@/lib/seo-content-tools";
@@ -26,13 +27,11 @@ export default async function SeoAuditPage({ params, searchParams }: {
   }
   const findings = auditSeoPages(pages);
   for (const a of articles) for (const issue of editorialFindings(a.contentFa)) findings.push({ path: `/fa/journal/${a.slug}`, issue, severity: "MEDIUM", repairable: false });
-  const [latest, articleEvents, imageEvents] = await Promise.all([
-    prisma.contentSeoSnapshot.findFirst({ orderBy: { recordedFor: "desc" } }),
+  const [run, articleEvents, imageEvents] = await Promise.all([
+    latestSeoAutomationReport(),
     prisma.contentArticleAuditEvent.findMany({ where: { eventType: "SEO_AUTOPILOT_REPAIRED" }, orderBy: { createdAt: "desc" }, take: 15 }),
     prisma.productTimelineEvent.findMany({ where: { eventType: "SEO_AUTOPILOT_REPAIRED" }, orderBy: { occurredAt: "desc" }, take: 15 }),
   ]);
-  const latestIssues = Array.isArray(latest?.issues) ? latest.issues : [];
-  const run = latestIssues.find(i => i && typeof i === "object" && !Array.isArray(i) && i.id === "SEO_AUTOPILOT_RUN");
   return <div dir="rtl" className="mx-auto max-w-6xl space-y-6 text-[#eee1c7]">
     <Link href={`/${locale}/admin/content`} className="text-sm text-[#dec478]">بازگشت به محتوا و سئو</Link>
     <h1 className="text-2xl font-semibold">بررسی و اصلاح سئوی فروشگاه</h1>

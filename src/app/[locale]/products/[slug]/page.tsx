@@ -745,6 +745,7 @@ export default async function ProductPage({
             />
 
             <ProductGallery
+              transitionSlug={productRecord.slug}
               locale={locale}
               images={galleryImages}
               materialLabel={materialLabel}

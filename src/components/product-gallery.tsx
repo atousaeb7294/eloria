@@ -1,6 +1,6 @@
 "use client";
 
-import Image from "next/image";
+import { ProductImage as Image } from "@/components/product-image";
 import {
   ChevronLeft,
   ChevronRight,
@@ -8,6 +8,7 @@ import {
   X,
 } from "lucide-react";
 import {
+  ViewTransition,
   useEffect,
   useMemo,
   useRef,
@@ -26,6 +27,7 @@ type ProductGalleryProps = {
   collectionLabel: string;
   isGold: boolean;
   unavailable?: boolean;
+  transitionSlug?: string;
 };
 
 const FOCUSABLE_SELECTOR = [
@@ -44,6 +46,7 @@ export function ProductGallery({
   collectionLabel,
   isGold,
   unavailable = false,
+  transitionSlug,
 }: ProductGalleryProps) {
   const isPersian =
     locale === "fa";
@@ -293,6 +296,7 @@ export function ProductGallery({
     <>
       <div className="grid gap-3 rounded-[2rem]">
         <div className="relative aspect-[4/5] overflow-hidden rounded-[2rem] border border-white/[0.07] bg-[#031811] shadow-[0_22px_65px_rgba(0,0,0,0.38)]">
+          <ViewTransition name={transitionSlug && normalizedActiveIndex === 0 ? `eloria-product-${transitionSlug}` : undefined} share="eloria-product-morph" default="none">
           <Image
             key={
               activeImage.imageUrl
@@ -308,6 +312,7 @@ export function ProductGallery({
             sizes="(max-width: 1024px) 100vw, 55vw"
             className="object-cover transition duration-1000 ease-out hover:scale-[1.025]"
           />
+          </ViewTransition>
 
           <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#01130d]/85 via-transparent to-black/10" />
           <div className="pointer-events-none absolute inset-0 shadow-[inset_0_0_95px_rgba(0,0,0,0.25)]" />

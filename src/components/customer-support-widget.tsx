@@ -224,6 +224,7 @@ export function CustomerSupportWidget({ locale }: { locale: "fa" | "en" }) {
   return (
     <aside
       dir={fa ? "rtl" : "ltr"}
+      data-support-widget
       className="fixed bottom-[calc(6.5rem+env(safe-area-inset-bottom))] end-4 z-[90] flex max-w-[calc(100vw-2rem)] flex-col items-end gap-3 sm:bottom-6 sm:end-6"
       aria-label={copy.widget}
     >

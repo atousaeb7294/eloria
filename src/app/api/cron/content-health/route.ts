@@ -1,7 +1,12 @@
+import { latestSeoAutomationReport } from "@/lib/seo-automation-report";
 import { scanSeoPages } from "@/lib/seo-page-scan";
 import { prisma } from "@/lib/prisma";
 import { Prisma } from "@/generated/prisma/client";
-import { repairSeoBatch, seoAutomationEnabled, type SeoCursor } from "@/lib/seo-autopilot";
+import {
+  repairSeoBatch,
+  seoAutomationEnabled,
+  type SeoCursor,
+} from "@/lib/seo-autopilot";
 import { measureSeoPerformance } from "@/lib/seo-performance";
 import { timingSafeEqual } from "node:crypto";
 
@@ -92,23 +97,53 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const previous = await prisma.contentSeoSnapshot.findFirst({ orderBy: { recordedFor: "desc" } });
-    const oldIssues = Array.isArray(previous?.issues) ? previous.issues : [];
-    const last = oldIssues.find(item => item && typeof item === "object" && !Array.isArray(item) && item.id === "SEO_AUTOPILOT_RUN") as { cursor?: SeoCursor; performance?: unknown; performanceAt?: string; pageScan?: Awaited<ReturnType<typeof scanSeoPages>> } | undefined;
+    const last = (await latestSeoAutomationReport()) as
+      | {
+          cursor?: SeoCursor;
+          performance?: unknown;
+          performanceAt?: string;
+          pageScan?: Awaited<ReturnType<typeof scanSeoPages>>;
+        }
+      | undefined;
     const repairs = await repairSeoBatch(last?.cursor);
     const result = await recordContentSeoSnapshot();
-    const needsPerformance = seoAutomationEnabled() && (!last?.performanceAt || Date.now() - Date.parse(last.performanceAt) > 86400000);
-    const pageScan = seoAutomationEnabled() ? await scanSeoPages(last?.pageScan?.nextOffset) : null;
+    const needsPerformance =
+      seoAutomationEnabled() &&
+      (!last?.performanceAt ||
+        Date.now() - Date.parse(last.performanceAt) > 86400000);
+    const pageScan = seoAutomationEnabled()
+      ? await scanSeoPages(last?.pageScan?.nextOffset)
+      : null;
     if (pageScan && last?.pageScan?.pages) {
-      const currentUrls = new Set(pageScan.pages.map(p => p.url));
-      pageScan.pages = [...pageScan.pages, ...last.pageScan.pages.filter(p => !currentUrls.has(p.url))].slice(0, 1000);
+      const currentUrls = new Set(pageScan.pages.map((p) => p.url));
+      pageScan.pages = [
+        ...pageScan.pages,
+        ...last.pageScan.pages.filter((p) => !currentUrls.has(p.url)),
+      ].slice(0, 1000);
     }
-    const performance = needsPerformance ? await measureSeoPerformance() : last?.performance || [];
-    const snapshot = await prisma.contentSeoSnapshot.findFirst({ orderBy: { recordedFor: "desc" } });
-    if (snapshot) await prisma.contentSeoSnapshot.update({ where: { id: snapshot.id }, data: { issues: JSON.parse(JSON.stringify([
-      ...result.health.issues,
-      { id: "SEO_AUTOPILOT_RUN", severity: "LOW", title: "گزارش خودکار سئو", detail: `${repairs.changed} اصلاح در آخرین نوبت`, action: "گزارش پنل سئو", checkedAt: new Date().toISOString(), ...repairs, pageScan, performance, performanceAt: needsPerformance ? new Date().toISOString() : last?.performanceAt }
-    ])) as Prisma.InputJsonValue } });
+    const performance = needsPerformance
+      ? await measureSeoPerformance()
+      : last?.performance || [];
+    await prisma.seoAutomationRun.create({
+      data: {
+        report: JSON.parse(
+          JSON.stringify({
+            id: "SEO_AUTOPILOT_RUN",
+            severity: "LOW",
+            title: "گزارش خودکار سئو",
+            detail: `${repairs.changed} اصلاح در آخرین نوبت`,
+            action: "گزارش پنل سئو",
+            checkedAt: new Date().toISOString(),
+            ...repairs,
+            pageScan,
+            performance,
+            performanceAt: needsPerformance
+              ? new Date().toISOString()
+              : last?.performanceAt,
+          }),
+        ) as Prisma.InputJsonValue,
+      },
+    });
 
     return NextResponse.json(
       {

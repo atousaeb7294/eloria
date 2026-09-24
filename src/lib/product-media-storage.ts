@@ -2,6 +2,7 @@ import { randomUUID } from "node:crypto";
 import { mkdir, unlink, writeFile } from "node:fs/promises";
 import path from "node:path";
 import sharp from "sharp";
+import { prisma } from "@/lib/prisma";
 
 const MAX_IMAGE_BYTES = 8 * 1024 * 1024;
 const MAX_IMAGE_DIMENSION = 12_000;
@@ -20,7 +21,10 @@ type ValidatedImage = {
 };
 
 export class ProductMediaStorageError extends Error {
-  constructor(message: string) {
+  constructor(
+    message: string,
+    readonly unavailable = false,
+  ) {
     super(message);
     this.name = "ProductMediaStorageError";
   }
@@ -219,19 +223,28 @@ async function uploadToSupabase(
   image: ValidatedImage,
 ): Promise<string> {
   const config = storageConfig();
-  const response = await fetch(
-    `${config.url}/storage/v1/object/${encodeURIComponent(config.bucket)}/${objectPath}`,
-    {
-      method: "POST",
-      headers: {
-        ...supabaseHeaders(config.key),
-        "Content-Type": image.contentType,
-        "x-upsert": "false",
+  let response: Response;
+  try {
+    response = await fetch(
+      `${config.url}/storage/v1/object/${encodeURIComponent(config.bucket)}/${objectPath}`,
+      {
+        method: "POST",
+        headers: {
+          ...supabaseHeaders(config.key),
+          "Content-Type": image.contentType,
+          "x-upsert": "false",
+        },
+        body: new Uint8Array(image.bytes),
+        signal: AbortSignal.timeout(STORAGE_TIMEOUT_MS),
       },
-      body: new Uint8Array(image.bytes),
-      signal: AbortSignal.timeout(STORAGE_TIMEOUT_MS),
-    },
-  );
+    );
+  } catch (error) {
+    console.error("[Eloria Media] Object storage connection failed.", error);
+    throw new ProductMediaStorageError(
+      "اتصال به فضای تصاویر برقرار نشد. نشانی SUPABASE_URL و DNS سرور را بررسی کنید.",
+      true,
+    );
+  }
 
   if (!response.ok) {
     const detail = await response.text().catch(() => "");
@@ -247,7 +260,7 @@ async function uploadToSupabase(
           : response.status === 413
             ? "فضای تصاویر این حجم فایل را نمی‌پذیرد. عکس کوچک‌تری انتخاب کنید."
             : "فضای تصاویر پاسخ موفق نداد. اتصال سرور به فضای ذخیره‌سازی را بررسی کنید.";
-    throw new ProductMediaStorageError(message);
+    throw new ProductMediaStorageError(message, response.status >= 500);
   }
   return `${config.url}/storage/v1/object/public/${encodeURIComponent(config.bucket)}/${objectPath}`;
 }
@@ -280,19 +293,49 @@ export async function storeProductImage(
   const objectPath = `products/${productId}/${filename}`;
   const config = storageConfig();
 
-  if (config.url && config.key && config.bucket)
-    return uploadToSupabase(objectPath, image);
-  if (
-    process.env.NODE_ENV === "production" ||
-    config.url ||
-    config.key ||
-    config.bucket
-  ) {
+  const provider = process.env.ELORIA_MEDIA_STORAGE?.trim() || "auto";
+  if (!["auto", "database", "supabase", "local"].includes(provider)) {
     throw new ProductMediaStorageError(
-      "تنظیمات فضای تصاویر کامل نیست: SUPABASE_URL، SUPABASE_SERVICE_ROLE_KEY و ELORIA_STORAGE_BUCKET باید روی سرور تنظیم شوند. اتصال دیتابیس به‌تنهایی برای آپلود عکس کافی نیست.",
+      "مقدار ELORIA_MEDIA_STORAGE معتبر نیست.",
     );
   }
-  return uploadLocally(productId, filename, image);
+  if (provider === "local") {
+    if (process.env.NODE_ENV === "production")
+      throw new ProductMediaStorageError(
+        "ذخیرهٔ محلی فقط در محیط توسعه مجاز است؛ database یا supabase را انتخاب کنید.",
+      );
+    return uploadLocally(productId, filename, image);
+  }
+  if (provider !== "database" && config.url && config.key && config.bucket) {
+    try {
+      return await uploadToSupabase(objectPath, image);
+    } catch (error) {
+      if (
+        provider !== "auto" ||
+        !(error instanceof ProductMediaStorageError) ||
+        !error.unavailable
+      )
+        throw error;
+      // Only transport/5xx failures use the durable fallback. Invalid credentials,
+      // bucket permissions and rejected files remain actionable admin errors.
+      console.warn(
+        "[Eloria Media] Saving validated image to PostgreSQL because object storage is unavailable.",
+      );
+    }
+  } else if (provider === "supabase") {
+    throw new ProductMediaStorageError(
+      "SUPABASE_URL، SUPABASE_SERVICE_ROLE_KEY و ELORIA_STORAGE_BUCKET باید تنظیم شوند.",
+    );
+  }
+  const asset = await prisma.productMediaAsset.create({
+    data: {
+      productId,
+      bytes: new Uint8Array(image.bytes),
+      contentType: image.contentType,
+    },
+    select: { id: true },
+  });
+  return `/api/media/products/${asset.id}`;
 }
 
 function generatedProductObjectPath(rawPath: string): string | null {
@@ -322,6 +365,18 @@ function generatedProductObjectPath(rawPath: string): string | null {
 export async function removeStoredProductImage(
   imageUrl: string,
 ): Promise<void> {
+  const storedId =
+    /^\/api\/media\/products\/([0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12})$/i.exec(
+      imageUrl,
+    )?.[1];
+  if (storedId) {
+    await prisma.productMediaAsset
+      .deleteMany({ where: { id: storedId } })
+      .catch((error) => {
+        console.error("[Eloria Media] Unable to remove stored image.", error);
+      });
+    return;
+  }
   const config = storageConfig();
   const publicPrefix =
     config.url && config.bucket

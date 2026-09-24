@@ -132,6 +132,7 @@ model Product {
   productWatches CustomerProductWatch[]
   orderItems     OrderItem[]
   images         ProductImage[]
+  mediaAssets    ProductMediaAsset[]
   variants       ProductVariant[]
   timelineEvents ProductTimelineEvent[]
   collection     Collection             @relation(fields: [collectionId], references: [id])
@@ -561,6 +562,30 @@ model ContentSeoSnapshot {
 
   @@index([createdAt])
   @@map("content_seo_snapshots")
+}
+
+// Each automation invocation is immutable; daily health snapshots stay immutable too.
+model SeoAutomationRun {
+  id        String   @id @default(uuid()) @db.Uuid
+  report    Json
+  createdAt DateTime @default(now())
+
+  @@index([createdAt, id])
+  @@map("seo_automation_runs")
+}
+
+// Durable storage when external object storage is unavailable. Only validated,
+// re-encoded product images enter this table through the authenticated uploader.
+model ProductMediaAsset {
+  id          String   @id @default(uuid()) @db.Uuid
+  productId   String   @db.Uuid
+  contentType String
+  bytes       Bytes
+  createdAt   DateTime @default(now())
+  product     Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@index([productId])
+  @@map("product_media_assets")
 }
 
 model DailyStoreBriefing {

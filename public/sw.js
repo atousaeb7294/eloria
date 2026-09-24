@@ -1,4 +1,4 @@
-const CACHE_NAME = "eloria-shell-v1";
+const CACHE_NAME = "eloria-shell-v2-brand-media";
 const SHELL = [
   "/fa",
   "/manifest.webmanifest",
@@ -14,9 +14,15 @@ self.addEventListener("install", (event) => {
 
 self.addEventListener("activate", (event) => {
   event.waitUntil(
-    caches.keys().then((keys) =>
-      Promise.all(keys.filter((key) => key !== CACHE_NAME).map((key) => caches.delete(key))),
-    ),
+    caches
+      .keys()
+      .then((keys) =>
+        Promise.all(
+          keys
+            .filter((key) => key !== CACHE_NAME)
+            .map((key) => caches.delete(key)),
+        ),
+      ),
   );
   self.clients.claim();
 });
@@ -41,10 +47,21 @@ self.addEventListener("fetch", (event) => {
       .then((response) => {
         if (response.ok && response.type === "basic") {
           const copy = response.clone();
-          void caches.open(CACHE_NAME).then((cache) => cache.put(request, copy));
+          void caches
+            .open(CACHE_NAME)
+            .then((cache) => cache.put(request, copy));
         }
         return response;
       })
-      .catch(() => caches.match(request).then((cached) => cached || caches.match("/fa"))),
+      .catch(async () => {
+        const cached = await caches.match(request);
+        if (cached) return cached;
+        // A failed image must not receive HTML as its fallback response.
+        if (request.mode === "navigate") {
+          const home = await caches.match("/fa");
+          if (home) return home;
+        }
+        return Response.error();
+      }),
   );
 });
