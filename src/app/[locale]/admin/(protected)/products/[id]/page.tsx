@@ -241,6 +241,7 @@ export default async function EditAdminProductPage({
       ) : null}
 
       <AdminProductForm
+        key={`${product.id}:${product.updatedAt.toISOString()}`}
         locale={safeLocale}
         collections={collections}
         value={value}

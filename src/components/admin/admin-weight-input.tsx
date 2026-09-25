@@ -3,9 +3,15 @@
 import { useId, useState } from "react";
 import { gramsToSoot, weightToGrams, type WeightUnit } from "@/lib/weight-units";
 
-export function AdminWeightInput({ name, defaultValue, label, className, initialUnit = "gram", required = false }: {
+type WeightInputProps = {
   initialUnit?: WeightUnit; name: string; defaultValue: string; label: string; className: string; required?: boolean;
-}) {
+};
+
+export function AdminWeightInput(props: WeightInputProps) {
+  return <WeightInputFields key={`${props.name}:${props.defaultValue}:${props.initialUnit ?? "gram"}`} {...props} />;
+}
+
+function WeightInputFields({ name, defaultValue, label, className, initialUnit = "gram", required = false }: WeightInputProps) {
   const id = useId();
   const [unit, setUnit] = useState<WeightUnit>(initialUnit);
   const [value, setValue] = useState(() => initialUnit === "soot" ? gramsToSoot(defaultValue) : defaultValue);
@@ -26,7 +32,8 @@ export function AdminWeightInput({ name, defaultValue, label, className, initial
       <input id={id} className={className} dir="ltr" inputMode={unit === "soot" ? "numeric" : "decimal"}
         name={name} value={value} required={required} aria-describedby={`${id}-hint`}
         onChange={event => { setValue(event.target.value); setError(""); }} />
-      <select className={className} aria-label={`واحد ${label}`} name={`${name}Unit`} value={unit}
+      <input type="hidden" name={`${name}Unit`} value={unit} />
+      <select className={className} aria-label={`واحد ${label}`} value={unit}
         onChange={event => changeUnit(event.target.value as WeightUnit)}>
         <option value="gram">گرم</option><option value="soot">سوت</option>
       </select>
