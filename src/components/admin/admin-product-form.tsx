@@ -1,4 +1,5 @@
 "use client";
+import { AdminWeightInput } from "@/components/admin/admin-weight-input";
 
 import {
   useActionState,
@@ -279,8 +280,8 @@ export function AdminProductForm({
               <label className="flex items-center gap-3 rounded-xl border border-[#d8e2e5]/16 p-3 text-sm text-[#dfe8ea]">
                 <input name="hasSilver" type="checkbox" checked={hasSilver} onChange={(event) => setHasSilver(event.target.checked)} className="size-4 accent-[#c9d5d9]" /> دارای نقره
               </label>
-              {hasGold ? <Field label="وزن طلای به‌کاررفته (گرم)"><input className={inputClassName} defaultValue={value.goldComponentWeight} inputMode="decimal" name="goldComponentWeight" required={hasGold && hasSilver} /></Field> : null}
-              {hasSilver ? <Field label="وزن نقرهٔ به‌کاررفته (گرم)"><input className={inputClassName} defaultValue={value.silverComponentWeight} inputMode="decimal" name="silverComponentWeight" required={hasGold && hasSilver} /></Field> : null}
+              {hasGold ? <AdminWeightInput label="وزن طلای به‌کاررفته" className={inputClassName} defaultValue={value.goldComponentWeight} name="goldComponentWeight" required={hasGold && hasSilver} /> : null}
+              {hasSilver ? <AdminWeightInput label="وزن نقرهٔ به‌کاررفته" className={inputClassName} defaultValue={value.silverComponentWeight} name="silverComponentWeight" required={hasGold && hasSilver} /> : null}
             </div>
           </div>
 
@@ -387,14 +388,8 @@ export function AdminProductForm({
             />
           </Field>
 
-          <Field label="وزن فلز (گرم)">
-            <input
-              className={inputClassName}
-              defaultValue={value.metalWeight}
-              inputMode="decimal"
-              name="metalWeight"
-            />
-          </Field>
+          <AdminWeightInput label="وزن فلز" className={inputClassName}
+            defaultValue={value.metalWeight} name="metalWeight" />
 
           {selectedMaterial === "GOLD" ? <>
           <Field label="عنوان عیار">

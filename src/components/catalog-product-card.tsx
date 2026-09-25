@@ -240,7 +240,7 @@ export function CatalogProductCard({
           </span>
         </Link>
       </div>
-        {!product.isAvailable && <Link href={`/${locale}/preorder/${product.slug}`} className="mt-3 flex min-h-12 items-center justify-center rounded-full border border-[#d9b85f]/35 bg-[#d9b85f]/10 text-sm text-[#ead8aa]">{isPersian ? "پیش‌سفارش" : "Preorder"}</Link>}
+        {!product.isAvailable && <Link href={`/${locale}/preorder/${product.slug}`} className="mt-3 inline-flex min-h-12 w-full cursor-pointer items-center justify-center rounded-xl border border-[#ead18a] bg-[linear-gradient(135deg,#b49445,#efd58b)] px-5 py-3 text-center text-sm font-semibold text-[#10251c] shadow-[0_4px_16px_rgba(207,180,95,0.15)] transition-[filter,box-shadow] duration-150 hover:brightness-110 active:brightness-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#f6e8c6] focus-visible:ring-offset-2 focus-visible:ring-offset-[#031a13]">{isPersian ? "درخواست پیش‌سفارش" : "Request a preorder"}</Link>}
       </article>
     </InteractiveTiltCard>
   );

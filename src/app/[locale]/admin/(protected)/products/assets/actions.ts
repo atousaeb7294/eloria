@@ -1,4 +1,5 @@
 "use server";
+import { readWeightGrams } from "@/lib/weight-units";
 import { after } from "next/server";
 import { repairSeoBatch } from "@/lib/seo-autopilot";
 
@@ -78,6 +79,11 @@ function integer(
   if (!Number.isSafeInteger(value) || value < min || value > max)
     throw new AdminProductAssetError("مقدار عددی معتبر نیست.");
   return value;
+}
+
+function readWeight(form: FormData, key: string, fallback: string | null = null): string | null {
+  try { return readWeightGrams(form, key, fallback); }
+  catch (error) { throw new AdminProductAssetError((error as Error).message); }
 }
 function decimal(form: FormData, key: string): string | null {
   const raw = text(form, key, 40);
@@ -399,7 +405,7 @@ function variantData(form: FormData) {
     sku: text(form, "sku", 120),
     price: decimal(form, "price"),
     stock: integer(form, "stock"),
-    metalWeight: decimal(form, "metalWeight"),
+    metalWeight: readWeight(form, "metalWeight"),
     purity: text(form, "purity", 80),
     purityFineness: text(form, "purityFineness", 20)
       ? integer(form, "purityFineness", 750, 1, 1000)

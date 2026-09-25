@@ -35,7 +35,7 @@ export function ProductPreorderForm({ locale, slug, variantId }: { locale: "fa" 
     <label className="block text-sm">{fa ? "توضیحات یا اندازهٔ دلخواه (اختیاری)" : "Notes or preferred size (optional)"}<textarea name="notes" maxLength={500} rows={3} className={inputClass} /></label>
     <TurnstileWidget key={attempt} locale={locale} action="support-contact" onTokenChange={setToken} />
     {error && <p role="alert" className="text-sm leading-7 text-red-200">{error}</p>}
-    <button disabled={pending} type="submit" className="min-h-13 w-full rounded-full border border-[#d9b85f]/50 bg-[#d9b85f]/15 px-5 py-3 text-[#f6e8c6] disabled:opacity-50">{pending ? (fa ? "در حال ثبت…" : "Submitting…") : (fa ? "ثبت درخواست پیش‌سفارش" : "Submit preorder request")}</button>
+    <button disabled={pending} type="submit" className="inline-flex min-h-12 w-full cursor-pointer items-center justify-center rounded-xl border border-[#ead18a] bg-[linear-gradient(135deg,#b49445,#efd58b)] px-5 py-3 text-center text-sm font-semibold text-[#10251c] shadow-[0_4px_16px_rgba(207,180,95,0.15)] transition-[filter,box-shadow] duration-150 hover:brightness-110 active:brightness-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#f6e8c6] focus-visible:ring-offset-2 focus-visible:ring-offset-[#031a13] disabled:cursor-wait disabled:opacity-50">{pending ? (fa ? "در حال ثبت…" : "Submitting…") : (fa ? "ثبت درخواست پیش‌سفارش" : "Submit preorder request")}</button>
     <p className="text-xs leading-6 text-[#d5c7a7]">{fa ? "ثبت این درخواست هزینه‌ای ندارد و به معنی خرید قطعی یا رزرو موجودی نیست." : "This request is free and does not confirm a purchase or reserve stock."}</p>
   </form>;
 }

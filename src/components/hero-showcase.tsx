@@ -30,14 +30,14 @@ export function HeroShowcase({
 
   const copy: HeroCopy = isPersian
     ? {
-        eyebrow: "الهام‌گرفته از شکوه ایران کهن",
+        eyebrow: "",
 
         titleFirst: "هر اثر،",
 
         titleHighlight: "روایتی ماندگار",
 
         description:
-          "طلا و نقره، در آغوش بافتی ظریف؛ ساختهٔ دست، با یاد ایران.",
+          "الوریا؛ بافته از مهر، آراسته به طلا و نقره",
 
         primaryAction: "اثر من را پیدا کن",
 
@@ -132,7 +132,7 @@ export function HeroShowcase({
         {/* محتوای اصلی؛ کمی بالاتر از مرکز */}
         <div className="relative z-20 mx-auto flex w-full max-w-6xl -translate-y-[1.5vh] flex-col items-center justify-center px-5 pb-24 pt-28 text-center sm:-translate-y-[5vh] sm:px-10 sm:pb-20 sm:pt-24">
           {/* عنوان کوچک */}
-          <motion.div
+          {copy.eyebrow && <motion.div
             initial={false}
             animate={{
               opacity: 1,
@@ -151,7 +151,7 @@ export function HeroShowcase({
             </p>
 
             <span className="h-px w-8 bg-gradient-to-r from-[#e8c875]/70 to-transparent sm:w-12" />
-          </motion.div>
+          </motion.div>}
 
           {/* تیتر نستعلیق */}
           <motion.h1
