@@ -1,5 +1,5 @@
 import Image from "next/image";
-import Link from "next/link";
+import { TreasuryLink as Link } from "@/components/treasury-transition";
 
 import {
   InteractiveTiltCard,
@@ -102,7 +102,7 @@ export function CatalogProductCard({
         ].join(" ")}
       />
 
-      <Link
+      <Link direction="up"
         href={href}
         aria-label={
           isPersian
@@ -168,7 +168,7 @@ export function CatalogProductCard({
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
             <h2 className="text-lg font-medium leading-8 text-[#f4e8cc] sm:text-xl">
-              <Link
+              <Link direction="up"
                 href={href}
                 className="transition hover:text-[#f5dfa0]"
               >
@@ -207,7 +207,7 @@ export function CatalogProductCard({
           />
         </div>
 
-        <Link
+        <Link direction="up"
           href={href}
           className={[
             "group/button relative mt-4 flex min-h-12 w-full items-center justify-between overflow-hidden rounded-full border py-1.5 pe-1.5 ps-5 text-sm font-medium transition duration-400 hover:-translate-y-0.5",

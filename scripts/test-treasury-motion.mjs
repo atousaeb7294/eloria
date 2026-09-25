@@ -143,3 +143,23 @@ h=harness({compositor:true});h.wheel(100);h.advance(320);h.wheel(-100);h.advance
 await Promise.resolve();await Promise.resolve();
 assert.equal(window.scrollY,0,'compositor reversal returns to the initial chapter');h.dispose();
 console.log('PASS: compositor, home reset, mobile touch,  chapter visibility, distinct motion, inertia, single render loop, one scroll per transition, reversal, native interruption, resize, footer, reduced motion, compact viewport and cleanup');
+
+for (const compact of [false, true]) {
+  for (let chapter = 1; chapter <= 3; chapter++) {
+    const middle = storyFrame(chapter - 0.5, chapter, compact);
+    assert.match(middle.transform, /translate3d/);
+    assert.ok(!/NaN|Infinity/.test(middle.transform));
+    assert.notEqual(middle.transform, storyFrame(chapter - 0.5, chapter, !compact).transform, 'mobile uses reduced depth');
+    const before = storyFrame(chapter - 0.000001, chapter, compact).transform;
+    assert.ok(!/NaN|Infinity/.test(before));
+  }
+}
+console.log('PASS: distinct 3D entry paths and reduced mobile depth; existing interruption/reset tests remain passing.');
+
+const notches = createStoryGesture();
+assert.equal(notches(100, 0), 1);
+assert.equal(notches(100, 100), 0);
+assert.equal(notches(100, 200), 0);
+assert.equal(notches(100, 300), 0);
+assert.equal(notches(100, 400), 1, 'sustained deliberate mouse scrolling does not remain locked');
+console.log('PASS: sustained mouse notches recover without an artificial pause.');

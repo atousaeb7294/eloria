@@ -9,24 +9,25 @@ export function storyFrame(progress: number, index: number, compact = false) {
   const fraction = progress - base;
   if (index !== base && index !== base + 1)
     return { visible: false, transform: "none", opacity: "0" };
+  const depth = compact ? 0.45 : 1;
   if (index === base)
     return {
       visible: true,
       transform: [
-        `translate3d(${-12 * fraction}%,0,0) scale(${1 - 0.035 * fraction})`,
-        `translate3d(0,${-8 * fraction}%,0) scale(${1 - 0.08 * fraction}) rotateX(${-3 * fraction}deg)`,
-        `translate3d(${12 * fraction}%,0,0) rotateY(${5 * fraction}deg) scale(${1 - 0.05 * fraction})`,
-        `translate3d(0,${6 * fraction}%,0) scale(${1 + 0.035 * fraction})`,
+        `translate3d(${-18 * fraction}%,0,${-180 * fraction * depth}px) rotateY(${10 * fraction * depth}deg) scale(${1 - 0.035 * fraction})`,
+        `translate3d(0,${-14 * fraction}%,${-240 * fraction * depth}px) rotateX(${-13 * fraction * depth}deg) scale(${1 - 0.055 * fraction})`,
+        `translate3d(${20 * fraction}%,${-4 * fraction}%,${-190 * fraction * depth}px) rotateY(${16 * fraction * depth}deg) scale(${1 - 0.04 * fraction})`,
+        `translate3d(0,${8 * fraction}%,${-120 * fraction * depth}px) rotateX(${8 * fraction * depth}deg)`,
       ][index] ?? "none",
       opacity: "1",
     };
   const remaining = 1 - fraction;
-  const depth = compact ? 0.45 : 1;
+  const lift = Math.sin(Math.PI * fraction);
   const transforms = [
     "none",
-    `translate3d(0,${100 * remaining}%,0) rotateX(${9 * remaining * depth}deg) scale(${1 - 0.045 * remaining})`,
-    `translate3d(${105 * remaining}%,${5 * remaining}%,0) rotateY(${-8 * remaining * depth}deg) scale(${1 - 0.04 * remaining})`,
-    `translate3d(${-105 * remaining}%,${15 * remaining}%,0) rotateX(${-6 * remaining * depth}deg) rotateZ(${-2 * remaining * depth}deg) scale(${1 - 0.05 * remaining})`,
+    `translate3d(0,${100 * remaining}%,${(-190 * remaining + 65 * lift) * depth}px) rotateX(${20 * remaining * depth}deg) scale(${1 - 0.055 * remaining})`,
+    `translate3d(${105 * remaining}%,${6 * remaining - 7 * lift * depth}%,${(-250 * remaining + 80 * lift) * depth}px) rotateY(${-22 * remaining * depth}deg) scale(${1 - 0.045 * remaining})`,
+    `translate3d(${-105 * remaining}%,${18 * remaining - 5 * lift * depth}%,${(-180 * remaining + 70 * lift) * depth}px) rotateX(${-14 * remaining * depth}deg) rotateZ(${-5 * remaining * depth}deg) scale(${1 - 0.055 * remaining})`,
   ];
   return {
     visible: fraction > 0,
@@ -41,10 +42,13 @@ export function createStoryGesture() {
   let direction = 0;
   let consumed = false;
   let total = 0;
+  let acceptedAt = -Infinity;
   return (delta: number, time: number) => {
     const nextDirection = Math.sign(delta);
     if (!nextDirection) return 0;
-    if (time - lastTime > 180 || nextDirection !== direction) {
+    const deliberateNotch = Number.isInteger(delta) && Math.abs(delta) >= 40 &&
+      time - lastTime >= 70 && time - acceptedAt >= 360;
+    if (time - lastTime > 180 || nextDirection !== direction || deliberateNotch) {
       consumed = false;
       total = 0;
     }
@@ -53,6 +57,7 @@ export function createStoryGesture() {
     total += Math.abs(delta);
     if (consumed || total < 14) return 0;
     consumed = true;
+    acceptedAt = time;
     return direction;
   };
 }

@@ -207,6 +207,7 @@ export function InternalPageShell({
     );
 
   return (
+    <TreasuryPageTransition>
     <div
       dir={
         isPersian
@@ -254,7 +255,6 @@ export function InternalPageShell({
 
       <SiteHeader locale={locale} />
 
-      <TreasuryPageTransition>
       <main
         id="main-content"
         tabIndex={-1}
@@ -262,11 +262,11 @@ export function InternalPageShell({
       >
         {children}
       </main>
-      </TreasuryPageTransition>
 
       <div className="relative z-10">
         <SiteFooter locale={locale} />
       </div>
     </div>
+    </TreasuryPageTransition>
   );
 }

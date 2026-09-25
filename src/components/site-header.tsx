@@ -218,7 +218,7 @@ export function SiteHeader({ locale }: SiteHeaderProps) {
     "group relative inline-flex size-10 items-center justify-center gap-2 overflow-hidden rounded-xl sm:size-11 sm:rounded-2xl border border-white/10 bg-white/[0.045] text-white/70 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] transition duration-500 hover:-translate-y-0.5 hover:border-[#dfbd68]/55 hover:bg-[#168461]/15 hover:text-[#f7dda0] lg:h-11 lg:w-auto lg:min-w-28 lg:px-3";
 
   return (
-    <header className="fixed inset-x-0 top-3 z-50 px-3 sm:top-6 sm:px-6">
+    <header style={{ viewTransitionName: "eloria-site-header" }} className="fixed inset-x-0 top-3 z-50 px-3 sm:top-6 sm:px-6">
       <a
         href="#main-content"
         className="fixed start-4 top-2 z-[120] -translate-y-20 rounded-full border border-[#efd27c]/50 bg-[#062c20] px-4 py-2 text-xs text-[#f3d990] shadow-xl transition focus:translate-y-0"
