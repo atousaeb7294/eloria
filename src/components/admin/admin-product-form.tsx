@@ -389,7 +389,7 @@ export function AdminProductForm({
             />
           </Field>
 
-          <AdminWeightInput label={hasGold && hasSilver ? "وزن مجموع فلزات (مبنای نمایش)" : selectedMaterial === "SILVER" ? "وزن نقره (مبنای قیمت و نمایش)" : "وزن طلا (مبنای قیمت و نمایش)" className={inputClassName}
+          <AdminWeightInput label={hasGold && hasSilver ? "وزن مجموع فلزات (مبنای نمایش)" : selectedMaterial === "SILVER" ? "وزن نقره (مبنای قیمت و نمایش)" : "وزن طلا (مبنای قیمت و نمایش)"} className={inputClassName}
             defaultValue={value.metalWeight} name="metalWeight" initialUnit={value.weightUnits?.metalWeight} />
 
           {selectedMaterial === "GOLD" ? <>
