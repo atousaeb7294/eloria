@@ -140,7 +140,9 @@ export function TreasuryPromenade({
               >
                 <div className="eloria-treasury-backdrop-layer">
                   <Image
-                    src={`/images/treasuries/${treasury.slug}.webp`}
+                    src={treasury.slug === "gold"
+                      ? "/images/treasuries/gold-macrame-v2.webp"
+                      : `/images/treasuries/${treasury.slug}.webp`}
                     alt=""
                     fill
                     sizes="100vw"
@@ -154,17 +156,6 @@ export function TreasuryPromenade({
                   <i />
                   <span>03</span>
                 </div>
-                <div className="eloria-treasury-heading">
-                  <span className="eloria-treasury-heading-mark" aria-hidden="true">✦</span>
-                  <p className="eloria-treasury-eyebrow">
-                    {fa ? treasury.fa : treasury.en}
-                  </p>
-                  <h2 className="eloria-treasury-title">
-                    {fa ? treasury.titleFa : treasury.titleEn}
-                  </h2>
-                  <span className="eloria-treasury-heading-rule" aria-hidden="true" />
-                  <p>{fa ? treasury.descriptionFa : treasury.descriptionEn}</p>
-                </div>
                 <TreasuryLink
                   href={collectionHref}
                   className="eloria-treasury-main-link"
@@ -173,11 +164,6 @@ export function TreasuryPromenade({
                   }
                 />
                 <div className="eloria-treasury-rail-wrap">
-                  <p>
-                    {fa
-                      ? "گزیده‌ای از این گنجینه"
-                      : "A glimpse of the treasury"}
-                  </p>
                   <nav
                     className="eloria-treasury-miniatures"
                     aria-label={
@@ -210,12 +196,17 @@ export function TreasuryPromenade({
                         : "Explore the treasury to discover its creations"}
                     </p>
                   )}
+                  <p className="eloria-treasury-invite">
+                    {fa
+                      ? `آثار ${treasury.fa} را از نزدیک ببینید`
+                      : `Discover the ${treasury.en.toLowerCase()} collection`}
+                  </p>
                   <TreasuryLink
                     href={collectionHref}
                     className="eloria-treasury-enter"
                   >
-                    <span>{fa ? "گنجینهٔ خرید" : "Shop the treasury"}</span>
-                    <span aria-hidden="true">↗</span>
+                    <span>{fa ? `ورود و خرید از ${treasury.fa}` : `Shop ${treasury.en.toLowerCase()}`}</span>
+                    <span className="eloria-enter-mark" aria-hidden="true" />
                   </TreasuryLink>
                 </div>
                 <a

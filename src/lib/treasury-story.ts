@@ -5,6 +5,7 @@ export const storyClamp = (value: number, low: number, high: number) =>
   Math.min(high, Math.max(low, value));
 
 export function storyFrame(progress: number, index: number, compact = false) {
+  void compact;
   const base = Math.floor(progress);
   const fraction = progress - base;
   if (index !== base && index !== base + 1)
@@ -12,22 +13,14 @@ export function storyFrame(progress: number, index: number, compact = false) {
   if (index === base)
     return {
       visible: true,
-      transform: `translate3d(0,${-3 * fraction}%,0) scale(${1 - 0.065 * fraction}) rotateX(${-3 * fraction}deg)`,
+      transform: "translate3d(0,0,0)",
       opacity: "1",
     };
   const remaining = 1 - fraction;
-  const depth = compact ? 0.45 : 1;
-  // Gold rises, silver turns into the frame, woven work opens from depth.
-  const transforms = [
-    "none",
-    `translate3d(0,${100 * remaining}%,0) rotateX(${9 * remaining * depth}deg) scale(${1 - 0.045 * remaining})`,
-    `translate3d(${30 * remaining * depth}%,${9 * remaining}%,0) rotateY(${-13 * remaining * depth}deg) scale(${1 - 0.12 * remaining})`,
-    `translate3d(${-8 * remaining * depth}%,${20 * remaining}%,0) rotateX(${-9 * remaining * depth}deg) rotateZ(${-1.4 * remaining * depth}deg) scale(${1 - 0.17 * remaining})`,
-  ];
   return {
     visible: fraction > 0,
-    transform: transforms[index] ?? transforms[1],
-    opacity: index === 1 ? "1" : String(storyClamp(fraction * 3, 0, 1)),
+    transform: `translate3d(0,${100 * remaining}%,0)`,
+    opacity: "1",
   };
 }
 
