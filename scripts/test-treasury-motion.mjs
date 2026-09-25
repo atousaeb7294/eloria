@@ -51,11 +51,14 @@ h.resize();h.flush();assert.ok(h.click('#treasury-silver').prevented);h.finish()
 h.advance(250);h.wheel(60);h.advance(80);h.events.get('eloria:reset-home')();h.finish();assert.equal(window.scrollY,0);assert.equal(h.root.dataset.storyChapter,'0');
 h.advance(250);h.wheel(60);h.advance(80);h.scroll(170);h.finish();assert.equal(window.scrollY,170,'external native scroll cancels animation');
 h.scroll(0);h.resize();h.flush();h.wheel(60);h.advance(80);h.resize();h.finish();const resizedY=window.scrollY;h.advance(600);assert.equal(window.scrollY,resizedY,'resize cancels stale destination');
+h.scroll(0);h.resize();h.flush();h.wheel(60);h.advance(80);
+const departureY=window.scrollY;h.events.get('eloria:navigate')();h.finish();assert.equal(window.scrollY,departureY,'route navigation must stop the outgoing scroll owner');
 h.dispose();assert.equal(h.frames.size,0);assert.equal(h.events.size,0);assert.equal(h.rootEvents.size,0);assert.ok(h.chapters.every(c=>!c.inert && !c.attrs.has('aria-hidden') && !c.style.transform));
 h=harness({width:390});h.touch('touchstart');assert.ok(h.touch('touchmove',100,350).prevented);assert.equal(h.scrolls.length,0,'finger still down');h.touch('touchend');h.finish();assert.equal(window.scrollY,800,'swipe completes after release');
 h.touch('touchstart');h.touch('touchmove',100,460);h.touch('touchend');h.finish();assert.equal(window.scrollY,0,'reverse swipe');
 h.touch('touchstart');assert.ok(!h.touch('touchmove',190,390).prevented,'horizontal gestures remain native');h.touch('touchend');h.finish();assert.equal(window.scrollY,0);
 h.touch('touchstart');h.touch('touchmove',100,350);h.touch('touchcancel');h.finish();assert.equal(window.scrollY,0,'cancel does not navigate');
-h.wheel(60);h.advance(80);h.touch('touchstart');h.touch('touchend');h.finish();assert.equal(window.scrollY,800,'tap during motion resumes completion');h.dispose();
+h.wheel(60);h.advance(80);h.touch('touchstart');h.touch('touchend');h.finish();assert.equal(window.scrollY,800,'tap during motion resumes completion');
+h.advance(250);h.wheel(60);h.advance(80);h.touch('touchstart');h.touch('touchcancel');h.finish();assert.equal(window.scrollY,1600,'system touch cancellation resumes interrupted movement');h.dispose();
 for(const config of [{reduced:true},{small:true}]){h=harness(config);assert.ok(!h.root.attrs.has('data-story-enhanced'));assert.ok(!h.wheel(60).prevented);assert.equal(h.click('#treasury-gold').prevented,undefined);h.dispose();}
 console.log('PASS: automatic notch completion, inertia, reversal, edges/footer, pinch/horizontal/dialog exclusion, one frame loop, external interruption, resize, anchors, reset, mobile swipe/reversal/tap/cancel, reduced motion and cleanup.');

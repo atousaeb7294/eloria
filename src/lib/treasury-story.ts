@@ -9,7 +9,7 @@ export function storyFrame(progress: number, index: number, compact = false) {
   const fraction = progress - base;
   if (index !== base && index !== base + 1)
     return { visible: false, transform: "none", opacity: "0" };
-  const depth = compact ? 0.45 : 1;
+  const depth = compact ? 0.22 : 0.65;
   if (index === base)
     return {
       visible: true,
@@ -84,7 +84,7 @@ export function mountTreasuryStory(root: HTMLElement) {
   let touch: { x: number; y: number; direction: number; resume: number | null } | null = null;
   const excluded = (target: EventTarget | null) => {
     if (!(target instanceof Element)) return false;
-    if (target.closest("input, textarea, select, button, [contenteditable], [role='dialog'], dialog, [data-story-native-scroll]")) return true;
+    if (target.closest("input, textarea, select, button, [contenteditable], [role='dialog'], dialog, [data-story-native-scroll], [data-native-scroll]")) return true;
     for (let node: Element | null = target; node && node !== root; node = node.parentElement) {
       if (node.scrollHeight > node.clientHeight + 1 && /auto|scroll/.test(getComputedStyle(node).overflowY)) return true;
     }
@@ -116,8 +116,9 @@ export function mountTreasuryStory(root: HTMLElement) {
     const index = destination(direction);
     if (index === null && !motion) return;
     event.preventDefault();
-    const accepted = gesture(delta, performance.now());
+    // Do not consume the next deliberate gesture while the current move finishes.
     if (motion && Math.sign(motion.to - window.scrollY) === direction) return;
+    const accepted = gesture(delta, performance.now());
     if (accepted && index !== null) go(index);
   };
   const touchStart = (event: TouchEvent) => {
@@ -145,7 +146,17 @@ export function mountTreasuryStory(root: HTMLElement) {
     } else if (touch?.resume !== null && touch?.resume !== undefined) go(touch.resume);
     touch = null;
   };
-  const touchCancel = () => { touch = null; };
+  const touchCancel = () => {
+    // A system gesture can cancel touch delivery after interrupting an animation.
+    const resume = touch?.resume;
+    touch = null;
+    if (resume !== null && resume !== undefined) go(resume);
+  };
+  const navigating = () => {
+    stop();
+    touch = null;
+    focusDestination = null;
+  };
   const keydown = (event: KeyboardEvent) => {
     if (!enabled || event.defaultPrevented || event.ctrlKey || event.metaKey || event.altKey || excluded(event.target)) return;
     const direction = ["ArrowDown", "PageDown"].includes(event.key) || (event.key === " " && !event.shiftKey) ? 1 :
@@ -185,6 +196,14 @@ export function mountTreasuryStory(root: HTMLElement) {
     const nextActive = Math.round(progress);
     chapters.forEach((chapter, index) => {
       const next = storyFrame(progress, index, compact);
+      // Hidden, already-cleared scenes do not need repeated style writes.
+      if (!next.visible && chapter.style.visibility === "hidden") {
+        if (nextActive !== active) {
+          chapter.inert = index !== nextActive;
+          chapter.setAttribute("aria-hidden", String(index !== nextActive));
+        }
+        return;
+      }
       chapter.style.visibility = next.visible ? "visible" : "hidden";
       chapter.style.transform = next.transform;
       chapter.style.opacity = next.opacity;
@@ -251,6 +270,7 @@ export function mountTreasuryStory(root: HTMLElement) {
   root.addEventListener("touchcancel", touchCancel, { passive: true });
   window.addEventListener("keydown", keydown);
   window.addEventListener("eloria:reset-home", reset);
+  window.addEventListener("eloria:navigate", navigating);
   root.addEventListener("click", click);
   reduced.addEventListener("change", measure);
   small.addEventListener("change", measure);
@@ -266,6 +286,7 @@ export function mountTreasuryStory(root: HTMLElement) {
     root.removeEventListener("touchcancel", touchCancel);
     window.removeEventListener("keydown", keydown);
     window.removeEventListener("eloria:reset-home", reset);
+    window.removeEventListener("eloria:navigate", navigating);
     root.removeEventListener("click", click);
     reduced.removeEventListener("change", measure);
     small.removeEventListener("change", measure);
