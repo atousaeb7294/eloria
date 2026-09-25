@@ -874,7 +874,7 @@ html[lang="fa"] :where(p, li, label, button, a, h1, h2, h3, h4, h5, h6) {
 .eloria-treasury-rail-wrap { position:absolute; z-index:6; top:40%; right:6%; width:min(390px,38vw); text-align:center; padding:18px 16px; border:1px solid #e5cc9170; border-radius:22px; background:#051d17e8; box-shadow:0 18px 40px #0006; }
 .eloria-treasury-invite { margin:0 0 7px; color:#f4e6c6; font-size:11px; line-height:1.6; text-shadow:0 2px 8px #02130e; }
 .eloria-treasury-miniatures { display:flex; align-items:center; justify-content:safe center; gap:10px; overflow-x:auto; padding:5px; scrollbar-width:none; }
-.eloria-treasury-miniatures > a { position:relative; flex:0 0 64px; height:64px; overflow:hidden; border:1px solid #e5cc9159; border-radius:50%; background:#09241c; transition:transform .22s,border-color .22s; }
+.eloria-treasury-miniatures > a { position:relative; flex:0 1 52px; width:52px; min-width:0; aspect-ratio:1; overflow:hidden; border:1px solid #e5cc9159; border-radius:50%; background:#09241c; transition:transform .22s,border-color .22s; }
 .eloria-treasury-miniatures > a:hover { transform:translateY(-3px); border-color:#fff1cc; }
 .eloria-treasury-miniatures > .eloria-treasury-all { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; color:#f0dbab; font-size:10px; }
 .eloria-treasury-next { position:absolute; z-index:7; bottom:8px; left:50%; transform:translateX(-50%); display:flex; align-items:center; gap:10px; min-height:32px; padding:4px 16px; font-size:10px; color:#ecd9aaab; }
@@ -892,7 +892,7 @@ html[lang="fa"] :where(p, li, label, button, a, h1, h2, h3, h4, h5, h6) {
   .eloria-treasury-counter { top:100px; left:7%; }
   .eloria-treasury-shade { background:linear-gradient(180deg,#01130bba,transparent 20%,#01130b55 40%,#01130bdd),linear-gradient(90deg,#03130b66,transparent); }
   .eloria-treasury-miniatures { gap:7px; }
-  .eloria-treasury-miniatures > a { flex-basis:44px; height:44px; }
+  .eloria-treasury-miniatures > a { flex-basis:44px; width:44px; }
   .eloria-promenade[data-story-enhanced] .eloria-story-navigation { inset-inline-end:8px; }
   .eloria-story-navigation a span { display:none; }
   .eloria-hero-story-link { bottom:70px; inset-inline-end:0; width:100%; justify-content:center; }

@@ -27,7 +27,7 @@ export async function GET(request: Request) {
               collection: { isActive: true },
               images: { some: { imageUrl: { not: "" } } },
             },
-            take: 4,
+            take: 5,
             orderBy: [{ createdAt: "desc" }, { id: "desc" }],
             select: {
               slug: true,

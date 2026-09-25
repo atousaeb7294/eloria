@@ -70,8 +70,10 @@ export function TreasuryPromenade({
     [],
   );
   const [items, setItems] = useState<Featured[]>([]);
+  const [previewState, setPreviewState] = useState<"loading" | "ready" | "unavailable">("loading");
   useEffect(() => {
     let controller: AbortController | undefined;
+    let disposed = false;
     let timeout = 0;
     let lastFetch = 0;
     const refresh = () => {
@@ -90,16 +92,21 @@ export function TreasuryPromenade({
       })
         .then((response) => (response.ok ? response.json() : null))
         .then((data: { items?: Featured[]; source?: string } | null) => {
-          if (Array.isArray(data?.items) && data?.source !== "unavailable")
+          if (disposed) return;
+          if (Array.isArray(data?.items) && data?.source !== "unavailable") {
             setItems(data.items);
+            setPreviewState("ready");
+          } else setPreviewState("unavailable");
         })
-        .catch(() => undefined);
+        .catch(() => { if (!disposed) setPreviewState("unavailable"); })
+        .finally(() => window.clearTimeout(timeout));
     };
     refresh();
     window.addEventListener("focus", refresh);
     document.addEventListener("visibilitychange", refresh);
     const retry = window.setInterval(refresh, 60000);
     return () => {
+      disposed = true;
       controller?.abort();
       window.clearTimeout(timeout);
       window.clearInterval(retry);
@@ -113,7 +120,7 @@ export function TreasuryPromenade({
       Object.fromEntries(
         treasuryEditorial.map((treasury) => [
           treasury.slug,
-          items.filter((item) => belongs(item, treasury.slug)).slice(0, 4),
+          items.filter((item) => belongs(item, treasury.slug)).slice(0, 5),
         ]),
       ) as Record<TreasurySlug, Featured[]>,
     [items],
@@ -183,7 +190,7 @@ export function TreasuryPromenade({
                           src={item.imageUrl}
                           alt={item.name}
                           fill
-                          sizes="72px"
+                        sizes="52px"
                           className="object-cover"
                         />
                       </TreasuryLink>
@@ -191,9 +198,11 @@ export function TreasuryPromenade({
                   </nav>
                   {products.length === 0 && (
                     <p className="eloria-treasury-empty">
-                      {fa
-                        ? "برای دیدن آثار، وارد گنجینه شوید"
-                        : "Explore the treasury to discover its creations"}
+                      {previewState === "loading"
+                        ? fa ? "در حال دریافت آثار…" : "Loading creations…"
+                        : previewState === "unavailable"
+                          ? fa ? "پیش‌نمایش آثار موقتاً در دسترس نیست" : "Previews are temporarily unavailable"
+                          : fa ? "برای دیدن آثار، وارد گنجینه شوید" : "Explore the treasury to discover its creations"}
                     </p>
                   )}
                   <p className="eloria-treasury-invite">

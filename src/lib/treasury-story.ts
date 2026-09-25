@@ -12,7 +12,12 @@ export function storyFrame(progress: number, index: number, compact = false) {
   if (index === base)
     return {
       visible: true,
-      transform: `translate3d(0,${-3 * fraction}%,0) scale(${1 - 0.065 * fraction}) rotateX(${-3 * fraction}deg)`,
+      transform: [
+        `translate3d(${-12 * fraction}%,0,0) scale(${1 - 0.035 * fraction})`,
+        `translate3d(0,${-8 * fraction}%,0) scale(${1 - 0.08 * fraction}) rotateX(${-3 * fraction}deg)`,
+        `translate3d(${12 * fraction}%,0,0) rotateY(${5 * fraction}deg) scale(${1 - 0.05 * fraction})`,
+        `translate3d(0,${6 * fraction}%,0) scale(${1 + 0.035 * fraction})`,
+      ][index] ?? "none",
       opacity: "1",
     };
   const remaining = 1 - fraction;
@@ -20,8 +25,8 @@ export function storyFrame(progress: number, index: number, compact = false) {
   const transforms = [
     "none",
     `translate3d(0,${100 * remaining}%,0) rotateX(${9 * remaining * depth}deg) scale(${1 - 0.045 * remaining})`,
-    `translate3d(${30 * remaining * depth}%,${9 * remaining}%,0) rotateY(${-13 * remaining * depth}deg) scale(${1 - 0.12 * remaining})`,
-    `translate3d(${-8 * remaining * depth}%,${20 * remaining}%,0) rotateX(${-9 * remaining * depth}deg) rotateZ(${-1.4 * remaining * depth}deg) scale(${1 - 0.17 * remaining})`,
+    `translate3d(${105 * remaining}%,${5 * remaining}%,0) rotateY(${-8 * remaining * depth}deg) scale(${1 - 0.04 * remaining})`,
+    `translate3d(${-105 * remaining}%,${15 * remaining}%,0) rotateX(${-6 * remaining * depth}deg) rotateZ(${-2 * remaining * depth}deg) scale(${1 - 0.05 * remaining})`,
   ];
   return {
     visible: fraction > 0,
@@ -70,6 +75,10 @@ export function mountTreasuryStory(root: HTMLElement) {
   let paintFrame = 0;
   let settleTimer = 0;
   let moving = false;
+  let visualProgress: number | null = null;
+  let lastPainted = -1;
+  let compact = window.innerWidth < 700;
+  let measuredWidth = 0;
   let touching = false;
   let destination = 0;
   let lastY = window.scrollY;
@@ -89,26 +98,35 @@ export function mountTreasuryStory(root: HTMLElement) {
         ))
     );
   }
-  function stop() {
+  function stop(syncScroll = false) {
     cancelAnimationFrame(animationFrame);
+    cancelAnimationFrame(paintFrame);
+    paintFrame = 0;
     clearTimeout(settleTimer);
+    if (syncScroll && visualProgress !== null) {
+      window.scrollTo({ top: top + visualProgress * height, behavior: "instant" });
+      lastY = window.scrollY;
+    }
+    visualProgress = null;
     moving = false;
     root.removeAttribute("data-story-moving");
   }
-  function paint() {
-    paintFrame = 0;
+  function paint(progress = storyClamp((window.scrollY - top) / height, 0, last)) {
     if (!enabled) return;
-    const progress = storyClamp((window.scrollY - top) / height, 0, last);
+    if (progress === lastPainted) return;
+    lastPainted = progress;
     const nextActive = Math.round(progress);
     chapters.forEach((chapter, index) => {
-      const frame = storyFrame(progress, index, window.innerWidth < 700);
+      const frame = storyFrame(progress, index, compact);
       chapter.style.visibility = frame.visible ? "visible" : "hidden";
       chapter.style.transform = frame.transform;
       chapter.style.opacity = frame.opacity;
       chapter.style.willChange =
         frame.visible && progress % 1 > 0.001 ? "transform" : "auto";
-      chapter.inert = index !== nextActive;
-      chapter.setAttribute("aria-hidden", String(index !== nextActive));
+      if (active !== nextActive) {
+        chapter.inert = index !== nextActive;
+        chapter.setAttribute("aria-hidden", String(index !== nextActive));
+      }
     });
     if (active !== nextActive) {
       active = nextActive;
@@ -122,12 +140,19 @@ export function mountTreasuryStory(root: HTMLElement) {
     }
   }
   function measure() {
-    stop();
-    enabled = !reduced.matches && !small.matches;
+    const nextEnabled = !reduced.matches && !small.matches;
+    if (nextEnabled === enabled && measuredWidth === window.innerWidth &&
+        height === stage!.clientHeight) return;
+    stop(true);
+    enabled = nextEnabled;
+    compact = window.innerWidth < 700;
+    measuredWidth = window.innerWidth;
+    lastPainted = -1;
+    active = -1;
     root.toggleAttribute("data-story-enhanced", enabled);
     if (enabled) {
       top = root.getBoundingClientRect().top + window.scrollY;
-      height = stage!.clientHeight;
+      height = Math.max(1, stage!.clientHeight);
       paint();
     } else {
       chapters.forEach((chapter) => {
@@ -142,7 +167,7 @@ export function mountTreasuryStory(root: HTMLElement) {
   }
   function go(index: number, focus = false) {
     if (!enabled) return;
-    stop();
+    stop(true);
     destination = storyClamp(index, 0, chapters.length);
     const from = window.scrollY;
     const to = Math.min(
@@ -153,18 +178,30 @@ export function mountTreasuryStory(root: HTMLElement) {
       paint();
       return;
     }
+    if (destination > last) {
+      // Only leaving the story scrolls the document during the animation.
+      window.scrollTo({ top: to, behavior: "smooth" });
+      return;
+    }
     const start = performance.now();
-    const duration = 660;
+    const fromProgress = storyClamp((from - top) / height, 0, last);
+    const toProgress = storyClamp((to - top) / height, 0, last);
+    const duration = 760 * Math.max(1, Math.abs(toProgress - fromProgress));
     moving = true;
+    visualProgress = fromProgress;
     root.dataset.storyMoving = "true";
     const tick = (time: number) => {
       const t = Math.min(1, (time - start) / duration);
-      // Quintic ease-out: immediate response, a soft landing without overshoot.
-      const eased = 1 - (1 - t) ** 4;
-      window.scrollTo({ top: from + (to - from) * eased, behavior: "instant" });
-      paint();
+      // One render loop; scrolling the document every frame also triggered
+      // scroll listeners and a second paint loop in the old controller.
+      const eased = (1 - Math.cos(Math.PI * t)) / 2;
+      visualProgress = fromProgress + (toProgress - fromProgress) * eased;
+      paint(visualProgress);
       if (t < 1) animationFrame = requestAnimationFrame(tick);
       else {
+        window.scrollTo({ top: to, behavior: "instant" });
+        lastY = window.scrollY;
+        visualProgress = null;
         moving = false;
         root.removeAttribute("data-story-moving");
         if (focus && destination <= last)
@@ -181,9 +218,14 @@ export function mountTreasuryStory(root: HTMLElement) {
     go(target);
   }
   function onScroll() {
+    if (moving && window.scrollY === lastY) return;
+    if (moving) stop(); // Native scrolling/scrollbar takes ownership immediately.
     if (window.scrollY !== lastY) direction = Math.sign(window.scrollY - lastY);
     lastY = window.scrollY;
-    if (!paintFrame) paintFrame = requestAnimationFrame(paint);
+    if (!paintFrame) paintFrame = requestAnimationFrame(() => {
+      paintFrame = 0;
+      paint();
+    });
     clearTimeout(settleTimer);
     if (!moving) settleTimer = window.setTimeout(settle, 140);
   }
@@ -197,7 +239,7 @@ export function mountTreasuryStory(root: HTMLElement) {
       Math.abs(event.deltaX) > Math.abs(event.deltaY)
     )
       return;
-    const p = (window.scrollY - top) / height;
+    const p = visualProgress ?? (window.scrollY - top) / height;
     if (p < -0.01 || p > last + 0.01 || (p <= 0 && event.deltaY < 0)) return;
     // The footer is ordinary document flow, never an extra hidden chapter.
     if (moving && destination > last) return;
@@ -211,7 +253,7 @@ export function mountTreasuryStory(root: HTMLElement) {
     const current = moving ? destination : Math.round(p);
     if (
       moving &&
-      step === Math.sign(destination * height + top - window.scrollY)
+      step === Math.sign(destination - p)
     )
       return;
     go(current + step);
@@ -267,7 +309,7 @@ export function mountTreasuryStory(root: HTMLElement) {
   }
   const onTouchStart = () => {
     touching = true;
-    stop();
+    stop(true);
   };
   const onTouchEnd = () => {
     touching = false;
@@ -303,6 +345,8 @@ export function mountTreasuryStory(root: HTMLElement) {
     chapters.forEach((chapter) => {
       chapter.inert = false;
       chapter.removeAttribute("aria-hidden");
+      for (const property of ["transform", "visibility", "opacity", "will-change"])
+        chapter.style.removeProperty(property);
     });
   };
 }
