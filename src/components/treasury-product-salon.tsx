@@ -263,19 +263,24 @@ export function TreasuryProductSalon({
                     {name(item)}
                   </TreasuryLink>
                 </h2>
-                {index === selected ? (
-                  <ProductCardLivePrice
-                    slug={item.slug}
-                    locale={locale}
-                    initialPriceToman={item.displayPriceToman}
-                  />
-                ) : (
-                  <p className="text-xs text-[#ddcba4]">
-                    {item.displayPriceToman
-                      ? `${BigInt(item.displayPriceToman).toLocaleString(fa ? "fa-IR" : "en-US")} ${fa ? "تومان" : "toman"}`
-                      : "—"}
-                  </p>
-                )}
+                <div className="eloria-salon-purchase-card">
+                  <div className="eloria-salon-price">
+                    <span>{fa ? "قیمت اثر" : "Creation price"}</span>
+                    {index === selected ? (
+                      <ProductCardLivePrice
+                        slug={item.slug}
+                        locale={locale}
+                        initialPriceToman={item.displayPriceToman}
+                      />
+                    ) : (
+                      <p className="text-xs text-[#ddcba4]">
+                        {item.displayPriceToman
+                          ? `${BigInt(item.displayPriceToman).toLocaleString(fa ? "fa-IR" : "en-US")} ${fa ? "تومان" : "toman"}`
+                          : "—"}
+                      </p>
+                    )}
+                  </div>
+                  <div className="eloria-salon-actions">
                 <button
                   type="button"
                   className="eloria-quick-button"
@@ -300,6 +305,8 @@ export function TreasuryProductSalon({
                   {fa ? "دیدن صفحهٔ اثر" : "View creation"}
                   <span aria-hidden="true"> ↗</span>
                 </TreasuryLink>
+                  </div>
+                </div>
               </div>
             </article>
           ))}

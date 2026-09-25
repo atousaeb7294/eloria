@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { RawGoldPrice } from "@/components/raw-gold-price";
 import { AddToCartButton } from "@/components/add-to-cart-button";
-import { DELIVERY_TOMAN } from "@/lib/commerce-policy";
 import type { ProductPriceResult } from "@/lib/product-pricing";
 
 /** All numbers, variant selection and sale eligibility come from the same strict
@@ -181,20 +180,14 @@ export function LivePurchaseBox({
                       ? "قیمت نهایی این اثر بر پایهٔ مواد به‌کاررفته و ارزش هنر دست تعیین می‌شود."
                       : "The final price reflects the materials and the value of handcraft."}
             </p>
-            {b && BigInt(b.taxToman) > 0n && (
+            {b && (
               <p className="mt-2 leading-7 opacity-75">
-                {fa
-                  ? "مالیات در قیمت نهایی لحاظ شده است."
-                  : "Tax is included in the final price."}
+                {fa ? "مالیات: " : "Tax: "}
+                {format(b.taxToman)} {fa ? "تومان" : "toman"}
+                {BigInt(b.taxToman) > 0n &&
+                  (fa ? "؛ در قیمت نهایی لحاظ شده است." : "; included in the final price.")}
               </p>
             )}
-            <p className="mt-3 border-t border-[#ddc48b]/15 pt-3 leading-7 opacity-75">
-              {fa ? "هزینهٔ ارسال: " : "Delivery: "}
-              {format(DELIVERY_TOMAN.toString())}{" "}
-              {fa
-                ? "تومان؛ یک‌بار برای کل سفارش در سبد خرید اضافه می‌شود."
-                : "toman, added once per order in your bag."}
-            </p>
           </div>
           {quote.variant && (
             <p className="mb-3 text-xs">
