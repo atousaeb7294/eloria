@@ -78,6 +78,89 @@ export function mountTreasuryStory(root: HTMLElement) {
   let active = -1;
   let focusDestination: number | null = null;
   const last = chapters.length - 1;
+  let motion: { from: number; to: number; started: number; duration: number } | null = null;
+  let writtenY: number | null = null;
+  let gesture = createStoryGesture();
+  let touch: { x: number; y: number; direction: number; resume: number | null } | null = null;
+  const excluded = (target: EventTarget | null) => {
+    if (!(target instanceof Element)) return false;
+    if (target.closest("input, textarea, select, button, [contenteditable], [role='dialog'], dialog, [data-story-native-scroll]")) return true;
+    for (let node: Element | null = target; node && node !== root; node = node.parentElement) {
+      if (node.scrollHeight > node.clientHeight + 1 && /auto|scroll/.test(getComputedStyle(node).overflowY)) return true;
+    }
+    return false;
+  };
+  const stop = () => { motion = null; writtenY = null; };
+  const go = (index: number) => {
+    const to = top + index * height;
+    if (Math.abs(window.scrollY - to) < 1) return;
+    writtenY = window.scrollY;
+    motion = { from: window.scrollY, to, started: performance.now(), duration: compact ? 400 : 480 };
+    focusDestination = null;
+    schedulePaint();
+  };
+  const destination = (direction: number) => {
+    const progress = (window.scrollY - top) / height;
+    if (progress < -0.002 || progress > last + 0.002) return null;
+    const nearest = Math.round(progress);
+    const index = Math.abs(progress - nearest) < 0.002 ? nearest + direction :
+      direction > 0 ? Math.ceil(progress) : Math.floor(progress);
+    return index >= 0 && index <= last ? index : null;
+  };
+  const wheel = (event: WheelEvent) => {
+    if (!enabled || event.defaultPrevented || !event.cancelable || event.ctrlKey || event.metaKey ||
+      excluded(event.target) || Math.abs(event.deltaX) > Math.abs(event.deltaY)) return;
+    const delta = event.deltaY * (event.deltaMode === 1 ? 16 : event.deltaMode === 2 ? height : 1);
+    const direction = Math.sign(delta);
+    if (!direction) return;
+    const index = destination(direction);
+    if (index === null && !motion) return;
+    event.preventDefault();
+    const accepted = gesture(delta, performance.now());
+    if (motion && Math.sign(motion.to - window.scrollY) === direction) return;
+    if (accepted && index !== null) go(index);
+  };
+  const touchStart = (event: TouchEvent) => {
+    if (!enabled || excluded(event.target) || event.touches.length !== 1) { touch = null; return; }
+    const resume = motion ? Math.round((motion.to - top) / height) : null;
+    stop();
+    const point = event.touches[0];
+    touch = { x: point.clientX, y: point.clientY, direction: 0, resume };
+  };
+  const touchMove = (event: TouchEvent) => {
+    if (!touch || event.touches.length !== 1 || !event.cancelable) { touch = null; return; }
+    const point = event.touches[0];
+    const delta = touch.y - point.clientY;
+    if (Math.abs(point.clientX - touch.x) > Math.abs(delta)) { touch = null; return; }
+    if (Math.abs(delta) < 3) return;
+    const direction = Math.sign(delta);
+    if (destination(direction) === null) { touch = null; return; }
+    event.preventDefault();
+    touch.direction = Math.abs(delta) >= 24 ? direction : 0;
+  };
+  const touchEnd = () => {
+    if (touch?.direction) {
+      const index = destination(touch.direction);
+      if (index !== null) go(index);
+    } else if (touch?.resume !== null && touch?.resume !== undefined) go(touch.resume);
+    touch = null;
+  };
+  const touchCancel = () => { touch = null; };
+  const keydown = (event: KeyboardEvent) => {
+    if (!enabled || event.defaultPrevented || event.ctrlKey || event.metaKey || event.altKey || excluded(event.target)) return;
+    const direction = ["ArrowDown", "PageDown"].includes(event.key) || (event.key === " " && !event.shiftKey) ? 1 :
+      ["ArrowUp", "PageUp"].includes(event.key) || (event.key === " " && event.shiftKey) ? -1 : 0;
+    if (!direction) { if (["Home", "End", "Escape"].includes(event.key)) stop(); return; }
+    const index = destination(direction);
+    if (index === null) return;
+    event.preventDefault();
+    if (!motion || Math.sign(motion.to - window.scrollY) !== direction) go(index);
+  };
+  const scroll = () => {
+    // Scrollbar, assistive navigation and unrelated scroll owners may interrupt.
+    if (motion && writtenY !== null && Math.abs(window.scrollY - writtenY) > 3) stop();
+    schedulePaint();
+  };
   const clearChapters = () => {
     for (const chapter of chapters) {
       chapter.inert = false;
@@ -89,6 +172,13 @@ export function mountTreasuryStory(root: HTMLElement) {
   const paint = () => {
     frame = 0;
     if (!enabled) return;
+    if (motion) {
+      const elapsed = storyClamp((performance.now() - motion.started) / motion.duration, 0, 1);
+      const eased = 1 - Math.pow(1 - elapsed, 3);
+      writtenY = motion.from + (motion.to - motion.from) * eased;
+      window.scrollTo({ top: writtenY, behavior: "instant" });
+      if (elapsed === 1) stop(); else schedulePaint();
+    }
     const progress = storyClamp((window.scrollY - top) / height, 0, last);
     if (progress === lastProgress) return;
     lastProgress = progress;
@@ -116,6 +206,9 @@ export function mountTreasuryStory(root: HTMLElement) {
   };
   const schedulePaint = () => { if (!frame) frame = requestAnimationFrame(paint); };
   const measure = () => {
+    stop();
+    touch = null;
+    gesture = createStoryGesture();
     enabled = !reduced.matches && !small.matches;
     root.toggleAttribute("data-story-enhanced", enabled);
     root.removeAttribute("data-story-moving");
@@ -135,11 +228,13 @@ export function mountTreasuryStory(root: HTMLElement) {
     const index = hash === "promenade-end" ? chapters.length : chapters.findIndex(chapter => chapter.id === hash);
     if (index < 0) return;
     event.preventDefault();
+    go(index);
     focusDestination = event.detail === 0 && index <= last ? index : null;
-    // Browser owns the entire movement; wheel/touch can interrupt it naturally.
-    window.scrollTo({ top: top + index * height, behavior: "smooth" });
   };
   const reset = () => {
+    stop();
+    touch = null;
+    gesture = createStoryGesture();
     focusDestination = null;
     lastProgress = -1;
     window.scrollTo({ top: 0, left: 0, behavior: "instant" });
@@ -148,15 +243,28 @@ export function mountTreasuryStory(root: HTMLElement) {
   const resize = new ResizeObserver(measure);
   resize.observe(stage);
   measure();
-  window.addEventListener("scroll", schedulePaint, { passive: true });
+  window.addEventListener("scroll", scroll, { passive: true });
+  root.addEventListener("wheel", wheel, { passive: false });
+  root.addEventListener("touchstart", touchStart, { passive: true });
+  root.addEventListener("touchmove", touchMove, { passive: false });
+  root.addEventListener("touchend", touchEnd, { passive: true });
+  root.addEventListener("touchcancel", touchCancel, { passive: true });
+  window.addEventListener("keydown", keydown);
   window.addEventListener("eloria:reset-home", reset);
   root.addEventListener("click", click);
   reduced.addEventListener("change", measure);
   small.addEventListener("change", measure);
   return () => {
+    stop();
     cancelAnimationFrame(frame);
     resize.disconnect();
-    window.removeEventListener("scroll", schedulePaint);
+    window.removeEventListener("scroll", scroll);
+    root.removeEventListener("wheel", wheel);
+    root.removeEventListener("touchstart", touchStart);
+    root.removeEventListener("touchmove", touchMove);
+    root.removeEventListener("touchend", touchEnd);
+    root.removeEventListener("touchcancel", touchCancel);
+    window.removeEventListener("keydown", keydown);
     window.removeEventListener("eloria:reset-home", reset);
     root.removeEventListener("click", click);
     reduced.removeEventListener("change", measure);
