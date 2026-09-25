@@ -2,7 +2,6 @@
 
 import Image from "next/image";
 import { ProductImage } from "@/components/product-image";
-import { RawGoldPrice } from "@/components/raw-gold-price";
 import {
   useEffect,
   useLayoutEffect,
@@ -123,9 +122,6 @@ export function TreasuryPromenade({
   return (
     <div ref={root} className="eloria-promenade" dir={fa ? "rtl" : "ltr"}>
       <div className="eloria-promenade-stage">
-        <div className="eloria-story-rate">
-          <RawGoldPrice locale={locale} />
-        </div>
         <Chapter index={0} id="promenade-intro" intro>
           {children}
         </Chapter>
@@ -159,12 +155,14 @@ export function TreasuryPromenade({
                   <span>03</span>
                 </div>
                 <div className="eloria-treasury-heading">
+                  <span className="eloria-treasury-heading-mark" aria-hidden="true">✦</span>
                   <p className="eloria-treasury-eyebrow">
                     {fa ? treasury.fa : treasury.en}
                   </p>
-                  <h2 className={fa ? "font-persian-title" : "font-serif"}>
+                  <h2 className="eloria-treasury-title">
                     {fa ? treasury.titleFa : treasury.titleEn}
                   </h2>
+                  <span className="eloria-treasury-heading-rule" aria-hidden="true" />
                   <p>{fa ? treasury.descriptionFa : treasury.descriptionEn}</p>
                 </div>
                 <TreasuryLink

@@ -867,14 +867,18 @@ html[lang="fa"] :where(p, li, label, button, a, h1, h2, h3, h4, h5, h6) {
 .eloria-treasury-shade { position:absolute; inset:0; pointer-events:none; background:linear-gradient(180deg,#01130bcc,transparent 32%,#01130b22 55%,#01130bdd),linear-gradient(90deg,#03130b99,transparent 55%); }
 .eloria-treasury-counter { position:absolute; z-index:4; top:max(100px,13svh); left:6%; display:flex; align-items:center; gap:12px; color:#f6e8c1ad; direction:ltr; font-size:11px; letter-spacing:.15em; }
 .eloria-treasury-counter i { width:46px; height:1px; background:#ead3a05e; }
-.eloria-treasury-heading { position:absolute; z-index:4; top:42%; left:6%; width:min(390px,34vw); text-align:start; pointer-events:none; }
-.eloria-treasury-eyebrow { font-size:11px; letter-spacing:.08em; color:#f0dfb4; }
-.eloria-treasury-heading h2 { margin:8px 0; font-size:clamp(46px,5.5vw,84px); font-weight:400; line-height:1.5; color:#fff1cc; }
-.eloria-treasury-heading > p:not(.eloria-treasury-eyebrow) { margin:0; max-width:340px; font-size:13px; line-height:2.1; color:#f4ead5cf; }
+.eloria-treasury-heading { position:absolute; z-index:4; top:34%; left:5%; width:min(420px,35vw); text-align:start; pointer-events:none; padding:30px 32px 28px; border:1px solid #e4c78580; border-radius:20px; background:linear-gradient(145deg,#0d2d23f5,#041a14f0); box-shadow:inset 0 0 0 5px #e7c98512,0 24px 70px #000a; backdrop-filter:blur(10px); }
+.eloria-treasury-heading::before { content:""; position:absolute; inset:8px; border:1px solid #e8ca8538; border-radius:14px; pointer-events:none; }
+.eloria-treasury-heading-mark { display:inline-flex; align-items:center; justify-content:center; width:28px; height:28px; margin-bottom:12px; border:1px solid #ddc48588; border-radius:50%; color:#f0d594; font-size:14px; }
+.eloria-treasury-eyebrow { margin:0; font-size:11px; font-weight:600; letter-spacing:.04em; color:#f0dfb4; }
+.eloria-treasury-heading .eloria-treasury-title { margin:8px 0 12px; font-size:clamp(34px,3.8vw,58px); font-weight:650; line-height:1.25; color:#fff1cc; }
+html[lang="fa"] .eloria-treasury-heading .eloria-treasury-title { font-family:"Vazirmatn Variable",Vazirmatn,Tahoma,sans-serif !important; line-height:1.35 !important; }
+.eloria-treasury-heading-rule { display:block; width:52px; height:1px; margin-bottom:12px; background:linear-gradient(90deg,#edcf89,transparent); }
+.eloria-treasury-heading > p:not(.eloria-treasury-eyebrow) { margin:0; max-width:340px; font-size:13px; line-height:1.8; color:#f4ead5; }
 .eloria-treasury-enter { position:relative; display:inline-flex; align-items:center; justify-content:center; gap:22px; min-height:48px; margin-top:16px; padding:10px 24px; border:1px solid #eed3a088; border-radius:999px; background:#09241ccc; color:#fff0c8; font-size:13px; transition:gap .25s,transform .25s; }
 .eloria-treasury-enter:hover { gap:32px; transform:translateY(-2px); }
 .eloria-treasury-main-link { position:absolute; z-index:2; inset:0; }
-.eloria-treasury-rail-wrap { position:absolute; z-index:6; top:42%; right:6%; width:min(390px,38vw); text-align:center; padding:22px 16px; border:1px solid #e5cc914d; border-radius:28px; background:#051d17c9; }
+.eloria-treasury-rail-wrap { position:absolute; z-index:6; top:40%; right:6%; width:min(390px,38vw); text-align:center; padding:18px 16px; border:1px solid #e5cc9170; border-radius:22px; background:#051d17e8; box-shadow:0 18px 40px #0006; }
 .eloria-treasury-rail-wrap > p { margin:0 0 8px; color:#f0dfb499; font-size:10px; }
 .eloria-treasury-miniatures { display:flex; align-items:center; justify-content:safe center; gap:10px; overflow-x:auto; padding:5px; scrollbar-width:none; }
 .eloria-treasury-miniatures > a { position:relative; flex:0 0 64px; height:64px; overflow:hidden; border:1px solid #e5cc9159; border-radius:50%; background:#09241c; transition:transform .22s,border-color .22s; }
@@ -890,24 +894,28 @@ html[lang="fa"] :where(p, li, label, button, a, h1, h2, h3, h4, h5, h6) {
 .eloria-story-navigation a:hover span, .eloria-story-navigation a:focus-visible span { opacity:1; }
 .eloria-hero-story-link { position:absolute; z-index:25; inset-inline-end:36px; bottom:32px; display:flex; align-items:center; gap:12px; font-size:11px; color:#f5deb0; min-height:44px; }
 @media(max-width:700px) {
-  .eloria-treasury-heading { top:28%; left:7%; width:86%; }
-  .eloria-treasury-heading h2 { font-size:clamp(44px,14vw,65px); }
-  .eloria-treasury-heading > p:not(.eloria-treasury-eyebrow) { max-width:260px; font-size:12px; }
-  .eloria-treasury-rail-wrap { top:auto; bottom:max(96px,12svh); right:7%; width:86%; padding:14px; }
+  .eloria-treasury-heading { top:clamp(90px,16svh,135px); left:5%; width:90%; padding:16px 18px; border-radius:16px; }
+  .eloria-treasury-heading::before { inset:5px; border-radius:12px; }
+  .eloria-treasury-heading-mark { width:22px; height:22px; margin-bottom:5px; font-size:11px; }
+  .eloria-treasury-heading .eloria-treasury-title { margin:2px 0 5px; font-size:clamp(26px,7vw,36px); }
+  .eloria-treasury-heading-rule { margin-bottom:6px; }
+  .eloria-treasury-heading > p:not(.eloria-treasury-eyebrow) { max-width:100%; font-size:11px; line-height:1.55; }
+  .eloria-treasury-rail-wrap { top:auto; bottom:max(60px,8svh); right:5%; width:90%; padding:10px 12px; border-radius:16px; }
+  .eloria-treasury-rail-wrap > p { margin-bottom:4px; }
+  .eloria-treasury-enter { min-height:44px; margin-top:8px; padding:7px 18px; }
   .eloria-treasury-counter { top:100px; left:7%; }
   .eloria-treasury-shade { background:linear-gradient(180deg,#01130bba,transparent 20%,#01130b55 40%,#01130bdd),linear-gradient(90deg,#03130b66,transparent); }
   .eloria-treasury-miniatures { gap:7px; }
-  .eloria-treasury-miniatures > a { flex-basis:52px; height:52px; }
+  .eloria-treasury-miniatures > a { flex-basis:44px; height:44px; }
   .eloria-promenade[data-story-enhanced] .eloria-story-navigation { inset-inline-end:8px; }
   .eloria-story-navigation a span { display:none; }
   .eloria-hero-story-link { bottom:70px; inset-inline-end:0; width:100%; justify-content:center; }
 }
 @media(max-height:650px) and (min-height:521px) {
   .eloria-treasury-counter { top:78px; }
-  .eloria-treasury-heading { top:24%; }
-  .eloria-treasury-heading h2 { font-size:42px; }
-
-  .eloria-treasury-rail-wrap { top:auto; bottom:96px; }
+  .eloria-treasury-heading { top:clamp(80px,14svh,115px); }
+  .eloria-treasury-heading .eloria-treasury-title { font-size:clamp(27px,6vw,38px); }
+  .eloria-treasury-rail-wrap { top:auto; bottom:60px; }
 }
 @media(max-height:520px) {
   .eloria-promenade-surface { height:auto; min-height:600px; }
@@ -1027,13 +1035,6 @@ html[lang="fa"] :where(p, li, label, button, a, h1, h2, h3, h4, h5, h6) {
 .eloria-raw-gold { display:flex; justify-content:center; align-items:center; flex-wrap:wrap; gap:8px 16px; margin:18px auto; color:#dfc99e; font-size:11px; line-height:1.8; }
 .eloria-raw-gold strong { font-weight:500; color:#f6e6c1; }
 .eloria-raw-gold small { font-size:10px; opacity:.75; }
-.eloria-story-rate { position:absolute; top:max(88px,12svh); right:6%; z-index:9; max-width:42%; pointer-events:none; }
-.eloria-story-rate .eloria-raw-gold { justify-content:flex-start; margin:0; gap:5px 12px; }
-@media(max-width:700px) {
- .eloria-story-rate { top:88px; right:7%; max-width:62%; }
- .eloria-story-rate .eloria-raw-gold { font-size:9px; }
- .eloria-story-rate .eloria-raw-gold small { display:none; }
-}
 
 .eloria-treasury-empty { min-height:64px; display:grid; place-items:center; font-size:11px; color:#ead9b3; }
 
