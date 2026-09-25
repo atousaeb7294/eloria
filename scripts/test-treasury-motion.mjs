@@ -14,10 +14,11 @@ assert.equal(gesture(20, 0), 1);
 assert.equal(gesture(20, 60), 0);
 assert.equal(gesture(-20, 70), -1);
 
-function harness({ reduced = false, width = 1280, viewport = 800 } = {}) {
+function harness({ reduced = false, width = 1280, viewport = 800, compositor = false } = {}) {
   let now = 0, nextId = 1, pendingScroll = false;
   const raf = new Map(), timers = new Map(), events = new Map(), media = new Map();
   const scrolls = [];
+  const animations = [];
   class Node {
     constructor(id = '') {
       this.id = id; this.dataset = {}; this.attrs = new Map(); this.events = new Map();
@@ -32,6 +33,20 @@ function harness({ reduced = false, width = 1280, viewport = 800 } = {}) {
     focus() { this.focused = true; }
   }
   const chapters = [0,1,2,3].map(i => new Node(`chapter-${i}`));
+  if (compositor) chapters.forEach(chapter => {
+    chapter.animate = (keyframes, options) => {
+      let resolve, reject;
+      const started = now;
+      const animation = {
+        finished: new Promise((ok, fail) => { resolve=ok; reject=fail; }),
+        effect: { getComputedTiming: () => ({progress:Math.min(1,(now-started)/options.duration)}) },
+        canceled:false, complete:false, keyframes,
+        cancel() { this.canceled=true; if(!this.complete) reject(new Error('cancelled')); },
+        tick() { if(!this.canceled && !this.complete && now-started>=options.duration){this.complete=true;resolve();} },
+      };
+      animations.push(animation);return animation;
+    };
+  });
   const dots = chapters.map((_,i) => { const n = new Node(); n.dataset.storyGo = String(i); return n; });
   const stage = {clientHeight:viewport};
   const root = new Node();
@@ -47,6 +62,7 @@ function harness({ reduced = false, width = 1280, viewport = 800 } = {}) {
     innerWidth:width, innerHeight:viewport, scrollY:0,
     scrollTo({top,behavior}) { this.scrollY=top;scrolls.push({top,behavior});pendingScroll=true; },
     addEventListener(k,f) {events.set(k,f);}, removeEventListener(k) {events.delete(k);},
+    dispatchEvent(event) {events.get(event.type)?.(event);return true;},
     setTimeout(f,ms) {const id=nextId++;timers.set(id,{f,at:now+ms});return id;},
   };
   globalThis.document = {querySelector:()=>null,documentElement:{scrollHeight:viewport*5}};
@@ -64,6 +80,7 @@ function harness({ reduced = false, width = 1280, viewport = 800 } = {}) {
     const batch=[...raf];raf.clear();
     assert.ok(batch.length<=1,'there must be a single scheduled rendering frame');
     batch.forEach(([,f])=>f(now));
+    animations.forEach(animation=>animation.tick());
     assert.ok(chapters.filter(c=>c.style.visibility==='visible').length<=2);
   }
   function advance(ms) {for(let t=0;t<ms;t+=16)step();}
@@ -71,7 +88,7 @@ function harness({ reduced = false, width = 1280, viewport = 800 } = {}) {
     const e={deltaY:delta,deltaX:0,deltaMode:0,target:null,preventDefault(){this.prevented=true;}};
     events.get('wheel')?.(e);return e;
   }
-  return {root,chapters,scrolls,raf,events,stage,dispose,step,advance,wheel,resize:()=>resize(),nativeScroll(y){window.scrollY=y;events.get('scroll')?.();}};
+  return {root,chapters,scrolls,raf,events,stage,animations,dispose,step,advance,wheel,resize:()=>resize(),nativeScroll(y){window.scrollY=y;events.get('scroll')?.();}};
 }
 
 let h=harness();
@@ -102,4 +119,27 @@ h=harness({reduced:true});assert.ok(!h.root.attrs.has('data-story-enhanced'));
 assert.ok(!h.wheel(100).prevented);h.dispose();
 h=harness({viewport:500});assert.ok(!h.root.attrs.has('data-story-enhanced'));h.dispose();
 h=harness({width:390});h.wheel(100);h.advance(900);assert.equal(window.scrollY,800);h.dispose();
-console.log('PASS: chapter visibility, distinct motion, inertia, single render loop, one scroll per transition, reversal, native interruption, resize, footer, reduced motion, compact viewport and cleanup');
+
+h=harness({compositor:true});h.wheel(100);h.advance(320);
+assert.equal(h.raf.size,0,'compositor transitions must not schedule JS animation frames');
+assert.equal(h.animations.length,2);
+assert.equal(h.scrolls.length,0);
+h.advance(500);await Promise.resolve();await Promise.resolve();
+assert.equal(window.scrollY,800);assert.equal(h.root.dataset.storyChapter,'1');
+h.wheel(100);h.advance(300);
+window.dispatchEvent(new Event('eloria:reset-home'));
+assert.equal(window.scrollY,0);assert.equal(h.root.dataset.storyChapter,'0');
+h.advance(1000);await Promise.resolve();await Promise.resolve();
+assert.equal(window.scrollY,0,'cancelled animation must not restore an old treasury after home reset');
+assert.ok(h.chapters.slice(1).every(chapter=>chapter.style.visibility==='hidden'));
+h.dispose();
+
+h=harness({compositor:true,width:390});h.wheel(100);h.advance(320);
+h.events.get('touchstart')();
+assert.ok(window.scrollY>0 && window.scrollY<800,'touch interruption keeps the visible position');
+h.events.get('touchend')();h.advance(1100);await Promise.resolve();await Promise.resolve();
+assert.equal(window.scrollY,800);h.dispose();
+h=harness({compositor:true});h.wheel(100);h.advance(320);h.wheel(-100);h.advance(900);
+await Promise.resolve();await Promise.resolve();
+assert.equal(window.scrollY,0,'compositor reversal returns to the initial chapter');h.dispose();
+console.log('PASS: compositor, home reset, mobile touch,  chapter visibility, distinct motion, inertia, single render loop, one scroll per transition, reversal, native interruption, resize, footer, reduced motion, compact viewport and cleanup');

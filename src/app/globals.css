@@ -887,6 +887,8 @@ html[lang="fa"] :where(p, li, label, button, a, h1, h2, h3, h4, h5, h6) {
 .eloria-story-navigation a:hover span, .eloria-story-navigation a:focus-visible span { opacity:1; }
 .eloria-hero-story-link { position:absolute; z-index:25; inset-inline-end:36px; bottom:32px; display:flex; align-items:center; gap:12px; font-size:11px; color:#f5deb0; min-height:44px; }
 @media(max-width:700px) {
+  .eloria-treasury-backdrop-layer { inset:80px 0 220px; transform:none; }
+  .eloria-treasury-backdrop { object-fit:contain; object-position:center; }
   .eloria-treasury-rail-wrap { top:auto; bottom:max(60px,8svh); right:5%; width:90%; padding:10px 12px; }
   .eloria-treasury-enter { min-height:44px; margin-top:8px; padding:7px 18px; }
   .eloria-treasury-counter { top:100px; left:7%; }

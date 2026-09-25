@@ -75,6 +75,10 @@ export function mountTreasuryStory(root: HTMLElement) {
   let paintFrame = 0;
   let settleTimer = 0;
   let moving = false;
+  let compositorAnimations: Animation[] = [];
+  let animationFrom = 0;
+  let animationTo = 0;
+  let run = 0;
   let visualProgress: number | null = null;
   let lastPainted = -1;
   let compact = window.innerWidth < 700;
@@ -86,6 +90,13 @@ export function mountTreasuryStory(root: HTMLElement) {
   let active = -1;
   const consumeGesture = createStoryGesture();
   const last = chapters.length - 1;
+
+  function currentProgress() {
+    const timing = compositorAnimations[0]?.effect?.getComputedTiming();
+    if (typeof timing?.progress === "number")
+      return animationFrom + (animationTo - animationFrom) * timing.progress;
+    return visualProgress ?? (window.scrollY - top) / height;
+  }
 
   function blocked(target?: EventTarget | null) {
     return (
@@ -99,14 +110,18 @@ export function mountTreasuryStory(root: HTMLElement) {
     );
   }
   function stop(syncScroll = false) {
+    const progress = currentProgress();
+    run++;
     cancelAnimationFrame(animationFrame);
     cancelAnimationFrame(paintFrame);
     paintFrame = 0;
     clearTimeout(settleTimer);
-    if (syncScroll && visualProgress !== null) {
-      window.scrollTo({ top: top + visualProgress * height, behavior: "instant" });
+    if (syncScroll && moving) {
+      window.scrollTo({ top: top + progress * height, behavior: "instant" });
       lastY = window.scrollY;
     }
+    compositorAnimations.forEach((animation) => animation.cancel());
+    compositorAnimations = [];
     visualProgress = null;
     moving = false;
     root.removeAttribute("data-story-moving");
@@ -186,10 +201,52 @@ export function mountTreasuryStory(root: HTMLElement) {
     const start = performance.now();
     const fromProgress = storyClamp((from - top) / height, 0, last);
     const toProgress = storyClamp((to - top) / height, 0, last);
-    const duration = 760 * Math.max(1, Math.abs(toProgress - fromProgress));
+    const duration = 680 * Math.max(1, Math.abs(toProgress - fromProgress));
     moving = true;
     visualProgress = fromProgress;
     root.dataset.storyMoving = "true";
+    const finish = () => {
+      window.scrollTo({ top: to, behavior: "instant" });
+      lastY = window.scrollY;
+      paint(toProgress);
+      const completed = compositorAnimations;
+      compositorAnimations = [];
+      completed.forEach((animation) => animation.cancel());
+      visualProgress = null;
+      moving = false;
+      root.removeAttribute("data-story-moving");
+      if (focus && destination <= last)
+        chapters[destination].focus({ preventScroll: true });
+    };
+    const lower = Math.floor(Math.min(fromProgress, toProgress) + 0.000001);
+    const upper = Math.ceil(Math.max(fromProgress, toProgress) - 0.000001);
+    if (upper - lower === 1 && typeof chapters[lower].animate === "function") {
+      // Adjacent scenes animate on the browser compositor, not in a JS RAF loop.
+      animationFrom = fromProgress;
+      animationTo = toProgress;
+      const token = run;
+      compositorAnimations = [lower, upper].map((index) => {
+        const chapter = chapters[index];
+        chapter.style.visibility = "visible";
+        chapter.style.opacity = "1";
+        chapter.style.willChange = "transform";
+        const keyframes = Array.from({ length: 31 }, (_, sample) => {
+          const offset = sample / 30;
+          const progress = storyClamp(
+            fromProgress + (toProgress - fromProgress) * offset,
+            lower + 0.000001, upper - 0.000001,
+          );
+          return { offset, transform: storyFrame(progress, index, compact).transform };
+        });
+        return chapter.animate(keyframes, {
+          duration, easing: "cubic-bezier(.22,.7,.18,1)", fill: "both",
+        });
+      });
+      void Promise.all(compositorAnimations.map((animation) => animation.finished))
+        .then(() => { if (run === token) finish(); })
+        .catch(() => { /* Native scroll, reset or unmount cancels this run. */ });
+      return;
+    }
     const tick = (time: number) => {
       const t = Math.min(1, (time - start) / duration);
       // One render loop; scrolling the document every frame also triggered
@@ -199,13 +256,7 @@ export function mountTreasuryStory(root: HTMLElement) {
       paint(visualProgress);
       if (t < 1) animationFrame = requestAnimationFrame(tick);
       else {
-        window.scrollTo({ top: to, behavior: "instant" });
-        lastY = window.scrollY;
-        visualProgress = null;
-        moving = false;
-        root.removeAttribute("data-story-moving");
-        if (focus && destination <= last)
-          chapters[destination].focus({ preventScroll: true });
+        finish();
       }
     };
     animationFrame = requestAnimationFrame(tick);
@@ -239,7 +290,7 @@ export function mountTreasuryStory(root: HTMLElement) {
       Math.abs(event.deltaX) > Math.abs(event.deltaY)
     )
       return;
-    const p = visualProgress ?? (window.scrollY - top) / height;
+    const p = currentProgress();
     if (p < -0.01 || p > last + 0.01 || (p <= 0 && event.deltaY < 0)) return;
     // The footer is ordinary document flow, never an extra hidden chapter.
     if (moving && destination > last) return;
@@ -316,6 +367,16 @@ export function mountTreasuryStory(root: HTMLElement) {
     clearTimeout(settleTimer);
     settleTimer = window.setTimeout(settle, 160);
   };
+  const resetHome = () => {
+    stop();
+    destination = 0;
+    lastY = 0;
+    direction = 1;
+    touching = false;
+    lastPainted = -1;
+    window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+    paint(0);
+  };
   const resize = new ResizeObserver(measure);
   resize.observe(stage);
   measure();
@@ -325,6 +386,7 @@ export function mountTreasuryStory(root: HTMLElement) {
   window.addEventListener("touchstart", onTouchStart, { passive: true });
   window.addEventListener("touchend", onTouchEnd, { passive: true });
   window.addEventListener("touchcancel", onTouchEnd, { passive: true });
+  window.addEventListener("eloria:reset-home", resetHome);
   root.addEventListener("click", click);
   reduced.addEventListener("change", measure);
   small.addEventListener("change", measure);
@@ -338,6 +400,7 @@ export function mountTreasuryStory(root: HTMLElement) {
     window.removeEventListener("touchstart", onTouchStart);
     window.removeEventListener("touchend", onTouchEnd);
     window.removeEventListener("touchcancel", onTouchEnd);
+    window.removeEventListener("eloria:reset-home", resetHome);
     root.removeEventListener("click", click);
     reduced.removeEventListener("change", measure);
     small.removeEventListener("change", measure);
