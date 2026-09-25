@@ -1,3 +1,4 @@
+import { savedWeightUnits } from "@/lib/weight-units";
 import { productAudience } from "@/lib/product-audience";
 import Link from "next/link";
 
@@ -162,6 +163,7 @@ export default async function EditAdminProductPage({
     id: product.id,
     collectionId: product.collectionId,
     audience: productAudience(product.specifications),
+    weightUnits: savedWeightUnits(product.specifications),
     slug: product.slug,
     sku: product.sku ?? "",
     nameFa: product.nameFa,

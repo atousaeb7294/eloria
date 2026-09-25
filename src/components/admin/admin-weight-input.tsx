@@ -3,12 +3,12 @@
 import { useId, useState } from "react";
 import { gramsToSoot, weightToGrams, type WeightUnit } from "@/lib/weight-units";
 
-export function AdminWeightInput({ name, defaultValue, label, className, required = false }: {
-  name: string; defaultValue: string; label: string; className: string; required?: boolean;
+export function AdminWeightInput({ name, defaultValue, label, className, initialUnit = "gram", required = false }: {
+  initialUnit?: WeightUnit; name: string; defaultValue: string; label: string; className: string; required?: boolean;
 }) {
   const id = useId();
-  const [unit, setUnit] = useState<WeightUnit>("gram");
-  const [value, setValue] = useState(defaultValue);
+  const [unit, setUnit] = useState<WeightUnit>(initialUnit);
+  const [value, setValue] = useState(() => initialUnit === "soot" ? gramsToSoot(defaultValue) : defaultValue);
   const [error, setError] = useState("");
   let grams: string | null = null;
   try { grams = weightToGrams(value, unit); } catch { /* Server also validates. */ }

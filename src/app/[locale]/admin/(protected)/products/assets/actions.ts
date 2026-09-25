@@ -1,5 +1,5 @@
 "use server";
-import { readWeightGrams } from "@/lib/weight-units";
+import { readWeightGrams, weightUnitsFromForm } from "@/lib/weight-units";
 import { after } from "next/server";
 import { repairSeoBatch } from "@/lib/seo-autopilot";
 
@@ -394,9 +394,7 @@ function attributes(form: FormData): Prisma.InputJsonValue | undefined {
   const color = text(form, "color", 100),
     size = text(form, "size", 100),
     notes = text(form, "notes", 500);
-  return color || size || notes
-    ? ({ color, size, notes } as Prisma.InputJsonValue)
-    : undefined;
+  return { color, size, notes, eloriaWeightUnits: weightUnitsFromForm(form) } as Prisma.InputJsonValue;
 }
 function variantData(form: FormData) {
   return {

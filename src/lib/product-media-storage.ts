@@ -157,16 +157,10 @@ async function validateImage(file: File): Promise<ValidatedImage> {
       throw new ProductMediaStorageError("قالب یا ابعاد تصویر معتبر نیست.");
     }
 
-    let pipeline = source;
-    if (kind === "jpeg") {
-      pipeline = pipeline.jpeg({ quality: 92, mozjpeg: true });
-    } else if (kind === "png") {
-      pipeline = pipeline.png({ compressionLevel: 9, adaptiveFiltering: true });
-    } else {
-      pipeline = pipeline.webp({ quality: 92, smartSubsample: true });
-    }
-
-    const output = await pipeline.toBuffer({ resolveWithObject: true });
+    const output = await source
+      .resize({ width: 2000, height: 2000, fit: "inside", withoutEnlargement: true })
+      .webp({ quality: 85, alphaQuality: 100, effort: 5, smartSubsample: true })
+      .toBuffer({ resolveWithObject: true });
     const { width, height } = output.info;
 
     if (
@@ -189,9 +183,9 @@ async function validateImage(file: File): Promise<ValidatedImage> {
 
     return {
       bytes: output.data,
-      kind,
-      extension: kind === "jpeg" ? "jpg" : kind,
-      contentType: expectedMime,
+      kind: "webp",
+      extension: "webp",
+      contentType: "image/webp",
       width,
       height,
     };

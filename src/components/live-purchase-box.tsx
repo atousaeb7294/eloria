@@ -1,4 +1,5 @@
 "use client";
+import { formatStoredWeight, type WeightUnits } from "@/lib/weight-units";
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
@@ -13,7 +14,9 @@ export function LivePurchaseBox({
   slug,
   variantId,
   initial = null,
+  weightUnits,
 }: {
+  weightUnits?: WeightUnits;
   locale: string;
   slug: string;
   variantId?: string | null;
@@ -131,7 +134,7 @@ export function LivePurchaseBox({
                 <dt>{fa ? "وزن محصول" : "Product weight"}</dt>
                 <dd>
                   {weight !== null && weight !== undefined
-                    ? `${Number(weight).toLocaleString(fa ? "fa-IR" : "en-US", { maximumFractionDigits: 3 })} ${fa ? "گرم" : "g"}`
+                    ? formatStoredWeight(weight, weightUnits?.metalWeight ?? "gram", locale)
                     : fa
                       ? "ثبت نشده"
                       : "Not specified"}
@@ -154,11 +157,7 @@ export function LivePurchaseBox({
                           : "Silver weight"}
                     </dt>
                     <dd>
-                      {Number(part.weightGrams).toLocaleString(
-                        fa ? "fa-IR" : "en-US",
-                        { maximumFractionDigits: 3 },
-                      )}{" "}
-                      {fa ? "گرم" : "g"}
+                      {formatStoredWeight(part.weightGrams, (part.material === "GOLD" ? weightUnits?.goldComponentWeight : weightUnits?.silverComponentWeight) ?? "gram", locale)}
                     </dd>
                   </div>
                 ))}

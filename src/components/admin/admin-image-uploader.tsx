@@ -79,7 +79,7 @@ export function AdminImageUploader({ productId }: { productId: string }) {
         بارگذاری عکس محصول
       </label>
       <p className="mt-2 text-xs leading-6 text-[#b9ad91]">
-        JPG، PNG یا WebP؛ حداکثر ۸ تصویر و ۸ مگابایت برای هر تصویر. عکس‌ها
+        JPG، PNG یا WebP؛ حداکثر ۸ تصویر و ۸ مگابایت برای هر تصویر. تبدیل و بهینه‌سازی WebP خودکار انجام می‌شود. عکس‌ها
         یکی‌یکی ذخیره می‌شوند.
       </p>
       <input
