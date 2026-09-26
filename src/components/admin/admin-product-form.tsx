@@ -19,7 +19,6 @@ import {
 } from "@/app/[locale]/admin/(protected)/products/actions";
 
 export type AdminProductFormValue = {
-  weightUnits?: import("@/lib/weight-units").WeightUnits;
   id?: string;
   audience?: "WOMEN" | "MEN";
   collectionId: string;
@@ -281,8 +280,8 @@ export function AdminProductForm({
               <label className="flex items-center gap-3 rounded-xl border border-[#d8e2e5]/16 p-3 text-sm text-[#dfe8ea]">
                 <input name="hasSilver" type="checkbox" checked={hasSilver} onChange={(event) => setHasSilver(event.target.checked)} className="size-4 accent-[#c9d5d9]" /> دارای نقره
               </label>
-              {hasGold && hasSilver ? <AdminWeightInput label="وزن طلای به‌کاررفته" className={inputClassName} defaultValue={value.goldComponentWeight} name="goldComponentWeight" initialUnit={value.weightUnits?.goldComponentWeight} required={hasGold && hasSilver} /> : null}
-              {hasGold && hasSilver ? <AdminWeightInput label="وزن نقرهٔ به‌کاررفته" className={inputClassName} defaultValue={value.silverComponentWeight} name="silverComponentWeight" initialUnit={value.weightUnits?.silverComponentWeight} required={hasGold && hasSilver} /> : null}
+              {hasGold ? <AdminWeightInput label="وزن طلای به‌کاررفته" className={inputClassName} defaultValue={value.goldComponentWeight} name="goldComponentWeight" required={hasGold && hasSilver} /> : null}
+              {hasSilver ? <AdminWeightInput label="وزن نقرهٔ به‌کاررفته" className={inputClassName} defaultValue={value.silverComponentWeight} name="silverComponentWeight" required={hasGold && hasSilver} /> : null}
             </div>
           </div>
 
@@ -389,8 +388,8 @@ export function AdminProductForm({
             />
           </Field>
 
-          <AdminWeightInput label={hasGold && hasSilver ? "وزن مجموع فلزات (مبنای نمایش)" : selectedMaterial === "SILVER" ? "وزن نقره (مبنای قیمت و نمایش)" : "وزن طلا (مبنای قیمت و نمایش)"} className={inputClassName}
-            defaultValue={value.metalWeight} name="metalWeight" initialUnit={value.weightUnits?.metalWeight} />
+          <AdminWeightInput label="وزن فلز" className={inputClassName}
+            defaultValue={value.metalWeight} name="metalWeight" />
 
           {selectedMaterial === "GOLD" ? <>
           <Field label="عنوان عیار">

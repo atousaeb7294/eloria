@@ -35,7 +35,6 @@ export default async function HomePage({
   );
 
   return (
-    <TreasuryPageTransition>
     <div className="relative min-h-screen overflow-x-clip bg-[#02140e] text-[#f8f0df]">
 
 <HomeHeaderController
@@ -44,6 +43,7 @@ export default async function HomePage({
         }
       />
 
+      <TreasuryPageTransition>
       <main
         id="main-content"
         tabIndex={-1}
@@ -62,6 +62,7 @@ export default async function HomePage({
         </TreasuryPromenade>
         <div id="promenade-end" />
       </main>
+      </TreasuryPageTransition>
 
       <div className="relative z-10">
         <SiteFooter locale={locale} />
@@ -73,6 +74,5 @@ export default async function HomePage({
         }
       />
     </div>
-    </TreasuryPageTransition>
   );
 }

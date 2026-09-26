@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { weightToGrams, gramsToSoot, readWeightGrams, savedWeightUnits, weightUnitsFromForm, formatStoredWeight } from '../src/lib/weight-units.ts';
+import { weightToGrams, gramsToSoot, readWeightGrams } from '../src/lib/weight-units.ts';
 assert.equal(weightToGrams('625', 'soot'), '0.625');
 assert.equal(weightToGrams('۶۲۵', 'soot'), '0.625');
 assert.equal(weightToGrams('٦٢٥', 'soot'), '0.625');
@@ -32,14 +32,3 @@ form.set('metalWeight','');assert.equal(readWeightGrams(form,'metalWeight'),null
 assert.equal(readWeightGrams(form,'metalWeight','1.000'),'1.000');
 form.set('metalWeight',new Blob(['625']));assert.throws(()=>readWeightGrams(form,'metalWeight'));
 console.log('PASS: 625 soot = 0.625 gram; Persian/Arabic digits; exact unit round trips; independent metal units; legacy grams; empty values; precision and invalid input rejection.');
-
-const unitsForm = new FormData();
-unitsForm.set('metalWeightUnit','soot');unitsForm.set('silverComponentWeightUnit','soot');
-const persisted = JSON.parse(JSON.stringify({ eloriaWeightUnits: weightUnitsFromForm(unitsForm), unrelated: 'keep' }));
-assert.equal(savedWeightUnits(persisted).metalWeight,'soot');
-assert.equal(savedWeightUnits(persisted).goldComponentWeight,'gram');
-assert.equal(savedWeightUnits(null).metalWeight,'gram');
-assert.equal(formatStoredWeight('0.625','soot','en'),'625 soot');
-assert.equal(formatStoredWeight('0.625','gram','en'),'0.625 g');
-assert.ok(formatStoredWeight('0.625','soot','fa').includes('۶۲۵ سوت'));
-console.log('PASS: saved unit metadata and exact customer-facing weight display.');

@@ -12,7 +12,7 @@ import {
 import { TreasuryLink } from "@/components/treasury-transition";
 import { ProductCardLivePrice } from "@/components/product-card-live-price";
 import { LivePurchaseBox } from "@/components/live-purchase-box";
-import { mountSalonWheel } from "@/lib/salon-wheel";
+import { createStoryGesture } from "@/lib/treasury-story";
 import type { CatalogProduct } from "@/lib/catalog";
 
 export function TreasuryProductSalon({
@@ -105,15 +105,50 @@ export function TreasuryProductSalon({
     };
   }, [carousel, products.length, loadNext, loadError]);
 
-  const multipleProducts = products.length > 1;
   useEffect(() => {
-    if (!carousel || !multipleProducts) return;
-    return mountSalonWheel(carousel.rootNode(), carousel, {
-      rtl: fa,
-      blocked: () => Boolean(dialog.current?.open),
-      reducedMotion: () => window.matchMedia("(prefers-reduced-motion: reduce)").matches,
-    });
-  }, [carousel, fa, multipleProducts]);
+    const element = section.current;
+    if (!element || !carousel || products.length < 2) return;
+    const gesture = createStoryGesture();
+    let lastWheel = -Infinity;
+    let lastDirection = 0;
+    let releaseToPage = false;
+    const wheel = (event: WheelEvent) => {
+      if (
+        event.ctrlKey ||
+        event.metaKey ||
+        dialog.current?.open ||
+        (event.target instanceof Element &&
+          event.target.closest("[data-native-scroll]"))
+      )
+        return;
+      const delta =
+        Math.abs(event.deltaY) >= Math.abs(event.deltaX)
+          ? event.deltaY
+          : event.deltaX * (fa ? -1 : 1);
+      const now = performance.now();
+      if (now - lastWheel > 180 || Math.sign(delta) !== lastDirection)
+        releaseToPage = false;
+      lastWheel = now;
+      lastDirection = Math.sign(delta);
+      if (releaseToPage) return;
+      const step = gesture(delta * (event.deltaMode === 1 ? 16 : 1), now);
+      if (
+        (delta > 0 && !carousel.canScrollNext()) ||
+        (delta < 0 && !carousel.canScrollPrev())
+      ) {
+        // Finish the current gesture on the last card; a new gesture exits.
+        if (step) releaseToPage = true;
+        else event.preventDefault();
+        return;
+      }
+      event.preventDefault();
+      if (step > 0) carousel.scrollNext();
+      if (step < 0) carousel.scrollPrev();
+    };
+    // Scoped to the product stage. Filters and the rest of the page keep native scrolling.
+    element.addEventListener("wheel", wheel, { passive: false });
+    return () => element.removeEventListener("wheel", wheel);
+  }, [carousel, fa, products.length]);
 
   useEffect(() => {
     if (!quickProduct || !dialog.current) return;

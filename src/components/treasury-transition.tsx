@@ -16,12 +16,12 @@ export function TreasuryPageTransition({ children }: { children: ReactNode }) {
       enter={{
         "treasury-up": "eloria-page-up",
         "treasury-left": "eloria-page-forward",
-        default: "eloria-page-fade",
+        default: "none",
       }}
       exit={{
         "treasury-up": "eloria-page-up",
         "treasury-left": "eloria-page-forward",
-        default: "eloria-page-fade",
+        default: "none",
       }}
       share={{
         "treasury-up": "eloria-page-up",
@@ -36,10 +36,9 @@ export function TreasuryPageTransition({ children }: { children: ReactNode }) {
 
 export function TreasuryLink({
   direction = "left",
-  transitionTypes,
   ...props
 }: ComponentProps<typeof Link> & {
   direction?: "left" | "up";
 }) {
-  return <Link {...props} transitionTypes={[`treasury-${direction}`, ...(transitionTypes ?? [])]} />;
+  return <Link {...props} transitionTypes={[`treasury-${direction}`]} />;
 }

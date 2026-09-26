@@ -857,7 +857,7 @@ html[lang="fa"] :where(p, li, label, button, a, h1, h2, h3, h4, h5, h6) {
 .eloria-promenade-surface { height:100svh; min-height:560px; background:#071f17; overflow:hidden; }
 .eloria-promenade[data-story-enhanced] { height:400svh; }
 .eloria-promenade[data-story-enhanced] .eloria-promenade-stage {
-  position:sticky; top:0; height:100svh; overflow:hidden; perspective:1100px; perspective-origin:50% 48%; isolation:isolate;
+  position:sticky; top:0; height:100svh; overflow:hidden; perspective:1400px; isolation:isolate;
 }
 .eloria-promenade[data-story-enhanced] .eloria-promenade-chapter { position:absolute; inset:0; height:100%; min-height:0; backface-visibility:hidden; transform-origin:50% 55%; }
 .eloria-promenade[data-story-enhanced] .eloria-promenade-surface { height:100%; min-height:0; }
@@ -915,26 +915,18 @@ html[lang="fa"] :where(p, li, label, button, a, h1, h2, h3, h4, h5, h6) {
 }
 /* One React-owned transition: keep the live background/chrome stationary. */
 ::view-transition { pointer-events:none; }
-::view-transition-group(.eloria-product-morph) { animation-duration:480ms; animation-timing-function:cubic-bezier(.22,.7,.18,1); }
+::view-transition-group(.eloria-product-morph) { animation-duration:360ms; }
 ::view-transition-old(root) { display:none; }
 ::view-transition-new(root) { animation:none; }
-::view-transition-group(eloria-site-header),
-::view-transition-old(eloria-site-header),
-::view-transition-new(eloria-site-header) { animation:none; }
-::view-transition-old(eloria-site-header) { display:none; }
 ::view-transition-group(.eloria-page-forward),
 ::view-transition-group(.eloria-page-up),
-::view-transition-group(.eloria-page-fade) { animation-duration:520ms; animation-timing-function:cubic-bezier(.22,.7,.18,1); }
-::view-transition-old(.eloria-page-forward) { animation:520ms cubic-bezier(.22,.7,.18,1) both eloria-chapter-close; }
-::view-transition-new(.eloria-page-forward) { animation:520ms cubic-bezier(.22,.7,.18,1) both eloria-chapter-open; }
-::view-transition-old(.eloria-page-up) { animation:480ms cubic-bezier(.22,.7,.18,1) both eloria-detail-close; }
-::view-transition-new(.eloria-page-up) { animation:480ms cubic-bezier(.22,.7,.18,1) both eloria-detail-open; }
-::view-transition-old(.eloria-page-fade) { animation:220ms ease-out both eloria-detail-close; }
-::view-transition-new(.eloria-page-fade) { animation:260ms ease-out both eloria-fade; }
-@keyframes eloria-chapter-close { to { transform:translateX(-10%) scale(.97); } }
-@keyframes eloria-chapter-open { from { opacity:0; transform:translateX(16%) scale(1.025); } to { opacity:1; transform:none; } }
-@keyframes eloria-detail-close { to { transform:translateY(-4%) scale(.96); } }
-@keyframes eloria-detail-open { from { opacity:0; transform:translateY(9%) scale(1.035); } to { opacity:1; transform:none; } }
+::view-transition-group(.eloria-page-fade) { animation-duration:360ms; }
+::view-transition-old(.eloria-page-forward) { --slide-offset:-36px; animation:150ms ease-in both eloria-fade reverse,360ms ease-in-out both eloria-slide reverse; }
+::view-transition-new(.eloria-page-forward) { --slide-offset:36px; animation:210ms ease-out 150ms both eloria-fade,360ms ease-in-out both eloria-slide; }
+::view-transition-old(.eloria-page-up) { --slide-y-offset:-24px; animation:150ms ease-in both eloria-fade reverse,360ms ease-in-out both eloria-slide-y reverse; }
+::view-transition-new(.eloria-page-up) { --slide-y-offset:24px; animation:210ms ease-out 150ms both eloria-fade,360ms ease-in-out both eloria-slide-y; }
+::view-transition-old(.eloria-page-fade) { animation:150ms ease-in both eloria-fade reverse; }
+::view-transition-new(.eloria-page-fade) { animation:210ms ease-out 150ms both eloria-fade; }
 @keyframes eloria-fade { from { opacity:0; } to { opacity:1; } }
 @keyframes eloria-slide { from { translate:var(--slide-offset); } to { translate:0; } }
 @keyframes eloria-slide-y { from { transform:translateY(var(--slide-y-offset)); } to { transform:translateY(0); } }

@@ -3,18 +3,12 @@
 import { useId, useState } from "react";
 import { gramsToSoot, weightToGrams, type WeightUnit } from "@/lib/weight-units";
 
-type WeightInputProps = {
-  initialUnit?: WeightUnit; name: string; defaultValue: string; label: string; className: string; required?: boolean;
-};
-
-export function AdminWeightInput(props: WeightInputProps) {
-  return <WeightInputFields key={`${props.name}:${props.defaultValue}:${props.initialUnit ?? "gram"}`} {...props} />;
-}
-
-function WeightInputFields({ name, defaultValue, label, className, initialUnit = "gram", required = false }: WeightInputProps) {
+export function AdminWeightInput({ name, defaultValue, label, className, required = false }: {
+  name: string; defaultValue: string; label: string; className: string; required?: boolean;
+}) {
   const id = useId();
-  const [unit, setUnit] = useState<WeightUnit>(initialUnit);
-  const [value, setValue] = useState(() => initialUnit === "soot" ? gramsToSoot(defaultValue) : defaultValue);
+  const [unit, setUnit] = useState<WeightUnit>("gram");
+  const [value, setValue] = useState(defaultValue);
   const [error, setError] = useState("");
   let grams: string | null = null;
   try { grams = weightToGrams(value, unit); } catch { /* Server also validates. */ }
@@ -32,8 +26,7 @@ function WeightInputFields({ name, defaultValue, label, className, initialUnit =
       <input id={id} className={className} dir="ltr" inputMode={unit === "soot" ? "numeric" : "decimal"}
         name={name} value={value} required={required} aria-describedby={`${id}-hint`}
         onChange={event => { setValue(event.target.value); setError(""); }} />
-      <input type="hidden" name={`${name}Unit`} value={unit} />
-      <select className={className} aria-label={`واحد ${label}`} value={unit}
+      <select className={className} aria-label={`واحد ${label}`} name={`${name}Unit`} value={unit}
         onChange={event => changeUnit(event.target.value as WeightUnit)}>
         <option value="gram">گرم</option><option value="soot">سوت</option>
       </select>

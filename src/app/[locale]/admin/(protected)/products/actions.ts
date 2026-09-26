@@ -1,5 +1,5 @@
 "use server";
-import { readWeightGrams, weightUnitsFromForm, type WeightUnits } from "@/lib/weight-units";
+import { readWeightGrams } from "@/lib/weight-units";
 import { after } from "next/server";
 import { repairSeoBatch } from "@/lib/seo-autopilot";
 
@@ -141,7 +141,6 @@ type ParsedProductInput = {
   material: "GOLD" | "SILVER";
   hasGold: boolean;
   hasSilver: boolean;
-  weightUnits: WeightUnits;
   goldComponentWeight: string | null;
   silverComponentWeight: string | null;
   pricingMode: "DYNAMIC" | "MANUAL";
@@ -536,7 +535,6 @@ function parseProductInput(
         "legendEn",
         5_000,
       ),
-    weightUnits: weightUnitsFromForm(formData),
     characterImageUrl: readProductImageUrl(formData, "characterImageUrl"),
     worldSceneImageUrl: readProductImageUrl(formData, "worldSceneImageUrl"),
     material,
@@ -822,7 +820,7 @@ await ensureUniqueIdentity({
       prisma.product.create({
         data: {
           ...productData(input),
-          specifications: { ...withProductAudience(null, input.audience), eloriaWeightUnits: input.weightUnits },
+          specifications: withProductAudience(null, input.audience),
           mythKey: myth.mythKey,
           mythNameFa: myth.mythNameFa,
           mythNameEn: myth.mythNameEn,
@@ -945,7 +943,7 @@ await ensureUniqueIdentity({
           }
           await transaction.product.update({
             where: { id: productId },
-            data: { ...productData(input), specifications: { ...withProductAudience(before.specifications, input.audience), eloriaWeightUnits: input.weightUnits },
+            data: { ...productData(input), specifications: withProductAudience(before.specifications, input.audience),
               mythKey: myth.mythKey, mythNameFa: myth.mythNameFa, mythNameEn: myth.mythNameEn,
               legendFa: currentMyth && input.legendFa
                 ? (before.mythNameFa ? input.legendFa.split(before.mythNameFa).join(myth.mythNameFa) : input.legendFa)

@@ -1,4 +1,3 @@
-import { savedWeightUnits } from "@/lib/weight-units";
 import { LivePurchaseBox } from "@/components/live-purchase-box";
 import { BuyerReviews } from "@/components/buyer-reviews";
 import { canonicalProductStory } from "@/lib/canonical-product-story";
@@ -182,7 +181,6 @@ async function loadProductPageRecord(slug: string) {
           price: true,
           stock: true,
           metalWeight: true,
-          attributes: true,
           purity: true,
           purityFineness: true,
         },
@@ -832,14 +830,13 @@ export default async function ProductPage({
                   titleEn: variant.titleEn,
                   stock: variant.stock,
                   metalWeight: variant.metalWeight?.toString() ?? null,
-                  weightUnit: savedWeightUnits(variant.attributes).metalWeight,
                   purity: variant.purity,
                 }))}
                 activeVariantId={selectedVariantId}
                 isGold={isGold}
               />
 
-              <LivePurchaseBox key={`${productRecord.slug}:${selectedVariantId ?? "base"}`} locale={locale} slug={productRecord.slug} variantId={selectedVariantId} initial={result} weightUnits={{ ...savedWeightUnits(productRecord.specifications), metalWeight: selectedVariant?.metalWeight != null ? savedWeightUnits(selectedVariant.attributes).metalWeight : savedWeightUnits(productRecord.specifications).metalWeight }} />
+              <LivePurchaseBox key={`${productRecord.slug}:${selectedVariantId ?? "base"}`} locale={locale} slug={productRecord.slug} variantId={selectedVariantId} initial={result} />
               <div className="mt-5">
                 <ProductWatchButton locale={locale} slug={productRecord.slug} />
                 <ProductShareActions

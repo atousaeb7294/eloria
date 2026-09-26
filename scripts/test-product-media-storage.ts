@@ -62,7 +62,7 @@ async function main() {
       params: Promise.resolve({ id }),
     });
     assert.equal(response.status, 200);
-    assert.equal(response.headers.get("content-type"), "image/webp");
+    assert.equal(response.headers.get("content-type"), "image/png");
     assert.equal(
       (await sharp(Buffer.from(await response.arrayBuffer())).metadata()).width,
       40,

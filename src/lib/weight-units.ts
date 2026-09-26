@@ -31,19 +31,3 @@ export function readWeightGrams(form: FormData, key: string, fallback: string | 
     throw new Error("وزن یا واحد وزن معتبر نیست.");
   return weightToGrams(raw ?? "", unit) ?? fallback;
 }
-
-export type WeightUnits = { metalWeight: WeightUnit; goldComponentWeight: WeightUnit; silverComponentWeight: WeightUnit };
-export function savedWeightUnits(metadata: unknown): WeightUnits {
-  const object = metadata && typeof metadata === "object" && !Array.isArray(metadata) ? metadata as Record<string, unknown> : {};
-  const units = object.eloriaWeightUnits && typeof object.eloriaWeightUnits === "object" ? object.eloriaWeightUnits as Record<string, unknown> : {};
-  return { metalWeight: units.metalWeight === "soot" ? "soot" : "gram", goldComponentWeight: units.goldComponentWeight === "soot" ? "soot" : "gram", silverComponentWeight: units.silverComponentWeight === "soot" ? "soot" : "gram" };
-}
-export function weightUnitsFromForm(form: FormData): WeightUnits {
-  const unit = (key: string): WeightUnit => form.get(`${key}Unit`) === "soot" ? "soot" : "gram";
-  return { metalWeight: unit("metalWeight"), goldComponentWeight: unit("goldComponentWeight"), silverComponentWeight: unit("silverComponentWeight") };
-}
-export function formatStoredWeight(grams: string, unit: WeightUnit, locale: string): string {
-  const fa = locale === "fa";
-  const value = unit === "soot" ? BigInt(gramsToSoot(grams)).toLocaleString(fa ? "fa-IR" : "en-US") : Number(grams).toLocaleString(fa ? "fa-IR" : "en-US", { maximumFractionDigits: 3 });
-  return `${value} ${unit === "soot" ? (fa ? "سوت" : "soot") : (fa ? "گرم" : "g")}`;
-}
