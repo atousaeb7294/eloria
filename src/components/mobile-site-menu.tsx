@@ -1,5 +1,7 @@
 "use client";
 
+import { Dialog } from "@base-ui/react/dialog";
+
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -57,28 +59,11 @@ export function MobileSiteMenu() {
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
-    if (!open) {
-      return;
-    }
-
-    const previousOverflow = document.body.style.overflow;
-
-    document.body.style.overflow = "hidden";
-
-    const handleEscape = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        setOpen(false);
-      }
-    };
-
-    window.addEventListener("keydown", handleEscape);
-
-    return () => {
-      document.body.style.overflow = previousOverflow;
-
-      window.removeEventListener("keydown", handleEscape);
-    };
-  }, [open]);
+    const desktop = window.matchMedia("(min-width: 768px)");
+    const closeOnDesktop = () => { if (desktop.matches) setOpen(false); };
+    desktop.addEventListener("change", closeOnDesktop);
+    return () => desktop.removeEventListener("change", closeOnDesktop);
+  }, []);
 
   const closeMenu = () => {
     setOpen(false);
@@ -217,8 +202,9 @@ export function MobileSiteMenu() {
   ];
 
   return (
+    <Dialog.Root open={open} onOpenChange={setOpen}>
     <div className="md:hidden">
-      <button
+      <Dialog.Trigger
         type="button"
         aria-label={
           open
@@ -231,9 +217,6 @@ export function MobileSiteMenu() {
         }
         aria-expanded={open}
         aria-controls="eloria-mobile-navigation"
-        onClick={() => {
-          setOpen((current) => !current);
-        }}
         className="relative grid size-10 place-items-center overflow-hidden rounded-xl border border-[#e1c16f]/22 bg-white/[0.045] text-[#efd58c] shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] transition hover:border-[#e8c96f]/52 hover:bg-[#168461]/14 sm:size-11 sm:rounded-2xl"
       >
         <span
@@ -271,60 +254,22 @@ export function MobileSiteMenu() {
             {open ? <X className="size-5" /> : <Menu className="size-5" />}
           </motion.span>
         </AnimatePresence>
-      </button>
+      </Dialog.Trigger>
 
-      <AnimatePresence>
-        {open && (
-          <>
-            <motion.button
-              type="button"
-              aria-label={isPersian ? "بستن منو" : "Close menu"}
-              initial={{
-                opacity: 0,
-              }}
-              animate={{
-                opacity: 1,
-              }}
-              exit={{
-                opacity: 0,
-              }}
-              onClick={closeMenu}
-              className="fixed inset-0 z-[70] cursor-default bg-black/58 backdrop-blur-[7px]"
-            />
+      <Dialog.Portal>
+            <Dialog.Backdrop className="fixed inset-0 z-[70] cursor-default bg-black/58 backdrop-blur-[7px]" />
 
-            <motion.aside
+            <Dialog.Popup
               id="eloria-mobile-navigation"
               role="dialog"
               aria-modal="true"
               aria-label={isPersian ? "منوی اصلی الوریا" : "Eloria main menu"}
               dir={isPersian ? "rtl" : "ltr"}
-              initial={
-                reducedMotion
-                  ? {
-                      opacity: 0,
-                    }
-                  : {
-                      opacity: 0,
-                      y: -18,
-                      scale: 0.96,
-                    }
-              }
-              animate={{
-                opacity: 1,
-                y: 0,
-                scale: 1,
-              }}
-              exit={{
-                opacity: 0,
-                y: -14,
-                scale: 0.97,
-              }}
-              transition={{
-                duration: 0.3,
-                ease: [0.16, 1, 0.3, 1],
-              }}
-              className="fixed inset-x-3 top-[82px] z-[80] max-h-[calc(100dvh-96px)] overflow-y-auto overscroll-contain rounded-[1.8rem] border border-[#e4c570]/38 bg-[linear-gradient(155deg,rgba(4,58,41,0.995),rgba(1,24,17,0.995)_55%,rgba(1,13,9,0.998))] p-3 shadow-[0_34px_110px_rgba(0,0,0,0.76),0_0_46px_rgba(216,177,74,0.12)] sm:inset-x-5 sm:top-[96px]"
+              className="transition-opacity duration-300 data-[starting-style]:opacity-0 data-[ending-style]:opacity-0 motion-reduce:transition-none fixed inset-x-3 top-[82px] z-[80] max-h-[calc(100dvh-96px)] overflow-y-auto overscroll-contain rounded-[1.8rem] border border-[#e4c570]/38 bg-[linear-gradient(155deg,rgba(4,58,41,0.995),rgba(1,24,17,0.995)_55%,rgba(1,13,9,0.998))] p-3 shadow-[0_34px_110px_rgba(0,0,0,0.76),0_0_46px_rgba(216,177,74,0.12)] sm:inset-x-5 sm:top-[96px]"
             >
+              <Dialog.Close aria-label={isPersian ? "بستن منو" : "Close menu"} className="absolute end-5 top-5 z-10 grid size-10 place-items-center rounded-full border border-[#e4c570]/38 text-[#efd58c]">
+                <X className="size-5" />
+              </Dialog.Close>
               <div
                 aria-hidden="true"
                 className="pointer-events-none absolute inset-x-12 top-0 h-px bg-gradient-to-r from-transparent via-[#ffe39c]/80 to-transparent"
@@ -445,10 +390,9 @@ export function MobileSiteMenu() {
                   <LocaleSwitcher locale={locale} />
                 </div>
               </div>
-            </motion.aside>
-          </>
-        )}
-      </AnimatePresence>
+            </Dialog.Popup>
+      </Dialog.Portal>
     </div>
+    </Dialog.Root>
   );
 }

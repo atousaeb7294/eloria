@@ -254,9 +254,11 @@ export async function verifyOrderPayment(input: {
         attemptId: attempt.id,
       };
     }
-    await prisma.$transaction(async tx => {
-      await tx.paymentAttempt.update({
-        where: { id: attempt.id },
+    const cancelled = await prisma.$transaction(async tx => {
+      // The browser callback is untrusted and its initial snapshot can be stale.
+      // Never overwrite provider success or another worker's verification lease.
+      const changed = await tx.paymentAttempt.updateMany({
+        where: { id: attempt.id, status: { in: ["CREATED", "REDIRECTED"] } },
         data: {
           status: "CANCELLED",
           activeKey: null,
@@ -264,6 +266,7 @@ export async function verifyOrderPayment(input: {
           callbackPayload: json({ Status: input.gatewayStatus, Authority: input.authority }),
         },
       });
+      if (changed.count !== 1) return false;
       await tx.order.updateMany({
         where: {
           id: order.id,
@@ -280,14 +283,32 @@ export async function verifyOrderPayment(input: {
           payload: json({ authority: input.authority, status: input.gatewayStatus, attemptId: attempt.id }),
         },
       });
+      return true;
     });
+    if (!cancelled) {
+      const latest = await prisma.paymentAttempt.findUnique({ where: { id: attempt.id } });
+      if (latest?.status === "PAID" || latest?.status === "REQUIRES_REVIEW") {
+        return {
+          successful: true,
+          orderNumber: order.orderNumber,
+          referenceId: latest.gatewayReference ?? "",
+          requiresReview: latest.status === "REQUIRES_REVIEW",
+          orderId: order.id,
+          attemptId: attempt.id,
+        };
+      }
+      if (latest?.status === "PENDING_VERIFICATION") {
+        throw new PaymentServiceError("تأیید این پرداخت هم‌اکنون در حال پردازش است.");
+      }
+    }
     return { successful: false, orderNumber: order.orderNumber, referenceId: "", requiresReview: false, orderId: order.id, attemptId: attempt.id };
   }
 
   const claimed = await prisma.paymentAttempt.updateMany({
     where: {
       id: attempt.id,
-      status: { in: ["CREATED", "REDIRECTED", "PENDING_VERIFICATION"] },
+      // A failed browser redirect must not block later provider verification.
+      status: { in: ["CREATED", "REDIRECTED", "PENDING_VERIFICATION", "CANCELLED", "FAILED"] },
       OR: [
         { verificationLeaseExpiresAt: null },
         { verificationLeaseExpiresAt: { lt: now } },
@@ -337,7 +358,7 @@ export async function verifyOrderPayment(input: {
       const protocolReviewAt = new Date();
 
       await prisma.$transaction(async tx => {
-        await tx.paymentAttempt.updateMany({
+        const changed = await tx.paymentAttempt.updateMany({
           where: {
             id: attempt.id,
             status: "PENDING_VERIFICATION",
@@ -356,6 +377,7 @@ export async function verifyOrderPayment(input: {
           },
         });
 
+        if (changed.count !== 1) return;
         await tx.order.updateMany({
           where: {
             id: order.id,
@@ -414,7 +436,7 @@ export async function verifyOrderPayment(input: {
      */
     await prisma.$transaction(async tx => {
       await tx.paymentAttempt.updateMany({
-        where: { id: attempt.id, status: "PENDING_VERIFICATION" },
+        where: { id: attempt.id, status: "PENDING_VERIFICATION", verificationLeaseExpiresAt: leaseUntil },
         data: {
           status: "REDIRECTED",
           verificationLeaseExpiresAt: null,
@@ -572,22 +594,13 @@ export async function verifyOrderPayment(input: {
       const lockedOrder = await tx.order.findUnique({ where: { id: order.id } });
       if (!lockedOrder) throw new Error("سفارش برای ثبت وضعیت بررسی پیدا نشد.");
 
-      if (["PAID", "PROCESSING", "SHIPPED", "COMPLETED"].includes(lockedOrder.status)) {
-        await tx.paymentAttempt.update({
-          where: { id: attempt.id },
-          data: {
-            status: "PAID",
-            activeKey: null,
-            gatewayReference: verified.referenceId,
-            verificationPayload: paymentVerificationSnapshot(verified),
-            verifiedAt,
-            verificationLeaseExpiresAt: null,
-            errorMessage: null,
-          },
-        });
-        finalState = { requiresReview: false };
+      const lockedAttempt = await tx.paymentAttempt.findUnique({ where: { id: attempt.id } });
+      if (!lockedAttempt) throw new Error("تلاش پرداخت برای ثبت وضعیت بررسی پیدا نشد.");
+      if (lockedAttempt.status === "PAID" || lockedAttempt.status === "REQUIRES_REVIEW") {
+        finalState = { requiresReview: lockedAttempt.status === "REQUIRES_REVIEW" };
         return;
       }
+      const alreadyPaidByAnotherAttempt = Boolean(lockedOrder.paidAt) && TERMINAL_ORDER_STATUSES.has(lockedOrder.status);
 
       await tx.paymentAttempt.update({
         where: { id: attempt.id },
@@ -602,13 +615,15 @@ export async function verifyOrderPayment(input: {
         },
       });
 
-      await tx.order.update({
-        where: { id: order.id },
-        data: {
-          status: "PAYMENT_REVIEW",
-          paidAt: lockedOrder.paidAt ?? verifiedAt,
-        },
-      });
+      if (!alreadyPaidByAnotherAttempt) {
+        await tx.order.update({
+          where: { id: order.id },
+          data: {
+            status: "PAYMENT_REVIEW",
+            paidAt: lockedOrder.paidAt ?? verifiedAt,
+          },
+        });
+      }
 
       await tx.orderAuditEvent.create({
         data: {

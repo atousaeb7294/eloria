@@ -1,4 +1,5 @@
-import { savedWeightUnits } from "@/lib/weight-units";
+import { productMaterialKind, productMaterialLabel } from "@/lib/product-material";
+import { formatWeightSoot } from "@/lib/weight-units";
 import { LivePurchaseBox } from "@/components/live-purchase-box";
 import { BuyerReviews } from "@/components/buyer-reviews";
 import { canonicalProductStory } from "@/lib/canonical-product-story";
@@ -30,7 +31,7 @@ import { ProductVariantSelector } from "@/components/product-variant-selector";
 
 import { MagicArrowIcon, WorldRuneIcon } from "@/components/luxury-icons";
 
-import { GoldRuneIcon, SilverRuneIcon } from "@/components/material-rune-icons";
+import { GoldRuneIcon, SilverRuneIcon, WeaveRuneIcon, AllProductsRuneIcon } from "@/components/material-rune-icons";
 
 import {
   ProductPricingError,
@@ -121,6 +122,8 @@ async function loadProductPageRecord(slug: string) {
       mythNameFa: true,
       mythNameEn: true,
       material: true,
+      hasGold: true,
+      hasSilver: true,
       specifications: true,
       status: true,
       stock: true,
@@ -322,14 +325,7 @@ export async function generateMetadata({
     const productName = locale === "fa" ? product.nameFa : product.nameEn;
     const canonicalStoryMetadata = canonicalProductStory(product);
     const mythName = locale === "fa" ? canonicalStoryMetadata.mythNameFa : canonicalStoryMetadata.mythNameEn;
-    const materialName =
-      locale === "fa"
-        ? product.material === "GOLD"
-          ? "طلا"
-          : "نقره"
-        : product.material === "GOLD"
-          ? "Gold"
-          : "Silver";
+    const materialName = productMaterialLabel(product, locale);
     const title =
       locale === "fa"
         ? `${productName} ${materialName}${mythName ? `؛ افسانه ${mythName}` : ""}`
@@ -471,19 +467,13 @@ export default async function ProductPage({
       ) ?? null)
     : null;
 
-  const isGold = productRecord.material === "GOLD";
-
-  const MaterialIcon = isGold ? GoldRuneIcon : SilverRuneIcon;
-
-  const materialSlug = isGold ? "gold" : "silver";
-
-  const materialLabel = isGold
-    ? isPersian
-      ? "طلا"
-      : "Gold"
-    : isPersian
-      ? "نقره"
-      : "Silver";
+  const materialKind = productMaterialKind(productRecord);
+  const isGold = materialKind === "GOLD" || materialKind === "MIXED";
+  const MaterialIcon = materialKind === "WEAVE" ? WeaveRuneIcon
+    : materialKind === "MIXED" ? AllProductsRuneIcon
+    : isGold ? GoldRuneIcon : SilverRuneIcon;
+  const materialSlug = materialKind === "GOLD" ? "gold" : "silver";
+  const materialLabel = productMaterialLabel(productRecord, locale);
 
   const productName = isPersian ? productRecord.nameFa : productRecord.nameEn;
 
@@ -496,7 +486,11 @@ export default async function ProductPage({
     collectionNames[collectionSlug]?.[isPersian ? "fa" : "en"] ??
     collectionSlug;
 
-  const backHref = collection?.slug
+  const backHref = materialKind === "WEAVE"
+    ? `/${locale}/products?material=weave`
+    : materialKind === "MIXED"
+      ? `/${locale}/products`
+      : collection?.slug
     ? `/${locale}/collections/${collection.slug}/${materialSlug}`
     : `/${locale}/products`;
 
@@ -597,7 +591,8 @@ export default async function ProductPage({
   if (result) {
     try {
       const relatedCatalog = await getPricedProductsCatalog({
-        material: result.product.material,
+        material: materialKind === "WEAVE" || materialKind === "MIXED" ? undefined : result.product.material,
+        weaveOnly: materialKind === "WEAVE",
         availability: "AVAILABLE",
         page: 1,
         pageSize: 32,
@@ -832,14 +827,13 @@ export default async function ProductPage({
                   titleEn: variant.titleEn,
                   stock: variant.stock,
                   metalWeight: variant.metalWeight?.toString() ?? null,
-                  weightUnit: savedWeightUnits(variant.attributes).metalWeight,
-                  purity: variant.purity,
+                  purity: materialKind === "WEAVE" ? null : variant.purity,
                 }))}
                 activeVariantId={selectedVariantId}
                 isGold={isGold}
               />
 
-              <LivePurchaseBox key={`${productRecord.slug}:${selectedVariantId ?? "base"}`} locale={locale} slug={productRecord.slug} variantId={selectedVariantId} initial={result} weightUnits={{ ...savedWeightUnits(productRecord.specifications), metalWeight: selectedVariant?.metalWeight != null ? savedWeightUnits(selectedVariant.attributes).metalWeight : savedWeightUnits(productRecord.specifications).metalWeight }} />
+              <LivePurchaseBox key={`${productRecord.slug}:${selectedVariantId ?? "base"}`} locale={locale} slug={productRecord.slug} variantId={selectedVariantId} initial={result} />
               <div className="mt-5">
                 <ProductWatchButton locale={locale} slug={productRecord.slug} />
                 <ProductShareActions
@@ -868,7 +862,7 @@ export default async function ProductPage({
                     value={materialLabel}
                   />
 
-                  <SpecificationItem
+                  {materialKind !== "WEAVE" && <SpecificationItem
                     icon={<Gem className="h-5 w-5" />}
                     label={isPersian ? "عیار" : "Purity"}
                     value={
@@ -877,6 +871,12 @@ export default async function ProductPage({
                         ? formatDecimal(purityFineness, locale)
                         : "—")
                     }
+                  />}
+
+                  <SpecificationItem
+                    icon={<PackageCheck className="h-5 w-5" />}
+                    label={isPersian ? "وزن محصول" : "Product weight"}
+                    value={weight ? formatWeightSoot(String(weight), locale) : "—"}
                   />
 
                   <SpecificationItem

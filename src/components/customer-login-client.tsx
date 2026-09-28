@@ -7,6 +7,7 @@ import { KeyRound, LoaderCircle, Phone, ShieldCheck, UserRound } from "lucide-re
 import { TurnstileWidget, type TurnstileState } from "@/components/turnstile-widget";
 import type { CustomerAuthChannelAvailability } from "@/lib/customer-auth-channels";
 import { readTreasury } from "@/lib/treasury-storage";
+import { normalizeOtpInput } from "@/lib/otp-input";
 
 type AuthMode = "PASSWORD" | "OTP" | "SIGNUP" | "RESET";
 type PasswordOtpPurpose = "SIGNUP" | "PASSWORD_RESET";
@@ -56,6 +57,7 @@ export function CustomerLoginClient({
   }, []);
 
   function resetFlow(nextMode: AuthMode) {
+    if (loading) return;
     setMode(nextMode);
     setChallengeId(null);
     setCode("");
@@ -92,6 +94,7 @@ export function CustomerLoginClient({
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ slugs: localFavorites }),
+        signal: AbortSignal.timeout(5000),
       }).catch(() => undefined);
     }
 
@@ -225,20 +228,20 @@ export function CustomerLoginClient({
 
             {mode === "PASSWORD" ? (
               <form onSubmit={loginWithPassword} className="mt-6 space-y-4">
-                <label className="block text-xs text-[#d9c79e]/65">{fa ? "شماره موبایل" : "Mobile number"}</label>
-                <div className="relative"><Phone className="absolute start-4 top-1/2 h-4 w-4 -translate-y-1/2 text-[#d7bd72]/50" /><input value={mobile} onChange={event => setMobile(event.target.value)} inputMode="tel" autoComplete="tel" placeholder="09121234567" required className={fieldClass + " ps-11"} /></div>
-                <label className="block text-xs text-[#d9c79e]/65">{fa ? "رمز عبور" : "Password"}</label>
-                <input value={password} onChange={event => setPassword(event.target.value)} type="password" dir="ltr" autoComplete="current-password" minLength={8} maxLength={128} required className={passwordFieldClass} placeholder={fa ? "حداقل ۸ نویسه" : "At least 8 characters"} />
+                <label htmlFor="customer-mobile" className="block text-xs text-[#d9c79e]/65">{fa ? "شماره موبایل" : "Mobile number"}</label>
+                <div className="relative"><Phone className="absolute start-4 top-1/2 h-4 w-4 -translate-y-1/2 text-[#d7bd72]/50" /><input id="customer-mobile" value={mobile} onChange={event => setMobile(event.target.value)} inputMode="tel" autoComplete="tel" placeholder="09121234567" required className={fieldClass + " ps-11"} /></div>
+                <label htmlFor="customer-password" className="block text-xs text-[#d9c79e]/65">{fa ? "رمز عبور" : "Password"}</label>
+                <input id="customer-password" value={password} onChange={event => setPassword(event.target.value)} type="password" dir="ltr" autoComplete="current-password" minLength={8} maxLength={128} required className={passwordFieldClass} placeholder={fa ? "حداقل ۸ نویسه" : "At least 8 characters"} />
                 <TurnstileWidget key={turnstileAction + "-" + turnstileGeneration} locale={locale} action={turnstileAction} onTokenChange={onTokenChange} onStateChange={setTurnstileState} />
                 {!securityCheckComplete ? <p className="text-center text-[11px] leading-6 text-[#bcae8d]/45">{fa ? "پس از تکمیل بررسی امنیتی، ورود فعال می‌شود." : "Complete the security check to continue."}</p> : null}
                 <button disabled={loading || !securityCheckComplete} className="flex h-13 w-full items-center justify-center gap-2 rounded-2xl border border-[#e3c873]/30 bg-[#143c2d] text-sm text-[#efd991] disabled:opacity-50">{loading ? <LoaderCircle className="h-4 w-4 animate-spin" /> : <KeyRound className="h-4 w-4" />}{fa ? "ورود به حساب" : "Sign in"}</button>
               </form>
             ) : (
               <form onSubmit={requestCode} className="mt-6 space-y-4">
-                {mode === "SIGNUP" ? <><label className="block text-xs text-[#d9c79e]/65">{fa ? "نام و نام خانوادگی" : "Full name"}</label><div className="relative"><UserRound className="absolute start-4 top-1/2 h-4 w-4 -translate-y-1/2 text-[#d7bd72]/50" /><input value={fullName} onChange={event => setFullName(event.target.value)} autoComplete="name" required className={fieldClass + " ps-11"} placeholder={fa ? "نام شما" : "Your name"} /></div></> : null}
-                <label className="block text-xs text-[#d9c79e]/65">{fa ? "شماره موبایل" : "Mobile number"}</label>
-                <div className="relative"><Phone className="absolute start-4 top-1/2 h-4 w-4 -translate-y-1/2 text-[#d7bd72]/50" /><input value={mobile} onChange={event => setMobile(event.target.value)} inputMode="tel" autoComplete="tel" placeholder="09121234567" required className={fieldClass + " ps-11"} /></div>
-                {mode === "SIGNUP" || mode === "RESET" ? <><label className="block text-xs text-[#d9c79e]/65">{fa ? "رمز عبور جدید" : "New password"}</label><input value={password} onChange={event => setPassword(event.target.value)} type="password" dir="ltr" autoComplete="new-password" minLength={8} maxLength={128} required className={passwordFieldClass} placeholder={fa ? "حداقل ۸ نویسه" : "At least 8 characters"} /><label className="block text-xs text-[#d9c79e]/65">{fa ? "تکرار رمز عبور" : "Confirm password"}</label><input value={confirmPassword} onChange={event => setConfirmPassword(event.target.value)} type="password" dir="ltr" autoComplete="new-password" minLength={8} maxLength={128} required className={passwordFieldClass} /></> : null}
+                {mode === "SIGNUP" ? <><label htmlFor="customer-name" className="block text-xs text-[#d9c79e]/65">{fa ? "نام و نام خانوادگی" : "Full name"}</label><div className="relative"><UserRound className="absolute start-4 top-1/2 h-4 w-4 -translate-y-1/2 text-[#d7bd72]/50" /><input id="customer-name" value={fullName} onChange={event => setFullName(event.target.value)} autoComplete="name" required className={fieldClass + " ps-11"} placeholder={fa ? "نام شما" : "Your name"} /></div></> : null}
+                <label htmlFor="customer-mobile" className="block text-xs text-[#d9c79e]/65">{fa ? "شماره موبایل" : "Mobile number"}</label>
+                <div className="relative"><Phone className="absolute start-4 top-1/2 h-4 w-4 -translate-y-1/2 text-[#d7bd72]/50" /><input id="customer-mobile" value={mobile} onChange={event => setMobile(event.target.value)} inputMode="tel" autoComplete="tel" placeholder="09121234567" required className={fieldClass + " ps-11"} /></div>
+                {mode === "SIGNUP" || mode === "RESET" ? <><label htmlFor="customer-password" className="block text-xs text-[#d9c79e]/65">{fa ? "رمز عبور جدید" : "New password"}</label><input id="customer-password" value={password} onChange={event => setPassword(event.target.value)} type="password" dir="ltr" autoComplete="new-password" minLength={8} maxLength={128} required className={passwordFieldClass} placeholder={fa ? "حداقل ۸ نویسه" : "At least 8 characters"} /><label htmlFor="customer-confirm" className="block text-xs text-[#d9c79e]/65">{fa ? "تکرار رمز عبور" : "Confirm password"}</label><input id="customer-confirm" value={confirmPassword} onChange={event => setConfirmPassword(event.target.value)} type="password" dir="ltr" autoComplete="new-password" minLength={8} maxLength={128} required className={passwordFieldClass} /></> : null}
                 <TurnstileWidget key={turnstileAction + "-" + turnstileGeneration} locale={locale} action={turnstileAction} onTokenChange={onTokenChange} onStateChange={setTurnstileState} />
                 {!securityCheckComplete ? <p className="text-center text-[11px] leading-6 text-[#bcae8d]/45">{fa ? "پس از تکمیل بررسی امنیتی، ارسال کد فعال می‌شود." : "Complete the security check to send the code."}</p> : null}
                 <button disabled={loading || !channelAvailability.smsEnabled || !securityCheckComplete} className="flex h-13 w-full items-center justify-center gap-2 rounded-2xl border border-[#e3c873]/30 bg-[#143c2d] text-sm text-[#efd991] disabled:opacity-50">{loading ? <LoaderCircle className="h-4 w-4 animate-spin" /> : <Phone className="h-4 w-4" />}{mode === "OTP" ? (fa ? "دریافت کد ورود" : "Send login code") : mode === "SIGNUP" ? (fa ? "دریافت کد عضویت" : "Send sign-up code") : (fa ? "دریافت کد بازیابی" : "Send recovery code")}</button>
@@ -255,15 +258,15 @@ export function CustomerLoginClient({
         ) : (
           <form onSubmit={verifyCode} className="mt-8 space-y-4">
             <div className="rounded-2xl border border-[#d8b967]/10 bg-black/15 p-4"><p className="text-xs text-[#d8c59a]/55">{fa ? "کد به این شماره ارسال شد:" : "Code sent to this mobile number:"}</p><p dir="ltr" className="mt-2 text-sm text-[#efd991]">{mobile}</p></div>
-            <label className="block text-xs text-[#d9c79e]/65">{fa ? "کد ۶ رقمی" : "6-digit code"}</label>
-            <input value={code} onChange={event => setCode(event.target.value.replace(/\D/g, "").slice(0, 6))} inputMode="numeric" autoComplete="one-time-code" placeholder="000000" required className="h-14 w-full rounded-2xl border border-[#d8b967]/14 bg-black/20 px-4 text-center font-mono text-xl tracking-[.35em] text-[#f1e5c9] outline-none focus:border-[#e2c779]/40" />
+            <label htmlFor="customer-code" className="block text-xs text-[#d9c79e]/65">{fa ? "کد ۶ رقمی" : "6-digit code"}</label>
+            <input id="customer-code" value={code} onChange={event => setCode(normalizeOtpInput(event.target.value))} inputMode="numeric" autoComplete="one-time-code" placeholder="000000" required className="h-14 w-full rounded-2xl border border-[#d8b967]/14 bg-black/20 px-4 text-center font-mono text-xl tracking-[.35em] text-[#f1e5c9] outline-none focus:border-[#e2c779]/40" />
             {devCode ? <p className="rounded-xl border border-amber-300/15 bg-amber-300/[.05] p-3 text-xs text-amber-100/70">DEV OTP: {devCode}</p> : null}
             <button disabled={loading || code.length !== 6} className="flex h-13 w-full items-center justify-center gap-2 rounded-2xl border border-[#e3c873]/30 bg-[#143c2d] text-sm text-[#efd991] disabled:opacity-50">{loading ? <LoaderCircle className="h-4 w-4 animate-spin" /> : <ShieldCheck className="h-4 w-4" />}{mode === "OTP" ? (fa ? "ورود به حساب" : "Sign in") : mode === "SIGNUP" ? (fa ? "تکمیل عضویت" : "Complete sign-up") : (fa ? "تنظیم رمز جدید" : "Set new password")}</button>
             <button type="button" onClick={() => resetFlow(mode)} className="w-full py-2 text-xs text-[#c5b58f]/55">{fa ? "بازگشت و اصلاح اطلاعات" : "Go back and edit details"}</button>
           </form>
         )}
 
-        {message ? <p className="mt-5 rounded-xl border border-[#d8b967]/10 bg-black/15 p-3 text-xs leading-6 text-[#ded0ad]/75">{message}</p> : null}
+        {message ? <p role="status" className="mt-5 rounded-xl border border-[#d8b967]/10 bg-black/15 p-3 text-xs leading-6 text-[#ded0ad]/75">{message}</p> : null}
       </div>
     </section>
   );

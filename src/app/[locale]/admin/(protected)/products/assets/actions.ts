@@ -15,6 +15,10 @@ import {
 } from "@/lib/product-media-storage";
 import { prisma } from "@/lib/prisma";
 import { syncProductInventory } from "@/lib/inventory";
+import {
+  deleteProductGalleryImage,
+  withProductMediaLock,
+} from "@/lib/product-media-mutations";
 
 type Locale = "fa" | "en";
 const MAX_UPLOAD_COUNT = 8;
@@ -132,26 +136,6 @@ function messageUrl(
 ) {
   return `/${locale}/admin/products/${productId}?${key}=${encodeURIComponent(value)}`;
 }
-async function promote(productId: string) {
-  if (
-    await prisma.productImage.findFirst({
-      where: { productId, isPrimary: true },
-      select: { id: true },
-    })
-  )
-    return;
-  const first = await prisma.productImage.findFirst({
-    where: { productId },
-    orderBy: [{ displayOrder: "asc" }, { createdAt: "asc" }],
-    select: { id: true },
-  });
-  if (first)
-    await prisma.productImage.update({
-      where: { id: first.id },
-      data: { isPrimary: true },
-    });
-}
-
 export async function uploadAdminProductImagesAction(
   productId: string,
   localeValue: string,
@@ -176,14 +160,14 @@ export async function uploadAdminProductImagesAction(
         "حداکثر ۸ تصویر در هر بار مجاز است.",
       ),
     );
-  const existing = await prisma.productImage.count({ where: { productId } });
   const urls: string[] = [];
   try {
     for (const file of files)
       urls.push(await storeProductImage(productId, file));
-    await prisma.$transaction(
-      urls.map((imageUrl, index) =>
-        prisma.productImage.create({
+    await withProductMediaLock(productId, async (tx) => {
+      const existing = await tx.productImage.count({ where: { productId } });
+      for (const [index, imageUrl] of urls.entries())
+        await tx.productImage.create({
           data: {
             productId,
             imageUrl,
@@ -192,9 +176,8 @@ export async function uploadAdminProductImagesAction(
             isPrimary: existing === 0 && index === 0,
             displayOrder: existing + index,
           },
-        }),
-      ),
-    );
+        });
+    });
   } catch (error) {
     await Promise.all(urls.map(removeStoredProductImage));
     redirect(
@@ -225,9 +208,7 @@ export async function uploadAdminProductImageFileAction(
       throw new AdminProductAssetError("یک تصویر انتخاب کنید.");
     }
     storedUrl = await storeProductImage(productId, file);
-    await prisma.$transaction(async (tx) => {
-      // Concurrent admin tabs must not create two primary images.
-      await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${`product-media:${productId}`}))`;
+    await withProductMediaLock(productId, async (tx) => {
       const count = await tx.productImage.count({ where: { productId } });
       await tx.productImage.create({
         data: {
@@ -274,16 +255,18 @@ export async function addAdminProductImageUrlAction(
       ),
     );
   }
-  const count = await prisma.productImage.count({ where: { productId } });
-  await prisma.productImage.create({
-    data: {
-      productId,
-      imageUrl,
-      altFa: text(form, "altFa", 240) ?? item.nameFa,
-      altEn: text(form, "altEn", 240) ?? item.nameEn,
-      isPrimary: count === 0,
-      displayOrder: count,
-    },
+  await withProductMediaLock(productId, async (tx) => {
+    const count = await tx.productImage.count({ where: { productId } });
+    await tx.productImage.create({
+      data: {
+        productId,
+        imageUrl,
+        altFa: text(form, "altFa", 240) ?? item.nameFa,
+        altEn: text(form, "altEn", 240) ?? item.nameEn,
+        isPrimary: count === 0,
+        displayOrder: count,
+      },
+    });
   });
   refresh(productId, item.slug);
   redirect(messageUrl(locale, productId, "mediaSaved"));
@@ -298,13 +281,12 @@ export async function updateAdminProductImageAction(
   await session();
   const locale = localeOf(localeValue);
   const item = await product(productId);
-  const image = await prisma.productImage.findFirst({
-    where: { id: imageId, productId },
-  });
-  if (!image)
-    redirect(messageUrl(locale, productId, "mediaError", "تصویر پیدا نشد."));
-  const primary = form.get("isPrimary") === "on";
-  await prisma.$transaction(async (tx) => {
+  const updated = await withProductMediaLock(productId, async (tx) => {
+    const image = await tx.productImage.findFirst({
+      where: { id: imageId, productId },
+    });
+    if (!image) return false;
+    const primary = form.get("isPrimary") === "on";
     if (primary)
       await tx.productImage.updateMany({
         where: { productId },
@@ -325,7 +307,10 @@ export async function updateAdminProductImageAction(
         isPrimary: primary ? true : image.isPrimary,
       },
     });
+    return true;
   });
+  if (!updated)
+    redirect(messageUrl(locale, productId, "mediaError", "تصویر پیدا نشد."));
   refresh(productId, item.slug);
   redirect(messageUrl(locale, productId, "mediaSaved"));
 }
@@ -338,14 +323,10 @@ export async function deleteAdminProductImageAction(
   await session();
   const locale = localeOf(localeValue);
   const item = await product(productId);
-  const image = await prisma.productImage.findFirst({
-    where: { id: imageId, productId },
-  });
+  const image = await deleteProductGalleryImage(productId, imageId);
   if (!image)
     redirect(messageUrl(locale, productId, "mediaError", "تصویر پیدا نشد."));
-  await prisma.productImage.delete({ where: { id: imageId } });
-  await removeStoredProductImage(image.imageUrl);
-  await promote(productId);
+  if (image.removeAsset) await removeStoredProductImage(image.imageUrl);
   refresh(productId, item.slug);
   redirect(messageUrl(locale, productId, "mediaSaved"));
 }
@@ -365,11 +346,22 @@ export async function setAdminProductLegendImageAction(
   const locale = localeOf(localeValue);
   const item = await product(productId);
   const imageId = text(form, "imageId", 80, true)!;
-  const image = await prisma.productImage.findFirst({
-    where: { id: imageId, productId },
-    select: { imageUrl: true },
+  const selected = await withProductMediaLock(productId, async (tx) => {
+    const image = await tx.productImage.findFirst({
+      where: { id: imageId, productId },
+      select: { imageUrl: true },
+    });
+    if (!image) return false;
+    await tx.product.update({
+      where: { id: productId },
+      data:
+        assetKind === "character"
+          ? { characterImageUrl: image.imageUrl }
+          : { worldSceneImageUrl: image.imageUrl },
+    });
+    return true;
   });
-  if (!image)
+  if (!selected)
     redirect(
       messageUrl(
         locale,
@@ -379,13 +371,6 @@ export async function setAdminProductLegendImageAction(
       ),
     );
 
-  await prisma.product.update({
-    where: { id: productId },
-    data:
-      assetKind === "character"
-        ? { characterImageUrl: image.imageUrl }
-        : { worldSceneImageUrl: image.imageUrl },
-  });
   refresh(productId, item.slug);
   redirect(messageUrl(locale, productId, "legendMediaSaved"));
 }

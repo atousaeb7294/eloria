@@ -320,7 +320,7 @@ export function SiteHeader({ locale }: SiteHeaderProps) {
                         ? "نمایش منوی گنجینه‌ها"
                         : "Open collections menu"
                     }
-                    aria-haspopup="menu"
+                    aria-controls="eloria-collections-navigation"
                     aria-expanded={worldOpen}
                     onClick={() => {
                       setWorldOpen((current) => !current);
@@ -353,7 +353,7 @@ export function SiteHeader({ locale }: SiteHeaderProps) {
                 <AnimatePresence>
                   {worldOpen && (
                     <motion.div
-                      role="menu"
+                      id="eloria-collections-navigation"
                       initial={
                         reducedMotion
                           ? {

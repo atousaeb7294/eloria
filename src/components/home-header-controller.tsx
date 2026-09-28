@@ -265,7 +265,7 @@ export function HomeHeaderController({ locale }: HomeHeaderControllerProps) {
         current === shouldUseStoryHeader ? current : shouldUseStoryHeader,
       );
 
-      if (shouldShowFullHeader) {
+      if (shouldShowFullHeader && !shouldUseStoryHeader) {
         setMenuOpen(false);
       }
     };

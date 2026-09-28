@@ -32,6 +32,7 @@ export type ProductPricingErrorCode =
   | "INVALID_PRODUCT_WEIGHT"
   | "INVALID_PRODUCT_PURITY"
   | "MANUAL_PRICE_NOT_FOUND"
+  | "INVALID_PRODUCT_COMPOSITION"
   | "UNSUPPORTED_CURRENCY";
 
 export class ProductPricingError extends Error {
@@ -623,29 +624,7 @@ export async function getProductLivePrice({
     );
   }
 
-  const {
-    policy,
-    metalPrice,
-  } =
-    await (allowStaleRate ? getPricingReference(product.material as MaterialType) : withDatabaseRetry(() => loadPricingReference(product.material as MaterialType)));
-
-  if (!policy) {
-    throw new ProductPricingError(
-      "PRICING_POLICY_NOT_FOUND",
-      "سیاست قیمت‌گذاری این محصول تنظیم نشده است.",
-      503,
-    );
-  }
-
-  const now =
-    new Date();
-
-  const expiresAt =
-    new Date(
-      now.getTime() +
-        policy.quoteTtlSeconds *
-          1000,
-    );
+  const now = new Date();
 
   const productWeight =
     variant?.metalWeight ??
@@ -756,34 +735,6 @@ export async function getProductLivePrice({
         }
       : null;
 
-  const policyOutput = {
-    defaultProfitPercent:
-      product.material === "GOLD" ? "7" : "0",
-
-    defaultTaxPercent: "0",
-
-    taxMetalValue:
-      false,
-
-    quoteTtlSeconds:
-      policy.quoteTtlSeconds,
-
-    staleAfterMinutes:
-      policy.staleAfterMinutes,
-
-    closedMarketPricingEnabled:
-      policy.closedMarketPricingEnabled,
-
-    closedMarketMaxAgeMinutes:
-      policy.closedMarketMaxAgeMinutes,
-
-    closedMarketSafetyMarginPercent:
-      policy.closedMarketSafetyMarginPercent.toString(),
-
-    roundingStep:
-      1,
-  };
-
   /*
    * قیمت‌گذاری دستی فقط برای موارد استثنایی است.
    * محصولات معمولی الوریا باید روی DYNAMIC باشند.
@@ -831,18 +782,78 @@ export async function getProductLivePrice({
       liveRate:
         null,
 
-      policy:
-        policyOutput,
+      policy: {
+        defaultProfitPercent: "0", defaultTaxPercent: "0", taxMetalValue: false,
+        quoteTtlSeconds: 120, staleAfterMinutes: 0, closedMarketPricingEnabled: false,
+        closedMarketMaxAgeMinutes: 0, closedMarketSafetyMarginPercent: "0", roundingStep: 1,
+      },
 
       quote: {
         generatedAt:
           now.toISOString(),
 
         expiresAt:
-          expiresAt.toISOString(),
+          new Date(now.getTime() + 120_000).toISOString(),
       },
     };
   }
+
+  if (!product.hasGold && !product.hasSilver) {
+    throw new ProductPricingError("INVALID_PRODUCT_COMPOSITION", "برای بافت بدون فلز قیمت ثابت ثبت کنید.", 503);
+  }
+  if ((product.material === "GOLD" && !product.hasGold) ||
+      (product.material === "SILVER" && !product.hasSilver)) {
+    throw new ProductPricingError("INVALID_PRODUCT_COMPOSITION", "فلز مبنای قیمت‌گذاری با ترکیب محصول یکسان نیست.", 503);
+  }
+
+  const {
+    policy,
+    metalPrice,
+  } =
+    await (allowStaleRate ? getPricingReference(product.material as MaterialType) : withDatabaseRetry(() => loadPricingReference(product.material as MaterialType)));
+
+  if (!policy) {
+    throw new ProductPricingError(
+      "PRICING_POLICY_NOT_FOUND",
+      "سیاست قیمت‌گذاری این محصول تنظیم نشده است.",
+      503,
+    );
+  }
+
+  const expiresAt =
+    new Date(
+      now.getTime() +
+        policy.quoteTtlSeconds *
+          1000,
+    );
+
+  const policyOutput = {
+    defaultProfitPercent:
+      product.material === "GOLD" ? "7" : "0",
+
+    defaultTaxPercent: "0",
+
+    taxMetalValue:
+      false,
+
+    quoteTtlSeconds:
+      policy.quoteTtlSeconds,
+
+    staleAfterMinutes:
+      policy.staleAfterMinutes,
+
+    closedMarketPricingEnabled:
+      policy.closedMarketPricingEnabled,
+
+    closedMarketMaxAgeMinutes:
+      policy.closedMarketMaxAgeMinutes,
+
+    closedMarketSafetyMarginPercent:
+      policy.closedMarketSafetyMarginPercent.toString(),
+
+    roundingStep:
+      1,
+  };
 
   if (
     product.currency !==

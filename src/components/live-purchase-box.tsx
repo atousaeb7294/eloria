@@ -1,9 +1,8 @@
 "use client";
-import { formatStoredWeight, type WeightUnits } from "@/lib/weight-units";
 
+import { formatWeightSoot } from "@/lib/weight-units";
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { RawGoldPrice } from "@/components/raw-gold-price";
 import { AddToCartButton } from "@/components/add-to-cart-button";
 import type { ProductPriceResult } from "@/lib/product-pricing";
 
@@ -14,9 +13,7 @@ export function LivePurchaseBox({
   slug,
   variantId,
   initial = null,
-  weightUnits,
 }: {
-  weightUnits?: WeightUnits;
   locale: string;
   slug: string;
   variantId?: string | null;
@@ -118,7 +115,15 @@ export function LivePurchaseBox({
               : "Checking"}
         </span>
       </div>
-      <RawGoldPrice locale={locale} />
+      {quote?.liveRate && (
+        <div className="eloria-raw-gold">
+          <span>{quote.liveRate.material === "GOLD"
+            ? fa ? "نرخ خام هر گرم طلا" : "Live raw gold rate / g"
+            : fa ? "نرخ خام هر گرم نقره" : "Live raw silver rate / g"}</span>
+          <strong>{Number(quote.liveRate.originalPricePerGramToman).toLocaleString(fa ? "fa-IR" : "en-US", { maximumFractionDigits: 0 })} {fa ? "تومان" : "toman"}</strong>
+          <small>{fa ? "نرخ مبنای همین بررسی قیمت" : "Source rate for this quote"}</small>
+        </div>
+      )}
       {quote ? (
         <>
           <p className="mt-4 text-xs opacity-75">
@@ -134,7 +139,7 @@ export function LivePurchaseBox({
                 <dt>{fa ? "وزن محصول" : "Product weight"}</dt>
                 <dd>
                   {weight !== null && weight !== undefined
-                    ? formatStoredWeight(weight, weightUnits?.metalWeight ?? "gram", locale)
+                    ? formatWeightSoot(String(weight), locale)
                     : fa
                       ? "ثبت نشده"
                       : "Not specified"}
@@ -157,7 +162,7 @@ export function LivePurchaseBox({
                           : "Silver weight"}
                     </dt>
                     <dd>
-                      {formatStoredWeight(part.weightGrams, (part.material === "GOLD" ? weightUnits?.goldComponentWeight : weightUnits?.silverComponentWeight) ?? "gram", locale)}
+                      {formatWeightSoot(String(part.weightGrams), locale)}
                     </dd>
                   </div>
                 ))}

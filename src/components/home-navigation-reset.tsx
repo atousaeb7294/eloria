@@ -17,6 +17,8 @@ export function HomeNavigationReset() {
     const isHome = () => /^\/(?:fa|en)?\/?$/.test(window.location.pathname);
     const reset = () => {
       if (!isHome()) return;
+      const hash = window.location.hash;
+      if (hash && hash !== "#hero" && hash !== "#promenade-intro") return;
       window.scrollTo({ top: 0, left: 0, behavior: "instant" });
       window.dispatchEvent(new Event("eloria:reset-home"));
     };

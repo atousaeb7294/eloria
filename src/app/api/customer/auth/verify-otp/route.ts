@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import {
   consumeCustomerOtp,
+  CustomerAuthError,
+  isCustomerChallengeId,
   createCustomerSession,
   setCustomerSessionCookie,
 } from "@/lib/customer-auth";
@@ -90,6 +92,7 @@ export async function POST(request: NextRequest) {
   if (
     (body.channel !== undefined && body.channel !== "SMS") ||
     typeof body.challengeId !== "string" ||
+    !isCustomerChallengeId(body.challengeId) ||
     typeof body.mobile !== "string" ||
     typeof body.code !== "string"
   ) {
@@ -138,7 +141,7 @@ export async function POST(request: NextRequest) {
     });
     return response;
   } catch (error) {
-    const message = error instanceof Error ? error.message : "ورود ناموفق بود.";
+    const message = error instanceof CustomerAuthError ? error.message : "ورود ناموفق بود.";
     const inactive = message === "این حساب کاربری غیرفعال است.";
     await recordSecurityEvent({
       eventType: inactive ? "CUSTOMER_INACTIVE_ACCOUNT_LOGIN_BLOCKED" : "CUSTOMER_OTP_VERIFY_FAILED",

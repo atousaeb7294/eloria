@@ -1,3 +1,4 @@
+import { productMaterialKind, productMaterialLabel } from "@/lib/product-material";
 import Image from "next/image";
 import { TreasuryLink as Link } from "@/components/treasury-transition";
 
@@ -16,6 +17,8 @@ import {
 import {
   GoldRuneIcon,
   SilverRuneIcon,
+  WeaveRuneIcon,
+  AllProductsRuneIcon,
 } from "@/components/material-rune-icons";
 
 import type {
@@ -51,7 +54,8 @@ export function CatalogProductCard({
   showCollection = true,
 }: CatalogProductCardProps) {
   const isPersian = locale === "fa";
-  const isGold = product.material === "GOLD";
+  const materialKind = productMaterialKind(product);
+  const isGold = materialKind === "GOLD" || materialKind === "MIXED";
   const href = `/${locale}/products/${product.slug}`;
 
   const productName = isPersian
@@ -62,13 +66,7 @@ export function CatalogProductCard({
     ? product.image?.altFa ?? product.nameFa
     : product.image?.altEn ?? product.nameEn;
 
-  const materialLabel = isGold
-    ? isPersian
-      ? "طلا"
-      : "Gold"
-    : isPersian
-      ? "نقره"
-      : "Silver";
+  const materialLabel = productMaterialLabel(product, locale);
 
   const collectionName =
     collectionNames[product.collectionSlug]?.[
@@ -80,9 +78,9 @@ export function CatalogProductCard({
     fallbackImages[product.collectionSlug] ??
     "/images/collections/necklaces.webp";
 
-  const MaterialIcon = isGold
-    ? GoldRuneIcon
-    : SilverRuneIcon;
+  const MaterialIcon = materialKind === "WEAVE" ? WeaveRuneIcon
+    : materialKind === "MIXED" ? AllProductsRuneIcon
+    : isGold ? GoldRuneIcon : SilverRuneIcon;
 
   return (
     <InteractiveTiltCard className="group rounded-[1.75rem] sm:rounded-[2rem]">

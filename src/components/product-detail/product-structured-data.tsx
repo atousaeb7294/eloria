@@ -1,3 +1,5 @@
+import { DELIVERY_TOMAN } from "@/lib/commerce-policy";
+
 type Locale = "fa" | "en";
 
 type ProductStructuredDataProps = {
@@ -124,7 +126,7 @@ export function ProductStructuredData({
         "@type": "OfferShippingDetails",
         shippingRate: {
           "@type": "MonetaryAmount",
-          value: "0",
+          value: (DELIVERY_TOMAN * 10n).toString(),
           currency: "IRR",
         },
         shippingDestination: {

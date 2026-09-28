@@ -1,0 +1,37 @@
+Eloria story / product cards / price display / admin media
+Date: 2026-09-23
+
+PASS: npm ci (locked dependencies; no production dependency changes)
+PASS: prisma generate (placeholder connection URL; no database mutation)
+PASS: npm run typecheck
+PASS: npm run lint (full project)
+PASS: npm run build (placeholder DATABASE_URL/DIRECT_URL and https://eloria.example site URL)
+      Build completed. Expected unreachable-database warnings from unrelated catalog/journal fallbacks.
+PASS: scripts/test-treasury-story.ts
+      600+ frame samples; opaque coverage; one stable chapter at each stop;
+      at most two rendered transition chapters; gesture inertia and reversal.
+PASS: isolated happy-dom controller simulation (scratch QA harness)
+      forward, reverse, direction change during motion, direct chapter selection,
+      footer handoff, native-scroll settling, input/modal exclusion, cleanup,
+      no animation loop left at rest. This is NOT a rendering/performance browser benchmark.
+PASS: scripts/test-treasury-media.ts
+      real JPEG decoding/re-encoding; file size/type rejection; missing storage;
+      simulated Supabase request contract; deletion path guard;
+      component percentages 8% / 7%; final amount and packaging calculation unchanged.
+PASS: scripts/test-treasury-pricing.ts (catalog and detail mixed-metal parity)
+PASS: scripts/test-pricing-engine.ts (5 existing calculation tests)
+PASS: package manifest hashes and ZIP integrity (checked during packaging)
+
+NOT RUN: live Parspack database access, authenticated admin upload, real storage write,
+         payment, visual browser test on the project, device frame-rate measurement.
+Cloud browser rejects the local application URL with ERR_BLOCKED_BY_CLIENT.
+A local HTTP attempt could not complete in this runtime (network interface syscall restriction).
+The separate Chrome test config and story/thumbnail tests are supplied for local execution:
+  npx playwright test --config=playwright.treasury.config.ts
+These browser tests have NOT been run here; their screenshots are not a supplied proof of visual QA.
+
+References: Porsche public page and initial viewport inspected. The Van Cleef interactive
+page remained blank in the available browser. No pixel-exact parity claim is made.
+
+No .env file, live credentials, database rows or GitHub repository were changed.
+No migration or seed is required by this update.

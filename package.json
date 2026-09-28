@@ -33,7 +33,7 @@
     "verify:release": "node scripts/verify-final-release.mjs",
     "db:seed": "prisma db seed",
     "test:e2e": "node scripts/run-e2e.mjs",
-    "verify:ci": "npm run typecheck && npm run lint && npm run test:tokens && npm run test:pricing && npm run test:commerce && npm run test:payments && npm run test:admin-hardening && npm run test:supply-chain && npm run test:customer && npm run test:customer-password && npm run test:shipping && npm run test:security-alerts && npm run test:hardening && npm run test:autopilot && npm run audit:dependencies && npm run build && npm run test:e2e && npm run audit:security && npm run audit:quality",
+    "verify:ci": "npm run typecheck && npm run lint && npm run test:audit-regressions && npm run test:tokens && npm run test:pricing && npm run test:commerce && npm run test:payments && npm run test:admin-hardening && npm run test:supply-chain && npm run test:customer && npm run test:customer-password && npm run test:shipping && npm run test:security-alerts && npm run test:hardening && npm run test:autopilot && npm run audit:dependencies && npm run build && npm run test:e2e && npm run audit:security && npm run audit:quality",
     "cron:expired-orders": "node scripts/run-cron-once.mjs expired-orders",
     "cron:metal-prices": "node scripts/run-cron-once.mjs metal-prices",
     "cron:security-alerts": "node scripts/run-cron-once.mjs security-alerts",
@@ -85,7 +85,13 @@
     "test:buyer-commerce": "node --import tsx scripts/test-buyer-commerce.ts && node scripts/test-backup-tools.mjs && node scripts/test-operations-agent.mjs",
     "prestart": "npm run db:migrate",
     "test:media": "node --import tsx scripts/test-product-media-storage.ts",
-    "test:seo-snapshots": "node --import tsx scripts/test-seo-snapshot-immutability.ts"
+    "test:seo-snapshots": "node --import tsx scripts/test-seo-snapshot-immutability.ts",
+    "test:motion": "node --import tsx scripts/test-treasury-motion.mjs",
+    "test:product-presentation": "node --import tsx scripts/test-weight-units.mjs && node --import tsx scripts/test-product-presentation.ts && node --import tsx scripts/test-treasury-pricing.ts",
+    "test:security-regressions": "node --import tsx scripts/test-security-regressions.ts",
+    "test:storefront-seo": "node --import tsx scripts/test-storefront-seo-regressions.ts",
+    "test:audit-regressions": "npm run test:motion && npm run test:media && npm run test:product-presentation && npm run test:security-regressions && npm run test:storefront-seo && npm run test:uploaded-story",
+    "test:uploaded-story": "node --import tsx scripts/test-treasury-story.ts && node --import tsx scripts/test-treasury-media.ts"
   },
   "dependencies": {
     "@base-ui/react": "^1.6.0",
@@ -116,7 +122,7 @@
     "react-dom": "19.2.4",
     "react-hook-form": "^7.83.0",
     "shadcn": "^4.19.0",
-    "sharp": "^0.35.3",
+    "sharp": "^0.35.4",
     "sonner": "^2.0.7",
     "tailwind-merge": "^3.6.0",
     "tailwindcss": "^4.3.3",
@@ -143,9 +149,10 @@
     "esbuild@0.28.1": true,
     "@swc/core@1.15.46": true,
     "prisma@7.9.1": true,
-    "sharp@0.35.3": true
+    "sharp@0.35.4": true
   },
   "overrides": {
-    "deepmerge-ts": "8.0.0"
+    "deepmerge-ts": "8.0.0",
+    "mysql2": "3.24.4"
   }
 }

@@ -15,6 +15,7 @@ const STATIC_ROUTES = [
   "/collections/gold",
   "/collections/silver",
   "/journal",
+  "/journal/wrist-size-guide",
   "/about",
   "/story",
   "/atelier",
@@ -48,7 +49,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   }
 
   try {
-    const [products, collections, materialPairs, articles] = await Promise.all([
+    const [products, articles] = await Promise.all([
       prisma.product.findMany({
         where: {
           status: {
@@ -62,38 +63,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
           slug: true,
           updatedAt: true,
         },
-      }),
-
-      prisma.collection.findMany({
-        where: {
-          isActive: true,
-        },
-        select: {
-          id: true,
-          slug: true,
-          updatedAt: true,
-        },
-      }),
-
-      prisma.product.findMany({
-        where: {
-          status: {
-            in: ["ACTIVE", "OUT_OF_STOCK"],
-          },
-          collection: {
-            isActive: true,
-          },
-        },
-        select: {
-          collectionId: true,
-          material: true,
-          collection: {
-            select: {
-              slug: true,
-            },
-          },
-        },
-        distinct: ["collectionId", "material"],
       }),
 
       prisma.contentArticle.findMany({
@@ -111,33 +80,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ]);
 
     for (const locale of LOCALES) {
-      for (const collection of collections) {
-        const route = `/collections/${collection.slug}`;
-
-        entries.push({
-          url: `${base}/${locale}${route}`,
-          lastModified: collection.updatedAt,
-          changeFrequency: "weekly",
-          priority: 0.75,
-          alternates: languageAlternates(base, route),
-        });
-      }
-
-      for (const pair of materialPairs) {
-        const material = pair.material === "GOLD" ? "gold" : "silver";
-
-        const route = `/collections/${pair.collection.slug}/${material}`;
-
-        entries.push({
-          url: `${base}/${locale}${route}`,
-          changeFrequency: "daily",
-          priority: 0.72,
-          alternates: languageAlternates(base, route),
-        });
-      }
-
       for (const product of products) {
-        const route = `/products/${product.slug}`;
+        const route = `/products/${encodeURIComponent(product.slug)}`;
 
         entries.push({
           url: `${base}/${locale}${route}`,
@@ -167,5 +111,5 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     );
   }
 
-  return entries;
+  return Array.from(new Map(entries.map(entry => [entry.url, entry])).values());
 }

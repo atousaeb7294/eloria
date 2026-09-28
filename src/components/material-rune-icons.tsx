@@ -233,3 +233,10 @@ export function FilterRuneIcon({
     </svg>
   );
 }
+/** Neutral thread motif, used for woven pieces without a metal badge. */
+export function WeaveRuneIcon({ className }: MaterialRuneIconProps) {
+  return <svg viewBox="0 0 64 64" fill="none" className={className} aria-hidden="true">
+    <path d="M12 16C28 4 36 60 52 48M12 32C28 20 36 44 52 32M12 48C28 60 36 4 52 16" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
+    <path d="M20 10V54M44 10V54" stroke="currentColor" strokeWidth="2" opacity=".6" />
+  </svg>;
+}

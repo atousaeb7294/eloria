@@ -1,4 +1,4 @@
-import { formatStoredWeight, type WeightUnit } from "@/lib/weight-units";
+import { formatWeightSoot } from "@/lib/weight-units";
 import Link from "next/link";
 
 import {
@@ -12,7 +12,6 @@ type ProductVariantOption = {
   titleEn: string;
   stock: number;
   metalWeight: string | null;
-  weightUnit?: WeightUnit;
   purity: string | null;
 };
 
@@ -23,6 +22,14 @@ type ProductVariantSelectorProps = {
   activeVariantId: string | null;
   isGold: boolean;
 };
+
+function formatWeight(value: string | null, locale: string): string | null {
+  if (!value) {
+    return null;
+  }
+
+  return formatWeightSoot(value, locale);
+}
 
 export function ProductVariantSelector({
   locale,
@@ -56,7 +63,7 @@ export function ProductVariantSelector({
         {variants.map((variant) => {
           const isActive = variant.id === activeVariantId;
           const isUnavailable = variant.stock <= 0;
-          const weight = variant.metalWeight ? formatStoredWeight(variant.metalWeight, variant.weightUnit ?? "gram", locale) : null;
+          const weight = formatWeight(variant.metalWeight, locale);
 
           return (
             <Link

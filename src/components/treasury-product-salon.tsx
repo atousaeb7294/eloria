@@ -35,7 +35,11 @@ export function TreasuryProductSalon({
     if (!pagination || loadedPage >= pageCount || pendingLoad.current) return;
     const controller = new AbortController();
     pendingLoad.current = controller;
-    const timer = window.setTimeout(() => controller.abort(), 10000);
+    let timedOut = false;
+    const timer = window.setTimeout(() => {
+      timedOut = true;
+      controller.abort();
+    }, 10000);
     setLoadingMore(true);
     setLoadError(false);
     try {
@@ -62,7 +66,7 @@ export function TreasuryProductSalon({
       setLoadedPage(result.page);
       setPageCount(result.pageCount);
     } catch {
-      if (!controller.signal.aborted) setLoadError(true);
+      if (!controller.signal.aborted || timedOut) setLoadError(true);
     } finally {
       clearTimeout(timer);
       pendingLoad.current = null;

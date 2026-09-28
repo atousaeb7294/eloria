@@ -1,5 +1,7 @@
 "use client";
 
+import { productMaterialLabel } from "@/lib/product-material";
+
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -300,12 +302,7 @@ export function CartPageView({
                           .titleEn
                     : null;
 
-                const material =
-                  item.product
-                    .material ===
-                  "GOLD"
-                    ? text.gold
-                    : text.silver;
+                const material = productMaterialLabel(item.product, isPersian ? "fa" : "en");
 
                 const availableStock =
                   item.variant

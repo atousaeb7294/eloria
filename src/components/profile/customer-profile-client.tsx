@@ -23,9 +23,8 @@ type AddressForm = Omit<Address, "id">;
 const emptyAddress: AddressForm = { title: "", recipientName: "", mobile: "", province: "", city: "", postalCode: "", address: "", isDefault: false };
 
 function toman(value: string, fa: boolean) {
-  const n = Number(value);
-  if (!Number.isFinite(n)) return value;
-  return new Intl.NumberFormat(fa ? "fa-IR" : "en-US").format(n);
+  try { return BigInt(value).toLocaleString(fa ? "fa-IR" : "en-US"); }
+  catch { return value; }
 }
 
 function statusLabel(status: string, fa: boolean) {
@@ -140,7 +139,9 @@ export function CustomerProfileClient({ locale, initialData }: { locale: "fa" | 
 
   async function logout() {
     setBusy("logout");
+    setMessage(null);
     try { await jsonAction("/api/customer/auth/logout", "POST"); router.replace(`/${locale}/login`); router.refresh(); }
+    catch { setMessage(fa ? "خروج انجام نشد؛ اتصال را بررسی و دوباره تلاش کنید." : "Sign out failed. Check your connection and try again."); }
     finally { setBusy(null); }
   }
 
@@ -172,7 +173,7 @@ export function CustomerProfileClient({ locale, initialData }: { locale: "fa" | 
         <Link href={`/${locale}/profile/watches`} className="shrink-0 rounded-full border border-[#d8b967]/12 bg-black/10 px-4 py-2 text-xs text-[#d9ca9f]/68 transition hover:border-[#d8b967]/28 hover:text-[#ead58e]">{fa ? "پیگیری قیمت" : "Price watches"}</Link>
       </nav>
 
-      {message ? <div className="mt-5 rounded-2xl border border-[#d8b967]/12 bg-[#071d15]/80 p-4 text-sm text-[#e4d4ae]/75">{message}</div> : null}
+      {message ? <div role="status" className="mt-5 rounded-2xl border border-[#d8b967]/12 bg-[#071d15]/80 p-4 text-sm text-[#e4d4ae]/75">{message}</div> : null}
 
       <div className="mt-6 grid grid-cols-2 gap-3 lg:grid-cols-4">
         {[
@@ -289,4 +290,3 @@ export function CustomerProfileClient({ locale, initialData }: { locale: "fa" | 
     </main>
   );
 }
-

@@ -17,6 +17,18 @@ export type CustomerOtpPurpose =
   | "SIGNUP"
   | "PASSWORD_RESET";
 
+/** Expected, safe-to-display authentication validation errors only. */
+export class CustomerAuthError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "CustomerAuthError";
+  }
+}
+
+export function isCustomerChallengeId(value: string): boolean {
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);
+}
+
 function authSecret(): string {
   const explicit = process.env.ELORIA_CUSTOMER_AUTH_SECRET?.trim();
 
@@ -102,7 +114,7 @@ export function normalizeIranMobile(
   }
 
   if (!/^09\d{9}$/.test(mobile)) {
-    throw new Error(
+    throw new CustomerAuthError(
       "شماره موبایل معتبر نیست.",
     );
   }
@@ -122,7 +134,7 @@ export function normalizeCustomerAuthEmail(
     email.length > 254 ||
     !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
   ) {
-    throw new Error(
+    throw new CustomerAuthError(
       "نشانی ایمیل معتبر نیست.",
     );
   }
@@ -317,6 +329,9 @@ export async function consumeCustomerOtp(
         purpose?: CustomerOtpPurpose;
       },
 ) {
+  if (!isCustomerChallengeId(input.challengeId)) {
+    throw new CustomerAuthError("درخواست کد تأیید معتبر نیست.");
+  }
   const channel: CustomerOtpChannel =
     input.channel ?? "SMS";
   const purpose: CustomerOtpPurpose =
@@ -334,7 +349,7 @@ export async function consumeCustomerOtp(
   const code = input.code.trim();
 
   if (!/^\d{6}$/.test(code)) {
-    throw new Error(
+    throw new CustomerAuthError(
       "کد تأیید باید ۶ رقم باشد.",
     );
   }
@@ -359,13 +374,13 @@ export async function consumeCustomerOtp(
           });
 
         if (!challenge) {
-          throw new Error(
+          throw new CustomerAuthError(
             "درخواست کد تأیید معتبر نیست.",
           );
         }
 
         if (challenge.channel !== channel) {
-          throw new Error(
+          throw new CustomerAuthError(
             "کانال کد تأیید معتبر نیست.",
           );
         }
@@ -373,25 +388,25 @@ export async function consumeCustomerOtp(
         if (
           challenge.mobile !== mobile
         ) {
-          throw new Error(
+          throw new CustomerAuthError(
             "درخواست کد تأیید معتبر نیست.",
           );
         }
 
         if (channel === "EMAIL" && challenge.email !== email) {
-          throw new Error(
+          throw new CustomerAuthError(
             "درخواست کد تأیید معتبر نیست.",
           );
         }
 
         if (challenge.purpose !== purpose) {
-          throw new Error(
+          throw new CustomerAuthError(
             "هدف کد تأیید معتبر نیست.",
           );
         }
 
         if (challenge.consumedAt) {
-          throw new Error(
+          throw new CustomerAuthError(
             "این کد قبلاً استفاده شده است.",
           );
         }
@@ -400,7 +415,7 @@ export async function consumeCustomerOtp(
           challenge.expiresAt.getTime() <=
           now.getTime()
         ) {
-          throw new Error(
+          throw new CustomerAuthError(
             "مهلت کد تأیید پایان یافته است.",
           );
         }
@@ -409,7 +424,7 @@ export async function consumeCustomerOtp(
           challenge.attempts >=
           challenge.maxAttempts
         ) {
-          throw new Error(
+          throw new CustomerAuthError(
             "تعداد تلاش‌های کد تأیید بیش از حد مجاز است.",
           );
         }
@@ -588,7 +603,7 @@ export async function consumeCustomerOtp(
     );
 
   if (!result.successful) {
-    throw new Error(
+    throw new CustomerAuthError(
       result.message,
     );
   }

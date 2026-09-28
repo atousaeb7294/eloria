@@ -1,5 +1,6 @@
 "use server";
 import { readWeightGrams, weightUnitsFromForm, type WeightUnits } from "@/lib/weight-units";
+import { withProductMediaLock } from "@/lib/product-media-mutations";
 import { after } from "next/server";
 import { repairSeoBatch } from "@/lib/seo-autopilot";
 
@@ -916,7 +917,7 @@ await ensureUniqueIdentity({
 
     await withDatabaseRetry(
       () =>
-        prisma.$transaction(async transaction => {
+        withProductMediaLock(productId, async transaction => {
           const before = await transaction.product.findUniqueOrThrow({
             where: { id: productId },
             select: {

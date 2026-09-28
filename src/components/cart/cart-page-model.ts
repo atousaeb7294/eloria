@@ -10,6 +10,8 @@ export type QuotedCartItem = {
     nameFa: string;
     nameEn: string;
     material: "GOLD" | "SILVER";
+    hasGold?: boolean;
+    hasSilver?: boolean;
     sku: string | null;
     stock: number;
     isPurchasable: boolean;

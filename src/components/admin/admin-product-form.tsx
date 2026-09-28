@@ -143,6 +143,8 @@ export function AdminProductForm({
   const [selectedMaterial, setSelectedMaterial] = useState(value.material);
   const [hasGold, setHasGold] = useState(value.hasGold);
   const [hasSilver, setHasSilver] = useState(value.hasSilver);
+  const [pricingMode, setPricingMode] = useState(value.pricingMode);
+  const weaveOnly = !hasGold && !hasSilver;
   const action: (
     state: AdminProductActionState,
     formData: FormData,
@@ -259,9 +261,10 @@ export function AdminProductForm({
             </select>
           </Field>
 
-          <Field label="فلز مبنای قیمت‌گذاری">
+          <Field label="فلز مبنای قیمت‌گذاری" hint={weaveOnly ? "برای بافت بدون فلز کاربرد ندارد و در سایت نمایش داده نمی‌شود." : undefined}>
             <select
               className={inputClassName}
+              disabled={weaveOnly}
               value={selectedMaterial}
               onChange={(event) => setSelectedMaterial(event.target.value as "GOLD" | "SILVER")}
               name="material"
@@ -274,12 +277,17 @@ export function AdminProductForm({
           <div className="md:col-span-2 rounded-2xl border border-[#cfb45f]/18 bg-[#061f17]/65 p-4">
             <p className="text-sm text-[#ead79f]">ترکیب فلز و عضویت در گنجینه‌ها</p>
             <p className="mt-1 text-xs leading-6 text-[#9f9278]">برای اثر ترکیبی، هر دو گزینه و وزن جداگانهٔ هر فلز را وارد کنید. اثر در هر دو گنجینه نمایش داده می‌شود؛ هنر دست و بسته‌بندی یک‌بار حساب می‌شوند. برای بافت بدون فلز، هر دو گزینه را بردارید و قیمت ثابت بگذارید.</p>
+            <button type="button" aria-pressed={weaveOnly}
+              className="mt-3 rounded-xl border border-[#cfb45f]/40 px-4 py-3 text-sm text-[#ead79f]"
+              onClick={() => { setHasGold(false); setHasSilver(false); setPricingMode("MANUAL"); }}>
+              {weaveOnly ? "✓ بافت بدون طلا و نقره انتخاب شده" : "انتخاب بافت بدون طلا و نقره"}
+            </button>
             <div className="mt-4 grid gap-3 sm:grid-cols-2">
               <label className="flex items-center gap-3 rounded-xl border border-[#d9b85f]/20 p-3 text-sm text-[#e8d39a]">
-                <input name="hasGold" type="checkbox" checked={hasGold} onChange={(event) => setHasGold(event.target.checked)} className="size-4 accent-[#d8ba62]" /> دارای طلا
+                <input name="hasGold" type="checkbox" checked={hasGold} onChange={(event) => { setHasGold(event.target.checked); if (!hasSilver && event.target.checked) setSelectedMaterial("GOLD"); }} className="size-4 accent-[#d8ba62]" /> دارای طلا
               </label>
               <label className="flex items-center gap-3 rounded-xl border border-[#d8e2e5]/16 p-3 text-sm text-[#dfe8ea]">
-                <input name="hasSilver" type="checkbox" checked={hasSilver} onChange={(event) => setHasSilver(event.target.checked)} className="size-4 accent-[#c9d5d9]" /> دارای نقره
+                <input name="hasSilver" type="checkbox" checked={hasSilver} onChange={(event) => { setHasSilver(event.target.checked); if (!hasGold && event.target.checked) setSelectedMaterial("SILVER"); }} className="size-4 accent-[#c9d5d9]" /> دارای نقره
               </label>
               {hasGold && hasSilver ? <AdminWeightInput label="وزن طلای به‌کاررفته" className={inputClassName} defaultValue={value.goldComponentWeight} name="goldComponentWeight" initialUnit={value.weightUnits?.goldComponentWeight} required={hasGold && hasSilver} /> : null}
               {hasGold && hasSilver ? <AdminWeightInput label="وزن نقرهٔ به‌کاررفته" className={inputClassName} defaultValue={value.silverComponentWeight} name="silverComponentWeight" initialUnit={value.weightUnits?.silverComponentWeight} required={hasGold && hasSilver} /> : null}
@@ -363,10 +371,11 @@ export function AdminProductForm({
           <Field label="روش قیمت‌گذاری">
             <select
               className={inputClassName}
-              defaultValue={value.pricingMode}
+              value={weaveOnly ? "MANUAL" : pricingMode}
+              onChange={(event) => setPricingMode(event.target.value as "DYNAMIC" | "MANUAL")}
               name="pricingMode"
             >
-              <option value="DYNAMIC">پویا</option>
+              <option value="DYNAMIC" disabled={weaveOnly}>پویا</option>
               <option value="MANUAL">دستی</option>
             </select>
           </Field>
@@ -389,10 +398,10 @@ export function AdminProductForm({
             />
           </Field>
 
-          <AdminWeightInput label={hasGold && hasSilver ? "وزن مجموع فلزات (مبنای نمایش)" : selectedMaterial === "SILVER" ? "وزن نقره (مبنای قیمت و نمایش)" : "وزن طلا (مبنای قیمت و نمایش)"} className={inputClassName}
+          <AdminWeightInput label={!hasGold && !hasSilver ? "وزن محصول" : hasGold && hasSilver ? "وزن مجموع فلزات (مبنای نمایش)" : selectedMaterial === "SILVER" ? "وزن نقره (مبنای قیمت و نمایش)" : "وزن طلا (مبنای قیمت و نمایش)"} className={inputClassName}
             defaultValue={value.metalWeight} name="metalWeight" initialUnit={value.weightUnits?.metalWeight} />
 
-          {selectedMaterial === "GOLD" ? <>
+          {!weaveOnly && selectedMaterial === "GOLD" ? <>
           <Field label="عنوان عیار">
             <input
               className={inputClassName}

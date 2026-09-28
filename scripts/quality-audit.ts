@@ -12,101 +12,69 @@ const root = process.cwd();
 const checks: Check[] = [];
 const warnings: string[] = [];
 
-const homeRootPage = readFileSync(
-  path.join(root, "src/app/[locale]/page.tsx"),
-  "utf8",
-);
-const homeStory = readFileSync(
-  path.join(root, "src/components/home-featured-album.tsx"),
-  "utf8",
-);
-const homeStoryCompact = homeStory.replace(/\s+/g, "");
-const homeNarrative = readFileSync(
-  path.join(root, "src/components/home-narrative-showcase.tsx"),
-  "utf8",
-);
-const homeEffects = readFileSync(
-  path.join(root, "src/components/home-premium-effects.tsx"),
-  "utf8",
-);
+// Exercise the current story controller rather than asserting source strings
+// from the retired home-featured-album/home-narrative-showcase architecture.
+try {
+  const result = execFileSync(
+    process.execPath,
+    ["--import", "tsx", "scripts/test-treasury-motion.mjs"],
+    { cwd: root, encoding: "utf8", timeout: 30000 },
+  );
+  check("Treasury motion behavioral regressions", true, result.trim());
+} catch (error) {
+  const failure = error as { stdout?: string; stderr?: string; message?: string };
+  check(
+    "Treasury motion behavioral regressions",
+    false,
+    [failure.stdout, failure.stderr, failure.message].filter(Boolean).join("\n"),
+  );
+}
+
+const homeRootPage = read("src/app/[locale]/page.tsx");
+const promenade = read("src/components/treasury-promenade.tsx");
+const salon = read("src/components/treasury-product-salon.tsx");
+const storyController = read("src/lib/treasury-story.ts");
+const treasuryPreview = read("src/app/api/treasury/preview/route.ts");
 
 check(
-  "Home hero remains pinned behind the rising narrative surface",
-  homeRootPage.includes('className="sticky top-0 z-0 h-[100svh]') &&
-    homeRootPage.includes('className="relative z-20"'),
+  "Home mounts the story controller with cleanup and native chapter anchors",
+  homeRootPage.includes("<TreasuryPromenade") &&
+    promenade.includes("mountTreasuryStory(root.current)") &&
+    promenade.includes("data-promenade-chapter") &&
+    promenade.includes('id="promenade-intro"') &&
+    promenade.includes('"#promenade-end"') &&
+    homeRootPage.includes('id="promenade-end"'),
 );
 check(
-  "Narrative worlds use the full viewport without a desktop max-width cage",
-  homeNarrative.includes('className="relative w-full"') &&
-    !homeNarrative.includes("max-w-[1600px]"),
+  "Treasury previews use live catalog data with explicit unavailable state",
+  promenade.includes("/api/treasury/preview") &&
+    promenade.includes('data?.source !== "unavailable"') &&
+    promenade.includes('setPreviewState("unavailable")') &&
+    !treasuryPreview.includes("sampleProducts") &&
+    !treasuryPreview.includes("placeholderProducts"),
 );
 check(
-  "Every product receives fixed viewport pacing independent of catalog size",
-  homeStory.includes("const introViewports = 0.85") &&
-    homeStory.includes("const sceneViewports = 0.72") &&
-    homeStory.includes("const exitViewports = 0.55") &&
-    homeStoryCompact.includes("sceneDistance/sceneViewports"),
+  "Treasury requests are bounded and aborted on cleanup",
+  promenade.includes("new AbortController()") &&
+    promenade.includes("controller?.abort()") &&
+    promenade.includes("window.clearInterval(retry)") &&
+    salon.includes("pendingLoad.current?.abort()") &&
+    salon.includes("10000"),
 );
 check(
-  "Story scroll settles smoothly to the nearest product chapter",
-  homeStory.includes("settleToNearestScene") &&
-    homeStory.includes('behavior: "smooth"') &&
-    homeStory.includes("snapTimer"),
+  "Story backgrounds avoid continuously animated full-screen blur",
+  !promenade.includes("repeat: Infinity") &&
+    !storyController.includes("blur(") &&
+    !storyController.includes("setInterval("),
 );
 check(
-  "Story background avoids a continuously animated full-screen blur",
-  !homeStory.includes("repeat: Infinity") &&
-    !homeStory.includes('className="absolute -inset-[15%]'),
-);
-
-check(
-  "Story home keeps independent sticky world pages compatible",
-  homeRootPage.includes("overflow-x-clip") &&
-    !homeNarrative.includes("eloria-home-lazy-section") &&
-    !homeEffects.includes("'[data-eloria-narrative-section=\"true\"]'") &&
-    homeStory.includes("data-eloria-world-section") &&
-    homeStory.includes('className="sticky top-0 h-[100svh]'),
-);
-check(
-  "Each world owns a scroll-linked product timeline",
-  homeStoryCompact.includes('addEventListener("scroll",schedule') &&
-    homeStoryCompact.includes("sceneDistance/sceneViewports") &&
-    homeStoryCompact.includes("products.length+1") &&
-    homeStory.includes("data-eloria-product-chapter"),
-);
-check(
-  "Story home supports dual-metal products in both worlds",
-  homeStoryCompact.includes('world==="gold"?gold:world==="silver"?silver') &&
-    homeStoryCompact.includes("items.filter((item)=>belongs(item,world))"),
-);
-check(
-  "Each treasury owns an independent billboard and next-product preview",
-  homeStory.includes("data-eloria-world-section") &&
-    homeStory.includes("data-eloria-world-billboard") &&
-    homeStory.includes("function NextProduct") &&
-    homeStory.includes("nextProduct"),
-);
-check(
-  "Treasuries scroll continuously without a redundant overlay navigator",
-  !homeStory.includes("scrollIntoView") &&
-    !homeStory.includes("Direct treasury access") &&
-    !homeStory.includes("data-eloria-world-hub") &&
-    homeStory.includes("data-eloria-world-billboard") &&
-    homeStoryCompact.includes("groups.map(({world,products},index)"),
-);
-check(
-  "World pages keep a fixed shell and GPU-safe inner camera",
-  homeStory.includes("function worldExitTransform") &&
-    homeStory.includes("data-camera-entry") &&
-    homeStory.includes("data-camera-exit") &&
-    homeStory.includes("visual.current.style.transform") &&
-    homeStory.includes("translate3d"),
-);
-check(
-  "Story products always expose a quick-buy interface",
-  homeStoryCompact.includes('fa?"خریدسریع":"Quickbuy"') &&
-    homeStory.includes("<AddToCartButton") &&
-    homeStory.includes("ShoppingBag"),
+  "Salon exposes keyboard navigation and accessible purchase dialog",
+  salon.includes('event.key === "ArrowLeft"') &&
+    salon.includes('event.key === "ArrowRight"') &&
+    salon.includes("<dialog") &&
+    salon.includes("<LivePurchaseBox") &&
+    salon.includes("trigger.current?.focus()") &&
+    salon.includes('aria-live="polite"'),
 );
 
 function read(relativePath: string): string {
@@ -198,10 +166,10 @@ check(
 
 check(
   "Product pricing UI displays raw market rate",
-  productPage.includes("originalPricePerGramToman") &&
-    productPage.includes("Live raw gold rate") &&
-    productPage.includes("Live raw silver rate") &&
-    !productPage.includes("            .pricePerGramToman,"),
+  productPage.includes("<LivePurchaseBox") &&
+    read("src/components/live-purchase-box.tsx").includes("originalPricePerGramToman") &&
+    read("src/components/live-purchase-box.tsx").includes("Live raw gold rate") &&
+    read("src/components/live-purchase-box.tsx").includes("Live raw silver rate"),
 );
 
 check(
@@ -216,8 +184,8 @@ check(
 
 check(
   "Product price explains server formula continuity",
-  productPage.includes("فرمول مالی ثبت‌شده") &&
-    productPage.includes("سبد و ثبت سفارش") &&
+  read("src/components/live-purchase-box.tsx").includes("قیمت پیش از رفتن به درگاه دوباره بررسی می‌شود.") &&
+    read("src/components/live-purchase-box.tsx").includes("<AddToCartButton") &&
     productPage.includes("getProductDisplayPrice"),
 );
 
@@ -330,7 +298,7 @@ check(
   "Sitemap covers localized dynamic catalog",
   sitemap.includes("languageAlternates") &&
     sitemap.includes("prisma.product.findMany") &&
-    sitemap.includes("prisma.collection.findMany"),
+    ["gold", "silver", "weave"].every(name => sitemap.includes(`/collections/${name}`)),
 );
 check(
   "Sitemap covers reviewed localized journal articles",
@@ -500,6 +468,8 @@ const unsafeBlankTargets: string[] = [];
 const reviewedAdminRawImageFiles = new Set([
   "src/app/[locale]/admin/(protected)/products/page.tsx",
   "src/components/admin/admin-product-media-manager.tsx",
+  // Blob previews exist only in the administrator's browser before upload.
+  "src/components/admin/admin-image-uploader.tsx",
   // A responsive <picture> is intentional here: it prevents mobile browsers
   // from discovering and downloading the desktop background candidate.
   "src/components/section-background.tsx",

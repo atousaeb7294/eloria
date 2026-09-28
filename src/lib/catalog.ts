@@ -30,6 +30,8 @@ export type CatalogProduct = {
   legendFa: string | null;
   legendEn: string | null;
   material: CatalogMaterial;
+  hasGold: boolean;
+  hasSilver: boolean;
   collectionSlug: string;
   stock: number;
   isAvailable: boolean;
@@ -249,6 +251,8 @@ const catalogCardSelect = {
   legendFa: true,
   legendEn: true,
   material: true,
+  hasGold: true,
+  hasSilver: true,
   stock: true,
   status: true,
   collection: { select: { slug: true } },
@@ -274,6 +278,8 @@ function mapCatalogProduct(product: {
   legendFa: string | null;
   legendEn: string | null;
   material: CatalogMaterial;
+  hasGold: boolean;
+  hasSilver: boolean;
   stock: number;
   status: "DRAFT" | "ACTIVE" | "OUT_OF_STOCK" | "ARCHIVED";
   collection: { slug: string };
@@ -294,6 +300,8 @@ function mapCatalogProduct(product: {
     legendFa: product.legendFa,
     legendEn: product.legendEn,
     material: product.material,
+    hasGold: product.hasGold,
+    hasSilver: product.hasSilver,
     collectionSlug: product.collection.slug,
     stock: product.stock,
     isAvailable: product.status === "ACTIVE" && product.stock > 0,

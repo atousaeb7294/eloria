@@ -38,6 +38,8 @@ type QuotedCartItem = {
     nameFa: string;
     nameEn: string;
     material: "GOLD" | "SILVER";
+    hasGold?: boolean;
+    hasSilver?: boolean;
     sku: string | null;
     stock: number;
     isPurchasable: boolean;
@@ -239,6 +241,8 @@ async function quoteCartItem(item: ValidCartItem): Promise<
           nameEn: result.product.nameEn,
 
           material: result.product.material,
+          hasGold: result.product.metalComponents?.hasGold,
+          hasSilver: result.product.metalComponents?.hasSilver,
 
           sku: result.product.sku,
 

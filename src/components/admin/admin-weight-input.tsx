@@ -8,10 +8,10 @@ type WeightInputProps = {
 };
 
 export function AdminWeightInput(props: WeightInputProps) {
-  return <WeightInputFields key={`${props.name}:${props.defaultValue}:${props.initialUnit ?? "gram"}`} {...props} />;
+  return <WeightInputFields key={`${props.name}:${props.defaultValue}:${props.initialUnit ?? "soot"}`} {...props} />;
 }
 
-function WeightInputFields({ name, defaultValue, label, className, initialUnit = "gram", required = false }: WeightInputProps) {
+function WeightInputFields({ name, defaultValue, label, className, initialUnit = "soot", required = false }: WeightInputProps) {
   const id = useId();
   const [unit, setUnit] = useState<WeightUnit>(initialUnit);
   const [value, setValue] = useState(() => initialUnit === "soot" ? gramsToSoot(defaultValue) : defaultValue);

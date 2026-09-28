@@ -1,10 +1,12 @@
 "use client";
 
+import { Dialog } from "@base-ui/react/dialog";
+
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowLeft, ArrowRight, Check, Gift, Gem, Search, Sparkles, UserRound, X } from "lucide-react";
 import { usePathname } from "next/navigation";
-import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { useMemo, useState, type ReactNode } from "react";
 
 type Recipient = "self" | "gift";
 type Style = "delicate" | "classic" | "mysterious" | "bold" | "free";
@@ -53,7 +55,7 @@ function SelectionOption({ selected, onClick, icon, title, subtitle }: {
   subtitle?: string;
 }) {
   return (
-    <button type="button" onClick={onClick} className={`relative min-h-20 rounded-2xl border p-4 text-start transition ${selected ? "border-[#efd47f]/70 bg-[#d9b85f]/[.12] shadow-[0_0_28px_rgba(217,184,95,.08)]" : "border-white/[.08] bg-white/[.025] hover:border-[#d9b85f]/30"}`}>
+    <button type="button" aria-pressed={selected} onClick={onClick} className={`relative min-h-20 rounded-2xl border p-4 text-start transition ${selected ? "border-[#efd47f]/70 bg-[#d9b85f]/[.12] shadow-[0_0_28px_rgba(217,184,95,.08)]" : "border-white/[.08] bg-white/[.025] hover:border-[#d9b85f]/30"}`}>
       <div className="flex items-start gap-3">
         {icon ? <span className="mt-0.5 text-[#e5ca78]">{icon}</span> : null}
         <span className="min-w-0">
@@ -66,10 +68,10 @@ function SelectionOption({ selected, onClick, icon, title, subtitle }: {
   );
 }
 
-export function SmartSelectionAssistant({ locale }: { locale: "fa" | "en" }) {
+export function SmartSelectionAssistant({ locale, initiallyOpen = false }: { locale: "fa" | "en"; initiallyOpen?: boolean }) {
   const pathname = usePathname() ?? `/${locale}`;
   const fa = locale === "fa";
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(initiallyOpen);
   const [step, setStep] = useState(0);
   const [recipient, setRecipient] = useState<Recipient>("self");
   const [style, setStyle] = useState<Style>("delicate");
@@ -109,25 +111,6 @@ export function SmartSelectionAssistant({ locale }: { locale: "fa" | "en" }) {
     saveHint: "This selection is saved on this device so you can continue later; membership is not required to purchase.",
   }, [fa]);
 
-  useEffect(() => {
-    const openAssistant = () => {
-      setOpen(true);
-      setStep(0);
-      setError(null);
-    };
-    window.addEventListener("eloria-open-selection", openAssistant);
-    return () => window.removeEventListener("eloria-open-selection", openAssistant);
-  }, []);
-
-  useEffect(() => {
-    if (!open) return;
-    const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setOpen(false);
-    };
-    window.addEventListener("keydown", onKeyDown);
-    return () => window.removeEventListener("keydown", onKeyDown);
-  }, [open]);
-
   if (pathname.includes(`/${locale}/admin`)) return null;
 
   const requestSelection = async () => {
@@ -154,15 +137,17 @@ export function SmartSelectionAssistant({ locale }: { locale: "fa" | "en" }) {
     }
   };
 
-  return open ? (
-    <div className="fixed inset-0 z-[100] grid place-items-center p-0 sm:p-6" role="dialog" aria-modal="true" aria-label={copy.title} dir={fa ? "rtl" : "ltr"}>
-      <button type="button" aria-label={copy.close} onClick={() => setOpen(false)} className="absolute inset-0 bg-black/80 backdrop-blur-md" />
+  return (
+    <Dialog.Root open={open} onOpenChange={setOpen}>
+    <Dialog.Portal>
+    <Dialog.Popup className="fixed inset-0 z-[100] grid place-items-center p-0 sm:p-6" role="dialog" aria-modal="true" aria-label={copy.title} dir={fa ? "rtl" : "ltr"}>
+      <div aria-hidden="true" onClick={() => setOpen(false)} className="absolute inset-0 bg-black/80 backdrop-blur-md" />
       <section className="relative flex h-[100svh] w-full max-w-4xl flex-col overflow-hidden border border-[#e6cc79]/35 bg-[radial-gradient(circle_at_50%_0%,rgba(22,101,72,.28),transparent_38%),linear-gradient(145deg,#063425,#01140e_72%)] shadow-[0_35px_130px_rgba(0,0,0,.78),0_0_50px_rgba(216,184,95,.12)] sm:h-auto sm:max-h-[88svh] sm:rounded-[2rem]">
         <div aria-hidden="true" className="absolute inset-x-16 top-0 h-px bg-gradient-to-r from-transparent via-[#ffdf8b]/80 to-transparent" />
         <header className="relative border-b border-white/[.06] px-5 pb-5 pt-6 sm:px-8 sm:pt-7">
-          <button type="button" onClick={() => setOpen(false)} aria-label={copy.close} className="absolute end-5 top-5 grid size-9 place-items-center rounded-full border border-white/10 bg-black/15 text-[#d8c9a8]/70 transition hover:border-[#e6ca76]/40 hover:text-[#f3dda0]">
+          <Dialog.Close aria-label={copy.close} className="absolute end-5 top-5 grid size-9 place-items-center rounded-full border border-white/10 bg-black/15 text-[#d8c9a8]/70 transition hover:border-[#e6ca76]/40 hover:text-[#f3dda0]">
             <X className="size-4" />
-          </button>
+          </Dialog.Close>
           <div className="flex items-center gap-2 text-[#dfc36f]/74">
             <Sparkles className="size-3.5" />
             <span className="text-[9px] font-semibold tracking-[.24em]">{copy.eyebrow}</span>
@@ -251,7 +236,7 @@ export function SmartSelectionAssistant({ locale }: { locale: "fa" | "en" }) {
                     const image = product.image?.imageUrl ?? fallbackImages[product.collectionSlug] ?? "/images/collections/necklaces.webp";
                     const alt = fa ? product.image?.altFa ?? name : product.image?.altEn ?? name;
                     return (
-                      <Link key={product.id} href={`/${locale}/products/${product.slug}`} onClick={() => setOpen(false)} className="group overflow-hidden rounded-[1.4rem] border border-white/[.08] bg-black/15 transition hover:-translate-y-1 hover:border-[#e3c66f]/38">
+                      <Link key={product.id} href={`/${locale}/products/${encodeURIComponent(product.slug)}`} onClick={() => setOpen(false)} className="group overflow-hidden rounded-[1.4rem] border border-white/[.08] bg-black/15 transition hover:-translate-y-1 hover:border-[#e3c66f]/38">
                         <div className="relative aspect-[4/3] overflow-hidden bg-[#031811]">
                           <Image src={image} alt={alt} fill sizes="(max-width: 768px) 100vw, 33vw" className="object-cover transition duration-700 group-hover:scale-[1.04]" />
                           <div className="absolute inset-0 bg-gradient-to-t from-[#01140e]/80 to-transparent" />
@@ -293,6 +278,8 @@ export function SmartSelectionAssistant({ locale }: { locale: "fa" | "en" }) {
           )}
         </footer>
       </section>
-    </div>
-  ) : null;
+    </Dialog.Popup>
+    </Dialog.Portal>
+    </Dialog.Root>
+  );
 }

@@ -37,9 +37,18 @@ export function TreasuryPageTransition({ children }: { children: ReactNode }) {
 export function TreasuryLink({
   direction = "left",
   transitionTypes,
+  onNavigate,
   ...props
 }: ComponentProps<typeof Link> & {
   direction?: "left" | "up";
 }) {
-  return <Link {...props} transitionTypes={[`treasury-${direction}`, ...(transitionTypes ?? [])]} />;
+  return <Link
+    {...props}
+    transitionTypes={[`treasury-${direction}`, ...(transitionTypes ?? [])]}
+    onNavigate={(event) => {
+      let cancelled = false;
+      onNavigate?.({ preventDefault: () => { cancelled = true; event.preventDefault(); } });
+      if (!cancelled) window.dispatchEvent(new Event("eloria:navigate"));
+    }}
+  />;
 }

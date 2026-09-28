@@ -47,3 +47,8 @@ export function formatStoredWeight(grams: string, unit: WeightUnit, locale: stri
   const value = unit === "soot" ? BigInt(gramsToSoot(grams)).toLocaleString(fa ? "fa-IR" : "en-US") : Number(grams).toLocaleString(fa ? "fa-IR" : "en-US", { maximumFractionDigits: 3 });
   return `${value} ${unit === "soot" ? (fa ? "سوت" : "soot") : (fa ? "گرم" : "g")}`;
 }
+
+/** Visible product weights use integer soot; stored and API weights stay grams. */
+export function formatWeightSoot(grams: string, locale: string): string {
+  return `${BigInt(gramsToSoot(grams)).toLocaleString(locale === "fa" ? "fa-IR" : "en-US")} ${locale === "fa" ? "سوت" : "soot"}`;
+}

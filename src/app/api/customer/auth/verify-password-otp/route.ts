@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import {
   consumeCustomerOtp,
+  CustomerAuthError,
+  isCustomerChallengeId,
   createCustomerSession,
   normalizeIranMobile,
   revokeOtherCustomerSessions,
@@ -39,10 +41,6 @@ type VerifyPasswordOtpBody = {
 
 function isPurpose(value: unknown): value is Exclude<CustomerOtpPurpose, "LOGIN"> {
   return value === "SIGNUP" || value === "PASSWORD_RESET";
-}
-
-function isUuid(value: string): boolean {
-  return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);
 }
 
 export async function POST(request: NextRequest) {
@@ -100,7 +98,7 @@ export async function POST(request: NextRequest) {
   if (
     !isPurpose(body.purpose) ||
     typeof body.challengeId !== "string" ||
-    !isUuid(body.challengeId) ||
+    !isCustomerChallengeId(body.challengeId) ||
     typeof body.mobile !== "string" ||
     typeof body.code !== "string" ||
     typeof body.password !== "string" ||
@@ -125,7 +123,7 @@ export async function POST(request: NextRequest) {
       fullName = normalizeCustomerName(body.fullName);
     }
   } catch (error) {
-    const message = error instanceof CustomerPasswordError || error instanceof CustomerDataError || error instanceof Error
+    const message = error instanceof CustomerPasswordError || error instanceof CustomerDataError || error instanceof CustomerAuthError
       ? error.message
       : "اطلاعات واردشده معتبر نیست.";
     return NextResponse.json(
@@ -156,7 +154,7 @@ export async function POST(request: NextRequest) {
     });
 
     if (body.purpose === "SIGNUP" && customer.passwordHash) {
-      throw new Error("این شماره قبلاً ثبت‌نام کرده است. از گزینهٔ ورود استفاده کنید.");
+      throw new CustomerAuthError("این شماره قبلاً ثبت‌نام کرده است. از گزینهٔ ورود استفاده کنید.");
     }
 
     const profileFields = body.purpose === "SIGNUP" && fullName
@@ -203,7 +201,7 @@ export async function POST(request: NextRequest) {
     });
     return response;
   } catch (error) {
-    const message = error instanceof Error ? error.message : "تأیید کد و تنظیم رمز ناموفق بود.";
+    const message = error instanceof CustomerAuthError ? error.message : "تأیید کد و تنظیم رمز ناموفق بود.";
     await recordSecurityEvent({
       eventType: "CUSTOMER_PASSWORD_OTP_VERIFY_FAILED",
       severity: "MEDIUM",

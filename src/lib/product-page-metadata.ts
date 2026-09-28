@@ -20,13 +20,14 @@ export async function buildProductPageMetadata(locale: string, slug: string): Pr
     const title = isPersian ? product.nameFa : product.nameEn;
     const description = (isPersian ? product.descriptionFa : product.descriptionEn)?.slice(0, 160) || title;
     const image = product.images[0];
-    const path = `/${locale}/products/${slug}`;
+    const encodedSlug = encodeURIComponent(slug);
+    const path = `/${locale}/products/${encodedSlug}`;
     return {
       title,
       description,
       alternates: {
         canonical: path,
-        languages: { fa: `/fa/products/${slug}`, en: `/en/products/${slug}`, "x-default": `/fa/products/${slug}` },
+        languages: { fa: `/fa/products/${encodedSlug}`, en: `/en/products/${encodedSlug}`, "x-default": `/fa/products/${encodedSlug}` },
       },
       robots: { index: product.status !== "ARCHIVED" && product.status !== "DRAFT", follow: true },
       openGraph: {

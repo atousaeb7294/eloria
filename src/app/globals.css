@@ -924,17 +924,17 @@ html[lang="fa"] :where(p, li, label, button, a, h1, h2, h3, h4, h5, h6) {
 ::view-transition-old(eloria-site-header) { display:none; }
 ::view-transition-group(.eloria-page-forward),
 ::view-transition-group(.eloria-page-up),
-::view-transition-group(.eloria-page-fade) { animation-duration:520ms; animation-timing-function:cubic-bezier(.22,.7,.18,1); }
-::view-transition-old(.eloria-page-forward) { animation:520ms cubic-bezier(.22,.7,.18,1) both eloria-chapter-close; }
-::view-transition-new(.eloria-page-forward) { animation:520ms cubic-bezier(.22,.7,.18,1) both eloria-chapter-open; }
-::view-transition-old(.eloria-page-up) { animation:480ms cubic-bezier(.22,.7,.18,1) both eloria-detail-close; }
-::view-transition-new(.eloria-page-up) { animation:480ms cubic-bezier(.22,.7,.18,1) both eloria-detail-open; }
+::view-transition-group(.eloria-page-fade) { animation:none; }
+::view-transition-old(.eloria-page-forward) { animation:320ms cubic-bezier(.22,.7,.18,1) both eloria-chapter-close; }
+::view-transition-new(.eloria-page-forward) { animation:320ms cubic-bezier(.22,.7,.18,1) both eloria-chapter-open; }
+::view-transition-old(.eloria-page-up) { animation:300ms cubic-bezier(.22,.7,.18,1) both eloria-detail-close; }
+::view-transition-new(.eloria-page-up) { animation:300ms cubic-bezier(.22,.7,.18,1) both eloria-detail-open; }
 ::view-transition-old(.eloria-page-fade) { animation:220ms ease-out both eloria-detail-close; }
 ::view-transition-new(.eloria-page-fade) { animation:260ms ease-out both eloria-fade; }
-@keyframes eloria-chapter-close { to { transform:translateX(-10%) scale(.97); } }
-@keyframes eloria-chapter-open { from { opacity:0; transform:translateX(16%) scale(1.025); } to { opacity:1; transform:none; } }
-@keyframes eloria-detail-close { to { transform:translateY(-4%) scale(.96); } }
-@keyframes eloria-detail-open { from { opacity:0; transform:translateY(9%) scale(1.035); } to { opacity:1; transform:none; } }
+@keyframes eloria-chapter-close { to { transform:translateX(-32px) scale(.99); } }
+@keyframes eloria-chapter-open { from { opacity:0; transform:translateX(48px) scale(1.01); } to { opacity:1; transform:none; } }
+@keyframes eloria-detail-close { to { transform:translateY(-20px) scale(.99); } }
+@keyframes eloria-detail-open { from { opacity:0; transform:translateY(36px) scale(1.01); } to { opacity:1; transform:none; } }
 @keyframes eloria-fade { from { opacity:0; } to { opacity:1; } }
 @keyframes eloria-slide { from { translate:var(--slide-offset); } to { translate:0; } }
 @keyframes eloria-slide-y { from { transform:translateY(var(--slide-y-offset)); } to { transform:translateY(0); } }

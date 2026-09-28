@@ -127,7 +127,7 @@ export function TreasuryPromenade({
   );
 
   return (
-    <div ref={root} className="eloria-promenade" dir={fa ? "rtl" : "ltr"}>
+    <div ref={root} className="eloria-promenade" data-eloria-story-stage="true" dir={fa ? "rtl" : "ltr"}>
       <div className="eloria-promenade-stage">
         <Chapter index={0} id="promenade-intro" intro>
           {children}

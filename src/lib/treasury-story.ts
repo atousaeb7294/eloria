@@ -13,12 +13,9 @@ export function storyFrame(progress: number, index: number, compact = false) {
   if (index === base)
     return {
       visible: true,
-      transform: [
-        `translate3d(${-18 * fraction}%,0,${-180 * fraction * depth}px) rotateY(${10 * fraction * depth}deg) scale(${1 - 0.035 * fraction})`,
-        `translate3d(0,${-14 * fraction}%,${-240 * fraction * depth}px) rotateX(${-13 * fraction * depth}deg) scale(${1 - 0.055 * fraction})`,
-        `translate3d(${20 * fraction}%,${-4 * fraction}%,${-190 * fraction * depth}px) rotateY(${16 * fraction * depth}deg) scale(${1 - 0.04 * fraction})`,
-        `translate3d(0,${8 * fraction}%,${-120 * fraction * depth}px) rotateX(${8 * fraction * depth}deg)`,
-      ][index] ?? "none",
+      // A complete opaque base stays underneath the entering scene. Moving
+      // both layers in different directions exposes empty corners of the stage.
+      transform: "translate3d(0,0,0) scale(1)",
       opacity: "1",
     };
   const remaining = 1 - fraction;
@@ -42,13 +39,10 @@ export function createStoryGesture() {
   let direction = 0;
   let consumed = false;
   let total = 0;
-  let acceptedAt = -Infinity;
   return (delta: number, time: number) => {
     const nextDirection = Math.sign(delta);
     if (!nextDirection) return 0;
-    const deliberateNotch = Number.isInteger(delta) && Math.abs(delta) >= 40 &&
-      time - lastTime >= 70 && time - acceptedAt >= 360;
-    if (time - lastTime > 180 || nextDirection !== direction || deliberateNotch) {
+    if (time - lastTime > 220 || nextDirection !== direction) {
       consumed = false;
       total = 0;
     }
@@ -57,7 +51,6 @@ export function createStoryGesture() {
     total += Math.abs(delta);
     if (consumed || total < 14) return 0;
     consumed = true;
-    acceptedAt = time;
     return direction;
   };
 }
@@ -82,9 +75,13 @@ export function mountTreasuryStory(root: HTMLElement) {
   let writtenY: number | null = null;
   let gesture = createStoryGesture();
   let touch: { x: number; y: number; direction: number; resume: number | null } | null = null;
-  const excluded = (target: EventTarget | null) => {
+  const excluded = (target: EventTarget | null, wheelInput = false) => {
+    if (document.querySelector('.eloria-intro-root, dialog[open], [aria-modal="true"], #eloria-home-menu')) return true;
     if (!(target instanceof Element)) return false;
-    if (target.closest("input, textarea, select, button, [contenteditable], [role='dialog'], dialog, [data-story-native-scroll], [data-native-scroll]")) return true;
+    const selector = wheelInput
+      ? "input, textarea, select, [contenteditable], [role='dialog'], dialog, [data-story-native-scroll]"
+      : "input, textarea, select, button, [contenteditable], [role='dialog'], dialog, [data-story-native-scroll], [data-native-scroll]";
+    if (target.closest(selector)) return true;
     for (let node: Element | null = target; node && node !== root; node = node.parentElement) {
       if (node.scrollHeight > node.clientHeight + 1 && /auto|scroll/.test(getComputedStyle(node).overflowY)) return true;
     }
@@ -109,16 +106,17 @@ export function mountTreasuryStory(root: HTMLElement) {
   };
   const wheel = (event: WheelEvent) => {
     if (!enabled || event.defaultPrevented || !event.cancelable || event.ctrlKey || event.metaKey ||
-      excluded(event.target) || Math.abs(event.deltaX) > Math.abs(event.deltaY)) return;
+      excluded(event.target, true) || Math.abs(event.deltaX) > Math.abs(event.deltaY)) return;
     const delta = event.deltaY * (event.deltaMode === 1 ? 16 : event.deltaMode === 2 ? height : 1);
     const direction = Math.sign(delta);
     if (!direction) return;
     const index = destination(direction);
     if (index === null && !motion) return;
     event.preventDefault();
-    // Do not consume the next deliberate gesture while the current move finishes.
-    if (motion && Math.sign(motion.to - window.scrollY) === direction) return;
+    // Record EVERY wheel packet, including animation-time packets, so the
+    // tail arriving after the final frame cannot become a second gesture.
     const accepted = gesture(delta, performance.now());
+    if (motion && Math.sign(motion.to - window.scrollY) === direction) return;
     if (accepted && index !== null) go(index);
   };
   const touchStart = (event: TouchEvent) => {
@@ -165,12 +163,18 @@ export function mountTreasuryStory(root: HTMLElement) {
     const index = destination(direction);
     if (index === null) return;
     event.preventDefault();
+    if (event.repeat) return;
     if (!motion || Math.sign(motion.to - window.scrollY) !== direction) go(index);
   };
   const scroll = () => {
     // Scrollbar, assistive navigation and unrelated scroll owners may interrupt.
     if (motion && writtenY !== null && Math.abs(window.scrollY - writtenY) > 3) stop();
     schedulePaint();
+  };
+  const settle = () => {
+    if (!enabled || motion || touch || excluded(null)) return;
+    const progress = (window.scrollY - top) / height;
+    if (progress > 0 && progress < last) go(Math.round(progress));
   };
   const clearChapters = () => {
     for (const chapter of chapters) {
@@ -190,7 +194,15 @@ export function mountTreasuryStory(root: HTMLElement) {
       window.scrollTo({ top: writtenY, behavior: "instant" });
       if (elapsed === 1) stop(); else schedulePaint();
     }
-    const progress = storyClamp((window.scrollY - top) / height, 0, last);
+    const rawProgress = storyClamp((window.scrollY - top) / height, 0, last);
+    // Layout offsets can be fractional while the browser rounds scrollTo to
+    // device/CSS pixels. Without an endpoint tolerance, e.g. 1.0005 paints
+    // chapter 2 as well as chapter 1; perspective brings its "offscreen" edge
+    // into view. Resolve a <=1.5px remainder to the exact chapter frame.
+    const nearestChapter = Math.round(rawProgress);
+    const progress = Math.abs(rawProgress - nearestChapter) * height <= 1.5
+      ? nearestChapter
+      : rawProgress;
     if (progress === lastProgress) return;
     lastProgress = progress;
     const nextActive = Math.round(progress);
@@ -225,9 +237,12 @@ export function mountTreasuryStory(root: HTMLElement) {
   };
   const schedulePaint = () => { if (!frame) frame = requestAnimationFrame(paint); };
   const measure = () => {
+    const resume = motion ? Math.round((motion.to - top) / height) : null;
+    const oldProgress = (window.scrollY - top) / height;
+    const wasEnabled = enabled;
     stop();
     touch = null;
-    gesture = createStoryGesture();
+    if (!wasEnabled) gesture = createStoryGesture();
     enabled = !reduced.matches && !small.matches;
     root.toggleAttribute("data-story-enhanced", enabled);
     root.removeAttribute("data-story-moving");
@@ -236,7 +251,13 @@ export function mountTreasuryStory(root: HTMLElement) {
     compact = window.innerWidth < 700;
     lastProgress = -1;
     active = -1;
-    if (enabled) schedulePaint(); else clearChapters();
+    if (enabled) {
+      if (wasEnabled && oldProgress >= 0 && oldProgress <= last) {
+        window.scrollTo({ top: top + oldProgress * height, behavior: "instant" });
+        go(resume ?? Math.round(oldProgress));
+      }
+      schedulePaint();
+    } else clearChapters();
   };
   const click = (event: MouseEvent) => {
     if (!enabled || event.defaultPrevented || event.button !== 0 || event.ctrlKey || event.metaKey ||
@@ -259,11 +280,23 @@ export function mountTreasuryStory(root: HTMLElement) {
     window.scrollTo({ top: 0, left: 0, behavior: "instant" });
     schedulePaint();
   };
+  const hashChapter = () => {
+    const hash = window.location.hash.slice(1);
+    return hash === "promenade-end" ? chapters.length : chapters.findIndex(chapter => chapter.id === hash);
+  };
+  const onHashChange = () => {
+    const index = hashChapter();
+    if (enabled && index >= 0) go(index);
+  };
   const resize = new ResizeObserver(measure);
   resize.observe(stage);
   measure();
+  const initialChapter = hashChapter();
+  if (enabled && initialChapter >= 0) window.scrollTo({ top: top + initialChapter * height, behavior: "instant" });
+  window.addEventListener("hashchange", onHashChange);
   window.addEventListener("scroll", scroll, { passive: true });
-  root.addEventListener("wheel", wheel, { passive: false });
+  window.addEventListener("scrollend", settle);
+  window.addEventListener("wheel", wheel, { passive: false, capture: true });
   root.addEventListener("touchstart", touchStart, { passive: true });
   root.addEventListener("touchmove", touchMove, { passive: false });
   root.addEventListener("touchend", touchEnd, { passive: true });
@@ -278,8 +311,10 @@ export function mountTreasuryStory(root: HTMLElement) {
     stop();
     cancelAnimationFrame(frame);
     resize.disconnect();
+    window.removeEventListener("hashchange", onHashChange);
     window.removeEventListener("scroll", scroll);
-    root.removeEventListener("wheel", wheel);
+    window.removeEventListener("scrollend", settle);
+    window.removeEventListener("wheel", wheel, { capture: true });
     root.removeEventListener("touchstart", touchStart);
     root.removeEventListener("touchmove", touchMove);
     root.removeEventListener("touchend", touchEnd);

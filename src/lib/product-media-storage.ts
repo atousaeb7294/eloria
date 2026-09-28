@@ -7,15 +7,15 @@ import { prisma } from "@/lib/prisma";
 const MAX_IMAGE_BYTES = 8 * 1024 * 1024;
 const MAX_IMAGE_DIMENSION = 12_000;
 const MAX_IMAGE_PIXELS = 40_000_000;
+const MAX_STORED_IMAGE_DIMENSION = 2_560;
 const STORAGE_TIMEOUT_MS = 20_000;
 
 type ImageKind = "jpeg" | "png" | "webp";
 
 type ValidatedImage = {
   bytes: Buffer;
-  kind: ImageKind;
-  extension: "jpg" | "png" | "webp";
-  contentType: "image/jpeg" | "image/png" | "image/webp";
+  extension: "webp";
+  contentType: "image/webp";
   width: number;
   height: number;
 };
@@ -31,10 +31,9 @@ export class ProductMediaStorageError extends Error {
 }
 
 function safeSegment(value: string): string {
-  const normalized = value.replace(/[^a-zA-Z0-9_-]/g, "");
-  if (!normalized)
+  if (!/^[a-zA-Z0-9_-]+$/.test(value))
     throw new ProductMediaStorageError("شناسه مسیر تصویر معتبر نیست.");
-  return normalized;
+  return value;
 }
 
 function storageConfig() {
@@ -117,6 +116,20 @@ function detectKind(bytes: Buffer): ImageKind | null {
   return null;
 }
 
+// libvips can decode APNG as a still image without reporting its frame count.
+// Inspect chunk headers so animation is rejected instead of silently discarded.
+function isAnimatedPng(bytes: Buffer): boolean {
+  for (let offset = 8; offset + 12 <= bytes.length;) {
+    const length = bytes.readUInt32BE(offset);
+    if (length > bytes.length - offset - 12) break;
+    const type = bytes.toString("ascii", offset + 4, offset + 8);
+    if (type === "acTL") return true;
+    if (type === "IEND") break;
+    offset += length + 12;
+  }
+  return false;
+}
+
 async function validateImage(file: File): Promise<ValidatedImage> {
   if (file.size <= 0 || file.size > MAX_IMAGE_BYTES) {
     throw new ProductMediaStorageError(
@@ -136,7 +149,7 @@ async function validateImage(file: File): Promise<ValidatedImage> {
     jpeg: "image/jpeg",
     png: "image/png",
     webp: "image/webp",
-  }[kind] as ValidatedImage["contentType"];
+  }[kind];
 
   if (file.type && file.type !== expectedMime) {
     throw new ProductMediaStorageError(
@@ -156,24 +169,37 @@ async function validateImage(file: File): Promise<ValidatedImage> {
     if (metadata.format !== kind || !metadata.width || !metadata.height) {
       throw new ProductMediaStorageError("قالب یا ابعاد تصویر معتبر نیست.");
     }
-
-    const output = await source
-      .resize({ width: 2000, height: 2000, fit: "inside", withoutEnlargement: true })
-      .webp({ quality: 85, alphaQuality: 100, effort: 5, smartSubsample: true })
-      .toBuffer({ resolveWithObject: true });
-    const { width, height } = output.info;
-
     if (
-      width <= 0 ||
-      height <= 0 ||
-      width > MAX_IMAGE_DIMENSION ||
-      height > MAX_IMAGE_DIMENSION ||
-      width * height > MAX_IMAGE_PIXELS
+      (metadata.pages ?? 1) > 1 ||
+      (kind === "png" && isAnimatedPng(original))
+    ) {
+      throw new ProductMediaStorageError(
+        "تصویر متحرک پشتیبانی نمی‌شود؛ یک عکس ثابت انتخاب کنید.",
+      );
+    }
+    if (
+      metadata.width > MAX_IMAGE_DIMENSION ||
+      metadata.height > MAX_IMAGE_DIMENSION ||
+      metadata.width * metadata.height > MAX_IMAGE_PIXELS
     ) {
       throw new ProductMediaStorageError(
         "ابعاد یا تعداد پیکسل‌های تصویر بیش از حد مجاز است.",
       );
     }
+
+    // Auto-orient before resizing; preserve transparency and strip EXIF/GPS and
+    // other source metadata (sharp's default). All storage providers get WebP.
+    const output = await source
+      .resize({
+        width: MAX_STORED_IMAGE_DIMENSION,
+        height: MAX_STORED_IMAGE_DIMENSION,
+        fit: "inside",
+        withoutEnlargement: true,
+      })
+      .webp({ quality: 85, alphaQuality: 100, effort: 4, smartSubsample: true })
+      .timeout({ seconds: 15 })
+      .toBuffer({ resolveWithObject: true });
+    const { width, height } = output.info;
 
     if (output.data.length > MAX_IMAGE_BYTES) {
       throw new ProductMediaStorageError(
@@ -183,7 +209,6 @@ async function validateImage(file: File): Promise<ValidatedImage> {
 
     return {
       bytes: output.data,
-      kind: "webp",
       extension: "webp",
       contentType: "image/webp",
       width,
@@ -406,10 +431,15 @@ export async function removeStoredProductImage(
   }
 
   if (imageUrl.startsWith("/uploads/products/")) {
+    const objectPath = generatedProductObjectPath(
+      imageUrl.slice("/uploads/".length),
+    );
+    if (!objectPath) return;
     const absolutePath = path.resolve(
       process.cwd(),
       "public",
-      imageUrl.replace(/^\//, ""),
+      "uploads",
+      objectPath,
     );
     const root = `${path.resolve(process.cwd(), "public", "uploads", "products")}${path.sep}`;
     if (absolutePath.startsWith(root)) {

@@ -1,6 +1,8 @@
+import { randomUUID } from "node:crypto";
 import { NextRequest, NextResponse } from "next/server";
 import {
   createCustomerOtpChallenge,
+  customerOtpMinutes,
   normalizeIranMobile,
   type CustomerOtpPurpose,
 } from "@/lib/customer-auth";
@@ -142,18 +144,29 @@ export async function POST(request: NextRequest) {
     );
   }
 
+  // Both real and decoy reset requests have the same public response shape.
+  // A decoy ID is never persisted, so it cannot authorize a password change.
+  const resetResponse = (challenge?: { id: string; expiresAt: Date; code: string }) => NextResponse.json(
+    {
+      successful: true,
+      purpose: "PASSWORD_RESET",
+      challengeId: challenge?.id ?? randomUUID(),
+      expiresAt: (challenge?.expiresAt ?? new Date(Date.now() + customerOtpMinutes() * 60_000)).toISOString(),
+      message: "اگر این شماره حساب فعالی داشته باشد، کد بازیابی ارسال می‌شود.",
+      ...(process.env.NODE_ENV !== "production" && /^\d{6}$/.test(process.env.ELORIA_CUSTOMER_OTP_DEV_CODE?.trim() ?? "")
+        ? { developmentCode: process.env.ELORIA_CUSTOMER_OTP_DEV_CODE!.trim() } : {}),
+    },
+    { status: 200, headers: headers() },
+  );
+
+  try {
   const existing = await prisma.customer.findUnique({
     where: { mobile },
     select: { id: true, isActive: true, passwordHash: true },
   });
 
   if (body.purpose === "PASSWORD_RESET" && (!existing || !existing.isActive)) {
-    // Keep the response intentionally generic so this endpoint cannot be used
-    // to enumerate registered mobile numbers.
-    return NextResponse.json(
-      { successful: true, challengeId: null, message: "اگر این شماره حساب فعالی داشته باشد، کد بازیابی ارسال می‌شود." },
-      { status: 200, headers: headers() },
-    );
+    return resetResponse();
   }
 
   if (body.purpose === "SIGNUP" && existing?.passwordHash) {
@@ -163,7 +176,6 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  try {
     const challenge = await createCustomerOtpChallenge({
       channel: "SMS",
       purpose: body.purpose,
@@ -190,6 +202,7 @@ export async function POST(request: NextRequest) {
           details: { provider: "SMS_IR", configured: sms.configured, purpose: body.purpose },
           dispatchKey: "sms-ir-password-otp-delivery",
         });
+        if (body.purpose === "PASSWORD_RESET") return resetResponse();
         return NextResponse.json(
           { successful: false, message: sms.configured ? "ارسال پیامک ناموفق بود. لطفاً دوباره تلاش کنید." : "سامانه پیامک پیکربندی نشده است." },
           { status: 503, headers: headers() },
@@ -197,6 +210,7 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    if (body.purpose === "PASSWORD_RESET") return resetResponse(challenge);
     return NextResponse.json(
       {
         successful: true,
@@ -220,6 +234,7 @@ export async function POST(request: NextRequest) {
       details: { reason: "password-otp-request-error", errorType: error instanceof Error ? error.name : "unknown" },
       dispatchKey: "customer-password-otp-request-error",
     });
+    if (body.purpose === "PASSWORD_RESET") return resetResponse();
     return NextResponse.json(
       { successful: false, message: "ارسال کد در حال حاضر امکان‌پذیر نیست." },
       { status: 500, headers: headers() },

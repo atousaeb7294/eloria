@@ -152,6 +152,10 @@ export function calculateCatalogPrice({
     return product.currency === "TOMAN" && product.manualPrice && BigInt(product.manualPrice) > 0n ? BigInt(product.manualPrice) + PACKAGING_TOMAN : null;
   }
 
+  if ((!product.hasGold && !product.hasSilver) ||
+      (product.material === "GOLD" && !product.hasGold) ||
+      (product.material === "SILVER" && !product.hasSilver)) return null;
+
   if (product.hasGold && product.hasSilver) {
     if (!product.goldComponentWeight || !product.silverComponentWeight) return null;
     const metals = (["GOLD", "SILVER"] as const).map(material => {
