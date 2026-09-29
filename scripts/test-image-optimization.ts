@@ -21,7 +21,7 @@ async function main() {
       const metadata = await sharp(stored.bytes).metadata();
       assert.equal(stored.contentType, "image/webp");
       assert.equal(metadata.format, "webp");
-      assert.equal(metadata.width, 2000); assert.equal(metadata.height, 1000);
+      assert.equal(metadata.width, 2560); assert.equal(metadata.height, 1280);
       if (format !== "jpeg") assert.equal(metadata.hasAlpha, true);
       assert.ok(stored.bytes.length < input.length, "these large fixtures should shrink");
     }
@@ -29,7 +29,7 @@ async function main() {
     await storeProductImage("image-test", new File([new Uint8Array(small)], "small.png", { type: "image/png" }));
     assert.equal((await sharp(getCaptured().bytes).metadata()).width, 40);
     await assert.rejects(() => storeProductImage("image-test", new File(["fake"], "fake.png", { type: "image/png" })));
-    console.log("PASS: WebP conversion, 2000px limit, aspect ratio, transparency, no upscaling, fixture compression and invalid file rejection.");
+    console.log("PASS: WebP conversion, 2560px limit, aspect ratio, transparency, no upscaling, fixture compression and invalid file rejection.");
   } finally { prisma.productMediaAsset.create = original; }
 }
 main().catch(error => { console.error(error); process.exitCode = 1; });

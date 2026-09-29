@@ -90,8 +90,9 @@
     "test:product-presentation": "node --import tsx scripts/test-weight-units.mjs && node --import tsx scripts/test-product-presentation.ts && node --import tsx scripts/test-treasury-pricing.ts",
     "test:security-regressions": "node --import tsx scripts/test-security-regressions.ts",
     "test:storefront-seo": "node --import tsx scripts/test-storefront-seo-regressions.ts",
-    "test:audit-regressions": "npm run test:motion && npm run test:media && npm run test:product-presentation && npm run test:security-regressions && npm run test:storefront-seo && npm run test:uploaded-story",
-    "test:uploaded-story": "node --import tsx scripts/test-treasury-story.ts && node --import tsx scripts/test-treasury-media.ts"
+    "test:audit-regressions": "npm run test:source-integrity && npm run test:motion && npm run test:media && npm run test:product-presentation && npm run test:security-regressions && npm run test:storefront-seo && npm run test:uploaded-story",
+    "test:uploaded-story": "node --import tsx scripts/test-treasury-story.ts && node --import tsx scripts/test-treasury-media.ts",
+    "test:source-integrity": "node scripts/test-source-integrity.mjs"
   },
   "dependencies": {
     "@base-ui/react": "^1.6.0",

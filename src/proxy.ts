@@ -10,7 +10,10 @@ function contentSecurityPolicy(nonce: string): string {
     // Next applies the nonce to framework style tags. Inline style attributes
     // remain limited to presentation only; this is required by next/image and
     // the existing motion layout, while script execution stays strict.
-    `style-src 'self' 'nonce-${nonce}'`,
+    // Development style injection has no nonce; keep production nonce-based.
+    isProduction
+      ? `style-src 'self' 'nonce-${nonce}'`
+      : "style-src 'self' 'unsafe-inline'",
     "style-src-attr 'unsafe-inline'",
     "script-src-attr 'none'",
     `img-src 'self' data: blob: ${publicImageSources().join(" ")}`,
@@ -63,4 +66,3 @@ export const config = {
     },
   ],
 };
-

@@ -61,7 +61,31 @@ test("chapters land fully, thumbnails match membership, footer releases", async 
   for (let index = 1; index <= 3; index++) {
     if (info.project.name.includes("mobile")) {
       // Native page movement followed by touch/scroll idle settling.
-      await page.evaluate(() => window.scrollBy(0, window.innerHeight * 0.25));
+      const touch = await page.context().newCDPSession(page);
+      const size = page.viewportSize()!;
+      const x = Math.round(size.width * 0.5);
+      const startY = Math.round(size.height * 0.72);
+      try {
+        await touch.send("Input.dispatchTouchEvent", {
+          type: "touchStart", touchPoints: [{ x, y: startY }]
+        });
+        for (let step = 1; step <= 12; step++) {
+          await touch.send("Input.dispatchTouchEvent", {
+            type: "touchMove",
+            touchPoints: [{
+              x, y: Math.round(startY - size.height * 0.35 * step / 12)
+            }]
+          });
+          await page.evaluate(() =>
+            new Promise<void>(resolve => requestAnimationFrame(() => resolve()))
+          );
+        }
+        await touch.send("Input.dispatchTouchEvent", {
+          type: "touchEnd", touchPoints: []
+        });
+      } finally {
+        await touch.detach();
+      }
     } else {
       await page.mouse.move(700, 400);
       await page.mouse.wheel(0, 100);
@@ -102,5 +126,37 @@ test("reduced motion leaves all chapters reachable in normal flow", async ({
   );
   await expect(page.locator("[data-promenade-chapter][inert]")).toHaveCount(0);
   await page.locator("#treasury-weave").scrollIntoViewIfNeeded();
-  await expect(page.getByRole("heading", { name: "تار جان" })).toBeVisible();
+  await expect(page.locator('#treasury-weave .eloria-treasury-enter')).toBeVisible();
+});
+
+test("navigation leaves no running story animation and loads the treasury", async ({ page }) => {
+  const errors: string[] = [];
+  page.on("pageerror", error => errors.push(error.message));
+  await page.goto("/fa#treasury-gold");
+  const story = page.locator('.eloria-promenade');
+  await expect(story).toHaveAttribute('data-story-chapter', '1');
+  await page.locator('#treasury-gold .eloria-treasury-enter').click();
+  await expect(page).toHaveURL(/\/fa\/collections\/gold/);
+  await expect(page.locator('#main-content')).toBeVisible();
+  await expect(story).toHaveCount(0);
+  expect(errors).toEqual([]);
+});
+
+test("wheel burst stays on one chapter and home resets", async ({ page }, info) => {
+  test.skip(info.project.name.includes('mobile'), 'desktop wheel interaction');
+  await page.goto('/fa');
+  const story = page.locator('.eloria-promenade');
+  await expect(story).toHaveAttribute('data-story-enhanced', '');
+  await page.mouse.move(700, 400);
+  await page.evaluate(async () => {
+    for (let index = 0; index < 20; index++) {
+      window.dispatchEvent(new WheelEvent('wheel', { deltaY:120, cancelable:true }));
+      await new Promise(resolve => setTimeout(resolve, 80));
+    }
+  });
+  await expect(story).toHaveAttribute('data-story-chapter', '1');
+  await expect(story).not.toHaveAttribute('data-story-moving', 'true');
+  await page.evaluate(() => window.dispatchEvent(new Event('eloria:reset-home')));
+  await expect(story).toHaveAttribute('data-story-chapter', '0');
+  expect(await page.evaluate(() => window.scrollY)).toBe(0);
 });

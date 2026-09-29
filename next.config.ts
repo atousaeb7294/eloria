@@ -117,7 +117,7 @@ const imageSourceDirective = isProduction
 const staticContentSecurityPolicy = [
   "default-src 'self'",
   `script-src 'self' https://challenges.cloudflare.com${isProduction ? "" : " 'unsafe-eval'"}`,
-  "style-src 'self'",
+  isProduction ? "style-src 'self'" : "style-src 'self' 'unsafe-inline'",
   "style-src-attr 'unsafe-inline'",
   "script-src-attr 'none'",
   `img-src ${imageSourceDirective}`,
@@ -135,6 +135,7 @@ const staticContentSecurityPolicy = [
 ].join("; ");
 
 const nextConfig: NextConfig = {
+  allowedDevOrigins: ["127.0.0.1", "localhost"],
   output: "standalone",
 
   deploymentId:
