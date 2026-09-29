@@ -272,7 +272,7 @@ export function TreasuryProductSalon({
                   tabIndex={index === selected ? 0 : -1}
                 >
                   {fa ? "دیدن صفحهٔ اثر" : "View creation"}
-                  <span aria-hidden="true"> ↗</span>
+                  <svg aria-hidden="true" focusable="false" viewBox="0 0 16 16" width="16" height="16" className="inline-block shrink-0 align-middle" fill="none"><path d="M8 1.5 14.5 8 8 14.5 1.5 8Z" stroke="currentColor" strokeWidth="1.2"/><circle cx="8" cy="8" r="1.5" fill="currentColor"/></svg>
                 </TreasuryLink>
                   </div>
                 </div>
@@ -400,7 +400,7 @@ export function TreasuryProductSalon({
                 direction="up"
                 onClick={() => dialog.current?.close()}
               >
-                {fa ? "مشخصات کامل و انتخاب مدل" : "Full details and options"} ↗
+                {fa ? "مشخصات کامل و انتخاب مدل" : "Full details and options"} <svg aria-hidden="true" focusable="false" viewBox="0 0 16 16" width="16" height="16" className="inline-block shrink-0 align-middle" fill="none"><path d="M8 1.5 14.5 8 8 14.5 1.5 8Z" stroke="currentColor" strokeWidth="1.2"/><circle cx="8" cy="8" r="1.5" fill="currentColor"/></svg>
               </TreasuryLink>
             </>
           )}

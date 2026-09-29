@@ -1,54 +1,45 @@
 "use client";
 
-import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { ViewTransition, type ComponentProps, type ReactNode } from "react";
+import Link, { useLinkStatus } from "next/link";
+import { type ComponentProps, type ReactNode } from "react";
+import { createPortal } from "react-dom";
 
-/** React owns the route commit and image readiness. No competing DOM snapshot,
- * pathname timer or forced skip while a destination is still loading. */
+// Route content must render without waiting for a view-transition snapshot.
+// The independent 3D treasury-story controller remains unchanged.
 export function TreasuryPageTransition({ children }: { children: ReactNode }) {
-  const pathname = usePathname();
-  return (
-    <ViewTransition
-      key={pathname}
-      name="eloria-page-content"
-      default="none"
-      enter={{
-        "treasury-up": "eloria-page-up",
-        "treasury-left": "eloria-page-forward",
-        default: "none",
-      }}
-      exit={{
-        "treasury-up": "eloria-page-up",
-        "treasury-left": "eloria-page-forward",
-        default: "none",
-      }}
-      share={{
-        "treasury-up": "eloria-page-up",
-        "treasury-left": "eloria-page-forward",
-        default: "eloria-page-fade",
-      }}
-    >
-      {children}
-    </ViewTransition>
+  return <>{children}</>;
+}
+
+function NavigationStatus() {
+  const { pending } = useLinkStatus();
+  if (!pending) return null;
+  return createPortal(
+    <div role="status" aria-live="polite" className="pointer-events-none fixed inset-x-4 bottom-6 z-[10000] mx-auto w-fit rounded-2xl border border-[#ead3a0]/40 bg-[#062c20] px-6 py-3 text-center text-sm text-[#f8f0df] shadow-xl">
+      <span lang="fa" dir="rtl">در حال بازکردن صفحه…</span>
+      <span lang="en" className="ms-2 text-xs">Loading…</span>
+    </div>,
+    document.body,
   );
 }
 
 export function TreasuryLink({
   direction = "left",
-  transitionTypes,
+  children,
   onNavigate,
   ...props
-}: ComponentProps<typeof Link> & {
-  direction?: "left" | "up";
-}) {
+}: ComponentProps<typeof Link> & { direction?: "left" | "up" }) {
   return <Link
     {...props}
-    transitionTypes={[`treasury-${direction}`, ...(transitionTypes ?? [])]}
+    data-navigation-direction={direction}
+    prefetch={props.prefetch ?? true}
+    transitionTypes={[]}
     onNavigate={(event) => {
       let cancelled = false;
       onNavigate?.({ preventDefault: () => { cancelled = true; event.preventDefault(); } });
       if (!cancelled) window.dispatchEvent(new Event("eloria:navigate"));
     }}
-  />;
+  >
+    {children}
+    <NavigationStatus />
+  </Link>;
 }
