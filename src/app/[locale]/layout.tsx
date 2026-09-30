@@ -20,6 +20,7 @@ import { SiteMeasurementTracker } from "@/components/site-measurement-tracker";
 import { SiteStructuredData } from "@/components/site-structured-data";
 import { PwaRegistration } from "@/components/pwa-registration";
 import { MarketingAttributionTracker } from "@/components/marketing-attribution-tracker";
+import { CursorGlow } from "@/components/cursor-glow";
 import { HomeNavigationReset } from "@/components/home-navigation-reset";
 
 import { routing } from "@/i18n/routing";
@@ -141,6 +142,7 @@ export default async function LocaleLayout({
         <NextIntlClientProvider locale={locale} messages={messages}>
           <PageBackgroundProvider>
             <HomeNavigationReset />
+            <CursorGlow />
             <SiteStructuredData />
             <PwaRegistration />
             <MarketingAttributionTracker />

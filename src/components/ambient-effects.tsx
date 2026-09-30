@@ -1,7 +1,6 @@
 "use client";
 
 import type { CSSProperties } from "react";
-import { useEffect, useRef } from "react";
 
 type PowderStyle = CSSProperties & {
   "--left": string;
@@ -47,91 +46,6 @@ const goldPowder: PowderStyle[] = Array.from({ length: 18 }, (_, index) => {
 });
 
 export function AmbientEffects() {
-  const cursorGlowRef = useRef<HTMLDivElement>(null);
-  const frameRef = useRef<number | null>(null);
-  const targetRef = useRef({ x: 0, y: 0 });
-  const currentRef = useRef({ x: 0, y: 0 });
-
-  useEffect(() => {
-    const cursorGlow = cursorGlowRef.current;
-    if (!cursorGlow) return;
-
-    const finePointer = window.matchMedia("(pointer: fine)");
-    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
-
-    if (!finePointer.matches || reducedMotion.matches) {
-      cursorGlow.style.display = "none";
-      return;
-    }
-
-    const startX = window.innerWidth / 2;
-    const startY = window.innerHeight / 2;
-    targetRef.current = { x: startX, y: startY };
-    currentRef.current = { x: startX, y: startY };
-
-    const paint = () => {
-      const target = targetRef.current;
-      const current = currentRef.current;
-      const dx = target.x - current.x;
-      const dy = target.y - current.y;
-
-      current.x += dx * 0.16;
-      current.y += dy * 0.16;
-
-      cursorGlow.style.transform = `translate3d(${current.x}px, ${current.y}px, 0) translate(-50%, -50%)`;
-
-      if (Math.abs(dx) > 0.35 || Math.abs(dy) > 0.35) {
-        frameRef.current = window.requestAnimationFrame(paint);
-      } else {
-        current.x = target.x;
-        current.y = target.y;
-        cursorGlow.style.transform = `translate3d(${target.x}px, ${target.y}px, 0) translate(-50%, -50%)`;
-        frameRef.current = null;
-      }
-    };
-
-    const requestPaint = () => {
-      if (frameRef.current === null) {
-        frameRef.current = window.requestAnimationFrame(paint);
-      }
-    };
-
-    const handlePointerMove = (event: PointerEvent) => {
-      targetRef.current = { x: event.clientX, y: event.clientY };
-      cursorGlow.style.opacity = "1";
-      requestPaint();
-    };
-
-    const handlePointerLeave = () => {
-      cursorGlow.style.opacity = "0";
-    };
-
-    const handlePointerEnter = () => {
-      cursorGlow.style.opacity = "1";
-    };
-
-    window.addEventListener("pointermove", handlePointerMove, {
-      passive: true,
-    });
-    document.documentElement.addEventListener("mouseleave", handlePointerLeave);
-    document.documentElement.addEventListener("mouseenter", handlePointerEnter);
-
-    return () => {
-      if (frameRef.current !== null) {
-        window.cancelAnimationFrame(frameRef.current);
-      }
-      window.removeEventListener("pointermove", handlePointerMove);
-      document.documentElement.removeEventListener(
-        "mouseleave",
-        handlePointerLeave,
-      );
-      document.documentElement.removeEventListener(
-        "mouseenter",
-        handlePointerEnter,
-      );
-    };
-  }, []);
-
   return (
     <div aria-hidden="true" className="ambient-effects">
       <div className="gold-powder-field">
@@ -140,7 +54,6 @@ export function AmbientEffects() {
         ))}
       </div>
 
-      <div ref={cursorGlowRef} className="cursor-glow" />
 
       <style jsx>{`
         .ambient-effects {
@@ -153,29 +66,6 @@ export function AmbientEffects() {
           overflow: hidden;
           pointer-events: none;
           contain: layout paint style;
-        }
-
-        .cursor-glow {
-          position: fixed;
-          top: 0;
-          left: 0;
-          width: min(28rem, 52vw);
-          height: min(28rem, 52vw);
-          border-radius: 9999px;
-          opacity: 0;
-          pointer-events: none;
-          will-change: transform, opacity;
-          transition: opacity 360ms ease;
-          mix-blend-mode: screen;
-          background: radial-gradient(
-            circle at center,
-            rgba(255, 237, 184, 0.2) 0%,
-            rgba(217, 184, 101, 0.12) 17%,
-            rgba(22, 132, 97, 0.09) 39%,
-            rgba(5, 64, 44, 0.035) 58%,
-            transparent 74%
-          );
-          filter: blur(7px);
         }
 
         .gold-powder-field {
@@ -240,20 +130,12 @@ export function AmbientEffects() {
         }
 
         @media (max-width: 768px), (update: slow) {
-          .cursor-glow {
-            display: none;
-          }
-
           .gold-powder-grain:nth-child(2n) {
             display: none;
           }
         }
 
         @media (prefers-reduced-motion: reduce) {
-          .cursor-glow {
-            display: none;
-          }
-
           .gold-powder-grain {
             animation: none;
           }
