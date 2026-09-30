@@ -2,6 +2,13 @@ import { Prisma } from "@/generated/prisma/client";
 import { restoreReservedInventory } from "@/lib/inventory";
 import { prisma, withDatabaseRetry } from "@/lib/prisma";
 
+export class CustomerOrderError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "CustomerOrderError";
+  }
+}
+
 export async function cancelCustomerOrder(customerId: string, orderId: string) {
   return withDatabaseRetry(() => prisma.$transaction(async tx => {
     await tx.$queryRaw`SELECT id FROM orders WHERE id = ${orderId}::uuid AND "customerId" = ${customerId}::uuid FOR UPDATE`;
@@ -15,11 +22,11 @@ export async function cancelCustomerOrder(customerId: string, orderId: string) {
         inventoryReleasedAt: true,
       },
     });
-    if (!order) throw new Error("سفارش پیدا نشد.");
+    if (!order) throw new CustomerOrderError("سفارش پیدا نشد.");
     if (!["PENDING_PAYMENT", "PAYMENT_FAILED"].includes(order.status)) {
-      throw new Error("این سفارش دیگر قابل لغو مستقیم نیست.");
+      throw new CustomerOrderError("این سفارش دیگر قابل لغو مستقیم نیست.");
     }
-    if (order.inventoryCommittedAt) throw new Error("موجودی این سفارش قطعی شده و لغو مستقیم مجاز نیست.");
+    if (order.inventoryCommittedAt) throw new CustomerOrderError("موجودی این سفارش قطعی شده و لغو مستقیم مجاز نیست.");
 
     const now = new Date();
     const inventory = order.inventoryReleasedAt ? null : await restoreReservedInventory(tx, order.id);

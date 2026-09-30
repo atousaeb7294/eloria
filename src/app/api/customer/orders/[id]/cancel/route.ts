@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getCustomerFromRequest } from "@/lib/customer-auth";
-import { cancelCustomerOrder } from "@/lib/customer-order-operations";
+import { cancelCustomerOrder, CustomerOrderError } from "@/lib/customer-order-operations";
 import { hasTrustedOrigin } from "@/lib/security/request";
 
 export const runtime = "nodejs";
@@ -15,6 +15,10 @@ export async function POST(request: NextRequest, context: Context) {
     const order = await cancelCustomerOrder(auth.customer.id, id);
     return NextResponse.json({ successful: true, order });
   } catch (error) {
-    return NextResponse.json({ successful: false, message: error instanceof Error ? error.message : "لغو سفارش ناموفق بود." }, { status: 409 });
+    if (error instanceof CustomerOrderError) {
+      return NextResponse.json({ successful: false, message: error.message }, { status: 409 });
+    }
+    console.error("[Eloria Order Cancellation] Unexpected cancellation failure.", error);
+    return NextResponse.json({ successful: false, message: "لغو سفارش ناموفق بود. لطفاً دوباره تلاش کنید." }, { status: 500 });
   }
 }

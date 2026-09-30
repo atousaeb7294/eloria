@@ -66,7 +66,11 @@ assert.equal(livePriceCard.includes("if (initialPriceToman)"), false);
 
 const productPage = source("src/app/[locale]/products/[slug]/page.tsx");
 assert.equal(productPage.includes("to_jsonb(product_row)"), true);
-assert.equal(productPage.includes("disabled={!canPurchase}"), true);
+assert.equal(productPage.includes("<LivePurchaseBox"), true);
+const livePurchase = source("src/components/live-purchase-box.tsx");
+assert.equal(livePurchase.includes("disabled={!purchasable}"), true);
+assert.match(livePurchase, /checked\s*&&\s*!error\s*&&\s*!!quote\?\.product\.isPurchasable/);
+assert.equal(livePurchase.includes("quote.liveRate.isUsableForSale"), true);
 
 for (const migration of [
   "prisma/migrations/20260825070000_add_product_myth_fields/migration.sql",

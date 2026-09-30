@@ -207,7 +207,19 @@ export function LivePurchaseBox({
             : "The latest price is unavailable. Purchase resumes after the rate is checked."}
         </p>
       )}
-      {quote && stock <= 0 ? (
+      {!checked || error || !quote ? (
+        <div role="status" aria-live="polite" aria-busy={!error}>
+          <button
+            type="button"
+            disabled
+            className="flex min-h-14 w-full cursor-not-allowed items-center justify-center rounded-full border border-white/10 px-7 text-sm text-white/60"
+          >
+            {error
+              ? fa ? "بررسی قیمت و موجودی ناموفق بود" : "Price and availability check failed"
+              : fa ? "در حال بررسی قیمت و موجودی…" : "Checking price and availability…"}
+          </button>
+        </div>
+      ) : stock <= 0 ? (
         <Link
           className="inline-flex min-h-12 w-full cursor-pointer items-center justify-center rounded-xl border border-[#ead18a] bg-[linear-gradient(135deg,#b49445,#efd58b)] px-5 py-3 text-center text-sm font-semibold text-[#10251c] shadow-[0_4px_16px_rgba(207,180,95,0.15)] transition-[filter,box-shadow] duration-150 hover:brightness-110 active:brightness-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#f6e8c6] focus-visible:ring-offset-2 focus-visible:ring-offset-[#031a13]"
           href={`/${locale}/preorder/${slug}`}

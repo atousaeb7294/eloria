@@ -136,6 +136,9 @@ jobs:
       - name: Lint
         run: npm run lint
 
+      - name: Test purchase loading and storefront regressions
+        run: npm run test:live-purchase && npm run test:critical
+
       - name: Test signed tokens
         run: npm run test:tokens
 

@@ -234,6 +234,7 @@ export function AddToCartButton({
             type="button"
             onClick={increaseQuantity}
             disabled={
+              isUnavailable ||
               quantity >=
                 safeMaximum ||
               quantity >= 99

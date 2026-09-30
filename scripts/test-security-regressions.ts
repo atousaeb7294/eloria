@@ -210,5 +210,29 @@ async function paymentTests() {
   console.log("PASS payment stale cancellation, delayed success, lease ownership, retries, replay, duplicate payment fallback, protocol review");
 }
 
-async function main() { await authTests(); await paymentTests(); }
+async function cancellationTests() {
+  const operations = load("src/lib/customer-order-operations.ts", {
+    "@/generated/prisma/client": {},
+    "@/lib/inventory": {},
+    "@/lib/prisma": {},
+  });
+  let failure: Error = new Error("private SQL database connection details");
+  const route = load("src/app/api/customer/orders/[id]/cancel/route.ts", {
+    "next/server": { NextResponse: { json: (body: unknown, options: { status: number }) => ({ body, status: options.status }) } },
+    "@/lib/customer-auth": { getCustomerFromRequest: async () => ({ customer: { id: "customer" } }) },
+    "@/lib/security/request": { hasTrustedOrigin: () => true },
+    "@/lib/customer-order-operations": { ...operations, cancelCustomerOrder: async () => { throw failure; } },
+  });
+  const context = { params: Promise.resolve({ id: "order" }) };
+  const unexpected = await route.POST({}, context);
+  assert.equal(unexpected.status, 500);
+  assert.doesNotMatch(JSON.stringify(unexpected.body), /private|SQL|database/);
+  failure = new operations.CustomerOrderError("سفارش پیدا نشد.");
+  const expected = await route.POST({}, context);
+  assert.equal(expected.status, 409);
+  assert.equal(expected.body.message, failure.message);
+  console.log("PASS cancellation hides infrastructure errors and preserves safe business errors");
+}
+
+async function main() { await authTests(); await paymentTests(); await cancellationTests(); }
 main().catch(error => { console.error(error); process.exitCode = 1; });
