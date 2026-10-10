@@ -35,6 +35,18 @@ COPY package.json package-lock.json prisma.config.ts ./
 COPY prisma ./prisma
 CMD ["./node_modules/.bin/prisma", "migrate", "deploy"]
 
+# Optional independent backup/readiness worker (enable compose profile operations).
+FROM node:22-alpine AS operations
+WORKDIR /app
+RUN apk add --no-cache postgresql-client
+COPY --from=deps /app/node_modules ./node_modules
+COPY package.json package-lock.json ./
+RUN npm prune --omit=dev --ignore-scripts --no-audit --no-fund
+COPY scripts/operations-agent.mjs scripts/backup-database.mjs ./scripts/
+RUN addgroup --system --gid 1001 nodejs && adduser --system --uid 1001 nextjs && mkdir -p /var/lib/eloria/backups /var/lib/eloria/operations && chown -R nextjs:nodejs /var/lib/eloria
+USER nextjs
+CMD ["node", "scripts/operations-agent.mjs"]
+
 FROM node:22-alpine AS runner
 WORKDIR /app
 ENV NODE_ENV=production
@@ -48,6 +60,7 @@ COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 COPY --from=builder --chown=nextjs:nodejs /app/scripts/start-production.mjs ./scripts/start-production.mjs
 COPY --from=builder --chown=nextjs:nodejs /app/scripts/seo-scheduler.mjs ./scripts/seo-scheduler.mjs
+COPY --from=builder --chown=nextjs:nodejs /app/scripts/maintenance-scheduler.mjs ./scripts/maintenance-scheduler.mjs
 USER nextjs
 EXPOSE 3000
 HEALTHCHECK --interval=30s --timeout=5s --start-period=30s --retries=3 \

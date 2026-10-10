@@ -1,7 +1,7 @@
 "use client";
 
 import { formatWeightSoot } from "@/lib/weight-units";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { AddToCartButton } from "@/components/add-to-cart-button";
 import type { ProductPriceResult } from "@/lib/product-pricing";
@@ -24,15 +24,25 @@ export function LivePurchaseBox({
   const [error, setError] = useState(false);
   const [checked, setChecked] = useState(false);
   const [updated, setUpdated] = useState("");
+  const [refreshing, setRefreshing] = useState(false);
+  const [failure, setFailure] = useState<"offline" | "timeout" | "unavailable">("unavailable");
+  const retryRef = useRef<() => void>(() => {});
+  const validUntil = useRef(0);
   useEffect(() => {
     let controller: AbortController | null = null;
     let busy = false;
     let disposed = false;
+    let expiryTimer = 0;
+    validUntil.current = 0;
     async function refresh() {
       if (busy || document.visibilityState === "hidden") return;
       busy = true;
-      controller = new AbortController();
-      const timeout = window.setTimeout(() => controller?.abort(), 12000);
+      setRefreshing(true);
+      if (performance.now() >= validUntil.current) setChecked(false);
+      const activeController = new AbortController();
+      controller = activeController;
+      const timeout = window.setTimeout(() => activeController.abort(), 12000);
+      const requestedAt = performance.now();
       try {
         const query = variantId
           ? `?variantId=${encodeURIComponent(variantId)}`
@@ -44,24 +54,35 @@ export function LivePurchaseBox({
         const result = (await response.json()) as ProductPriceResult & {
           successful?: boolean;
         };
-        if (!response.ok || !result.successful)
+        if (!response.ok || !result.successful || !result.product || !result.pricing || !result.quote)
           throw new Error("quote unavailable");
+        const expiresIn = Date.parse(result.quote.expiresAt) - Date.parse(result.quote.generatedAt)
+          - (performance.now() - requestedAt);
+        if (!Number.isFinite(expiresIn) || expiresIn <= 0) throw new Error("quote expired");
         if (!disposed) {
           setQuote(result);
           setError(false);
           setChecked(true);
+          validUntil.current = performance.now() + Math.min(expiresIn, 120000);
           setUpdated(new Date().toLocaleTimeString(fa ? "fa-IR" : "en-GB"));
+          window.clearTimeout(expiryTimer);
+          expiryTimer = window.setTimeout(() => {
+            if (!disposed) { setChecked(false); setError(true); }
+          }, Math.min(expiresIn, 120000));
         }
       } catch {
         if (!disposed) {
           setError(true);
           setChecked(false);
+          setFailure(!navigator.onLine ? "offline" : activeController.signal.aborted ? "timeout" : "unavailable");
         }
       } finally {
         clearTimeout(timeout);
         busy = false;
+        if (!disposed) setRefreshing(false);
       }
     }
+    retryRef.current = () => void refresh();
     void refresh();
     const interval = window.setInterval(() => void refresh(), 30000);
     const resume = () => void refresh();
@@ -72,6 +93,8 @@ export function LivePurchaseBox({
       disposed = true;
       controller?.abort();
       clearInterval(interval);
+      window.clearTimeout(expiryTimer);
+      retryRef.current = () => {};
       window.removeEventListener("focus", resume);
       window.removeEventListener("online", resume);
       document.removeEventListener("visibilitychange", resume);
@@ -91,6 +114,8 @@ export function LivePurchaseBox({
     checked &&
     !error &&
     !!quote?.product.isPurchasable &&
+    quote.product.slug === slug &&
+    (!variantId || quote.variant?.id === variantId) &&
     (!quote.liveRate || quote.liveRate.isUsableForSale);
   const weight =
     quote?.variant?.weightGrams ?? b?.weightGrams ?? quote?.product.weightGrams;
@@ -109,7 +134,7 @@ export function LivePurchaseBox({
         <h3>{fa ? "مشخصات محصول" : "Product details"}</h3>
         <span className="text-[10px] opacity-70">
           {updated
-            ? `${fa ? "به‌روز در" : "Updated"} ${updated}`
+            ? `${fa ? "بررسی قیمت در" : "Quote checked at"} ${updated}`
             : fa
               ? "در حال بررسی"
               : "Checking"}
@@ -121,7 +146,15 @@ export function LivePurchaseBox({
             ? fa ? "نرخ خام هر گرم طلا" : "Live raw gold rate / g"
             : fa ? "نرخ خام هر گرم نقره" : "Live raw silver rate / g"}</span>
           <strong>{Number(quote.liveRate.originalPricePerGramToman).toLocaleString(fa ? "fa-IR" : "en-US", { maximumFractionDigits: 0 })} {fa ? "تومان" : "toman"}</strong>
-          <small>{fa ? "نرخ مبنای همین بررسی قیمت" : "Source rate for this quote"}</small>
+          <small>{fa ? "زمان نرخ بازار: " : "Market rate timestamp: "}
+            {quote.liveRate.marketTimestamp && Number.isFinite(Date.parse(quote.liveRate.marketTimestamp))
+              ? new Date(quote.liveRate.marketTimestamp).toLocaleString(fa ? "fa-IR" : "en-GB", { timeZone: "Asia/Tehran" })
+              : fa ? "نامشخص" : "Unavailable"}
+            {fa ? " (تهران)" : " (Tehran)"}
+          </small>
+          {quote.liveRate.saleMode === "CLOSED_MARKET" && <small role="status">
+            {fa ? "بازار بسته؛ محاسبه با آخرین نرخ مجاز ثبت‌شده" : "Market closed; using the last permitted recorded rate"}
+          </small>}
         </div>
       )}
       {quote ? (
@@ -207,6 +240,15 @@ export function LivePurchaseBox({
             : "The latest price is unavailable. Purchase resumes after the rate is checked."}
         </p>
       )}
+      {error && <div className="mb-4 space-y-2">
+        <p className="text-xs" role="status">{failure === "offline"
+          ? fa ? "اتصال اینترنت را بررسی کنید." : "Check your internet connection."
+          : failure === "timeout" ? fa ? "پاسخ بیش از حد طول کشید." : "The request timed out." : null}</p>
+        <button type="button" disabled={refreshing} onClick={() => retryRef.current()}
+          className="min-h-12 w-full rounded-full border border-[#ead18a] px-5 py-3 disabled:opacity-50">
+          {refreshing ? fa ? "در حال تلاش دوباره…" : "Retrying…" : fa ? "تلاش دوباره" : "Try again"}
+        </button>
+      </div>}
       {!checked || error || !quote ? (
         <div role="status" aria-live="polite" aria-busy={!error}>
           <button

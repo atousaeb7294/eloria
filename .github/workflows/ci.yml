@@ -136,6 +136,9 @@ jobs:
       - name: Lint
         run: npm run lint
 
+      - name: Test audit fixes
+        run: npm run test:audit-fixes
+
       - name: Test purchase loading and storefront regressions
         run: npm run test:live-purchase && npm run test:critical
 
@@ -190,8 +193,13 @@ jobs:
           ELORIA_PROXY_PROVIDER: generic
           NEXT_PUBLIC_TURNSTILE_SITE_KEY: 1x00000000000000000000AA
           TURNSTILE_SECRET_KEY: 1x0000000000000000000000000000000AA
-          KAVENEGAR_API_KEY: ci-kavenegar-api-key-1234567890
-          ZARINPAL_MERCHANT_ID: 00000000-0000-0000-0000-000000000000
+          ELORIA_CUSTOMER_SMS_OTP_ENABLED: "true"
+          SMS_IR_API_KEY: ci-sms-ir-key-1234567890123456
+          SMS_IR_VERIFY_TEMPLATE_ID: "123456"
+          SMS_IR_VERIFY_PARAMETER: Code
+          ZIBAL_MERCHANT: ci-zibal-merchant-123456789
+          ELORIA_EMBEDDED_METAL_SYNC_ENABLED: "true"
+          ELORIA_EMBEDDED_METAL_SYNC_INTERVAL_MINUTES: "5"
           ELORIA_LEGAL_SELLER_NAME: "ELORIA CI Seller"
           ELORIA_LEGAL_BUSINESS_ADDRESS: "CI-only automated test address"
           ELORIA_LEGAL_SUPPORT_EMAIL: "ci@eloria.invalid"

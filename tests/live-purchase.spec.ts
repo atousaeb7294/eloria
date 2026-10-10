@@ -6,6 +6,7 @@ const quote = (stock: number, purchasable = true) => ({
   variant: null,
   pricing: { mode: "MANUAL", finalPriceToman: "1000000", breakdown: null },
   liveRate: null,
+  quote: { generatedAt: new Date().toISOString(), expiresAt: new Date(Date.now() + 120000).toISOString() },
 });
 
 for (const locale of ["fa", "en"]) {
@@ -36,7 +37,10 @@ for (const locale of ["fa", "en"]) {
       respond!();
     };
     status = 200;
-    await refresh();
+    respond = undefined;
+    await box.getByRole("button", { name: locale === "fa" ? "تلاش دوباره" : "Try again", exact: true }).click();
+    await expect.poll(() => Boolean(respond)).toBe(true);
+    respond!();
     await box.getByRole("button", { name: locale === "fa" ? "افزودن به سبد خرید" : "Add to shopping bag" }).click();
     const increase = box.getByRole("button", { name: locale === "fa" ? "افزایش تعداد" : "Increase quantity" });
     await expect(increase).toBeEnabled();

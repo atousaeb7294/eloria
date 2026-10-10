@@ -29,7 +29,7 @@ function connection(raw) {
     PGDATABASE: decodeURIComponent(u.pathname.slice(1)),
     PGUSER: decodeURIComponent(u.username),
     PGPASSWORD: decodeURIComponent(u.password),
-    PGSSLMODE: u.searchParams.get("sslmode") || "require",
+    PGSSLMODE: u.searchParams.get("sslmode") || "verify-full",
   };
 }
 function run(binary, args, env) {

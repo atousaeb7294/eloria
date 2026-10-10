@@ -12,7 +12,8 @@ export function PwaRegistration() {
       });
     };
 
-    window.addEventListener("load", register, { once: true });
+    if (document.readyState === "complete") register();
+    else window.addEventListener("load", register, { once: true });
     return () => window.removeEventListener("load", register);
   }, []);
 

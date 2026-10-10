@@ -2,6 +2,7 @@ import { randomUUID } from "node:crypto";
 import { mkdir, unlink, writeFile } from "node:fs/promises";
 import path from "node:path";
 import sharp from "sharp";
+import { invalidatePublicMedia } from "@/lib/public-media-cache";
 import { prisma } from "@/lib/prisma";
 
 const MAX_IMAGE_BYTES = 8 * 1024 * 1024;
@@ -394,6 +395,7 @@ export async function removeStoredProductImage(
       .catch((error) => {
         console.error("[Eloria Media] Unable to remove stored image.", error);
       });
+    invalidatePublicMedia();
     return;
   }
   const config = storageConfig();

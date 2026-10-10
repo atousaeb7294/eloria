@@ -1,3 +1,4 @@
+import { createSingleFlight } from "@/lib/single-flight";
 import { PACKAGING_TOMAN } from "@/lib/commerce-policy";
 import {
   getCatalogPricingCandidates,
@@ -8,10 +9,6 @@ import {
   type ProductCatalogFilters,
 } from "@/lib/catalog";
 import { normalizeCatalogPage } from "@/lib/catalog-pagination";
-import {
-  getRecentlyUsedCacheEntry,
-  setBoundedExpiringCacheEntry,
-} from "@/lib/expiring-cache";
 import { getMetalRateFreshness } from "@/lib/metal-rate-freshness";
 import { getMetalRateSaleDecision } from "@/lib/metal-rate-sale-policy";
 import { calculateEloriaCompositeJewelryPrice, calculateEloriaJewelryPrice } from "@/lib/pricing-engine";
@@ -59,33 +56,7 @@ function isCatalogPricingPageResult(
   );
 }
 
-type PricedCatalogCacheEntry = {
-  value: PricedProductsCatalogResult;
-  freshUntil: number;
-  staleUntil: number;
-};
-
-type PricedCatalogGlobal = typeof globalThis & {
-  __eloriaPricedCatalogCache?: Map<string, PricedCatalogCacheEntry>;
-  __eloriaPricedCatalogInflight?: Map<
-    string,
-    Promise<PricedProductsCatalogResult>
-  >;
-};
-
-const pricedCatalogGlobal = globalThis as PricedCatalogGlobal;
-const pricedCatalogCache =
-  pricedCatalogGlobal.__eloriaPricedCatalogCache ??
-  new Map<string, PricedCatalogCacheEntry>();
-const pricedCatalogInflight =
-  pricedCatalogGlobal.__eloriaPricedCatalogInflight ??
-  new Map<string, Promise<PricedProductsCatalogResult>>();
-
-pricedCatalogGlobal.__eloriaPricedCatalogCache = pricedCatalogCache;
-pricedCatalogGlobal.__eloriaPricedCatalogInflight = pricedCatalogInflight;
-
-const MAX_PRICED_CATALOG_CACHE_ENTRIES =
-  200;
+const catalogFlight = createSingleFlight(16);
 
 function normalizeDigits(value: string): string {
   const persianDigits = "۰۱۲۳۴۵۶۷۸۹";
@@ -350,60 +321,9 @@ async function loadPricedProductsCatalog(
   };
 }
 
-function refreshPricedCatalog(
-  key: string,
+/** Financial results are never served stale. Deduplicate only in-flight reads. */
+export function getPricedProductsCatalog(
   filters: PricedCatalogFilters,
 ): Promise<PricedProductsCatalogResult> {
-  const existing = pricedCatalogInflight.get(key);
-  if (existing) return existing;
-
-  const request = loadPricedProductsCatalog(filters)
-    .then(value => {
-      const storedAt = Date.now();
-      setBoundedExpiringCacheEntry(
-        pricedCatalogCache,
-        key,
-        {
-          value,
-          freshUntil: storedAt + 30_000,
-          staleUntil: storedAt + 10 * 60_000,
-        },
-        MAX_PRICED_CATALOG_CACHE_ENTRIES,
-        storedAt,
-      );
-      return value;
-    })
-    .finally(() => {
-      pricedCatalogInflight.delete(key);
-    });
-
-  pricedCatalogInflight.set(key, request);
-  return request;
-}
-
-export async function getPricedProductsCatalog(
-  filters: PricedCatalogFilters,
-): Promise<PricedProductsCatalogResult> {
-  const key = getCatalogCacheKey(filters);
-  const cached = getRecentlyUsedCacheEntry(
-    pricedCatalogCache,
-    key,
-  );
-  const now = Date.now();
-
-  if (cached?.freshUntil && cached.freshUntil > now) {
-    return cached.value;
-  }
-
-  if (cached?.staleUntil && cached.staleUntil > now) {
-    void refreshPricedCatalog(key, filters).catch(error => {
-      console.warn(
-        "[Eloria Catalog] Unable to refresh priced catalog; serving stale data.",
-        error,
-      );
-    });
-    return cached.value;
-  }
-
-  return refreshPricedCatalog(key, filters);
+  return catalogFlight(getCatalogCacheKey(filters), () => loadPricedProductsCatalog(filters));
 }

@@ -8,6 +8,22 @@ services:
     networks:
       - eloria-internal
 
+  operations:
+    profiles: [operations]
+    build:
+      context: .
+      target: operations
+    env_file: .env
+    environment:
+      ELORIA_OPERATIONS_STATE_DIR: /var/lib/eloria/operations
+      ELORIA_BACKUP_DIR: /var/lib/eloria/backups
+    restart: unless-stopped
+    volumes:
+      - operations-state:/var/lib/eloria/operations
+      - database-backups:/var/lib/eloria/backups
+    networks:
+      - eloria-internal
+
   caddy:
     image: caddy:2.10-alpine
     env_file: .env
@@ -30,3 +46,5 @@ networks:
 volumes:
   caddy-data:
   caddy-config:
+  operations-state:
+  database-backups:

@@ -146,42 +146,19 @@ function sanitizeDatabaseUrl(
   return parsedUrl.toString();
 }
 
-function databaseSsl(
-  rawUrl: string,
-): false | { rejectUnauthorized: boolean } {
-  const explicitMode =
-    process.env.DATABASE_SSL_MODE
-      ?.trim()
-      .toLowerCase();
-
-  const urlMode =
-    new URL(rawUrl)
-      .searchParams
-      .get("sslmode")
-      ?.trim()
-      .toLowerCase();
-
-  const mode =
-    explicitMode ||
-    urlMode ||
-    "require";
-
+function databaseSsl(rawUrl: string): false | { rejectUnauthorized: true; ca?: string } {
+  const mode = (process.env.DATABASE_SSL_MODE?.trim() ||
+    new URL(rawUrl).searchParams.get("sslmode") || "verify-full").toLowerCase();
   if (mode === "disable") {
+    const localCi = process.env.CI === "true" && ["localhost", "127.0.0.1", "[::1]"].includes(new URL(rawUrl).hostname);
+    if (process.env.NODE_ENV === "production" && !isProductionBuild && !localCi) {
+      throw new Error("Production database connections require verified TLS.");
+    }
     return false;
   }
-
-  if (
-    mode === "verify-full" ||
-    mode === "verify-ca"
-  ) {
-    return {
-      rejectUnauthorized: true,
-    };
-  }
-
-  return {
-    rejectUnauthorized: false,
-  };
+  // Legacy 'require' is upgraded to certificate verification, never insecure TLS.
+  const ca = process.env.DATABASE_SSL_CA?.trim().replace(/\\n/g, "\n");
+  return { rejectUnauthorized: true, ...(ca ? { ca } : {}) };
 }
 
 function collectDatabaseErrorDetails(
@@ -305,6 +282,15 @@ function createPostgresPool({
     ssl:
       databaseSsl(rawUrl),
 
+    statement_timeout: getIntegerEnvironmentValue({
+      name: "DATABASE_STATEMENT_TIMEOUT_MS", fallback: 5000, minimum: 500, maximum: 30000,
+    }),
+    query_timeout: getIntegerEnvironmentValue({
+      name: "DATABASE_QUERY_TIMEOUT_MS", fallback: 7000, minimum: 1000, maximum: 35000,
+    }),
+    lock_timeout: getIntegerEnvironmentValue({
+      name: "DATABASE_LOCK_TIMEOUT_MS", fallback: 2000, minimum: 250, maximum: 5000,
+    }),
     min: 0,
     max: maximumConnections,
 
@@ -384,14 +370,14 @@ export const databasePool =
         fallback:
           isProductionBuild
             ? 1
-            : 4,
+            : 3,
         minimum: 1,
         maximum: 8,
       }),
     connectionTimeoutMilliseconds:
       getIntegerEnvironmentValue({
         name: "DATABASE_CONNECTION_TIMEOUT_MS",
-        fallback: 8_000,
+        fallback: 2_000,
         minimum: 2_000,
         maximum: 20_000,
       }),
@@ -402,6 +388,7 @@ databaseGlobal.__eloriaPgPool =
   databasePool;
 
 const checkoutUsesPrimaryPool =
+  process.env.ELORIA_CHECKOUT_POOL_ISOLATED === "false" &&
   sanitizeDatabaseUrl(
     checkoutRawDatabaseUrl,
   ) ===
@@ -422,14 +409,14 @@ export const checkoutDatabasePool =
             fallback:
               isProductionBuild
                 ? 1
-                : 2,
+                : 1,
             minimum: 1,
             maximum: 4,
           }),
         connectionTimeoutMilliseconds:
           getIntegerEnvironmentValue({
             name: "CHECKOUT_DATABASE_CONNECTION_TIMEOUT_MS",
-            fallback: 8_000,
+            fallback: 2_000,
             minimum: 2_000,
             maximum: 20_000,
           }),
@@ -570,6 +557,7 @@ export async function withCheckoutDatabaseRetry<T>(
 export async function withDatabaseStatementTimeout<T>(
   timeoutMilliseconds: number,
   operation: (transaction: Prisma.TransactionClient) => Promise<T>,
+  options: { maxWait?: number; timeout?: number } = {},
 ): Promise<T> {
   const boundedTimeout = Math.min(
     Math.max(Math.trunc(timeoutMilliseconds), 250),
@@ -591,8 +579,8 @@ export async function withDatabaseStatementTimeout<T>(
           return operation(transaction);
         },
         {
-          maxWait: Math.min(5_000, boundedTimeout),
-          timeout: boundedTimeout + 2_000,
+          maxWait: options.maxWait ?? Math.min(2_000, boundedTimeout),
+          timeout: options.timeout ?? boundedTimeout + 2_000,
         },
       ),
     {

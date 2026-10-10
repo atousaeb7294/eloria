@@ -1,3 +1,4 @@
+import { readPublicMedia } from "@/lib/public-media-cache";
 import { prisma } from "@/lib/prisma";
 
 export const runtime = "nodejs";
@@ -15,10 +16,10 @@ export async function GET(
     return new Response(null, { status: 404 });
   }
   try {
-    const asset = await prisma.productMediaAsset.findUnique({
+    const asset = await readPublicMedia(id, () => prisma.productMediaAsset.findUnique({
       where: { id },
       select: { bytes: true, contentType: true },
-    });
+    }));
     if (!asset) return new Response(null, { status: 404 });
     return new Response(new Uint8Array(asset.bytes), {
       headers: {

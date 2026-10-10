@@ -60,7 +60,11 @@ export class ProductPricingError extends Error {
   }
 }
 
+type PricingDatabase = Pick<typeof prisma, "product" | "pricingPolicy" | "metalPrice">;
+
 export type GetProductPriceInput = {
+  /** Internal bounded transaction for a live quote. Never supplied by HTTP input. */
+  database?: PricingDatabase;
   /**
    * شناسه متنی محصول
    */
@@ -369,8 +373,8 @@ function getUnavailableRateMessage(
 }
 
 
-async function loadProductRecord(normalizedSlug: string) {
-  return prisma.product.findFirst({
+async function loadProductRecord(normalizedSlug: string, database: PricingDatabase = prisma) {
+  return database.product.findFirst({
     where: {
       slug: normalizedSlug,
       status: { in: ["ACTIVE", "OUT_OF_STOCK"] },
@@ -436,157 +440,19 @@ async function loadProductRecord(normalizedSlug: string) {
   });
 }
 
-type ProductRecord = Awaited<ReturnType<typeof loadProductRecord>>;
-
-type ProductRecordCacheEntry = {
-  value: ProductRecord;
-  freshUntil: number;
-  staleUntil: number;
-};
-
-type ProductPricingGlobal = typeof globalThis & {
-  __eloriaProductPricingCache?: Map<string, ProductRecordCacheEntry>;
-  __eloriaProductPricingInflight?: Map<string, Promise<ProductRecord>>;
-  __eloriaPricingReferenceCache?: Map<
-    MaterialType,
-    { value: PricingReferenceRecord; freshUntil: number; staleUntil: number }
-  >;
-  __eloriaPricingReferenceInflight?: Map<
-    MaterialType,
-    Promise<PricingReferenceRecord>
-  >;
-};
-
-async function loadPricingReference(material: MaterialType) {
+async function loadPricingReference(material: MaterialType, database: PricingDatabase = prisma) {
   const [policy, metalPrice] = await Promise.all([
-    prisma.pricingPolicy.findFirst({
-      where: { material, isActive: true },
-    }),
-    prisma.metalPrice.findUnique({
-      where: { material },
-    }),
+    database.pricingPolicy.findFirst({ where: { material, isActive: true } }),
+    database.metalPrice.findUnique({ where: { material } }),
   ]);
-
   return { policy, metalPrice };
-}
-
-type PricingReferenceRecord = Awaited<ReturnType<typeof loadPricingReference>>;
-
-const productPricingGlobal = globalThis as ProductPricingGlobal;
-const productCache =
-  productPricingGlobal.__eloriaProductPricingCache ??
-  new Map<string, ProductRecordCacheEntry>();
-const productInflight =
-  productPricingGlobal.__eloriaProductPricingInflight ??
-  new Map<string, Promise<ProductRecord>>();
-const referenceCache =
-  productPricingGlobal.__eloriaPricingReferenceCache ??
-  new Map<MaterialType, { value: PricingReferenceRecord; freshUntil: number; staleUntil: number }>();
-const referenceInflight =
-  productPricingGlobal.__eloriaPricingReferenceInflight ??
-  new Map<MaterialType, Promise<PricingReferenceRecord>>();
-
-productPricingGlobal.__eloriaProductPricingCache = productCache;
-productPricingGlobal.__eloriaProductPricingInflight = productInflight;
-productPricingGlobal.__eloriaPricingReferenceCache = referenceCache;
-productPricingGlobal.__eloriaPricingReferenceInflight = referenceInflight;
-
-function refreshProductRecord(normalizedSlug: string): Promise<ProductRecord> {
-  const existing = productInflight.get(normalizedSlug);
-  if (existing) {
-    return existing;
-  }
-
-  const request = withDatabaseRetry(() => loadProductRecord(normalizedSlug))
-    .then((value) => {
-      const storedAt = Date.now();
-      productCache.set(normalizedSlug, {
-        value,
-        freshUntil: storedAt + 30_000,
-        staleUntil: storedAt + 5 * 60_000,
-      });
-      return value;
-    })
-    .finally(() => {
-      productInflight.delete(normalizedSlug);
-    });
-
-  productInflight.set(normalizedSlug, request);
-  return request;
-}
-
-async function getProductRecord(normalizedSlug: string): Promise<ProductRecord> {
-  const now = Date.now();
-  const cached = productCache.get(normalizedSlug);
-
-  if (cached && cached.freshUntil > now) {
-    return cached.value;
-  }
-
-  if (cached && cached.staleUntil > now) {
-    void refreshProductRecord(normalizedSlug).catch((error) => {
-      console.warn(
-        `[Eloria Pricing] Unable to refresh product ${normalizedSlug}; serving stale display data.`,
-        error,
-      );
-    });
-    return cached.value;
-  }
-
-  return refreshProductRecord(normalizedSlug);
-}
-
-function refreshPricingReference(
-  material: MaterialType,
-): Promise<PricingReferenceRecord> {
-  const existing = referenceInflight.get(material);
-  if (existing) {
-    return existing;
-  }
-
-  const request = withDatabaseRetry(() => loadPricingReference(material))
-    .then((value) => {
-      const storedAt = Date.now();
-      referenceCache.set(material, {
-        value,
-        freshUntil: storedAt + 30_000,
-        staleUntil: storedAt + 10 * 60_000,
-      });
-      return value;
-    })
-    .finally(() => {
-      referenceInflight.delete(material);
-    });
-
-  referenceInflight.set(material, request);
-  return request;
-}
-
-async function getPricingReference(material: MaterialType): Promise<PricingReferenceRecord> {
-  const now = Date.now();
-  const cached = referenceCache.get(material);
-
-  if (cached && cached.freshUntil > now) {
-    return cached.value;
-  }
-
-  if (cached && cached.staleUntil > now) {
-    void refreshPricingReference(material).catch((error) => {
-      console.warn(
-        "[Eloria Pricing] Unable to refresh pricing reference; serving stale rate record.",
-        error,
-      );
-    });
-    return cached.value;
-  }
-
-  return refreshPricingReference(material);
 }
 
 export async function getProductLivePrice({
   slug,
   variantId,
   allowStaleRate = false,
+  database,
 }: GetProductPriceInput): Promise<ProductPriceResult> {
   const normalizedSlug =
     assertValidSlug(
@@ -594,7 +460,7 @@ export async function getProductLivePrice({
     );
 
   const product =
-    await (allowStaleRate ? getProductRecord(normalizedSlug) : withDatabaseRetry(() => loadProductRecord(normalizedSlug)));
+    await (database ? loadProductRecord(normalizedSlug, database) : withDatabaseRetry(() => loadProductRecord(normalizedSlug)));
 
   if (!product) {
     throw new ProductPricingError(
@@ -810,7 +676,7 @@ export async function getProductLivePrice({
     policy,
     metalPrice,
   } =
-    await (allowStaleRate ? getPricingReference(product.material as MaterialType) : withDatabaseRetry(() => loadPricingReference(product.material as MaterialType)));
+    await (database ? loadPricingReference(product.material as MaterialType, database) : withDatabaseRetry(() => loadPricingReference(product.material as MaterialType)));
 
   if (!policy) {
     throw new ProductPricingError(
@@ -996,8 +862,8 @@ export async function getProductLivePrice({
           }
 
           const secondaryMaterial: MaterialType = product.material === "GOLD" ? "SILVER" : "GOLD";
-          const secondaryReference = allowStaleRate
-            ? await getPricingReference(secondaryMaterial)
+          const secondaryReference = database
+            ? await loadPricingReference(secondaryMaterial, database)
             : await withDatabaseRetry(() => loadPricingReference(secondaryMaterial));
           if (!secondaryReference.policy) {
             throw new ProductPricingError("PRICING_POLICY_NOT_FOUND", "سیاست قیمت‌گذاری فلز دوم تنظیم نشده است.", 503);

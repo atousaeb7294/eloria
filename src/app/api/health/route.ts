@@ -8,7 +8,7 @@ import {
   isSmsIrVerifyConfigured,
 } from "@/lib/notifications/sms-ir";
 import { isZibalConfigured } from "@/lib/payment/zibal";
-import { prisma } from "@/lib/prisma";
+import { withDatabaseStatementTimeout } from "@/lib/prisma";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -43,7 +43,7 @@ export async function GET(request: NextRequest) {
 
   let database = false;
   try {
-    await prisma.$queryRaw`SELECT 1`;
+    await withDatabaseStatementTimeout(1000, tx => tx.$queryRaw`SELECT 1`, { maxWait: 1000, timeout: 1500 });
     database = true;
   } catch (error) {
     console.error("[Eloria Health] Database readiness check failed.", error);
@@ -60,6 +60,7 @@ export async function GET(request: NextRequest) {
     mode,
     timestamp: new Date().toISOString(),
     responseTimeMs: Date.now() - startedAt,
+    ...(canSeeDetails(request) ? { deployment: process.env.ELORIA_DEPLOYMENT_ID || "unknown" } : {}),
   };
 
   return NextResponse.json(

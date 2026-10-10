@@ -173,7 +173,7 @@ export function EloriaIntroView({
                 ? "opacity-100"
                 : "pointer-events-none opacity-0",
             ].join(" ")}
-            src={firstVideoSrc}
+            src={phase === "checking" ? undefined : firstVideoSrc}
             preload="auto"
             muted
             playsInline
@@ -203,7 +203,7 @@ export function EloriaIntroView({
                 ? "opacity-100"
                 : "pointer-events-none opacity-0",
             ].join(" ")}
-            src={secondVideoSrc}
+            src={phase === "checking" ? undefined : secondVideoSrc}
             preload="metadata"
             playsInline
             disablePictureInPicture

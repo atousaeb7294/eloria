@@ -25,7 +25,7 @@
     "test:tokens": "tsx scripts/test-signed-tokens.ts",
     "test:commerce": "tsx scripts/test-commerce-database.ts",
     "audit:dependencies": "node scripts/audit-dependencies.mjs",
-    "verify:full": "npm run lint && npm run build && npm run audit:security && npm run test:tokens && npm run test:pricing && npm run test:commerce && npm run test:payments && npm run test:admin-hardening && npm run test:supply-chain && npm run test:visual && npm run audit:quality",
+    "verify:full": "npm run test:audit-fixes && npm run lint && npm run build && npm run audit:security && npm run test:tokens && npm run test:pricing && npm run test:commerce && npm run test:payments && npm run test:admin-hardening && npm run test:supply-chain && npm run test:visual && npm run audit:quality",
     "start:next": "next start",
     "secrets:generate": "node scripts/generate-production-secrets.mjs",
     "db:preflight": "tsx scripts/preflight-hardening-data.ts",
@@ -33,7 +33,7 @@
     "verify:release": "node scripts/verify-final-release.mjs",
     "db:seed": "prisma db seed",
     "test:e2e": "node scripts/run-e2e.mjs",
-    "verify:ci": "npm run typecheck && npm run lint && npm run test:audit-regressions && npm run test:tokens && npm run test:pricing && npm run test:commerce && npm run test:payments && npm run test:admin-hardening && npm run test:supply-chain && npm run test:customer && npm run test:customer-password && npm run test:shipping && npm run test:security-alerts && npm run test:hardening && npm run test:autopilot && npm run audit:dependencies && npm run build && npm run test:e2e && npm run audit:security && npm run audit:quality",
+    "verify:ci": "npm run test:audit-fixes && npm run typecheck && npm run lint && npm run test:audit-regressions && npm run test:tokens && npm run test:pricing && npm run test:commerce && npm run test:payments && npm run test:admin-hardening && npm run test:supply-chain && npm run test:customer && npm run test:customer-password && npm run test:shipping && npm run test:security-alerts && npm run test:hardening && npm run test:autopilot && npm run audit:dependencies && npm run build && npm run test:e2e && npm run audit:security && npm run audit:quality",
     "cron:expired-orders": "node scripts/run-cron-once.mjs expired-orders",
     "cron:metal-prices": "node scripts/run-cron-once.mjs metal-prices",
     "cron:security-alerts": "node scripts/run-cron-once.mjs security-alerts",
@@ -93,7 +93,9 @@
     "test:audit-regressions": "npm run test:source-integrity && npm run test:motion && npm run test:media && npm run test:product-presentation && npm run test:security-regressions && npm run test:storefront-seo && npm run test:uploaded-story && npm run test:live-purchase && npm run test:critical",
     "test:uploaded-story": "node --import tsx scripts/test-treasury-story.ts && node --import tsx scripts/test-treasury-media.ts",
     "test:source-integrity": "node scripts/test-source-integrity.mjs",
-    "test:live-purchase": "node --import tsx scripts/test-live-purchase.ts"
+    "test:live-purchase": "node --import tsx scripts/test-live-purchase.ts",
+    "test:audit-fixes": "node --import tsx scripts/test-audit-fixes.ts && node scripts/test-maintenance-scheduler.mjs && node scripts/test-offline-cache.mjs && node --import tsx scripts/test-purchase-recovery.ts",
+    "verify:audit": "node scripts/verify-audit-release.mjs"
   },
   "dependencies": {
     "@base-ui/react": "^1.6.0",
@@ -115,7 +117,7 @@
     "gsap": "^3.15.0",
     "lucide-react": "^1.27.0",
     "motion": "^12.42.2",
-    "next": "16.3.3",
+    "next": "16.3.8",
     "next-intl": "^4.13.4",
     "next-themes": "^0.4.6",
     "pg": "^8.22.0",
@@ -123,8 +125,7 @@
     "react": "19.2.4",
     "react-dom": "19.2.4",
     "react-hook-form": "^7.83.0",
-    "shadcn": "^4.19.0",
-    "sharp": "^0.35.4",
+    "sharp": "0.35.5",
     "sonner": "^2.0.7",
     "tailwind-merge": "^3.6.0",
     "tailwindcss": "^4.3.3",
@@ -138,10 +139,13 @@
     "@types/pg": "^8.20.0",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@types/react-test-renderer": "19.3.0",
     "eslint": "^9",
-    "eslint-config-next": "16.3.3",
+    "eslint-config-next": "16.3.8",
     "prettier": "3.9.6",
     "prettier-plugin-tailwindcss": "^0.8.1",
+    "react-test-renderer": "19.2.4",
+    "shadcn": "4.21.4",
     "tsx": "^4.23.1"
   },
   "allowScripts": {
@@ -151,10 +155,13 @@
     "esbuild@0.28.1": true,
     "@swc/core@1.15.46": true,
     "prisma@7.9.1": true,
-    "sharp@0.35.4": true
+    "sharp@0.35.5": true
   },
   "overrides": {
     "deepmerge-ts": "8.0.0",
     "mysql2": "3.24.4"
+  },
+  "engines": {
+    "node": ">=22 <23"
   }
 }

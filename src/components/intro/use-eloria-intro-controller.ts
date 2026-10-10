@@ -1,5 +1,6 @@
 "use client";
 
+import { mountIntroWatchdog } from "@/lib/intro-watchdog";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
   FLASH_IN_DURATION_MS,
@@ -141,21 +142,23 @@ export function useEloriaIntroController({
   }, []);
 
   useEffect(() => {
+    const connection = (navigator as Navigator & { connection?: { saveData?: boolean } }).connection;
+    let skip = window.matchMedia("(prefers-reduced-motion: reduce)").matches || connection?.saveData === true;
+    try { skip ||= window.sessionStorage.getItem(INTRO_SESSION_KEY) === "1"; } catch {}
+    const timer = window.setTimeout(() => {
+      if (skip) completeIntro();
+      else setPhase("video-one");
+    }, 0);
+    return () => window.clearTimeout(timer);
+  }, [completeIntro]);
 
-    try {
-      if (window.sessionStorage.getItem(INTRO_SESSION_KEY) === "1") {
-        window.setTimeout(() => {
-          setPhase("complete");
-          announceIntroComplete();
-        }, 0);
-        return;
-      }
-    } catch {
-      // بدون Storage نیز ترتیب اجباری دو پرده اجرا می‌شود.
-    }
-
-    window.setTimeout(() => setPhase("video-one"), 0);
-  }, [announceIntroComplete]);
+  useEffect(() => {
+    const video = phase === "video-one" ? firstVideoRef.current
+      : phase === "video-two" || phase === "loading-two" ? secondVideoRef.current : null;
+    if (!video) return;
+    const timer = window.setInterval(mountIntroWatchdog(video, completeIntro), 1000);
+    return () => window.clearInterval(timer);
+  }, [phase, completeIntro]);
 
   useEffect(() => {
     if (phase === "checking" || phase === "complete") return;
@@ -189,7 +192,7 @@ export function useEloriaIntroController({
 
     void video.play().then(() => {
       setAutoplayBlocked(false);
-      prepareSecondVideo("auto");
+      prepareSecondVideo("metadata");
     }).catch(() => {
       firstPlaybackStartedRef.current = false;
       setAutoplayBlocked(true);
@@ -200,7 +203,7 @@ export function useEloriaIntroController({
   // immediately on the same user gesture. This avoids the visible buffering pause.
   useEffect(() => {
     if (phase !== "video-one") return;
-    prepareSecondVideo("auto");
+    prepareSecondVideo("metadata");
   }, [phase, prepareSecondVideo]);
 
   // Start act one when the state machine enters `video-one`.
@@ -238,7 +241,7 @@ export function useEloriaIntroController({
     setFirstVideoError(false);
     setFirstEntryHotspotVisible(true);
     setPhase("awaiting-entry");
-    prepareSecondVideo("auto");
+    prepareSecondVideo("metadata");
   }, [phase, prepareSecondVideo]);
 
   const handleFirstVideoProgress = useCallback(() => {

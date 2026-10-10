@@ -1,3 +1,4 @@
+import { startMaintenanceScheduler } from "./maintenance-scheduler.mjs";
 import { startSeoScheduler } from "./seo-scheduler.mjs";
 import { spawn } from "node:child_process";
 import { createRequire } from "node:module";
@@ -206,6 +207,7 @@ async function startEmbeddedMetalSync() {
 void startEmbeddedMetalSync();
 
 const stopSeoScheduler = startSeoScheduler({ port });
+const stopMaintenanceScheduler = startMaintenanceScheduler({ port });
 
 let stopping = false;
 
@@ -217,6 +219,7 @@ function stop(signal) {
   stopping = true;
   startupSyncCancelled = true;
   stopSeoScheduler();
+  stopMaintenanceScheduler();
 
   if (metalSyncInterval) {
     clearInterval(metalSyncInterval);
@@ -240,6 +243,7 @@ child.on("error", error => {
 child.on("exit", code => {
   startupSyncCancelled = true;
   stopSeoScheduler();
+  stopMaintenanceScheduler();
 
   if (metalSyncInterval) {
     clearInterval(metalSyncInterval);
