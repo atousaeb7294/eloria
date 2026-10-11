@@ -218,7 +218,8 @@ export function TreasuryProductSalon({
                       alt={name(item)}
                       fill
                       sizes="(max-width:640px) 70vw, 31vw"
-                      loading={index < 3 ? "eager" : "lazy"}
+                      loading={index === selected ? "eager" : "lazy"}
+                      fetchPriority={index === selected ? "high" : "auto"}
                       className="object-cover"
                     />
                   </ViewTransition>

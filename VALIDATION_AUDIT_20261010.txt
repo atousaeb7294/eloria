@@ -1,0 +1,31 @@
+Eloria audit fixes — validation record
+Base: bfae4f3f99d75ff468002162c0b4b7ee093c77be
+Runtime: Node 22.23.3
+Command: npm run verify:audit
+Exit status: 0
+
+(node:4) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+(Use `node --trace-warnings ...` to show where the warning was created)
+PASS TypeScript
+PASS ESLint
+PASS Audit regression fixes
+PASS Purchase recovery
+PASS Maintenance jobs
+PASS Offline cache
+PASS Motion
+PASS Media
+PASS Pricing
+PASS Presentation
+PASS Security regressions
+PASS SEO
+PASS Purchase first render
+PASS Critical contracts
+PASS Backup fixtures
+PASS Operations monitor
+PASS Supply chain
+This offline gate does not replace production build, PostgreSQL integration, browser E2E, payment, or restore drills.
+
+Production dependency audit: {"info": 0, "low": 0, "moderate": 0, "high": 0, "critical": 0, "total": 0}
+
+Production build: NOT VERIFIED. Native SWC panicked while reading next.config.ts before and after fixes. Alternative WASM compilation also failed in this environment: ENOENT uv_resident_set_memory.
+No live deployment, real PostgreSQL integration, real payment/SMS, real restore drill, or device performance verification was performed.

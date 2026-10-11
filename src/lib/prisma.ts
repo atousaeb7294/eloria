@@ -1,4 +1,5 @@
-﻿import "dotenv/config";
+import "dotenv/config";
+import { databaseSslOptions } from "@/lib/database-ssl";
 
 import {
   PrismaPg,
@@ -73,7 +74,7 @@ function getOptionalDatabaseUrl(
     return new URL(value).toString();
   } catch {
     throw new Error(
-      `Ø³Ø§Ø®ØªØ§Ø± ${name} Ù…Ø¹ØªØ¨Ø± Ù†ÛŒØ³Øª.`,
+      `ساختار ${name} معتبر نیست.`,
     );
   }
 }
@@ -86,7 +87,7 @@ function getRequiredDatabaseUrl(
 
   if (!value) {
     throw new Error(
-      `Ù…ØªØºÛŒØ± ${name} ØªÙ†Ø¸ÛŒÙ… Ù†Ø´Ø¯Ù‡ Ø§Ø³Øª.`,
+      `متغیر ${name} تنظیم نشده است.`,
     );
   }
 
@@ -95,8 +96,8 @@ function getRequiredDatabaseUrl(
 
 function getPrimaryRawDatabaseUrl(): string {
   /*
-   * Runtime Ù‡Ù…ÛŒØ´Ù‡ Ø§Ø² URL ØµØ±ÛŒØ­ Runtime ÛŒØ§ DATABASE_URL Ø§Ø³ØªÙØ§Ø¯Ù‡ Ù…ÛŒâ€ŒÚ©Ù†Ø¯.
-   * DIRECT_URL ÙÙ‚Ø· Ø¨Ø±Ø§ÛŒ migration Ùˆ Ø§Ø¨Ø²Ø§Ø±Ù‡Ø§ÛŒ Ù…Ø¯ÛŒØ±ÛŒØªÛŒ Ù†Ú¯Ù‡ Ø¯Ø§Ø´ØªÙ‡ Ù…ÛŒâ€ŒØ´ÙˆØ¯.
+   * Runtime همیشه از URL صریح Runtime یا DATABASE_URL استفاده می‌کند.
+   * DIRECT_URL فقط برای migration و ابزارهای مدیریتی نگه داشته می‌شود.
    */
   return (
     getOptionalDatabaseUrl(
@@ -144,21 +145,6 @@ function sanitizeDatabaseUrl(
   }
 
   return parsedUrl.toString();
-}
-
-function databaseSsl(rawUrl: string): false | { rejectUnauthorized: true; ca?: string } {
-  const mode = (process.env.DATABASE_SSL_MODE?.trim() ||
-    new URL(rawUrl).searchParams.get("sslmode") || "verify-full").toLowerCase();
-  if (mode === "disable") {
-    const localCi = process.env.CI === "true" && ["localhost", "127.0.0.1", "[::1]"].includes(new URL(rawUrl).hostname);
-    if (process.env.NODE_ENV === "production" && !isProductionBuild && !localCi) {
-      console.warn("[DATABASE] Non-TLS connection enabled for internal PostgreSQL.");
-    }
-    return false;
-  }
-  // Legacy 'require' is upgraded to certificate verification, never insecure TLS.
-  const ca = process.env.DATABASE_SSL_CA?.trim().replace(/\\n/g, "\n");
-  return { rejectUnauthorized: true, ...(ca ? { ca } : {}) };
 }
 
 function collectDatabaseErrorDetails(
@@ -280,7 +266,7 @@ function createPostgresPool({
       sanitizeDatabaseUrl(rawUrl),
 
     ssl:
-      databaseSsl(rawUrl),
+      databaseSslOptions(rawUrl, process.env.DATABASE_SSL_MODE, process.env.DATABASE_SSL_CA),
 
     statement_timeout: getIntegerEnvironmentValue({
       name: "DATABASE_STATEMENT_TIMEOUT_MS", fallback: 5000, minimum: 500, maximum: 30000,
@@ -295,15 +281,15 @@ function createPostgresPool({
     max: maximumConnections,
 
     /*
-     * Ù‡Ù… Ø²Ù…Ø§Ù† Ø§ØªØµØ§Ù„ Ø¬Ø¯ÛŒØ¯ Ùˆ Ù‡Ù… Ø§Ù†ØªØ¸Ø§Ø± Ø¨Ø±Ø§ÛŒ ÛŒÚ© Client Ø¢Ø²Ø§Ø¯ Ø±Ø§ Ù…Ø­Ø¯ÙˆØ¯ Ù…ÛŒâ€ŒÚ©Ù†Ø¯.
-     * Ø´Ú©Ø³Øª Ø³Ø±ÛŒØ¹ Ø¨Ù‡ØªØ± Ø§Ø² ØµÙâ€ŒÙ‡Ø§ÛŒ Û³Û° ØªØ§ Û¶Û° Ø«Ø§Ù†ÛŒÙ‡â€ŒØ§ÛŒ Ø§Ø³Øª.
+     * هم زمان اتصال جدید و هم انتظار برای یک Client آزاد را محدود می‌کند.
+     * شکست سریع بهتر از صف‌های ۳۰ تا ۶۰ ثانیه‌ای است.
      */
     connectionTimeoutMillis:
       connectionTimeoutMilliseconds,
 
     /*
-     * Ø§ØªØµØ§Ù„â€ŒÙ‡Ø§ÛŒ idle Ù‚Ø¨Ù„ Ø§Ø² Ø¢Ù†â€ŒÚ©Ù‡ Supavisor Ø¢Ù†â€ŒÙ‡Ø§ Ø±Ø§ Ø¨Ù‡â€ŒØµÙˆØ±Øª Ù†Ø§Ú¯Ù‡Ø§Ù†ÛŒ Ø¨Ø¨Ù†Ø¯Ø¯
-     * Ø¨Ø§Ø²ÛŒØ§ÙØª Ù…ÛŒâ€ŒØ´ÙˆÙ†Ø¯. Ø§ÛŒÙ† Ù…Ù‚Ø¯Ø§Ø± Ø¯Ø± ØµÙˆØ±Øª Ù†ÛŒØ§Ø² Ø§Ø² env Ù‚Ø§Ø¨Ù„ ØªØºÛŒÛŒØ± Ø§Ø³Øª.
+     * اتصال‌های idle قبل از آن‌که Supavisor آن‌ها را به‌صورت ناگهانی ببندد
+     * بازیافت می‌شوند. این مقدار در صورت نیاز از env قابل تغییر است.
      */
     idleTimeoutMillis:
       getIntegerEnvironmentValue({
@@ -324,7 +310,7 @@ function createPostgresPool({
     keepAlive: true,
     keepAliveInitialDelayMillis: 10_000,
 
-    /* Build workerÙ‡Ø§ Ø¨Ø§ÛŒØ¯ Ø¨ØªÙˆØ§Ù†Ù†Ø¯ Ø¨Ø¹Ø¯ Ø§Ø² idle Ø®Ø§Ø±Ø¬ Ø´ÙˆÙ†Ø¯. */
+    /* Build workerها باید بتوانند بعد از idle خارج شوند. */
     allowExitOnIdle:
       process.env.NODE_ENV !== "development",
 
@@ -336,7 +322,7 @@ function createPostgresPool({
     if (isExpectedDisconnect(error)) {
       if (process.env.NODE_ENV === "development") {
         console.warn(
-          `[Eloria Database] Ø§ØªØµØ§Ù„ ${label} Ù‚Ø·Ø¹ Ùˆ Ø§Ø² Pool Ø­Ø°Ù Ø´Ø¯Ø› Ø¯Ø±Ø®ÙˆØ§Ø³Øª Ø¨Ø¹Ø¯ÛŒ Ø§ØªØµØ§Ù„ ØªØ§Ø²Ù‡ Ù…ÛŒâ€ŒØ³Ø§Ø²Ø¯.`,
+          `[Eloria Database] اتصال ${label} قطع و از Pool حذف شد؛ درخواست بعدی اتصال تازه می‌سازد.`,
         );
       }
       return;
@@ -613,4 +599,3 @@ export async function ensureCheckoutDatabaseReady(): Promise<void> {
     },
   );
 }
-

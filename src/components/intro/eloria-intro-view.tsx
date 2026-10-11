@@ -23,6 +23,7 @@ export function EloriaIntroView({
     handleSkipIntro,
     handleFirstVideoCanPlay,
     handleManualStart,
+    replayIntro,
     handleFirstVideoEnded,
     handleFirstVideoProgress,
     handleEnterEloria,
@@ -39,7 +40,28 @@ export function EloriaIntroView({
     phase ===
     "complete"
   ) {
-    return null;
+    return (
+      <button type="button" onClick={replayIntro}
+        className="fixed start-4 bottom-4 z-50 min-h-11 rounded-full border border-[#eed3a0]/60 bg-[#123e2d] px-5 py-3 text-xs text-[#ffe5a3] shadow-lg">
+        {isPersian ? "پخش ویدئوی ورود" : "Play entrance video"}
+      </button>
+    );
+  }
+
+  if (phase === "ready-to-play") {
+    return (
+      <div className="eloria-intro-root fixed inset-0 z-[100] grid place-items-center bg-[#031811] px-6" role="dialog" aria-modal="true" aria-label={isPersian ? "ویدئوی ورود الوریا" : "Eloria entrance video"}>
+        <div className="max-w-sm text-center text-[#ffe5a3]">
+          <p className="mb-6 text-xl">{isPersian ? "به دنیای الوریا خوش آمدید" : "Welcome to Eloria"}</p>
+          <button type="button" onClick={handleManualStart} className="min-h-12 w-full rounded-full border border-[#eed3a0] bg-[#123e2d] px-6 py-3">
+            {isPersian ? "پخش ویدئوی ورود" : "Play entrance video"}
+          </button>
+          <button type="button" onClick={handleSkipIntro} className="mt-3 min-h-12 w-full rounded-full px-6 py-3 text-sm underline">
+            {isPersian ? "ورود بدون ویدئو" : "Enter without video"}
+          </button>
+        </div>
+      </div>
+    );
   }
 
   const showFirstVideo =

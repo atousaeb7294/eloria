@@ -143,22 +143,37 @@ export function useEloriaIntroController({
 
   useEffect(() => {
     const connection = (navigator as Navigator & { connection?: { saveData?: boolean } }).connection;
-    let skip = window.matchMedia("(prefers-reduced-motion: reduce)").matches || connection?.saveData === true;
-    try { skip ||= window.sessionStorage.getItem(INTRO_SESSION_KEY) === "1"; } catch {}
+    const manual = window.matchMedia("(prefers-reduced-motion: reduce)").matches || connection?.saveData === true;
+    let seen = false;
+    try { seen = window.sessionStorage.getItem(INTRO_SESSION_KEY) === "1"; } catch {}
     const timer = window.setTimeout(() => {
-      if (skip) completeIntro();
-      else setPhase("video-one");
+      if (seen) completeIntro();
+      else setPhase(manual ? "ready-to-play" : "video-one");
     }, 0);
     return () => window.clearTimeout(timer);
   }, [completeIntro]);
 
   useEffect(() => {
+    if (autoplayBlocked || firstVideoError || secondVideoError) return;
     const video = phase === "video-one" ? firstVideoRef.current
       : phase === "video-two" || phase === "loading-two" ? secondVideoRef.current : null;
     if (!video) return;
-    const timer = window.setInterval(mountIntroWatchdog(video, completeIntro), 1000);
+    const timer = window.setInterval(mountIntroWatchdog(video, () => {
+      video.pause();
+      if (phase === "video-one") {
+        firstPlaybackStartedRef.current = false;
+        setFirstVideoError(true);
+      } else {
+        clearTransitionTimers();
+        secondPlaybackStartedRef.current = false;
+        enteringSecondVideoRef.current = false;
+        setSecondVideoBuffering(false);
+        setSecondVideoError(true);
+        setPhase("awaiting-entry");
+      }
+    }), 1000);
     return () => window.clearInterval(timer);
-  }, [phase, completeIntro]);
+  }, [phase, autoplayBlocked, firstVideoError, secondVideoError, clearTransitionTimers]);
 
   useEffect(() => {
     if (phase === "checking" || phase === "complete") return;
@@ -228,8 +243,25 @@ export function useEloriaIntroController({
   }, [playFirstVideo]);
 
   const handleManualStart = useCallback(() => {
-    playFirstVideo();
-  }, [playFirstVideo]);
+    if (phase === "ready-to-play") setPhase("video-one");
+    else playFirstVideo();
+  }, [phase, playFirstVideo]);
+
+  const replayIntro = useCallback(() => {
+    clearTransitionTimers();
+    firstPlaybackStartedRef.current = false;
+    firstPlaybackFinishedRef.current = false;
+    secondPlaybackStartedRef.current = false;
+    secondPlaybackFinishedRef.current = false;
+    enteringSecondVideoRef.current = false;
+    setAutoplayBlocked(false);
+    setFirstVideoError(false);
+    setSecondVideoError(false);
+    setSecondVideoReady(false);
+    setSecondVideoBuffering(false);
+    setFirstEntryHotspotVisible(false);
+    setPhase("ready-to-play");
+  }, [clearTransitionTimers]);
 
   const handleFirstVideoEnded = useCallback(() => {
     if (phase !== "video-one" || firstPlaybackFinishedRef.current) return;
@@ -418,6 +450,7 @@ export function useEloriaIntroController({
     handleSkipIntro,
     handleFirstVideoCanPlay,
     handleManualStart,
+    replayIntro,
     handleFirstVideoEnded,
     handleFirstVideoProgress,
     handleEnterEloria,

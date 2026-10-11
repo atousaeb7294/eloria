@@ -68,10 +68,11 @@ async function main() {
 
   const before = process.env.DATABASE_SSL_MODE;
   process.env.DATABASE_SSL_MODE = "require";
-  assert.equal(productionEnvironmentChecks().find(c => c.key === "DATABASE_SSL_MODE")?.valid, false);
+  assert.equal(productionEnvironmentChecks().find(c => c.key === "DATABASE_SSL_MODE")?.valid, true);
+  assert.equal(productionEnvironmentChecks().find(c => c.key === "DATABASE_TLS_VERIFICATION")?.valid, false);
   process.env.DATABASE_SSL_MODE = "verify-full";
   assert.equal(productionEnvironmentChecks().find(c => c.key === "DATABASE_SSL_MODE")?.valid, true);
   if (before === undefined) delete process.env.DATABASE_SSL_MODE; else process.env.DATABASE_SSL_MODE = before;
-  console.log("PASS: quote admission/deduplication/recovery, fresh catalog after updates, intro progress/hidden-tab/stall recovery, verified TLS contract");
+  console.log("PASS: quote admission/deduplication/recovery, fresh catalog after updates, intro progress/hidden-tab/stall recovery, explicit TLS configuration");
 }
 main().catch(error => { console.error(error); process.exitCode = 1; });

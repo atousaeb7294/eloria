@@ -1,6 +1,7 @@
-﻿import * as nextenv from "@next/env";
-nextenv.loadEnvConfig(process.cwd());
+import * as nextenv from "@next/env";
 import { productionEnvironmentChecks } from "../src/lib/env-validation";
+
+nextenv.loadEnvConfig(process.cwd());
 
 const checks = productionEnvironmentChecks();
 let failed = false;
@@ -10,11 +11,7 @@ for (const check of checks) {
   if (check.required && !check.valid) failed = true;
 }
 if (failed) {
-  console.error("\nÙ…ØªØºÛŒØ±Ù‡Ø§ÛŒ Ø§Ù„Ø²Ø§Ù…ÛŒ Ù…Ø­ÛŒØ· ØªÙˆÙ„ÛŒØ¯ Ú©Ø§Ù…Ù„ Ù†ÛŒØ³ØªÙ†Ø¯.");
+  console.error("\nمتغیرهای الزامی محیط تولید کامل نیستند.");
   process.exit(1);
 }
-console.log("\nØªÙ†Ø¸ÛŒÙ…Ø§Øª Ø§Ù„Ø²Ø§Ù…ÛŒ Ù…Ø­ÛŒØ· ØªÙˆÙ„ÛŒØ¯ Ù…Ø¹ØªØ¨Ø± Ù‡Ø³ØªÙ†Ø¯.");
-
-
-
-
+console.log("\nتنظیمات الزامی محیط تولید معتبر هستند.");

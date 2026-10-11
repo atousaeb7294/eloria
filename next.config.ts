@@ -158,7 +158,8 @@ const nextConfig: NextConfig = {
   },
 
   images: {
-    formats: ["image/avif", "image/webp"],
+    // Avoid expensive cold AVIF encodes competing with storefront requests.
+    formats: ["image/webp"],
     minimumCacheTTL: 86400,
     qualities: [75, 84, 88, 92],
     ...(imageConfig.remotePatterns.length

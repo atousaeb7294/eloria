@@ -1,3 +1,5 @@
+> Current integrated release: see [RELEASE_COMPLETE_20261011_FA.md](RELEASE_COMPLETE_20261011_FA.md). Preserve the working hosting environment settings; do not replace your real .env with .env.example.
+
 # ELORIA / الوریا
 
 فروشگاه دو‌زبانه جواهرات با هویت بصری الهام‌گرفته از ایران باستان و شاهنامه.

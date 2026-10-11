@@ -1,0 +1,32 @@
+Eloria integrated source release — 2026-10-11
+Runtime: Node 22.23.3
+Gate: scripts/verify-audit-release.mjs
+
+(node:5) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+(Use `node --trace-warnings ...` to show where the warning was created)
+PASS TypeScript
+PASS ESLint
+PASS Audit regression fixes
+PASS Purchase recovery
+PASS Intro recovery
+PASS Database SSL compatibility
+PASS Maintenance jobs
+PASS Offline cache
+PASS Motion
+PASS Media
+PASS Pricing
+PASS Presentation
+PASS Security regressions
+PASS SEO
+PASS Purchase first render
+PASS Critical contracts
+PASS Backup fixtures
+PASS Operations monitor
+PASS Supply chain
+This offline gate does not replace production build, PostgreSQL integration, browser E2E, payment, or restore drills.
+
+Additional checks: patch application round trips and source integrity passed.
+Build in this environment: blocked by native SWC panic reading next.config.ts (also present before these changes). A successful build of this exact release must be confirmed on Windows or the hosting build environment.
+Production dependency audit: previous completed audit was zero; the latest network audit did not finish, so it is not presented as a new successful audit.
+No live production DB, real mobile playback, payment, SMS or restore test was performed for this release.
+Working hosting SSL configuration is preserved when explicitly configured. Current user-side custom settings and code edits were not supplied.

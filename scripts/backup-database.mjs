@@ -19,17 +19,19 @@ import { pipeline } from "node:stream/promises";
 import { join, resolve, relative, isAbsolute } from "node:path";
 import { tmpdir } from "node:os";
 import { pathToFileURL } from "node:url";
-function connection(raw) {
+export function databaseBackupConnection(raw, env = process.env) {
   const u = new URL(raw);
   if (!["postgresql:", "postgres:"].includes(u.protocol))
     throw Error("PostgreSQL URL required");
+  const mode = (env.ELORIA_BACKUP_SSL_MODE?.trim() || u.searchParams.get("sslmode")?.trim() || env.PGSSLMODE?.trim() || env.DATABASE_SSL_MODE?.trim() || "verify-full").toLowerCase();
+  if (!["disable", "require", "verify-ca", "verify-full"].includes(mode)) throw Error("Unsupported backup SSL mode");
   return {
     PGHOST: u.hostname,
     PGPORT: u.port || "5432",
     PGDATABASE: decodeURIComponent(u.pathname.slice(1)),
     PGUSER: decodeURIComponent(u.username),
     PGPASSWORD: decodeURIComponent(u.password),
-    PGSSLMODE: u.searchParams.get("sslmode") || "verify-full",
+    PGSSLMODE: mode,
   };
 }
 function run(binary, args, env) {
@@ -51,7 +53,7 @@ function key() {
   return Buffer.from(value, "hex");
 }
 export async function backupDatabase() {
-  const env = connection(process.env.DIRECT_URL || "");
+  const env = databaseBackupConnection(process.env.DIRECT_URL || "");
   const secret = key();
   const directory = resolve(process.env.ELORIA_BACKUP_DIR || "");
   if (!process.env.ELORIA_BACKUP_DIR)
@@ -109,8 +111,8 @@ export async function backupDatabase() {
 export async function restoreCheck(file) {
   if (!process.argv.includes("--confirm-empty-test-database"))
     throw Error("Explicit empty test database confirmation required");
-  const source = connection(process.env.DIRECT_URL || ""),
-    target = connection(process.env.ELORIA_RESTORE_TEST_URL || "");
+  const source = databaseBackupConnection(process.env.DIRECT_URL || ""),
+    target = databaseBackupConnection(process.env.ELORIA_RESTORE_TEST_URL || "");
   if (
     target.PGDATABASE === source.PGDATABASE ||
     !/(?:test|restore|sandbox)/i.test(target.PGDATABASE)

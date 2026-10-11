@@ -264,7 +264,8 @@ export function productionEnvironmentChecks(): Check[] {
     { key: "ELORIA_PAYMENT_RECEIPT_SECRET", required: true, valid: present("ELORIA_PAYMENT_RECEIPT_SECRET", 32), message: "کلید رسید امن پرداخت" },
     { key: "ELORIA_SECRET_SEPARATION", required: true, valid: distinctSecrets(secretKeys.map(key => value(key))), message: "کلیدهای امنیتی باید مستقل باشند" },
 
-    { key: "DATABASE_SSL_MODE", required: true, valid: ["verify-full", "require", "disable"].includes(value("DATABASE_SSL_MODE")), message: "اعتبارسنجی کامل TLS دیتابیس" },
+    { key: "DATABASE_SSL_MODE", required: true, valid: ["disable", "require", "verify-ca", "verify-full"].includes(value("DATABASE_SSL_MODE").toLowerCase()), message: "حالت اتصال مطابق تنظیم تأییدشدهٔ میزبانی؛ disable / require / verify-ca / verify-full" },
+    { key: "DATABASE_TLS_VERIFICATION", required: false, valid: value("DATABASE_SSL_MODE").toLowerCase() === "verify-full", message: "verify-full هویت سرور را تأیید می‌کند؛ require فقط رمزگذاری و disable اتصال بدون TLS است. تنظیم فعال میزبانی را بدون آزمون عوض نکنید." },
     { key: "NEXT_SERVER_ACTIONS_ENCRYPTION_KEY", required: true, valid: isThirtyTwoByteBase64("NEXT_SERVER_ACTIONS_ENCRYPTION_KEY"), message: "کلید ثابت ۳۲ بایتی Base64 برای Server Actions" },
     { key: "ELORIA_DEPLOYMENT_ID", required: true, valid: present("ELORIA_DEPLOYMENT_ID", 6), message: "شناسه Release" },
 
@@ -300,7 +301,6 @@ export function assertProductionEnvironment(): void {
     );
   }
 }
-
 
 
 

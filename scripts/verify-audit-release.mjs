@@ -6,6 +6,8 @@ const checks = [
   ["ESLint", ["node_modules/eslint/bin/eslint.js"]],
   ["Audit regression fixes", ["--import", "tsx", "scripts/test-audit-fixes.ts"]],
   ["Purchase recovery", ["--import", "tsx", "scripts/test-purchase-recovery.ts"]],
+  ["Intro recovery", ["--import", "tsx", "scripts/test-intro-recovery.ts"]],
+  ["Database SSL compatibility", ["--import", "tsx", "scripts/test-database-ssl.mjs"]],
   ["Maintenance jobs", ["scripts/test-maintenance-scheduler.mjs"]],
   ["Offline cache", ["scripts/test-offline-cache.mjs"]],
   ["Motion", ["--import", "tsx", "scripts/test-treasury-motion.mjs"]],

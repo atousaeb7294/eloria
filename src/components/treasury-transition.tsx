@@ -31,7 +31,7 @@ export function TreasuryLink({
   return <Link
     {...props}
     data-navigation-direction={direction}
-    prefetch={props.prefetch ?? true}
+    prefetch={props.prefetch ?? null}
     transitionTypes={[]}
     onNavigate={(event) => {
       let cancelled = false;
