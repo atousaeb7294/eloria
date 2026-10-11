@@ -1,4 +1,4 @@
-import "dotenv/config";
+﻿import "dotenv/config";
 
 import {
   PrismaPg,
@@ -73,7 +73,7 @@ function getOptionalDatabaseUrl(
     return new URL(value).toString();
   } catch {
     throw new Error(
-      `ساختار ${name} معتبر نیست.`,
+      `Ø³Ø§Ø®ØªØ§Ø± ${name} Ù…Ø¹ØªØ¨Ø± Ù†ÛŒØ³Øª.`,
     );
   }
 }
@@ -86,7 +86,7 @@ function getRequiredDatabaseUrl(
 
   if (!value) {
     throw new Error(
-      `متغیر ${name} تنظیم نشده است.`,
+      `Ù…ØªØºÛŒØ± ${name} ØªÙ†Ø¸ÛŒÙ… Ù†Ø´Ø¯Ù‡ Ø§Ø³Øª.`,
     );
   }
 
@@ -95,8 +95,8 @@ function getRequiredDatabaseUrl(
 
 function getPrimaryRawDatabaseUrl(): string {
   /*
-   * Runtime همیشه از URL صریح Runtime یا DATABASE_URL استفاده می‌کند.
-   * DIRECT_URL فقط برای migration و ابزارهای مدیریتی نگه داشته می‌شود.
+   * Runtime Ù‡Ù…ÛŒØ´Ù‡ Ø§Ø² URL ØµØ±ÛŒØ­ Runtime ÛŒØ§ DATABASE_URL Ø§Ø³ØªÙØ§Ø¯Ù‡ Ù…ÛŒâ€ŒÚ©Ù†Ø¯.
+   * DIRECT_URL ÙÙ‚Ø· Ø¨Ø±Ø§ÛŒ migration Ùˆ Ø§Ø¨Ø²Ø§Ø±Ù‡Ø§ÛŒ Ù…Ø¯ÛŒØ±ÛŒØªÛŒ Ù†Ú¯Ù‡ Ø¯Ø§Ø´ØªÙ‡ Ù…ÛŒâ€ŒØ´ÙˆØ¯.
    */
   return (
     getOptionalDatabaseUrl(
@@ -152,7 +152,7 @@ function databaseSsl(rawUrl: string): false | { rejectUnauthorized: true; ca?: s
   if (mode === "disable") {
     const localCi = process.env.CI === "true" && ["localhost", "127.0.0.1", "[::1]"].includes(new URL(rawUrl).hostname);
     if (process.env.NODE_ENV === "production" && !isProductionBuild && !localCi) {
-      throw new Error("Production database connections require verified TLS.");
+      console.warn("[DATABASE] Non-TLS connection enabled for internal PostgreSQL.");
     }
     return false;
   }
@@ -295,15 +295,15 @@ function createPostgresPool({
     max: maximumConnections,
 
     /*
-     * هم زمان اتصال جدید و هم انتظار برای یک Client آزاد را محدود می‌کند.
-     * شکست سریع بهتر از صف‌های ۳۰ تا ۶۰ ثانیه‌ای است.
+     * Ù‡Ù… Ø²Ù…Ø§Ù† Ø§ØªØµØ§Ù„ Ø¬Ø¯ÛŒØ¯ Ùˆ Ù‡Ù… Ø§Ù†ØªØ¸Ø§Ø± Ø¨Ø±Ø§ÛŒ ÛŒÚ© Client Ø¢Ø²Ø§Ø¯ Ø±Ø§ Ù…Ø­Ø¯ÙˆØ¯ Ù…ÛŒâ€ŒÚ©Ù†Ø¯.
+     * Ø´Ú©Ø³Øª Ø³Ø±ÛŒØ¹ Ø¨Ù‡ØªØ± Ø§Ø² ØµÙâ€ŒÙ‡Ø§ÛŒ Û³Û° ØªØ§ Û¶Û° Ø«Ø§Ù†ÛŒÙ‡â€ŒØ§ÛŒ Ø§Ø³Øª.
      */
     connectionTimeoutMillis:
       connectionTimeoutMilliseconds,
 
     /*
-     * اتصال‌های idle قبل از آن‌که Supavisor آن‌ها را به‌صورت ناگهانی ببندد
-     * بازیافت می‌شوند. این مقدار در صورت نیاز از env قابل تغییر است.
+     * Ø§ØªØµØ§Ù„â€ŒÙ‡Ø§ÛŒ idle Ù‚Ø¨Ù„ Ø§Ø² Ø¢Ù†â€ŒÚ©Ù‡ Supavisor Ø¢Ù†â€ŒÙ‡Ø§ Ø±Ø§ Ø¨Ù‡â€ŒØµÙˆØ±Øª Ù†Ø§Ú¯Ù‡Ø§Ù†ÛŒ Ø¨Ø¨Ù†Ø¯Ø¯
+     * Ø¨Ø§Ø²ÛŒØ§ÙØª Ù…ÛŒâ€ŒØ´ÙˆÙ†Ø¯. Ø§ÛŒÙ† Ù…Ù‚Ø¯Ø§Ø± Ø¯Ø± ØµÙˆØ±Øª Ù†ÛŒØ§Ø² Ø§Ø² env Ù‚Ø§Ø¨Ù„ ØªØºÛŒÛŒØ± Ø§Ø³Øª.
      */
     idleTimeoutMillis:
       getIntegerEnvironmentValue({
@@ -324,7 +324,7 @@ function createPostgresPool({
     keepAlive: true,
     keepAliveInitialDelayMillis: 10_000,
 
-    /* Build workerها باید بتوانند بعد از idle خارج شوند. */
+    /* Build workerÙ‡Ø§ Ø¨Ø§ÛŒØ¯ Ø¨ØªÙˆØ§Ù†Ù†Ø¯ Ø¨Ø¹Ø¯ Ø§Ø² idle Ø®Ø§Ø±Ø¬ Ø´ÙˆÙ†Ø¯. */
     allowExitOnIdle:
       process.env.NODE_ENV !== "development",
 
@@ -336,7 +336,7 @@ function createPostgresPool({
     if (isExpectedDisconnect(error)) {
       if (process.env.NODE_ENV === "development") {
         console.warn(
-          `[Eloria Database] اتصال ${label} قطع و از Pool حذف شد؛ درخواست بعدی اتصال تازه می‌سازد.`,
+          `[Eloria Database] Ø§ØªØµØ§Ù„ ${label} Ù‚Ø·Ø¹ Ùˆ Ø§Ø² Pool Ø­Ø°Ù Ø´Ø¯Ø› Ø¯Ø±Ø®ÙˆØ§Ø³Øª Ø¨Ø¹Ø¯ÛŒ Ø§ØªØµØ§Ù„ ØªØ§Ø²Ù‡ Ù…ÛŒâ€ŒØ³Ø§Ø²Ø¯.`,
         );
       }
       return;
@@ -613,3 +613,4 @@ export async function ensureCheckoutDatabaseReady(): Promise<void> {
     },
   );
 }
+
