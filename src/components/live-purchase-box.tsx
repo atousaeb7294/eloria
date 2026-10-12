@@ -1,5 +1,6 @@
 "use client";
 
+import { productMaterialKind, productWeightLabel } from "@/lib/product-material";
 import { formatWeightSoot } from "@/lib/weight-units";
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
@@ -169,7 +170,7 @@ export function LivePurchaseBox({
           <div className="mb-4 rounded-2xl border border-[#ddc48b]/20 bg-[#ddc48b]/5 p-4 text-xs">
             <dl className="space-y-3">
               <div className="flex justify-between gap-4">
-                <dt>{fa ? "وزن محصول" : "Product weight"}</dt>
+                <dt>{productWeightLabel(productMaterialKind(quote.product), locale)}</dt>
                 <dd>
                   {weight !== null && weight !== undefined
                     ? formatWeightSoot(String(weight), locale)
@@ -188,10 +189,10 @@ export function LivePurchaseBox({
                     <dt>
                       {part.material === "GOLD"
                         ? fa
-                          ? "وزن طلا"
+                          ? "وزن قطعه طلا"
                           : "Gold weight"
                         : fa
-                          ? "وزن نقره"
+                          ? "وزن قطعه نقره"
                           : "Silver weight"}
                     </dt>
                     <dd>
@@ -207,11 +208,11 @@ export function LivePurchaseBox({
                   : "The displayed price is the final listed price for this creation."
                 : hasGold
                   ? fa
-                    ? `قیمت نهایی این اثر شامل ارزش طلای به‌کاررفته${hasSilver ? " و نقره" : ""}، اجرت ساخت طلا، سود فروشنده و ارزش هنر دست است.`
+                    ? `قیمت نهایی این اثر شامل ارزش طلای به‌کاررفته${hasSilver ? " و نقره" : ""}، اجرت ساخت و سود طلا، و ارزش هنر دست است.`
                     : `The final price includes the value of gold${hasSilver ? " and silver" : ""}, gold making charges, the seller’s profit and the value of handcraft.`
                   : hasSilver
                     ? fa
-                      ? "قیمت نهایی این اثر شامل ارزش نقره، اجرت ساخت نقره، سود فروشنده و ارزش هنر دست است."
+                      ? "قیمت نهایی این اثر شامل ارزش نقره، اجرت ساخت و سود نقره، و ارزش هنر دست است."
                       : "The final price includes silver, silver making charges, the seller’s profit and the value of handcraft."
                     : fa
                       ? "قیمت نهایی این اثر بر پایهٔ مواد به‌کاررفته و ارزش هنر دست تعیین می‌شود."

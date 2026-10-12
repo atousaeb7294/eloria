@@ -7,7 +7,7 @@ import ts from "typescript";
 import React, { act } from "react";
 import { create, type ReactTestRenderer } from "react-test-renderer";
 
-async function scenario({ reduced = false, saveData = false, seen = false, rejectPlay = false } = {}) {
+async function scenario({ reduced = false, saveData = false, seen = false, rejectPlay = false, completeFlow = false } = {}) {
   const require = createRequire(import.meta.url);
   const timers = new Map<number, () => void>();
   const intervals = new Map<number, () => void>();
@@ -52,14 +52,25 @@ async function scenario({ reduced = false, saveData = false, seen = false, rejec
     assert.equal(state.phase, "complete");
     await act(async () => state.replayIntro());
   }
-  if (seen || reduced || saveData) {
-    assert.equal(state.phase, "ready-to-play");
-    assert.equal(plays, 0, "Manual preference must not download/play before consent");
-    await act(async () => state.handleManualStart());
-  }
   assert.equal(state.phase, "video-one");
   assert.ok(plays > 0);
   assert.ok(state.firstVideoSrc.includes("mobile"));
+  if (completeFlow) {
+    await act(async () => state.handleFirstVideoEnded());
+    assert.equal(state.phase, "awaiting-entry");
+    await act(async () => state.handleEnterEloria());
+    assert.equal(state.phase, "loading-two");
+    await act(async () => state.handleSecondVideoPlaying());
+    assert.equal(state.phase, "video-two");
+    await act(async () => state.beginCinematicReveal());
+    assert.equal(state.phase, "flash-in");
+    await act(async () => { for (const [key, fn] of [...timers]) { timers.delete(key); fn(); } });
+    assert.equal(state.phase, "complete");
+    assert.equal(writes, 1);
+    await act(async () => tree.unmount());
+    assert.equal(timers.size + intervals.size, 0);
+    return;
+  }
   const before = writes;
   if (rejectPlay) {
     assert.equal(state.autoplayBlocked, true);
@@ -77,10 +88,11 @@ async function scenario({ reduced = false, saveData = false, seen = false, rejec
 
 async function main() {
   (globalThis as any).IS_REACT_ACT_ENVIRONMENT = true;
+  await scenario({ completeFlow: true });
   await scenario({ reduced: true });
   await scenario({ saveData: true });
   await scenario({ seen: true });
   await scenario({ rejectPlay: true });
-  console.log("PASS intro: manual preference, saved-session replay, mobile source, autoplay recovery, stall recovery, timer and scroll cleanup");
+  console.log("PASS intro: autoplay with reduced-motion/save-data, saved-session replay, mobile source, autoplay recovery, stall recovery, timer and scroll cleanup");
 }
 main().catch(error => { console.error(error); process.exitCode = 1; });

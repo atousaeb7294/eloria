@@ -124,31 +124,18 @@ export function useEloriaIntroController({
   }, [clearTransitionTimers, completeIntro, phase]);
 
   useEffect(() => {
-    const timer = window.setTimeout(() => {
-      const connection = (navigator as Navigator & {
-        connection?: { effectiveType?: string; saveData?: boolean };
-      }).connection;
-      const constrainedNetwork =
-        connection?.saveData === true ||
-        connection?.effectiveType === "slow-2g" ||
-        connection?.effectiveType === "2g";
-
-      setUseMobileVideos(
-        window.matchMedia("(max-width: 767px)").matches || constrainedNetwork,
-      );
-    }, 0);
-
-    return () => window.clearTimeout(timer);
-  }, []);
-
-  useEffect(() => {
-    const connection = (navigator as Navigator & { connection?: { saveData?: boolean } }).connection;
-    const manual = window.matchMedia("(prefers-reduced-motion: reduce)").matches || connection?.saveData === true;
+    const connection = (navigator as Navigator & {
+      connection?: { effectiveType?: string; saveData?: boolean };
+    }).connection;
+    const compact = window.matchMedia("(max-width: 767px)").matches ||
+      connection?.saveData === true || ["slow-2g", "2g"].includes(connection?.effectiveType ?? "");
     let seen = false;
     try { seen = window.sessionStorage.getItem(INTRO_SESSION_KEY) === "1"; } catch {}
     const timer = window.setTimeout(() => {
+      // Select the rendition before mounting its source; avoid a desktop download on mobile.
+      setUseMobileVideos(compact);
       if (seen) completeIntro();
-      else setPhase(manual ? "ready-to-play" : "video-one");
+      else setPhase("video-one");
     }, 0);
     return () => window.clearTimeout(timer);
   }, [completeIntro]);
@@ -260,7 +247,7 @@ export function useEloriaIntroController({
     setSecondVideoReady(false);
     setSecondVideoBuffering(false);
     setFirstEntryHotspotVisible(false);
-    setPhase("ready-to-play");
+    setPhase("video-one");
   }, [clearTransitionTimers]);
 
   const handleFirstVideoEnded = useCallback(() => {

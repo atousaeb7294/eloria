@@ -28,7 +28,7 @@ export const TOTAL_TRANSITION_DURATION_MS =
  */
 // Discard completion saved by the old silent-skip/watchdog path once.
 // Explicit completion still lasts for this tab; replay remains available.
-export const INTRO_SESSION_KEY = "eloria_intro_complete_v13";
+export const INTRO_SESSION_KEY = "eloria_intro_complete_v14";
 
 export const INTRO_ASSET_VERSION = "2026-09-09-mobile-desktop-faststart-v12";
 

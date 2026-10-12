@@ -213,7 +213,7 @@ export function TreasuryProductSalon({
                     share="eloria-product-morph"
                     default="none"
                   >
-                    <Image
+                    {Math.abs(index - selected) <= 2 ? <Image
                       src={picture(item)}
                       alt={name(item)}
                       fill
@@ -221,7 +221,7 @@ export function TreasuryProductSalon({
                       loading={index === selected ? "eager" : "lazy"}
                       fetchPriority={index === selected ? "high" : "auto"}
                       className="object-cover"
-                    />
+                    /> : <div aria-hidden="true" className="absolute inset-0 bg-[#09241c]" />}
                   </ViewTransition>
                 </TreasuryLink>
                 <h2 className={fa ? "font-persian-calligraphy" : "font-serif"}>

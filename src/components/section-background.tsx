@@ -1,6 +1,7 @@
 "use client";
 
 import { getImageProps } from "next/image";
+import { staticBackdropLoader } from "@/lib/static-backdrop-loader";
 
 import { usePathname } from "next/navigation";
 
@@ -101,6 +102,7 @@ export function SectionBackground({
     alt: "",
     sizes: "100vw",
     quality,
+    loader: staticBackdropLoader,
     loading: priority ? ("eager" as const) : ("lazy" as const),
     fetchPriority: priority ? ("high" as const) : ("auto" as const),
   };

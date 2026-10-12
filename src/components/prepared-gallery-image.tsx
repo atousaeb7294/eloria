@@ -24,16 +24,10 @@ export function PreparedGalleryImage({
   const [loadedUrl, setLoadedUrl] = useState<string | null>(null);
   const prepared = useRef(new Map<string, PreparedEntry>());
 
-  const neighborIndexes = images.length > 1
-    ? Array.from(new Set([
-        (index + 1) % images.length,
-        (index - 1 + images.length) % images.length
-      ])).filter(value => value !== index)
-    : [];
-
   useEffect(() => {
     if (!target) return;
     let cancelled = false;
+    let neighborTimer: number | undefined;
 
     const prepare = (item: GalleryImage, selected: boolean) => {
       const key = JSON.stringify([item.imageUrl, sizes]);
@@ -81,21 +75,25 @@ export function PreparedGalleryImage({
     };
 
     void prepare(target, true).then(() => {
-      if (!cancelled) setDisplayed(target);
+      if (cancelled) return;
+      setDisplayed(target);
+      const connection = (navigator as Navigator & {
+        connection?: { saveData?: boolean; effectiveType?: string };
+      }).connection;
+      if (connection?.saveData || ["slow-2g", "2g", "3g"].includes(connection?.effectiveType ?? "")) return;
+      // Warm just the next photo after the chosen photo is decoded, not before it.
+      neighborTimer = window.setTimeout(() => {
+        if (!cancelled && images.length > 1) void prepare(images[(index + 1) % images.length], false);
+      }, 500);
     });
 
-    if (images.length > 1) {
-      const neighbors = new Set([
-        (index + 1) % images.length,
-        (index - 1 + images.length) % images.length
-      ]);
-      neighbors.delete(index);
-      for (const neighbor of neighbors) {
-        void prepare(images[neighbor], false);
-      }
+    // Limit retained decoded images while browsing a large gallery.
+    while (prepared.current.size > 6) {
+      const oldest = prepared.current.keys().next().value;
+      if (oldest === undefined) break;
+      prepared.current.delete(oldest);
     }
-
-    return () => { cancelled = true; };
+    return () => { cancelled = true; window.clearTimeout(neighborTimer); };
   }, [images, index, sizes, target]);
 
   if (!target || !displayed) return null;
@@ -105,27 +103,6 @@ export function PreparedGalleryImage({
     loadedUrl !== displayed.imageUrl;
 
   return <>
-    {neighborIndexes.map(neighbor => {
-      const item = images[neighbor];
-      const { props } = getImageProps({
-        src: item.imageUrl,
-        alt: item.alt,
-        fill: true,
-        sizes
-      });
-      return (
-        <link
-          key={`${item.imageUrl}:${sizes}`}
-          rel="preload"
-          as="image"
-          href={props.srcSet ? undefined : props.src}
-          imageSrcSet={props.srcSet}
-          imageSizes={props.sizes}
-          fetchPriority="low"
-        />
-      );
-    })}
-
     <ProductImage
       src={displayed.imageUrl}
       alt={displayed.alt}

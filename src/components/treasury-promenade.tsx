@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import { staticBackdropLoader } from "@/lib/static-backdrop-loader";
 import { ProductImage } from "@/components/product-image";
 import {
   useEffect,
@@ -151,10 +152,12 @@ export function TreasuryPromenade({
                       ? "/images/treasuries/gold-macrame-v2.webp"
                       : `/images/treasuries/${treasury.slug}.webp`}
                     alt=""
+                    loader={staticBackdropLoader}
                     fill
                     sizes="100vw"
                     className="eloria-treasury-backdrop"
-                    loading="eager"
+                    loading={index === 0 ? "eager" : "lazy"}
+                    fetchPriority="low"
                   />
                 </div>
                 <div className="eloria-treasury-shade" />

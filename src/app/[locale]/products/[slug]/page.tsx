@@ -1,4 +1,4 @@
-import { productMaterialKind, productMaterialLabel } from "@/lib/product-material";
+import { productMaterialKind, productMaterialLabel, productWeightLabel } from "@/lib/product-material";
 import { formatWeightSoot } from "@/lib/weight-units";
 import { LivePurchaseBox } from "@/components/live-purchase-box";
 import { BuyerReviews } from "@/components/buyer-reviews";
@@ -875,7 +875,7 @@ export default async function ProductPage({
 
                   <SpecificationItem
                     icon={<PackageCheck className="h-5 w-5" />}
-                    label={isPersian ? "وزن محصول" : "Product weight"}
+                    label={productWeightLabel(materialKind, locale)}
                     value={weight ? formatWeightSoot(String(weight), locale) : "—"}
                   />
 

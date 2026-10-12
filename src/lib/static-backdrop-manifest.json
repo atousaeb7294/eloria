@@ -1,0 +1,374 @@
+{
+  "/images/section-backgrounds/bg-01.webp": [
+    {
+      "width": 384,
+      "url": "/images/responsive/afda4f8343ff945a-384.webp"
+    },
+    {
+      "width": 640,
+      "url": "/images/responsive/04a919ce35425ec8-640.webp"
+    },
+    {
+      "width": 960,
+      "url": "/images/responsive/d486e5dc3276ed54-960.webp"
+    },
+    {
+      "width": 1280,
+      "url": "/images/responsive/2c6fbb9d21c8c0e1-1280.webp"
+    },
+    {
+      "width": 1500,
+      "url": "/images/responsive/fa52b177877cdef5-1500.webp"
+    }
+  ],
+  "/images/section-backgrounds/bg-02.webp": [
+    {
+      "width": 384,
+      "url": "/images/responsive/051c52655e2b7ac8-384.webp"
+    },
+    {
+      "width": 640,
+      "url": "/images/responsive/3ffdd30683b3cc70-640.webp"
+    },
+    {
+      "width": 960,
+      "url": "/images/responsive/c38613c0451544e1-960.webp"
+    },
+    {
+      "width": 1280,
+      "url": "/images/responsive/4ef5a4f396d25682-1280.webp"
+    },
+    {
+      "width": 1500,
+      "url": "/images/responsive/d5277f07b57d5067-1500.webp"
+    }
+  ],
+  "/images/section-backgrounds/bg-03.webp": [
+    {
+      "width": 384,
+      "url": "/images/responsive/b34c27630568172c-384.webp"
+    },
+    {
+      "width": 640,
+      "url": "/images/responsive/070fd0d9938619e9-640.webp"
+    },
+    {
+      "width": 960,
+      "url": "/images/responsive/013591a6f555ae5b-960.webp"
+    },
+    {
+      "width": 1125,
+      "url": "/images/responsive/f0ac803962424a1e-1125.webp"
+    }
+  ],
+  "/images/section-backgrounds/bg-04.webp": [
+    {
+      "width": 384,
+      "url": "/images/responsive/7f5615736e0553d4-384.webp"
+    },
+    {
+      "width": 640,
+      "url": "/images/responsive/840c2900379c19ad-640.webp"
+    },
+    {
+      "width": 960,
+      "url": "/images/responsive/76dc742a3d2296e4-960.webp"
+    },
+    {
+      "width": 1280,
+      "url": "/images/responsive/6c269231adb18ee7-1280.webp"
+    },
+    {
+      "width": 1500,
+      "url": "/images/responsive/cf51972423bab621-1500.webp"
+    }
+  ],
+  "/images/section-backgrounds/bg-05.webp": [
+    {
+      "width": 384,
+      "url": "/images/responsive/addf0192c72203ee-384.webp"
+    },
+    {
+      "width": 640,
+      "url": "/images/responsive/27afcb8e6ea96ea4-640.webp"
+    },
+    {
+      "width": 960,
+      "url": "/images/responsive/54e8cead56ee8677-960.webp"
+    },
+    {
+      "width": 1280,
+      "url": "/images/responsive/a11d8cc7e6254a4c-1280.webp"
+    },
+    {
+      "width": 1774,
+      "url": "/images/responsive/1489ef8e7ccc946d-1774.webp"
+    }
+  ],
+  "/images/section-backgrounds/bg-06.webp": [
+    {
+      "width": 384,
+      "url": "/images/responsive/619dfe5195e3d1d9-384.webp"
+    },
+    {
+      "width": 640,
+      "url": "/images/responsive/e9c00709040cb251-640.webp"
+    },
+    {
+      "width": 960,
+      "url": "/images/responsive/0245dd4d4c8a066e-960.webp"
+    },
+    {
+      "width": 1280,
+      "url": "/images/responsive/6e610e5edf83be2a-1280.webp"
+    },
+    {
+      "width": 1500,
+      "url": "/images/responsive/3a8cc912a9e27c75-1500.webp"
+    }
+  ],
+  "/images/section-backgrounds/bg-07.webp": [
+    {
+      "width": 384,
+      "url": "/images/responsive/b6dfbdaa614679f4-384.webp"
+    },
+    {
+      "width": 640,
+      "url": "/images/responsive/b53f9200f185e160-640.webp"
+    },
+    {
+      "width": 960,
+      "url": "/images/responsive/7224bc9456e950bb-960.webp"
+    },
+    {
+      "width": 1280,
+      "url": "/images/responsive/89f6111fa79ee0d5-1280.webp"
+    },
+    {
+      "width": 1846,
+      "url": "/images/responsive/adceddd1eace757a-1846.webp"
+    }
+  ],
+  "/images/section-backgrounds/bg-08.webp": [
+    {
+      "width": 384,
+      "url": "/images/responsive/2db1aabe22422cf5-384.webp"
+    },
+    {
+      "width": 640,
+      "url": "/images/responsive/46607d27c139ad77-640.webp"
+    },
+    {
+      "width": 960,
+      "url": "/images/responsive/128958cc4480f5b1-960.webp"
+    },
+    {
+      "width": 1280,
+      "url": "/images/responsive/ead6d7e81618a05d-1280.webp"
+    },
+    {
+      "width": 1500,
+      "url": "/images/responsive/354b6c3c6f581f91-1500.webp"
+    }
+  ],
+  "/images/section-backgrounds/bg-09.webp": [
+    {
+      "width": 384,
+      "url": "/images/responsive/23d7081557e97cb1-384.webp"
+    },
+    {
+      "width": 640,
+      "url": "/images/responsive/7eb678dc9e81ba38-640.webp"
+    },
+    {
+      "width": 960,
+      "url": "/images/responsive/c97de2b457d08f67-960.webp"
+    },
+    {
+      "width": 1280,
+      "url": "/images/responsive/00fedcf890a8e7b8-1280.webp"
+    },
+    {
+      "width": 1500,
+      "url": "/images/responsive/04d4d6be4066a02c-1500.webp"
+    }
+  ],
+  "/images/section-backgrounds/mobile/bg-01.jpg": [
+    {
+      "width": 384,
+      "url": "/images/responsive/028d5f8d008dfaac-384.webp"
+    },
+    {
+      "width": 640,
+      "url": "/images/responsive/02dedd1ef2317011-640.webp"
+    },
+    {
+      "width": 853,
+      "url": "/images/responsive/c0b491d83597a2ea-853.webp"
+    }
+  ],
+  "/images/section-backgrounds/mobile/bg-02.jpg": [
+    {
+      "width": 384,
+      "url": "/images/responsive/e161ba6d7f9e621f-384.webp"
+    },
+    {
+      "width": 640,
+      "url": "/images/responsive/bdaf38c6c6ae6db7-640.webp"
+    },
+    {
+      "width": 853,
+      "url": "/images/responsive/cfc313f8215a48ac-853.webp"
+    }
+  ],
+  "/images/section-backgrounds/mobile/bg-03.jpg": [
+    {
+      "width": 384,
+      "url": "/images/responsive/c47703b6d39f9727-384.webp"
+    },
+    {
+      "width": 640,
+      "url": "/images/responsive/79af3b33873e60c2-640.webp"
+    },
+    {
+      "width": 853,
+      "url": "/images/responsive/d105f762102c5235-853.webp"
+    }
+  ],
+  "/images/section-backgrounds/mobile/bg-04.jpg": [
+    {
+      "width": 384,
+      "url": "/images/responsive/7ce559dd20a70ce5-384.webp"
+    },
+    {
+      "width": 640,
+      "url": "/images/responsive/bb0dcfc84928db60-640.webp"
+    },
+    {
+      "width": 853,
+      "url": "/images/responsive/15a1eaaa618d89bc-853.webp"
+    }
+  ],
+  "/images/section-backgrounds/mobile/bg-05.jpg": [
+    {
+      "width": 384,
+      "url": "/images/responsive/45d57ae1a74e98c0-384.webp"
+    },
+    {
+      "width": 640,
+      "url": "/images/responsive/4bb968542df7109c-640.webp"
+    },
+    {
+      "width": 853,
+      "url": "/images/responsive/067847113692bd83-853.webp"
+    }
+  ],
+  "/images/section-backgrounds/mobile/bg-06.jpg": [
+    {
+      "width": 384,
+      "url": "/images/responsive/62a5bc08f207931f-384.webp"
+    },
+    {
+      "width": 640,
+      "url": "/images/responsive/77289b8d7c1f123c-640.webp"
+    },
+    {
+      "width": 720,
+      "url": "/images/responsive/83c5c322e83e7889-720.webp"
+    }
+  ],
+  "/images/section-backgrounds/mobile/bg-07.jpg": [
+    {
+      "width": 384,
+      "url": "/images/responsive/323f5d673f4ce8c2-384.webp"
+    },
+    {
+      "width": 640,
+      "url": "/images/responsive/884a5ebac3579aeb-640.webp"
+    },
+    {
+      "width": 720,
+      "url": "/images/responsive/0142433e96899646-720.webp"
+    }
+  ],
+  "/images/section-backgrounds/mobile/bg-08.jpg": [
+    {
+      "width": 384,
+      "url": "/images/responsive/e98b92be821a3adf-384.webp"
+    },
+    {
+      "width": 640,
+      "url": "/images/responsive/c032307dce2bb04e-640.webp"
+    },
+    {
+      "width": 719,
+      "url": "/images/responsive/afcdb86c106ee7ef-719.webp"
+    }
+  ],
+  "/images/treasuries/gold-macrame-v2.webp": [
+    {
+      "width": 384,
+      "url": "/images/responsive/3196ec239e8ab792-384.webp"
+    },
+    {
+      "width": 640,
+      "url": "/images/responsive/dd74fb017ef66ea8-640.webp"
+    },
+    {
+      "width": 960,
+      "url": "/images/responsive/7b446bce9ee0581e-960.webp"
+    },
+    {
+      "width": 1280,
+      "url": "/images/responsive/ace0cfd99114361e-1280.webp"
+    },
+    {
+      "width": 1536,
+      "url": "/images/responsive/b72e9d74fae57a56-1536.webp"
+    }
+  ],
+  "/images/treasuries/silver.webp": [
+    {
+      "width": 384,
+      "url": "/images/responsive/394cdbe1396dc5a5-384.webp"
+    },
+    {
+      "width": 640,
+      "url": "/images/responsive/24dcf4732e62ee42-640.webp"
+    },
+    {
+      "width": 960,
+      "url": "/images/responsive/208de6df5131ad6d-960.webp"
+    },
+    {
+      "width": 1280,
+      "url": "/images/responsive/dea8b309f7b555ca-1280.webp"
+    },
+    {
+      "width": 1536,
+      "url": "/images/responsive/80d5ad67a6e1aa6c-1536.webp"
+    }
+  ],
+  "/images/treasuries/weave.webp": [
+    {
+      "width": 384,
+      "url": "/images/responsive/b9d5106948fad119-384.webp"
+    },
+    {
+      "width": 640,
+      "url": "/images/responsive/651da9bb4ea104a9-640.webp"
+    },
+    {
+      "width": 960,
+      "url": "/images/responsive/50468c0aec2b9d91-960.webp"
+    },
+    {
+      "width": 1280,
+      "url": "/images/responsive/64a97fb49a917df4-1280.webp"
+    },
+    {
+      "width": 1536,
+      "url": "/images/responsive/fea921860477e44e-1536.webp"
+    }
+  ]
+}

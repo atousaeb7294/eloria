@@ -197,6 +197,7 @@ export function EloriaIntroView({
             ].join(" ")}
             src={phase === "checking" ? undefined : firstVideoSrc}
             preload="auto"
+            autoPlay={phase === "video-one"}
             muted
             playsInline
             disablePictureInPicture

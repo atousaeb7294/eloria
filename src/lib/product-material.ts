@@ -22,3 +22,14 @@ export function productMaterialLabel(product: ProductMaterialSource, locale: str
   };
   return labels[productMaterialKind(product)][locale === "fa" ? 0 : 1];
 }
+
+/** The stored weight describes the metal component, not the whole artwork. */
+export function productWeightLabel(kind: ProductMaterialKind, locale: string): string {
+  const labels = {
+    GOLD: ["وزن قطعه طلا", "Gold piece weight"],
+    SILVER: ["وزن قطعه نقره", "Silver piece weight"],
+    MIXED: ["وزن فلزات به‌کاررفته", "Metal component weight"],
+    WEAVE: ["وزن محصول", "Product weight"],
+  };
+  return labels[kind][locale === "fa" ? 0 : 1];
+}

@@ -2,6 +2,7 @@ import { spawnSync } from "node:child_process";
 // All test DB references are deliberately isolated from any local production .env.
 const env = { ...process.env, NODE_ENV: "test", DATABASE_URL: "postgresql://audit:audit@127.0.0.1:5432/eloria_audit_test", DIRECT_URL: "postgresql://audit:audit@127.0.0.1:5432/eloria_audit_test", ELORIA_RUNTIME_DATABASE_URL: "postgresql://audit:audit@127.0.0.1:5432/eloria_audit_test", ELORIA_CHECKOUT_DATABASE_URL: "postgresql://audit:audit@127.0.0.1:5432/eloria_audit_test", DATABASE_SSL_MODE: "disable" };
 const checks = [
+  ["Mobile media", ["--import", "tsx", "scripts/test-mobile-media.ts"]],
   ["TypeScript", ["node_modules/typescript/bin/tsc", "--noEmit"]],
   ["ESLint", ["node_modules/eslint/bin/eslint.js"]],
   ["Audit regression fixes", ["--import", "tsx", "scripts/test-audit-fixes.ts"]],
