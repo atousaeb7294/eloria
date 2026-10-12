@@ -1,0 +1,31 @@
+{
+  "hall": [
+    {
+      "width": 640,
+      "url": "/images/palace/hall-640-6a878772d6e2.webp",
+      "bytes": 58134
+    },
+    {
+      "width": 960,
+      "url": "/images/palace/hall-960-c7357c873589.webp",
+      "bytes": 116194
+    },
+    {
+      "width": 1672,
+      "url": "/images/palace/hall-1672-88f16cc5436e.webp",
+      "bytes": 283692
+    }
+  ],
+  "chest-atlas": [
+    {
+      "width": 768,
+      "url": "/images/palace/chest-atlas-768-ff2df2fe1c0e.webp",
+      "bytes": 156276
+    },
+    {
+      "width": 1024,
+      "url": "/images/palace/chest-atlas-1024-17a530b3c2c3.webp",
+      "bytes": 237838
+    }
+  ]
+}
