@@ -13,6 +13,7 @@ import {
   HomeHeaderController,
 } from "@/components/home-header-controller";
 import { TreasuryPromenade } from "@/components/treasury-promenade";
+import { HomePalace } from "@/components/home-palace";
 import {
   SiteFooter,
 } from "@/components/site-footer";
@@ -49,7 +50,10 @@ export default async function HomePage({
         tabIndex={-1}
         className="relative z-10 outline-none"
       >
-        <TreasuryPromenade locale={locale}>
+        {locale === "fa" ? <>
+          <HeroShowcase locale={locale} persianTitleClassName="font-persian-title" />
+          <HomePalace />
+        </> : <TreasuryPromenade locale={locale}>
         <HeroShowcase
           locale={
             locale
@@ -59,7 +63,7 @@ export default async function HomePage({
           }
         />
 
-        </TreasuryPromenade>
+        </TreasuryPromenade>}
         <div id="promenade-end" />
       </main>
       </TreasuryPageTransition>
