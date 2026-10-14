@@ -1,0 +1,30 @@
+{
+  "hall": [
+    {
+      "url": "/images/palace/photo-hall-v5.webp",
+      "width": 1536,
+      "height": 1024
+    }
+  ],
+  "chests": [
+    {
+      "url": "/images/palace/photo-chests-v4.webp",
+      "width": 1536,
+      "height": 1024
+    }
+  ],
+  "decor": [
+    {
+      "url": "/images/palace/photo-decor-v5.webp",
+      "width": 1536,
+      "height": 1024
+    }
+  ],
+  "rugs": [
+    {
+      "url": "/images/palace/photo-rugs-v8.webp",
+      "width": 1536,
+      "height": 1024
+    }
+  ]
+}

@@ -6,8 +6,7 @@ import { Gem, Sparkles, Circle } from "lucide-react";
 import { TreasuryLink } from "@/components/treasury-transition";
 import { ProductImage } from "@/components/product-image";
 import type { PalaceProduct } from "./palace-runtime";
-import { palaceMarkup } from "./palace-markup";
-import assets from "./palace-assets.json";
+import assets from "./palace-photo-assets.json";
 import "./palace.css";
 
 const destinations = [
@@ -31,44 +30,58 @@ function belongs(p: PalaceProduct, slug: string) {
 
 export function HomePalace() {
   const root = useRef<HTMLElement>(null);
-  const scene = useRef<HTMLDivElement>(null);
   const router = useRouter();
+  const releaseTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const entering = useRef(false);
+  const warmed = useRef(new Set<string>());
+  const [artReady, setArtReady] = useState(false);
+  const [opened, setOpened] = useState<string | null>(null);
   const [catalog, setCatalog] = useState<PalaceProduct[]>([]);
-  const [active, setActive] = useState<string | null>(null);
+  const [catalogState, setCatalogState] = useState("loading");
+
+  useEffect(() => () => {
+    if (releaseTimer.current !== null) clearTimeout(releaseTimer.current);
+  }, []);
+
+  function warm(slug: string) {
+    const connection = (navigator as Navigator & { connection?: { saveData?: boolean; effectiveType?: string } }).connection;
+    if (connection?.saveData || /(^|-)2g$/.test(connection?.effectiveType ?? "") || warmed.current.has(slug)) return;
+    warmed.current.add(slug);
+    router.prefetch(`/fa/collections/${slug}`);
+  }
+
+  function enter(slug: string, event: { preventDefault: () => void }) {
+    if (entering.current) { event.preventDefault(); return; }
+    entering.current = true;
+    setOpened(slug);
+    // Do not cancel or delay the native Next Link navigation for the animation.
+    releaseTimer.current = setTimeout(() => { entering.current = false; setOpened(null); }, 1500);
+  }
 
   useEffect(() => {
     const element = root.current;
-    const world = scene.current;
-    if (!element || !world) return;
+    if (!element) return;
     const controller = new AbortController();
     let disposed = false, started = false, nearby = false, introFinished = false;
-    let cleanup: (() => void) | undefined;
     let timeout: ReturnType<typeof setTimeout> | undefined;
     let observer: IntersectionObserver | undefined;
     function start() {
       if (started || disposed || !nearby || (!introFinished && document.querySelector(".eloria-intro-root"))) return;
       started = true;
+      setArtReady(true);
       observer?.disconnect();
       timeout = setTimeout(() => controller.abort(), 8000);
-      // The scene and links are already visible. A slow database only affects thumbnails.
       void fetch("/api/treasury/preview?locale=fa", { signal: controller.signal })
         .then(response => response.ok ? response.json() : null)
         .then(data => {
-          if (!disposed && data?.source !== "unavailable" && Array.isArray(data?.items)) {
-            setCatalog(data.items.filter(isProduct).slice(0, 15));
-          }
-        }).catch(() => {}).finally(() => clearTimeout(timeout));
-      const connection = (navigator as Navigator & { connection?: { saveData?: boolean } }).connection;
-      // Mobile uses the same photo-textured chests without downloading/initializing Three.js.
-      if (window.matchMedia("(max-width: 900px), (prefers-reduced-motion: reduce)").matches || connection?.saveData) return;
-      void import("./palace-runtime").then(runtime => {
-        if (!disposed) cleanup = runtime.mountHomePalace(world!, {
-          navigateToTreasury(slug) {
-            window.dispatchEvent(new Event("eloria:navigate"));
-            router.push(`/fa/collections/${slug}`, { transitionTypes: [] });
-          },
-        });
-      }).catch(() => { world!.dataset.mode = "lite"; });
+          if (disposed) return;
+          if (data?.source !== "unavailable" && Array.isArray(data?.items)) {
+            const items = data.items.filter(isProduct).slice(0, 15) as PalaceProduct[];
+            setCatalog([...new Map(items.map(p => [p.slug, p])).values()]);
+            setCatalogState(items.length ? "ready" : "empty");
+          } else setCatalogState("unavailable");
+        }).catch(() => { if (!disposed) setCatalogState("unavailable"); })
+        .finally(() => clearTimeout(timeout));
     }
     const onIntroComplete = () => { introFinished = true; start(); };
     window.addEventListener("eloria:intro-complete", onIntroComplete);
@@ -77,63 +90,80 @@ export function HomePalace() {
       observer = new IntersectionObserver(entries => {
         nearby = entries.some(entry => entry.isIntersecting);
         if (nearby) start();
-      }, { rootMargin: "160px" });
+      }, { rootMargin: "600px" });
       observer.observe(element);
     }
     return () => {
       disposed = true;
       observer?.disconnect();
       window.removeEventListener("eloria:intro-complete", onIntroComplete);
-      controller.abort();clearTimeout(timeout);cleanup?.();
+      controller.abort(); clearTimeout(timeout);
     };
-  }, [router]);
+  }, []);
 
   const style = {
-    "--ep-atlas-mobile": `url("${assets["chest-atlas"][0].url}")`,
-    "--ep-atlas-desktop": `url("${assets["chest-atlas"][1].url}")`,
+    "--ep-hall": artReady ? `url("${assets.hall[0].url}")` : undefined,
+    "--ep-sprites": artReady ? `url("${assets.chests[0].url}")` : undefined,
+    "--ep-rugs": artReady ? `url("${assets.rugs[0].url}")` : undefined,
+    "--ep-decor": artReady ? `url("${assets.decor[0].url}")` : undefined,
   } as CSSProperties;
   return (
     <section id="treasury-gold" aria-label="گنجینه‌های الوریا" ref={root}>
       <div id="eloria-home-palace" dir="rtl" style={style}>
-        <header className="ep-header">
-          <h2 className="ep-section-title font-persian-title">گنجینه‌های الوریا</h2>
-        </header>
-        <div className="ep-stage">
-          {/* Pre-encoded responsive scenery; no cold server-side transformation. */}
-          <picture>
-          <source media="(max-width: 900px)" srcSet={assets.hall.slice(0, 2).map(v => `${v.url} ${v.width}w`).join(", ")} sizes="100vw" />
-          <img className="ep-backplate" alt="تالار گالری الوریا" width={1672} height={941}
-            src={assets.hall[1].url} srcSet={assets.hall.map(v => `${v.url} ${v.width}w`).join(", ")}
-            sizes="100vw" loading="lazy" decoding="async" />
-          </picture>
-          <div ref={scene} className="ep-world" data-mode="lite" dangerouslySetInnerHTML={{ __html: palaceMarkup }} />
+        <div className="ep-stage" data-open={opened}>
+          {artReady && <picture className="ep-hall-picture">
+            <img className="ep-backplate" alt="" width={1536} height={1024}
+              src={assets.hall[0].url} loading="eager" fetchPriority="low" decoding="async" />
+          </picture>}
           <nav className="ep-treasuries" aria-label="انتخاب و ورود به گنجینه">
             {destinations.map(({ slug, name, Icon }) => {
               const products = catalog.filter(p => belongs(p, slug)).slice(0, 3);
-              return <section key={slug} className="ep-treasury" data-active={active === slug}
-                onFocusCapture={() => setActive(slug)}
-                onPointerEnter={event => { if (event.pointerType === "mouse") setActive(slug); }}>
-                <span className="ep-brand">گالری الوریا</span>
-                <h3 className="ep-card-title font-persian-title">{name}</h3>
-                <div className="ep-photos">
-                  {products.length ? products.map(product => <TreasuryLink key={product.slug}
-                    className="ep-photo" href={`/fa/products/${encodeURIComponent(product.slug)}`}
-                    aria-label={product.name} title={product.name}>
-                    <ProductImage src={product.imageUrl} alt={product.name} fill
-                      sizes="(max-width: 600px) 28px, (max-width: 900px) 44px, 60px" />
-                  </TreasuryLink>) : <span className="ep-symbol" aria-hidden="true"><Icon /></span>}
+              return <section key={slug} className={`ep-bay ep-bay-${slug}`} data-open={opened === slug}>
+                <div className="ep-treasury">
+                  <span className="ep-flag-art" aria-hidden="true" />
+                  <div className="ep-flag-content">
+                  <ProductImage className="ep-brand-logo" src="/images/brand/eloria-logo.webp" width={36} height={25} alt="گالری الوریا" loading="lazy" />
+                  <h3 className="ep-card-title font-persian-title">{name}</h3>
+                  <div className="ep-photos">
+                    {products.length ? products.map(product => <TreasuryLink key={product.slug}
+                      className="ep-photo" prefetch={false} href={`/fa/products/${encodeURIComponent(product.slug)}`}
+                      aria-label={product.name} title={product.name}>
+                      <ProductImage src={product.imageUrl} alt={product.name} fill
+                        sizes="(max-width: 900px) 52px, 64px" quality={92} />
+                    </TreasuryLink>) : <span className="ep-symbol" aria-hidden="true"><Icon /></span>}
+                  </div>
+                  <TreasuryLink prefetch={false} className="ep-enter" href={`/fa/collections/${slug}`}
+                    onPointerEnter={() => warm(slug)} onFocus={() => warm(slug)}
+                    onNavigate={event => enter(slug, event)}>
+                    <span aria-hidden="true" className="ep-enter-ornament">✦</span>{opened === slug ? "در حال ورود…" : "ورود به گنجینه"}<span aria-hidden="true" className="ep-enter-ornament">✦</span>
+                  </TreasuryLink>
+                  </div>
                 </div>
-                <TreasuryLink className="ep-enter" href={`/fa/collections/${slug}`}>
-                  ورود به گنجینه <span aria-hidden="true">←</span>
+                <div className="ep-chest-scene">
+                <span className="ep-rug" aria-hidden="true" />
+                <TreasuryLink prefetch={false} className={`ep-chest-target ep-chest-${slug}`} href={`/fa/collections/${slug}`}
+                  aria-label={`باز کردن صندوقچه و ورود به ${name}`} onPointerEnter={() => warm(slug)} onFocus={() => warm(slug)}
+                    onNavigate={event => enter(slug, event)}>
+                  <span className="ep-chest-art" aria-hidden="true"><span className="ep-chest-closed" /><span className="ep-chest-open" /></span>
                 </TreasuryLink>
+                </div>
               </section>;
             })}
           </nav>
-          <nav className="ep-chest-targets" aria-label="صندوقچه‌ها">
-            {destinations.map(({ slug, name }) => <TreasuryLink key={slug}
-              className={`ep-chest-target ep-chest-${slug}`} href={`/fa/collections/${slug}`} aria-label={`ورود به ${name}`} />)}
-          </nav>
         </div>
+        <section className="ep-featured" aria-labelledby="ep-featured-title">
+          <h2 id="ep-featured-title" className="ep-section-title font-persian-title">منتخب‌های الوریا</h2>
+          {catalog.length ? <div className="ep-featured-grid">
+            {catalog.slice(0, 12).map(product => <TreasuryLink className="ep-featured-product" key={product.slug}
+              prefetch={false} href={`/fa/products/${encodeURIComponent(product.slug)}`}>
+              <div className="ep-featured-image"><ProductImage src={product.imageUrl} alt={product.name} fill
+                sizes="(max-width: 900px) 160px, 180px" quality={92} /></div>
+              <span>{product.name}</span>
+            </TreasuryLink>)}
+          </div> : <p className="ep-featured-empty" role="status">
+            {catalogState === "loading" ? "در حال دریافت منتخب‌های الوریا…" : catalogState === "empty" ? "هنوز اثری برای نمایش موجود نیست." : "دریافت تصاویر محصولات موقتاً امکان‌پذیر نیست."}
+          </p>}
+        </section>
       </div>
     </section>
   );
