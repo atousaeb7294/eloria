@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev --webpack",
+    "dev": "node scripts/dev-local.mjs",
     "prebuild": "prisma generate",
     "build": "node scripts/build-production.mjs",
     "start": "node scripts/start-production.mjs",
@@ -96,7 +96,9 @@
     "test:live-purchase": "node --import tsx scripts/test-live-purchase.ts",
     "test:audit-fixes": "node --import tsx scripts/test-audit-fixes.ts && node scripts/test-maintenance-scheduler.mjs && node scripts/test-offline-cache.mjs && node --import tsx scripts/test-purchase-recovery.ts && node --import tsx scripts/test-intro-recovery.ts && node --import tsx scripts/test-database-ssl.mjs",
     "verify:audit": "node scripts/verify-audit-release.mjs",
-    "check:database": "node --import tsx scripts/check-database-connection.ts"
+    "check:database": "node --import tsx scripts/check-database-connection.ts",
+    "test:dev-local": "node scripts/test-dev-local.mjs",
+    "test:treasury-browser": "node scripts/test-treasury-browser.mjs"
   },
   "dependencies": {
     "@base-ui/react": "^1.6.0",

@@ -1,0 +1,347 @@
+{
+  "desktop": {
+    "width": 1126,
+    "height": 813,
+    "variants": [
+      {
+        "url": "/images/palace/reference/palace-640-7743e0e9e4.webp",
+        "width": 640,
+        "height": 462,
+        "bytes": 128644
+      },
+      {
+        "url": "/images/palace/reference/palace-1126-c7e31aa2e9.webp",
+        "width": 1126,
+        "height": 813,
+        "bytes": 343080
+      }
+    ]
+  },
+  "featured": {
+    "width": 1126,
+    "height": 584,
+    "variants": [
+      {
+        "url": "/images/palace/reference/featured-900-7f0e7adf1a.webp",
+        "width": 900,
+        "height": 467,
+        "bytes": 117292
+      },
+      {
+        "url": "/images/palace/reference/featured-1126-09d1f38ca5.webp",
+        "width": 1126,
+        "height": 584,
+        "bytes": 166850
+      }
+    ]
+  },
+  "mobile": {
+    "gold": {
+      "closed": {
+        "width": 724,
+        "height": 368,
+        "variants": [
+          {
+            "url": "/images/palace/reference/gold-plinth-360-e976d95e4f.webp",
+            "width": 360,
+            "height": 183,
+            "bytes": 22814
+          },
+          {
+            "url": "/images/palace/reference/gold-plinth-724-6207d054c7.webp",
+            "width": 724,
+            "height": 368,
+            "bytes": 66152
+          }
+        ]
+      },
+      "open": {
+        "width": 724,
+        "height": 368,
+        "variants": [
+          {
+            "url": "/images/palace/reference/gold-open-mobile-360-3293417e63.webp",
+            "width": 360,
+            "height": 183,
+            "bytes": 22744
+          },
+          {
+            "url": "/images/palace/reference/gold-open-mobile-724-51a0d2a97d.webp",
+            "width": 724,
+            "height": 368,
+            "bytes": 66104
+          }
+        ]
+      },
+      "reference": {
+        "width": 724,
+        "height": 368,
+        "variants": [
+          {
+            "url": "/images/palace/reference/gold-reference-360-8f90a689c0.webp",
+            "width": 360,
+            "height": 183,
+            "bytes": 21844
+          },
+          {
+            "url": "/images/palace/reference/gold-reference-724-7a92d4b75a.webp",
+            "width": 724,
+            "height": 368,
+            "bytes": 57364
+          }
+        ]
+      }
+    },
+    "silver": {
+      "closed": {
+        "width": 724,
+        "height": 368,
+        "variants": [
+          {
+            "url": "/images/palace/reference/silver-plinth-360-f2ad89c6fe.webp",
+            "width": 360,
+            "height": 183,
+            "bytes": 23044
+          },
+          {
+            "url": "/images/palace/reference/silver-plinth-724-71f61c017b.webp",
+            "width": 724,
+            "height": 368,
+            "bytes": 66808
+          }
+        ]
+      },
+      "open": {
+        "width": 724,
+        "height": 368,
+        "variants": [
+          {
+            "url": "/images/palace/reference/silver-open-mobile-360-0d36ae4a72.webp",
+            "width": 360,
+            "height": 183,
+            "bytes": 22936
+          },
+          {
+            "url": "/images/palace/reference/silver-open-mobile-724-a219c83c75.webp",
+            "width": 724,
+            "height": 368,
+            "bytes": 66096
+          }
+        ]
+      },
+      "reference": {
+        "width": 724,
+        "height": 368,
+        "variants": [
+          {
+            "url": "/images/palace/reference/silver-reference-360-d475ca655e.webp",
+            "width": 360,
+            "height": 183,
+            "bytes": 22636
+          },
+          {
+            "url": "/images/palace/reference/silver-reference-724-8a8f202085.webp",
+            "width": 724,
+            "height": 368,
+            "bytes": 58676
+          }
+        ]
+      }
+    },
+    "weave": {
+      "closed": {
+        "width": 724,
+        "height": 368,
+        "variants": [
+          {
+            "url": "/images/palace/reference/weave-plinth-360-2a18cfe3bc.webp",
+            "width": 360,
+            "height": 183,
+            "bytes": 22632
+          },
+          {
+            "url": "/images/palace/reference/weave-plinth-724-13d729d9d0.webp",
+            "width": 724,
+            "height": 368,
+            "bytes": 66026
+          }
+        ]
+      },
+      "open": {
+        "width": 724,
+        "height": 368,
+        "variants": [
+          {
+            "url": "/images/palace/reference/weave-open-mobile-360-2a44255706.webp",
+            "width": 360,
+            "height": 183,
+            "bytes": 23086
+          },
+          {
+            "url": "/images/palace/reference/weave-open-mobile-724-f74d57f091.webp",
+            "width": 724,
+            "height": 368,
+            "bytes": 67824
+          }
+        ]
+      },
+      "reference": {
+        "width": 724,
+        "height": 368,
+        "variants": [
+          {
+            "url": "/images/palace/reference/weave-reference-360-ff64eadf56.webp",
+            "width": 360,
+            "height": 183,
+            "bytes": 20764
+          },
+          {
+            "url": "/images/palace/reference/weave-reference-724-28b4cf4ecb.webp",
+            "width": 724,
+            "height": 368,
+            "bytes": 55200
+          }
+        ]
+      }
+    }
+  },
+  "opened": {
+    "gold": {
+      "width": 244,
+      "height": 201,
+      "variants": [
+        {
+          "url": "/images/palace/reference/gold-open-desktop-244-6a070ff3da.webp",
+          "width": 244,
+          "height": 201,
+          "bytes": 23706
+        }
+      ],
+      "rectangle": {
+        "left": 746,
+        "top": 292,
+        "width": 244,
+        "height": 201
+      }
+    },
+    "silver": {
+      "width": 233,
+      "height": 201,
+      "variants": [
+        {
+          "url": "/images/palace/reference/silver-open-desktop-233-0198a715f2.webp",
+          "width": 233,
+          "height": 201,
+          "bytes": 20812
+        }
+      ],
+      "rectangle": {
+        "left": 451,
+        "top": 292,
+        "width": 233,
+        "height": 201
+      }
+    },
+    "weave": {
+      "width": 244,
+      "height": 201,
+      "variants": [
+        {
+          "url": "/images/palace/reference/weave-open-desktop-244-d5a77a968b.webp",
+          "width": 244,
+          "height": 201,
+          "bytes": 20094
+        }
+      ],
+      "rectangle": {
+        "left": 146,
+        "top": 292,
+        "width": 244,
+        "height": 201
+      }
+    }
+  },
+  "brazier": {
+    "width": 180,
+    "height": 270,
+    "variants": [
+      {
+        "url": "/images/palace/reference/brazier-180-5ec58d56bc.webp",
+        "width": 180,
+        "height": 270,
+        "bytes": 14162
+      }
+    ]
+  },
+  "products": [
+    {
+      "id": "delbar",
+      "name": "دلبر",
+      "image": {
+        "width": 337,
+        "height": 184,
+        "variants": [
+          {
+            "url": "/images/palace/reference/delbar-337-0b9b9335e4.webp",
+            "width": 337,
+            "height": 184,
+            "bytes": 13956
+          }
+        ]
+      }
+    },
+    {
+      "id": "silver-moon",
+      "name": "نقره ماه",
+      "image": {
+        "width": 337,
+        "height": 184,
+        "variants": [
+          {
+            "url": "/images/palace/reference/silver-moon-337-d01818a57e.webp",
+            "width": 337,
+            "height": 184,
+            "bytes": 11358
+          }
+        ]
+      }
+    },
+    {
+      "id": "midnight",
+      "name": "مینا شب",
+      "image": {
+        "width": 337,
+        "height": 184,
+        "variants": [
+          {
+            "url": "/images/palace/reference/midnight-337-8a2aa6c616.webp",
+            "width": 337,
+            "height": 184,
+            "bytes": 12176
+          }
+        ]
+      }
+    },
+    {
+      "id": "ancient",
+      "name": "کهن‌نشان",
+      "image": {
+        "width": 337,
+        "height": 184,
+        "variants": [
+          {
+            "url": "/images/palace/reference/ancient-337-b83b6d439c.webp",
+            "width": 337,
+            "height": 184,
+            "bytes": 14112
+          }
+        ]
+      }
+    }
+  ],
+  "provenance": {
+    "desktopSha256": "f5b16ec13832e64bcd397fb4174dfe19701901bbd36631ea9b55ad7622e60a04",
+    "mobileSha256": "73b1f1c68507f0c9e57fe52d75c2ab3e156099f4a900e5a8a1d30e3f8cbd14b3",
+    "note": "Original reference artwork retained. ImageGen supplies only the requested plinth/carpet, brazier and open-chest states."
+  }
+}

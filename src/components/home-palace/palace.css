@@ -1,110 +1,91 @@
-/* Scoped to the home treasury only. Existing hero, header, footer and routes are untouched. */
-#eloria-home-palace{position:relative;isolation:isolate;width:min(100% - 32px,1360px);margin:32px auto 48px;background:#062c20;color:#ecd29b;border:1px solid #af8e4d66;overflow:clip}
-#eloria-home-palace *{box-sizing:border-box}
-#eloria-home-palace .ep-stage{position:relative;aspect-ratio:1536/615;overflow:hidden}
-#eloria-home-palace .ep-hall-picture{position:absolute;inset:0;display:block;pointer-events:none}
-#eloria-home-palace .ep-backplate{display:block;width:100%;height:auto;max-width:none;opacity:1;filter:none}
-#eloria-home-palace .ep-treasuries,#eloria-home-palace .ep-bay{display:contents}
-#eloria-home-palace .ep-bay-gold{--ep-center:75%;--ep-sprite:100%;--ep-decor-x:0%;--ep-crop:85%}
-#eloria-home-palace .ep-bay-silver{--ep-center:50%;--ep-sprite:50%;--ep-decor-x:50%;--ep-crop:50%}
-#eloria-home-palace .ep-bay-weave{--ep-center:25%;--ep-sprite:0%;--ep-decor-x:100%;--ep-crop:15%}
-#eloria-home-palace .ep-treasury{position:absolute;top:2%;left:var(--ep-center);transform:translateX(-50%);width:24%;height:43%;display:flex;flex-direction:column;align-items:center;justify-content:center;padding-bottom:clamp(22px,3vw,42px);z-index:2;text-align:center}
-#eloria-home-palace .ep-flag-art{position:absolute;inset:0;background-image:var(--ep-decor);background-size:300% 200%;background-position:var(--ep-decor-x) 100%;background-repeat:no-repeat;pointer-events:none;z-index:-1}
+/* The reference photographs supply the physical scene. Controls are real
+   links with geometry tied to each image's intrinsic aspect ratio. */
+#treasury-gold{scroll-margin-top:100px}
+#eloria-home-palace{width:min(100% - 32px,1360px);margin:24px auto 48px;overflow:clip;isolation:isolate;background:#00271b;color:#edcf8c}
+.ep-surface{font-family:"Vazirmatn Variable",Vazirmatn,Tahoma,sans-serif}
+.ep-surface *{box-sizing:border-box}
+.ep-surface picture,.ep-surface picture img{display:block;width:100%;height:100%}
+.ep-surface picture img{object-fit:fill}
+.ep-surface .ep-sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap;border:0}
+.ep-surface .ep-stage{position:relative;width:100%;aspect-ratio:1126/813;isolation:isolate;overflow:hidden;background:#062c20}
+.ep-surface .ep-desktop-art{position:absolute;inset:0;pointer-events:none}
+.ep-surface .ep-treasuries{display:contents}
+.ep-surface .ep-bay{position:absolute;inset:0;pointer-events:none}
+.ep-surface .ep-bay-gold{--ep-center:73.8%;--ep-chest-center:77%;--ep-lid-mask:polygon(68% 45%,85.5% 45%,87% 50.5%,67.5% 50.5%);--ep-hinge:77% 45%}
+.ep-surface .ep-bay-silver{--ep-center:50.2%;--ep-chest-center:50.2%;--ep-lid-mask:polygon(42% 47.5%,58% 47.5%,59% 52%,41% 52%);--ep-hinge:50% 47.5%}
+.ep-surface .ep-bay-weave{--ep-center:27.1%;--ep-chest-center:23.4%;--ep-lid-mask:polygon(15% 46%,32% 46%,33% 50.5%,14% 50.5%);--ep-hinge:23% 46%}
+.ep-surface .ep-mobile-art,.ep-surface .ep-reference-copy{display:none}
+.ep-surface .ep-enter,.ep-surface .ep-photo,.ep-surface .ep-chest-target{position:absolute;display:block;pointer-events:auto;touch-action:manipulation;text-decoration:none;border-radius:8px;-webkit-tap-highlight-color:#ebc46633}
+.ep-surface .ep-enter{left:var(--ep-center);top:30%;width:13.2%;height:5.8%;min-height:44px;transform:translate(-50%,-50%);z-index:5}
+.ep-surface .ep-chest-target{left:var(--ep-chest-center);top:44%;width:23%;height:17%;min-height:44px;transform:translateX(-50%);z-index:3}
+.ep-surface .ep-photos{position:absolute;left:var(--ep-center);top:20.6%;width:13.5%;height:6.2%;transform:translateX(-50%);display:flex;gap:3%;direction:ltr;pointer-events:none;z-index:4}
+.ep-surface .ep-photo{position:relative;flex:1;min-width:0;aspect-ratio:1;border-radius:50%}
+.ep-surface .ep-bay-silver .ep-photos{width:10.4%}
+.ep-surface .ep-bay-silver .ep-photo-3{display:none}
+.ep-surface a:focus-visible{outline:3px solid #fff1b2;outline-offset:4px;box-shadow:0 0 0 7px #063a2acc}
+@media(hover:hover){.ep-surface .ep-enter:hover{box-shadow:inset 0 0 0 1px #ffe2a2,0 0 20px #f0d49744;background:#fff0b20b}.ep-surface .ep-chest-target:hover{background:#ffe7ad08}}
+.ep-surface .ep-open-patch{position:absolute;left:var(--ep-patch-left);top:var(--ep-patch-top);width:var(--ep-patch-width);height:var(--ep-patch-height);pointer-events:none;opacity:0;z-index:2;clip-path:polygon(9% 4%,94% 4%,94% 54%,100% 63%,99% 99%,5% 99%,4% 62%,7% 53%)}
+.ep-surface .ep-bay[data-open=true] .ep-open-patch{animation:ep-open-chest 210ms cubic-bezier(.2,.7,.2,1) both}
+.ep-surface .ep-hinged-lid{position:absolute;inset:0;pointer-events:none;opacity:0;z-index:3;clip-path:var(--ep-lid-mask);transform-origin:var(--ep-hinge);backface-visibility:hidden}
+.ep-surface .ep-bay[data-open=true] .ep-hinged-lid{animation:ep-lid-lift 200ms cubic-bezier(.2,.7,.2,1) both}
+.ep-surface .ep-braziers{position:absolute;inset:0;pointer-events:none;z-index:3}
+.ep-surface .ep-brazier{position:absolute;top:47.7%;width:8.2%;height:28%;filter:drop-shadow(4px 8px 4px #24150844)}
+.ep-surface .ep-brazier-left{left:.8%}
+.ep-surface .ep-brazier-right{right:.8%;transform:scaleX(-1)}
+.ep-surface .ep-featured{position:relative;height:auto;aspect-ratio:1126/584;background:#00271b}
+.ep-surface .ep-featured-art{position:absolute;inset:0;pointer-events:none}
+.ep-surface .ep-section-title{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);margin:0}
+.ep-surface .ep-featured-grid{position:absolute;inset:17.5% 8.5% 12%;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));grid-template-rows:repeat(2,minmax(0,1fr));gap:2% 1.5%;direction:ltr}
+.ep-surface .ep-featured-product{position:relative;display:block;min-width:0;text-decoration:none;color:#f3dca6;border-radius:50%;touch-action:manipulation}
+.ep-surface .ep-featured-image{display:none}
+.ep-surface .ep-featured-product>span{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}
+.ep-surface .ep-view-all{display:none}
 
-#eloria-home-palace .ep-brand-logo{display:block;width:28px;height:20px;object-fit:contain;flex-shrink:0}
-#eloria-home-palace .ep-card-title{font-size:clamp(25px,2.6vw,40px);line-height:1.8;font-weight:400;white-space:nowrap;color:#f0ce7f;margin:0;text-shadow:0 1px 2px #0008}
-#eloria-home-palace .ep-photos{display:flex;align-items:center;justify-content:center;width:43%;gap:5%;min-height:34px;margin:2px 0 12px}
-#eloria-home-palace .ep-photo{position:relative;display:block;width:29%;aspect-ratio:1;border-radius:50%;border:1px solid #d7b36b;overflow:hidden;background:#063321;flex-shrink:0}
-#eloria-home-palace .ep-photo img{object-fit:cover}
-#eloria-home-palace .ep-symbol{display:grid;place-items:center;width:40px;height:34px;color:#c8a265}
-#eloria-home-palace .ep-enter{position:relative;display:flex;align-items:center;justify-content:center;gap:7px;min-height:40px;width:47%;max-width:190px;padding:7px 9px;border:1px solid #c5a66a;border-radius:24px 7px 24px 7px;background:linear-gradient(135deg,#174331,#032a1d);box-shadow:inset 0 0 0 3px #072d20,inset 0 0 0 4px #c6a26b66,0 2px 6px #0005;color:#f1d69b;text-decoration:none;white-space:nowrap;font-size:clamp(10px,.9vw,13px);line-height:1.5}
-#eloria-home-palace .ep-enter:hover{background:linear-gradient(135deg,#245a3c,#0c3d28);border-color:#f2d498}
-#eloria-home-palace .ep-enter-ornament{font-size:10px;color:#d8b76e}
-#eloria-home-palace a:focus-visible{outline:3px solid #fff1b2;outline-offset:4px}
-#eloria-home-palace .ep-chest-target{position:absolute;left:var(--ep-center);top:38.5%;width:21%;aspect-ratio:1;transform:translateX(-50%);display:block;z-index:1;touch-action:manipulation}
-#eloria-home-palace .ep-chest-art,#eloria-home-palace .ep-chest-art>span{position:absolute;inset:0;display:block;pointer-events:none}
-#eloria-home-palace .ep-chest-art{filter:none}
-#eloria-home-palace .ep-chest-art>span{background-image:var(--ep-sprites);background-size:300% 200%;background-repeat:no-repeat;transition:opacity 260ms ease-out}
-#eloria-home-palace .ep-chest-closed{background-position:var(--ep-sprite) 0%;opacity:1}
-#eloria-home-palace .ep-chest-open{background-position:var(--ep-sprite) 100%;opacity:0;transform:none}
-#eloria-home-palace .ep-bay[data-open=true] .ep-chest-closed{opacity:0}
-#eloria-home-palace .ep-bay[data-open=true] .ep-chest-open{opacity:1}
-/* This panel stays in normal flow: the frame grows with every row and long product name. */
-#eloria-home-palace .ep-featured{position:relative;display:block;height:auto;min-height:280px;text-align:center;margin:0;padding:38px 17% 58px;background-image:var(--ep-hall);background-size:100% 250%;background-position:center bottom;background-repeat:no-repeat}
-#eloria-home-palace .ep-section-title{font-size:clamp(30px,3.4vw,48px);line-height:2;font-weight:400;margin:0 0 20px;color:#eac675}
-#eloria-home-palace .ep-featured-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));align-items:start;gap:26px 20px;width:100%;margin:0 auto}
-#eloria-home-palace .ep-featured-product{display:flex;flex-direction:column;align-items:center;min-width:0;text-decoration:none;color:#f2dbac}
-#eloria-home-palace .ep-featured-image{position:relative;aspect-ratio:1;width:min(100%,150px);border:1px solid #d6b369;border-radius:50%;overflow:hidden;background:#062b1d;box-shadow:0 0 0 4px #d1ac5d14}
-#eloria-home-palace .ep-featured-image img{object-fit:cover}
-#eloria-home-palace .ep-featured-product>span{display:block;max-width:100%;padding-top:10px;font-size:13px;line-height:1.9;overflow-wrap:anywhere;text-wrap:pretty}
-#eloria-home-palace .ep-featured-empty{padding:22px 0;min-height:100px;font-size:13px;line-height:2}
-@media(max-width:1100px) and (min-width:901px){#eloria-home-palace .ep-brand-logo{display:none}#eloria-home-palace .ep-treasury{top:2%;height:43%;padding-bottom:28px}#eloria-home-palace .ep-card-title{font-size:28px;line-height:1.75}#eloria-home-palace .ep-photos{margin:0 0 8px}#eloria-home-palace .ep-enter{font-size:10px;gap:4px;padding-inline:5px;min-height:36px}}
+/* Bounded continuation of the clicked scene while the real destination renders.
+   No screenshot API, WebGL, scroll lock or timer in the navigation path. */
+.ep-flight{position:fixed;z-index:9999;pointer-events:none!important;overflow:clip;contain:layout paint style;animation:ep-camera-enter 380ms cubic-bezier(.2,.65,.25,1) both;will-change:transform,opacity}
+.ep-flight *{pointer-events:none!important}
+.ep-flight .ep-stage{height:100%}
+@keyframes ep-open-chest{from{opacity:0;translate:0 2%}to{opacity:1;translate:0 0}}
+@keyframes ep-lid-lift{0%{opacity:1;transform:perspective(900px) rotateX(0)}65%{opacity:.7;transform:perspective(900px) rotateX(-55deg)}100%{opacity:0;transform:perspective(900px) rotateX(-80deg)}}
+@keyframes ep-camera-enter{0%{transform:scale(1);opacity:1}62%{transform:scale(1.13);opacity:1}100%{transform:scale(1.2);opacity:0}}
+
 @media(max-width:900px){
- #eloria-home-palace{width:min(100% - 20px,500px);margin:20px auto 32px}
- #eloria-home-palace .ep-stage{aspect-ratio:auto;overflow:visible}
- #eloria-home-palace .ep-hall-picture{display:none}
- #eloria-home-palace .ep-treasuries{display:block}
- #eloria-home-palace .ep-bay{position:relative;display:block;aspect-ratio:5/6;--ep-center:50%;background-image:var(--ep-hall);background-size:300% auto;background-position:var(--ep-crop) top;background-repeat:no-repeat;overflow:hidden;border-bottom:1px solid #b7995b}
- #eloria-home-palace .ep-treasury{top:0;width:80%;height:42%;padding-bottom:32px}
- #eloria-home-palace .ep-chest-target{top:35%;width:70%}
- 
- html[lang=fa] #eloria-home-palace :is(h2,h3,p,span,a){font-family:"Vazirmatn Variable",Vazirmatn,Tahoma,sans-serif!important;letter-spacing:normal!important;word-spacing:normal!important;font-weight:400!important}
- #eloria-home-palace .ep-card-title{font-size:clamp(17px,4.5vw,23px);line-height:1.9;margin:3px 0}
- #eloria-home-palace .ep-brand-logo{width:25px;height:18px}
- #eloria-home-palace .ep-photos{width:44%;margin:3px 0 10px}
- #eloria-home-palace .ep-enter{font-size:11px;min-height:40px;gap:5px}
- #eloria-home-palace .ep-featured{padding:28px 28px 34px;background:radial-gradient(ellipse at top,#194b32,#03281c);border:7px double #bca064;border-radius:22px;margin:12px 8px;min-height:0}
- #eloria-home-palace .ep-section-title{font-size:25px;line-height:1.9;margin-bottom:24px}
- #eloria-home-palace .ep-featured-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:24px 18px}
- #eloria-home-palace .ep-featured-product>span{font-size:12px}
+ #treasury-gold{scroll-margin-top:86px}
+ #eloria-home-palace{width:min(100% - 24px,750px);margin:18px auto 32px;overflow:visible}
+ .ep-surface .ep-stage{aspect-ratio:auto;overflow:visible;background:none}
+ .ep-surface .ep-desktop-art,.ep-surface .ep-braziers{display:none}
+ .ep-surface .ep-treasuries{display:flex;flex-direction:column;gap:clamp(14px,3vw,24px)}
+ .ep-surface .ep-bay{position:relative;inset:auto;width:100%;aspect-ratio:724/368;isolation:isolate;overflow:clip;border-radius:3px}
+ .ep-surface .ep-bay-gold{--ep-lid-mask:polygon(57% 18%,86% 18%,91% 35%,56% 35%);--ep-hinge:74% 19%}
+ .ep-surface .ep-bay-silver{--ep-lid-mask:polygon(57% 18%,86% 18%,91% 36%,56% 36%);--ep-hinge:74% 19%}
+ .ep-surface .ep-bay-weave{--ep-lid-mask:polygon(57% 18%,86% 18%,94% 39%,55% 39%);--ep-hinge:74% 19%}
+ .ep-surface .ep-mobile-art,.ep-surface .ep-reference-copy{display:block;position:absolute;inset:0;pointer-events:none}
+ .ep-surface .ep-reference-copy{z-index:3;clip-path:polygon(0 0,49.2% 0,49.2% 31%,53% 31%,53% 68%,49.2% 68%,49.2% 100%,0 100%)}
+ .ep-surface .ep-open-patch{inset:0;width:100%;height:100%;clip-path:inset(0)}
+ .ep-surface .ep-enter{left:7.5%;top:79.5%;width:41.5%;height:18%;transform:translateY(-50%);border-radius:12px}
+ .ep-surface .ep-chest-target{left:54%;top:14%;width:41%;height:52%;transform:none}
+ .ep-surface .ep-photos,.ep-surface .ep-bay-silver .ep-photos{left:1%;top:32.8%;width:51.5%;height:33.8%;transform:none;gap:3%}
+ .ep-surface .ep-bay-silver .ep-photo-3{display:block}
+ .ep-surface .ep-featured{aspect-ratio:auto;padding:22px 0 4px;margin-top:3px}
+ .ep-surface .ep-featured-art{display:none}
+ .ep-surface .ep-section-title{position:relative;width:auto;height:auto;clip-path:none;overflow:visible;text-align:center;padding:0 0 21px;margin:0 0 16px;font-size:clamp(26px,6vw,42px);line-height:1.9;font-weight:400;color:#e5c486}
+ .ep-surface .ep-section-title::after{content:"✻";position:absolute;left:5%;right:5%;bottom:0;height:16px;border-bottom:1px solid #bda166;color:#d5b46f;font-family:serif;font-size:25px;line-height:31px;background:linear-gradient(90deg,transparent 44%,#00271b 44%,#00271b 56%,transparent 56%)}
+ .ep-surface .ep-featured-grid{position:relative;inset:auto;grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:auto;gap:18px 20px;padding:0 8px}
+ .ep-surface .ep-featured-product{overflow:hidden;border:1px solid #c6a56b;border-radius:16px;background:#00291e;box-shadow:inset 0 0 0 1px #edcf8c22}
+ .ep-surface .ep-featured-image{display:block;aspect-ratio:337/184;height:auto;overflow:hidden;background:#12382a}
+ .ep-surface .ep-featured-product>span{position:relative;display:block;width:auto;height:auto;overflow:visible;clip-path:none;text-align:center;padding:10px 6px 12px;font-size:clamp(14px,3.7vw,24px);line-height:1.6}
+ .ep-surface .ep-desktop-only{display:none}
+ .ep-surface .ep-view-all{display:flex;align-items:center;justify-content:center;gap:10px;width:fit-content;margin:22px auto 8px;padding:4px 0;color:#e3c27e;text-decoration:none;border-bottom:1px solid #aa8d52;font-size:14px;min-height:44px}
+ .ep-surface .ep-view-all>span{font-size:28px;line-height:1}
+ .ep-flight[data-compact=true]>.ep-bay{height:100%;aspect-ratio:auto}
 }
-@media(max-width:360px){#eloria-home-palace .ep-treasury{top:0;height:42%;padding-bottom:26px}#eloria-home-palace .ep-brand-logo{display:none}#eloria-home-palace .ep-enter{font-size:10px;min-height:36px}#eloria-home-palace .ep-enter-ornament{display:none}#eloria-home-palace .ep-featured{padding:24px 18px}}
-@media(prefers-reduced-motion:reduce){#eloria-home-palace .ep-chest-art>span{transition:none}}
-
-/* v6: content determines banner height; scene is a separate row, never an overlay. */
-#eloria-home-palace .ep-stage{aspect-ratio:auto;background-image:var(--ep-hall);background-size:100% 167%;background-position:center top}
-#eloria-home-palace .ep-hall-picture{display:none}
-#eloria-home-palace .ep-treasuries{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));align-items:start;padding:12px 7% 18px}
-#eloria-home-palace .ep-bay{display:flex;flex-direction:column;align-items:center;min-width:0;--ep-center:50%}
-#eloria-home-palace .ep-treasury{position:relative;top:auto;left:auto;transform:none;width:100%;height:auto;padding:24px 0 140px;isolation:isolate;justify-content:flex-start}
-#eloria-home-palace .ep-flag-art{background-position:50% 100%;z-index:-1}
-#eloria-home-palace .ep-flag-content{position:relative;width:44%;display:flex;flex-direction:column;align-items:center;gap:9px;min-width:0}
-#eloria-home-palace .ep-brand-logo{display:block;width:28px;height:20px}
-#eloria-home-palace .ep-card-title{font-size:clamp(25px,2.5vw,36px);line-height:1.8;white-space:normal;overflow-wrap:anywhere;width:100%;margin:0}
-#eloria-home-palace .ep-photos{width:100%;min-height:40px;gap:5%;margin:0;flex-shrink:0}
-#eloria-home-palace .ep-photo{width:30%;max-width:56px;flex:0 1 30%}
-#eloria-home-palace .ep-enter{width:100%;max-width:210px;min-height:44px;font-size:clamp(10px,1vw,13px);gap:4px;padding:8px 4px;border:2px solid #d6b776;border-radius:24px 8px;flex-shrink:0;white-space:normal}
-#eloria-home-palace .ep-chest-scene{position:relative;width:100%;aspect-ratio:1;isolation:isolate}
-#eloria-home-palace .ep-chest-target{top:0;width:100%;left:var(--ep-center);z-index:1}
-
-@media(max-width:1100px) and (min-width:901px){#eloria-home-palace .ep-treasuries{padding-inline:2%}#eloria-home-palace .ep-card-title{font-size:26px}#eloria-home-palace .ep-enter-ornament{display:none}}
-@media(max-width:900px){
- #eloria-home-palace .ep-stage{background:none}
- #eloria-home-palace .ep-treasuries{display:flex;flex-direction:column;padding:0}
- #eloria-home-palace .ep-bay{width:100%;aspect-ratio:auto;padding:18px 0 22px;background-size:300% 100%}
- #eloria-home-palace .ep-treasury{width:100%;height:auto;top:auto;padding:25px 0 140px}
- #eloria-home-palace .ep-flag-content{width:44%;gap:11px}
- #eloria-home-palace .ep-card-title{font-size:clamp(17px,4.5vw,23px);line-height:1.9}
- #eloria-home-palace .ep-photos{width:100%;margin:0;min-height:44px}
- #eloria-home-palace .ep-enter{width:100%;font-size:12px;min-height:44px}
- #eloria-home-palace .ep-chest-scene{width:90%}
- 
- #eloria-home-palace .ep-chest-target{width:100%;top:0}
+@media(max-width:360px){
+ .ep-surface .ep-featured-grid{gap:14px 12px;padding-inline:4px}
+ .ep-surface .ep-featured-product>span{font-size:13px}
 }
-@media(max-width:360px){#eloria-home-palace .ep-brand-logo{display:block}#eloria-home-palace .ep-enter{font-size:11px}#eloria-home-palace .ep-enter-ornament{display:none}}
-
-/* v7: symmetrical emerald cartouche, inset gold filigree and generous touch area. */
-#eloria-home-palace .ep-enter{border:1px solid #ddc28a;border-radius:50% / 24%;background:linear-gradient(180deg,#285740 0%,#0a3527 48%,#032419 100%);box-shadow:inset 0 0 0 3px #082c20,inset 0 0 0 4px #b99857,0 3px 9px #0005;min-height:48px;padding:11px 10px;gap:6px;text-shadow:0 1px 2px #00180d;color:#ffe5ad}
-#eloria-home-palace .ep-enter::before,#eloria-home-palace .ep-enter::after{content:"";position:absolute;top:50%;width:6px;height:6px;border:1px solid #e4c57e;background:#28503a;transform:translateY(-50%) rotate(45deg);pointer-events:none}
-#eloria-home-palace .ep-enter::before{left:4px}
-#eloria-home-palace .ep-enter::after{right:4px}
-#eloria-home-palace .ep-enter:hover{background:linear-gradient(180deg,#346c4e,#0b3c29);border-color:#ffe4a3}
-#eloria-home-palace .ep-enter-ornament{display:none}
-
-/* v12: all carpets are identical unrotated rectangles in a shared floor coordinate system.
-   Front/back separation is identical because every side remains parallel to the screen axis. */
-#eloria-home-palace .ep-bay-gold{--ep-rug-x:3.649635%}
-#eloria-home-palace .ep-bay-silver{--ep-rug-x:50%}
-#eloria-home-palace .ep-bay-weave{--ep-rug-x:96.350365%}
-#eloria-home-palace .ep-rug{position:absolute;display:block;left:50%;top:64%;width:94%;height:30%;transform:translateX(-50%);border:1px solid #b8a477;border-radius:0;overflow:hidden;background-color:#a38f64;background-image:var(--ep-rugs);background-size:349.090909% 124.878049%;background-position:var(--ep-rug-x) 51.470588%;background-repeat:no-repeat;box-shadow:0 1px 2px #1e160d40;pointer-events:none;z-index:0}
-#eloria-home-palace .ep-chest-target{width:80%;top:8%}
+@media(prefers-reduced-motion:reduce){
+ .ep-surface .ep-bay[data-open=true] .ep-open-patch{animation:none;opacity:1}
+ .ep-surface .ep-bay[data-open=true] .ep-hinged-lid{animation:none;opacity:0}
+ .ep-flight{display:none;animation:none}
+}

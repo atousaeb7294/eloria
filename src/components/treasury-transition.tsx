@@ -24,10 +24,11 @@ function NavigationStatus() {
 
 export function TreasuryLink({
   direction = "left",
+  showPending = true,
   children,
   onNavigate,
   ...props
-}: ComponentProps<typeof Link> & { direction?: "left" | "up" }) {
+}: ComponentProps<typeof Link> & { direction?: "left" | "up"; showPending?: boolean }) {
   return <Link
     {...props}
     data-navigation-direction={direction}
@@ -40,6 +41,6 @@ export function TreasuryLink({
     }}
   >
     {children}
-    <NavigationStatus />
+    {showPending && <NavigationStatus />}
   </Link>;
 }
