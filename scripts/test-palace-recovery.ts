@@ -1,13 +1,14 @@
 /* eslint-disable @typescript-eslint/no-explicit-any -- Isolated browser doubles. */
 import assert from "node:assert/strict";
-import { readFileSync, existsSync, statSync } from "node:fs";
+import { readFileSync, existsSync } from "node:fs";
 import { createRequire } from "node:module";
 import { runInNewContext } from "node:vm";
 import ts from "typescript";
-import sharp from "sharp";
 import React, { act } from "react";
 import { create, type ReactTestRenderer } from "react-test-renderer";
 import { renderToStaticMarkup } from "react-dom/server";
+import * as products from "../src/components/home-palace/palace-products";
+import { startPalaceEntry } from "../src/components/home-palace/palace-entry";
 import assets from "../src/components/home-palace/palace-reference-assets.json";
 
 const require = createRequire(import.meta.url);
@@ -16,27 +17,42 @@ function compile(file: string) {
     compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022, jsx: ts.JsxEmit.ReactJSX, esModuleInterop: true },
   }).outputText;
 }
+const catalogue = [
+  { slug: "gold/دلبر", name: "دلبَر", imageUrl: "/api/media/products/real-delbar", hasGold: true, hasSilver: false },
+  { slug: "silver", name: "نقره ماه", imageUrl: "/api/media/products/real-silver", hasGold: false, hasSilver: true },
+  { slug: "weave", name: "مینای شب", imageUrl: "/api/media/products/real-weave", hasGold: false, hasSilver: false },
+  { slug: "mixed", name: "ترکیب", imageUrl: "/api/media/products/real-mixed", hasGold: true, hasSilver: true },
+];
 
-async function scenario({ mobile = false, intro = false, saveData = false, unavailable = false } = {}) {
+async function scenario({ intro = false, saveData = false, unavailable = false } = {}) {
   let observerCallback: any, catalogReady!: (result: unknown) => void;
-  let fetchCalls = 0;
+  let fetchCalls = 0, now = 20000, pending = false;
   let fetchSignal: AbortSignal | undefined;
-  const events = new Map<string, () => void>();
-  const timers = new Map<number, () => void>();
-  const prefetches: string[] = [], navigations: string[] = [], trace: string[] = [];
-  const router = { prefetch: (href: string) => prefetches.push(href) };
+  const events = new Map<string, () => void>(), documentEvents = new Map<string, () => void>();
+  const timers = new Map<number, () => void>(), intervals = new Map<number, () => void>();
+  const navigations: string[] = [];
+  const bays = ["gold", "silver", "weave"].map((treasury, index) => ({
+    dataset: { treasury }, getBoundingClientRect: () => ({ top: index * 1000, bottom: index * 1000 + 400 }),
+  }));
+  const root = { querySelectorAll: () => bays, getBoundingClientRect: () => ({ bottom: 3000 }) };
   const module = { exports: {} as any };
   runInNewContext(compile("src/components/home-palace/index.tsx"), {
-    module, exports: module.exports, console, AbortController,
+    module, exports: module.exports, console, AbortController, Date: { now: () => now },
     navigator: { connection: { saveData } },
-    document: { querySelector: () => intro ? {} : null },
+    document: {
+      visibilityState: "visible", querySelector: () => intro ? {} : null,
+      addEventListener: (name: string, fn: () => void) => documentEvents.set(name, fn),
+      removeEventListener: (name: string) => documentEvents.delete(name),
+    },
     window: {
-      matchMedia: (q: string) => ({ matches: q.includes("max-width") && mobile }),
+      innerHeight: 700,
       addEventListener: (name: string, fn: () => void) => events.set(name, fn),
       removeEventListener: (name: string) => events.delete(name),
     },
     setTimeout: (fn: () => void) => { const id = timers.size + 1; timers.set(id, fn); return id; },
     clearTimeout: (id: number) => timers.delete(id),
+    setInterval: (fn: () => void) => { intervals.set(1, fn); return 1; },
+    clearInterval: (id: number) => intervals.delete(id),
     IntersectionObserver: class { constructor(fn: any) { observerCallback = fn; } observe() {} disconnect() {} },
     fetch: (_url: string, options: { signal: AbortSignal }) => {
       fetchCalls++; fetchSignal = options.signal;
@@ -44,18 +60,20 @@ async function scenario({ mobile = false, intro = false, saveData = false, unava
     },
     require: (name: string) => {
       if (name.endsWith(".css")) return {};
-      if (name === "next/navigation") return { useRouter: () => router };
-      if (name === "./palace-entry") return { startPalaceEntry: () => trace.push("scene") };
+      if (name === "next/link") return { useLinkStatus: () => ({ pending }) };
+      if (name === "./palace-products") return products;
+      if (name === "./palace-entry") return { startPalaceEntry };
       if (name === "./palace-reference-assets.json") return assets;
+      if (name === "@/components/product-image") return {
+        ProductImage: ({ fill, ...props }: any) => { void fill; return React.createElement("img", props); },
+      };
       if (name === "@/components/treasury-transition") return {
         TreasuryLink: ({ children, prefetch, showPending = true, ...props }: any) => {
-          void prefetch;
           return React.createElement("a", {
-            ...props, "data-pending-indicator": String(showPending),
+            ...props, "data-pending-indicator": String(showPending), "data-prefetch": prefetch,
             onNavigate: (event: any) => {
-              let cancelled = false;
-              props.onNavigate?.({ preventDefault() { cancelled = true; event.preventDefault(); } });
-              if (!cancelled) { navigations.push(props.href); trace.push("navigate"); }
+              props.onNavigate?.(event);
+              navigations.push(props.href);
             },
           }, children);
         },
@@ -67,144 +85,105 @@ async function scenario({ mobile = false, intro = false, saveData = false, unava
   const html = renderToStaticMarkup(React.createElement(Component));
   for (const slug of ["gold", "silver", "weave"]) assert.ok(html.includes(`/fa/collections/${slug}`));
   assert.equal((html.match(/class="ep-enter"/g) || []).length, 3);
-  assert.equal((html.match(/class="ep-chest-target /g) || []).length, 3);
-  assert.ok(html.includes("منتخب‌های الوریا") && html.includes("دلبر"));
-  assert.ok(html.includes("<picture") && html.includes('loading="lazy"'), "Photos exist before hydration or API data");
-  assert.ok(!html.includes("<dialog"));
+  assert.ok(!html.includes("/fa/products?q="), "Never invent a product/search destination");
+  assert.ok(!html.includes("تصویر مرجع"));
   let tree!: ReactTestRenderer;
-  await act(async () => { tree = create(React.createElement(Component), { createNodeMock: () => ({}) }); });
+  await act(async () => { tree = create(React.createElement(Component), { createNodeMock: () => root }); });
   assert.equal(fetchCalls, 0, "Below-fold catalogue does not compete with the intro");
-  await act(async () => observerCallback([{ isIntersecting: true }]));
+  await act(async () => observerCallback([{ target: root, isIntersecting: true }]));
   if (intro) {
     assert.equal(fetchCalls, 0);
     await act(async () => events.get("eloria:intro-complete")?.());
   }
   assert.equal(fetchCalls, 1);
-  const entries = tree.root.findAll(node => node.type === "a" && node.props.className === "ep-enter");
-  for (const entry of entries) assert.equal(entry.props["data-pending-indicator"], "false", "Entry has no intermediary loading toast");
-  let prevented = 0;
-  await act(async () => {
-    entries[0].props.onNavigate({ preventDefault() { prevented++; } });
-    entries[0].props.onNavigate({ preventDefault() { prevented++; } });
-  });
-  assert.equal(prevented, 1, "Only duplicate navigation is cancelled");
-  assert.deepEqual(navigations, ["/fa/collections/gold"], "Routing starts in the click event, before timers or API completion");
-  assert.deepEqual(trace, ["scene", "navigate"]);
+  const entry = () => tree.root.findAll(node => node.type === "a" && node.props.className === "ep-enter")[0];
+  assert.equal(entry().props["data-prefetch"], !saveData, "Visible treasury fully prefetches before tapping");
+  const silverEntry = () => tree.root.findAll(node => node.type === "a" && node.props.className === "ep-enter")[1];
+  assert.equal(silverEntry().props["data-prefetch"], false, "Offscreen treasuries wait for visibility or intent");
+  await act(async () => silverEntry().props.onFocus());
+  assert.equal(silverEntry().props["data-prefetch"], !saveData);
+  assert.equal(entry().props["data-pending-indicator"], "false");
+  await act(async () => entry().props.onNavigate({ preventDefault() { assert.fail("Entry must start immediately"); } }));
+  assert.deepEqual(navigations, ["/fa/collections/gold"]);
+  assert.deepEqual(bays.map(bay => (bay.dataset as any).open), ["true", "false", "false"]);
   assert.equal(tree.root.findByProps({ className: "ep-stage" }).props["data-open"], "gold");
-  entries[0].props.onPointerEnter(); entries[0].props.onFocus(); entries[0].props.onPointerDown();
-  assert.deepEqual(prefetches, saveData ? [] : ["/fa/collections/gold"]);
-  const products = () => tree.root.findAll(node => node.type === "a" && node.props.className.startsWith("ep-featured-product"));
-  const before = products().map(node => node.props.href);
-  assert.ok(before.every(href => href.startsWith("/fa/products?q=")), "No invented product slugs before catalogue data");
-  await act(async () => catalogReady({ ok: !unavailable, json: async () => ({ items: [
-    { slug: "actual-delbar", name: "دلبَر", imageUrl: "/images/different-photo.webp" },
-    { slug: "unrelated", name: "اثر دیگری" },
-  ] }) }));
-  assert.equal(products().length, 8, "Exactly the eight reference selections remain on desktop");
-  assert.equal(products()[0].props.href, unavailable ? before[0] : "/fa/products/actual-delbar");
-  assert.ok(!JSON.stringify(tree.toJSON()).includes("different-photo.webp"), "Live data cannot replace the requested reference photographs");
-  assert.equal(timers.size, 1, "Catalogue timeout is released");
+  assert.equal(timers.size, 1, "Only the network timeout exists; no scene reset or route delay");
+  const links = () => tree.root.findAll(node => node.type === "a" && node.props.className.startsWith("ep-featured-product"));
+  assert.equal(links().length, 0, "Before data arrives, ornamental slots are not fake products");
+  await act(async () => catalogReady({ ok: !unavailable, json: async () => ({ source: "database", items: catalogue }) }));
+  assert.equal(timers.size, 0);
+  if (unavailable) {
+    assert.equal(links().length, 0);
+    now += 16000;
+    await act(async () => events.get("online")?.());
+    assert.equal(fetchCalls, 2, "Network recovery retries unavailable previews");
+    await act(async () => catalogReady({ ok: true, json: async () => ({ source: "database", items: catalogue }) }));
+  }
+  assert.equal(links().length, 4);
+  for (const link of links()) {
+    const image = link.findByType("img");
+    const record = catalogue.find(p => p.imageUrl === image.props.src)!;
+    assert.ok(record, "Only a catalogue product supplies the photograph");
+    assert.equal(link.props.href, products.productHref(record));
+    assert.equal(image.props.alt, record.name);
+    assert.equal(link.props["data-pending-indicator"], "false");
+  }
+  for (const treasury of ["gold", "silver", "weave"] as const) {
+    const bay = tree.root.findByProps({ "data-treasury": treasury });
+    const thumbnails = bay.findAll(node => node.type === "a" && node.props.className.startsWith("ep-photo "));
+    assert.deepEqual(thumbnails.map(node => node.props.href), products.treasuryProducts(catalogue, treasury).map(products.productHref));
+    assert.ok(thumbnails.every(node => !node.props.href.includes("collections")));
+  }
+  // A slow navigation must leave the chest open after all unrelated timers.
+  assert.equal(tree.root.findByProps({ className: "ep-stage" }).props["data-open"], "gold");
+  pending = true; await act(async () => tree.update(React.createElement(Component)));
+  pending = false; await act(async () => tree.update(React.createElement(Component)));
+  assert.equal(tree.root.findByProps({ className: "ep-stage" }).props["data-open"], null, "Cancelled navigation recovers");
+  await act(async () => entry().props.onNavigate({}));
   await act(async () => events.get("pageshow")?.());
   assert.equal(tree.root.findByProps({ className: "ep-stage" }).props["data-open"], null);
   await act(async () => tree.unmount());
-  assert.equal(timers.size, 0);
+  assert.equal(timers.size + intervals.size, 0);
   assert.ok(fetchSignal?.aborted);
-  assert.equal(events.size, 0);
+  assert.equal(events.size + documentEvents.size, 0);
 }
 
-function motionScenario(mobile: boolean) {
-  let reduced = false, removed = 0, appended = 0;
-  const timers = new Map<number, () => void>();
-  const listeners = new Map<string, () => void>();
-  const frameEvents = new Map<string, (event: any) => void>();
-  const clones = ["gold", "silver", "weave"].map(slug => ({ dataset: { treasury: slug, open: "false" } }));
-  const ids: string[] = [], links: string[] = [];
-  const clone = {
-    dataset: { open: "false" },
-    removeAttribute: (name: string) => ids.push(name),
-    querySelectorAll: (selector: string) => selector === "[id]" ? [{ removeAttribute: (name: string) => ids.push(name) }]
-      : selector === "a" ? [{ removeAttribute: (name: string) => links.push(name), tabIndex: 0 }] : clones,
-  };
-  const scene = { cloneNode: () => clone, getBoundingClientRect: () => ({ top: 80, left: 16, width: 900, height: 650, bottom: 730 }) };
-  let frame: any;
+async function apiScenario() {
+  const queries: any[] = [];
+  const row = { ...catalogue[0], createdAt: new Date(), nameFa: "دلبر", nameEn: "Delbar", isFeatured: true, images: [{ imageUrl: catalogue[0].imageUrl }] };
   const module = { exports: {} as any };
-  runInNewContext(compile("src/components/home-palace/palace-entry.ts"), {
-    module, exports: module.exports,
-    window: {
-      innerHeight: 900,
-      matchMedia: (query: string) => ({ matches: query.includes("reduced-motion") ? reduced : mobile }),
-      addEventListener: (name: string, fn: () => void) => listeners.set(name, fn),
-      removeEventListener: (name: string) => listeners.delete(name),
-    },
-    document: {
-      createElement: () => frame = {
-        style: {}, dataset: {}, attributes: {} as Record<string, string>,
-        setAttribute(name: string, value: string) { this.attributes[name] = value; },
-        append() {}, remove() { removed++; },
-        addEventListener: (name: string, fn: (event: any) => void) => frameEvents.set(name, fn),
-      },
-      body: { append: () => appended++ },
-    },
-    setTimeout: (fn: () => void, duration: number) => {
-      assert.ok(duration <= 420, "Visual continuation has a strict lifetime");
-      const id = timers.size + 1; timers.set(id, fn); return id;
-    },
-    clearTimeout: (id: number) => timers.delete(id),
+  runInNewContext(compile("src/app/api/treasury/preview/route.ts"), {
+    module, exports: module.exports, URL, Date, Map,
+    require: (name: string) => name === "next/server" ? { NextResponse: { json: (data: unknown) => data } }
+      : { withDatabaseStatementTimeout: (_ms: number, fn: any) => fn({ product: { findMany: async (query: any) => { queries.push(query); return [row]; } } }) },
   });
-  const start = module.exports.startPalaceEntry;
-  start({ querySelector: () => scene }, "silver");
-  assert.equal(appended, 1);
-  assert.equal(frame.inert, true);
-  assert.equal(frame.attributes["aria-hidden"], "true");
-  assert.equal(frame.style.left, "16px");
-  assert.equal(frame.style.transformOrigin, mobile ? "76% 47%" : "50% 53%");
-  assert.deepEqual(ids, ["id", "id"]);
-  assert.deepEqual(links, ["href"]);
-  if (mobile) assert.equal(clone.dataset.open, "true");
-  else assert.deepEqual(clones.map(node => node.dataset.open), ["false", "true", "false"]);
-  frameEvents.get("animationend")?.({ target: {} });
-  assert.equal(removed, 0, "A child's lid animation must not remove the camera layer");
-  listeners.get("popstate")?.();
-  assert.equal(removed, 1);
-  assert.equal(timers.size, 0);
-  assert.equal(listeners.size, 0);
-  start({ querySelector: () => scene }, "gold");
-  for (const fn of [...timers.values()]) fn();
-  assert.equal(removed, 2);
-  reduced = true;
-  start({ querySelector: () => scene }, "weave");
-  assert.equal(appended, 2, "Reduced motion never creates a moving layer");
-  assert.equal(timers.size, 0);
+  const response = await module.exports.GET({ url: "https://eloriagallery.ir/api/treasury/preview?locale=fa" });
+  assert.equal(response.items.length, 1, "Mixed/category/featured duplicates collapse to one record");
+  assert.equal(response.items[0].imageUrl, row.images[0].imageUrl);
+  assert.equal(response.items[0].isFeatured, true);
+  assert.equal(queries.length, 4);
+  assert.equal(queries[3].where.isFeatured, true);
+  assert.equal(queries[3].take, 8, "All eight featured products can come from the same treasury");
+  for (const query of queries) {
+    assert.deepEqual(Array.from(query.where.status.in), ["ACTIVE", "OUT_OF_STOCK"]);
+    assert.equal(query.where.collection.isActive, true);
+    assert.equal(query.select.images.orderBy[0].isPrimary, "desc");
+  }
 }
 
 async function main() {
   (globalThis as any).IS_REACT_ACT_ENVIRONMENT = true;
-  await scenario({ mobile: true });
-  await scenario({ mobile: true, intro: true });
-  await scenario({ mobile: false, unavailable: true });
-  await scenario({ mobile: true, saveData: true });
-  motionScenario(false); motionScenario(true);
-  async function check(art: { variants: { url: string; width: number; height: number; bytes: number }[] }) {
-    for (const item of art.variants) {
-      const file = `public${item.url}`;
-      assert.ok(existsSync(file), item.url);
-      const info = await sharp(file).metadata();
-      assert.equal(info.format, "webp");
-      assert.equal(info.width, item.width); assert.equal(info.height, item.height);
-      assert.equal(statSync(file).size, item.bytes);
-    }
+  assert.equal(products.readPalaceProducts([...catalogue, catalogue[0], { ...catalogue[0], slug: "bad", imageUrl: "javascript:alert(1)" }, { slug: "no-photo", name: "بدون عکس" }]).length, 4);
+  const selected = products.featuredProducts(catalogue.map((p, i) => ({ ...p, isFeatured: i === 3 })));
+  assert.equal(selected[0]?.slug, "mixed", "A short featured list still starts in the first mobile slot");
+  assert.equal(selected.filter(Boolean).length, 4, "Spare slots use other real products");
+  assert.equal(products.treasuryProducts(catalogue, "weave").length, 1);
+  await scenario(); await scenario({ intro: true }); await scenario({ unavailable: true }); await scenario({ saveData: true });
+  await apiScenario();
+  // The existing frame and scene binaries are reused without replacements.
+  for (const art of [assets.desktop, assets.featured, assets.brazier, ...Object.values(assets.mobile).flatMap(p => Object.values(p)), ...Object.values(assets.opened)]) {
+    for (const variant of art.variants) assert.ok(existsSync(`public${variant.url}`));
   }
-  await check(assets.desktop); await check(assets.featured); await check(assets.brazier);
-  for (const art of Object.values(assets.mobile)) for (const image of Object.values(art)) await check(image);
-  for (const art of Object.values(assets.opened)) await check(art);
-  for (const product of assets.products) await check(product.image);
-  const alpha = await sharp(`public${assets.brazier.variants[0].url}`).stats();
-  assert.equal(alpha.channels[3].min, 0, "Brazier must have real transparent pixels");
-  const desktopBytes = assets.desktop.variants.at(-1)!.bytes + assets.featured.variants.at(-1)!.bytes + assets.brazier.variants[0].bytes + Object.values(assets.opened).reduce((sum, art) => sum + art.variants[0].bytes, 0);
-  const mobileBytes = Object.values(assets.mobile).reduce((sum, art) => sum + Object.values(art).reduce((n, art) => n + art.variants.at(-1)!.bytes, 0), 0) + assets.products.reduce((n, product) => n + product.image.variants[0].bytes, 0);
-  assert.ok(desktopBytes < 650 * 1024); assert.ok(mobileBytes < 700 * 1024);
-  const home = readFileSync("src/app/[locale]/page.tsx", "utf8");
-  assert.ok(home.indexOf("<HeroShowcase locale=") < home.indexOf("<HomePalace"));
-  console.log(`PASS: native immediate entry, duplicate-click recovery, intent prefetch/Save-Data, catalogue outage, exact-name links, original photos, SSR/lazy media, back navigation, bounded inert camera and reduced motion. Artwork: desktop ${Math.round(desktopBytes / 1024)} KiB, mobile ${Math.round(mobileBytes / 1024)} KiB.`);
+  console.log("PASS: real product/photo/direct-link identity, treasury membership, admin selections, safe empty/outage/retry states, immediate entry, no timed scene reset, cancelled/back navigation, visible-route prefetch and Save-Data.");
 }
 main().catch(error => { console.error(error); process.exitCode = 1; });

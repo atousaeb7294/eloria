@@ -19,6 +19,7 @@ export async function GET(request: Request) {
           { hasGold: true },
           { hasSilver: true },
           { hasGold: false, hasSilver: false },
+          { isFeatured: true },
         ].map((metal) =>
           tx.product.findMany({
             where: {
@@ -27,8 +28,8 @@ export async function GET(request: Request) {
               collection: { isActive: true },
               images: { some: { imageUrl: { not: "" } } },
             },
-            take: 5,
-            orderBy: [{ createdAt: "desc" }, { id: "desc" }],
+            take: "isFeatured" in metal ? 8 : 5,
+            orderBy: [{ isFeatured: "desc" }, { displayOrder: "asc" }, { createdAt: "desc" }, { id: "desc" }],
             select: {
               slug: true,
               createdAt: true,
@@ -36,6 +37,7 @@ export async function GET(request: Request) {
               nameEn: true,
               hasGold: true,
               hasSilver: true,
+              isFeatured: true,
               images: {
                 where: { imageUrl: { not: "" } },
                 take: 1,
@@ -66,6 +68,7 @@ export async function GET(request: Request) {
             name: fa ? p.nameFa : p.nameEn,
             hasGold: p.hasGold,
             hasSilver: p.hasSilver,
+            isFeatured: p.isFeatured,
             imageUrl: p.images[0].imageUrl,
           })),
       },
