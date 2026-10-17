@@ -79,7 +79,7 @@ function resolveBackgroundProfile(
         "scale-[1.05] blur-[1.5px]",
 
       overlayClassName:
-        "bg-[linear-gradient(180deg,rgba(1,13,9,0.58),rgba(1,10,7,0.9))]",
+        "bg-[linear-gradient(180deg,rgba(6,10,33,0.58),rgba(6,9,29,0.9))]",
     };
   }
 
@@ -97,7 +97,7 @@ function resolveBackgroundProfile(
         "scale-[1.045]",
 
       overlayClassName:
-        "bg-[linear-gradient(180deg,rgba(1,15,10,0.48),rgba(1,10,7,0.86))]",
+        "bg-[linear-gradient(180deg,rgba(6,10,35,0.48),rgba(6,9,29,0.86))]",
     };
   }
 
@@ -115,7 +115,7 @@ function resolveBackgroundProfile(
         "scale-[1.04]",
 
       overlayClassName:
-        "bg-[linear-gradient(180deg,rgba(1,16,11,0.42),rgba(1,11,8,0.84))]",
+        "bg-[linear-gradient(180deg,rgba(6,10,36,0.42),rgba(6,9,30,0.84))]",
     };
   }
 
@@ -133,7 +133,7 @@ function resolveBackgroundProfile(
         "scale-[1.035]",
 
       overlayClassName:
-        "bg-[linear-gradient(180deg,rgba(1,18,12,0.34),rgba(1,12,8,0.76))]",
+        "bg-[linear-gradient(180deg,rgba(6,11,38,0.34),rgba(6,9,31,0.76))]",
     };
   }
 
@@ -151,7 +151,7 @@ function resolveBackgroundProfile(
         "scale-[1.035]",
 
       overlayClassName:
-        "bg-[linear-gradient(180deg,rgba(1,19,13,0.28),rgba(1,12,8,0.73))]",
+        "bg-[linear-gradient(180deg,rgba(7,11,39,0.28),rgba(6,9,31,0.73))]",
     };
   }
 
@@ -169,7 +169,7 @@ function resolveBackgroundProfile(
         "scale-[1.03]",
 
       overlayClassName:
-        "bg-[linear-gradient(180deg,rgba(1,20,14,0.2),rgba(1,13,9,0.65))]",
+        "bg-[linear-gradient(180deg,rgba(7,11,40,0.2),rgba(6,10,33,0.65))]",
     };
   }
 
@@ -182,7 +182,7 @@ function resolveBackgroundProfile(
       "scale-[1.035]",
 
     overlayClassName:
-      "bg-[linear-gradient(180deg,rgba(1,18,12,0.34),rgba(1,11,8,0.78))]",
+      "bg-[linear-gradient(180deg,rgba(6,11,38,0.34),rgba(6,9,30,0.78))]",
   };
 }
 
@@ -217,7 +217,7 @@ export function InternalPageShell({
         profile.tone
       }
       className={[
-        "relative isolate min-h-screen overflow-x-hidden bg-[#02140e] text-[#f8f0df]",
+        "relative isolate min-h-screen overflow-x-hidden bg-[#080d28] text-[#f8f0df]",
         className,
       ].join(" ")}
     >
@@ -247,7 +247,7 @@ export function InternalPageShell({
 
       <div
         aria-hidden="true"
-        className="pointer-events-none fixed inset-0 z-[2] bg-[radial-gradient(circle_at_50%_18%,rgba(221,187,94,0.075),transparent_36%),radial-gradient(circle_at_12%_72%,rgba(15,111,77,0.07),transparent_32%)]"
+        className="pointer-events-none fixed inset-0 z-[2] bg-[radial-gradient(circle_at_50%_18%,rgba(221,187,94,0.075),transparent_36%),radial-gradient(circle_at_12%_72%,rgba(34,49,143,0.07),transparent_32%)]"
       />
 
       <AmbientEffects />

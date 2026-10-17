@@ -58,7 +58,7 @@ export default async function WristSizeGuidePage({ params }: PageProps) {
       <article className="relative z-10 mx-auto w-full max-w-[1120px] px-4 pb-28 pt-[138px] sm:px-6 sm:pt-[154px] lg:px-10">
         <Link
           href={`/${locale}/journal`}
-          className="inline-flex items-center gap-2 rounded-full border border-[#d9b85f]/28 bg-[#061f17]/75 px-4 py-2 text-[11px] text-[#e5d19a] transition hover:border-[#efd17d]/65"
+          className="inline-flex items-center gap-2 rounded-full border border-[#d9b85f]/28 bg-[#0f1435]/75 px-4 py-2 text-[11px] text-[#e5d19a] transition hover:border-[#efd17d]/65"
         >
           <ArrowLeft className={["size-4", fa ? "rotate-180" : ""].join(" ")} />
           {fa ? "بازگشت به مجله" : "Back to journal"}
@@ -75,7 +75,7 @@ export default async function WristSizeGuidePage({ params }: PageProps) {
           <p className="mx-auto max-w-3xl text-sm leading-9 text-[#d8caaa]/72 sm:text-base">{description}</p>
         </header>
 
-        <div className="mx-auto mt-10 max-w-4xl space-y-6 rounded-[2.3rem] border border-[#d9b85f]/18 bg-[linear-gradient(145deg,rgba(6,35,25,0.9),rgba(2,19,13,0.96))] px-6 py-8 text-sm leading-9 text-[#d8caaa]/76 shadow-[0_26px_75px_rgba(0,0,0,0.34)] sm:px-10 sm:py-12 sm:text-base">
+        <div className="mx-auto mt-10 max-w-4xl space-y-6 rounded-[2.3rem] border border-[#d9b85f]/18 bg-[linear-gradient(145deg,rgba(16,21,57,0.9),rgba(8,12,39,0.96))] px-6 py-8 text-sm leading-9 text-[#d8caaa]/76 shadow-[0_26px_75px_rgba(0,0,0,0.34)] sm:px-10 sm:py-12 sm:text-base">
           <section>
             <h2 className="flex items-center gap-3 text-xl font-semibold text-[#f0ddb0]">
               <CircleDot className="size-5 text-[#dfc16f]" />

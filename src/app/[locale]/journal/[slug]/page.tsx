@@ -123,7 +123,7 @@ export default async function JournalArticlePage({
       <article className="relative z-10 mx-auto w-full max-w-[1200px] px-4 pb-28 pt-[138px] sm:px-6 sm:pt-[154px] lg:px-10">
         <Link
           href={`/${locale}/journal`}
-          className="inline-flex items-center gap-2 rounded-full border border-[#d9b85f]/28 bg-[#061f17]/75 px-4 py-2 text-[11px] text-[#e5d19a] backdrop-blur-xl transition hover:-translate-y-0.5 hover:border-[#efd17d]/65"
+          className="inline-flex items-center gap-2 rounded-full border border-[#d9b85f]/28 bg-[#0f1435]/75 px-4 py-2 text-[11px] text-[#e5d19a] backdrop-blur-xl transition hover:-translate-y-0.5 hover:border-[#efd17d]/65"
         >
           <ArrowLeft
             className={["size-4", isPersian ? "rotate-180" : ""].join(" ")}
@@ -160,7 +160,7 @@ export default async function JournalArticlePage({
         </header>
 
         {article.coverImageUrl ? (
-          <div className="relative mx-auto mt-12 aspect-[16/8] max-w-5xl overflow-hidden rounded-[2.4rem] border border-[#d9b85f]/20 bg-[#08271c] shadow-[0_30px_90px_rgba(0,0,0,0.42)]">
+          <div className="relative mx-auto mt-12 aspect-[16/8] max-w-5xl overflow-hidden rounded-[2.4rem] border border-[#d9b85f]/20 bg-[#13183e] shadow-[0_30px_90px_rgba(0,0,0,0.42)]">
             <Image
               src={article.coverImageUrl}
               alt={(article.sourceProduct?.images.find(image => image.imageUrl === article.coverImageUrl)?.[locale === "fa" ? "altFa" : "altEn"]) || (article.sourceProduct?.images.some(image => image.imageUrl === article.coverImageUrl) ? (locale === "fa" ? article.sourceProduct.nameFa : article.sourceProduct.nameEn) : title)}
@@ -169,16 +169,16 @@ export default async function JournalArticlePage({
               sizes="(min-width: 1024px) 900px, 100vw"
               className="object-cover"
             />
-            <div className="absolute inset-0 bg-[linear-gradient(180deg,transparent,rgba(1,12,8,0.38))]" />
+            <div className="absolute inset-0 bg-[linear-gradient(180deg,transparent,rgba(6,9,31,0.38))]" />
           </div>
         ) : null}
 
-        <div className="mx-auto mt-10 max-w-4xl rounded-[2.3rem] border border-[#d9b85f]/18 bg-[linear-gradient(145deg,rgba(6,35,25,0.9),rgba(2,19,13,0.96))] px-6 py-8 shadow-[0_26px_75px_rgba(0,0,0,0.34)] backdrop-blur-xl sm:px-10 sm:py-12">
+        <div className="mx-auto mt-10 max-w-4xl rounded-[2.3rem] border border-[#d9b85f]/18 bg-[linear-gradient(145deg,rgba(16,21,57,0.9),rgba(8,12,39,0.96))] px-6 py-8 shadow-[0_26px_75px_rgba(0,0,0,0.34)] backdrop-blur-xl sm:px-10 sm:py-12">
           <ArticleMarkdown value={content} />
         </div>
 
         {article.sourceProduct ? (
-          <aside className="mx-auto mt-8 flex max-w-4xl flex-col items-start justify-between gap-5 rounded-[1.8rem] border border-[#d9b85f]/22 bg-[#072519]/78 p-6 sm:flex-row sm:items-center">
+          <aside className="mx-auto mt-8 flex max-w-4xl flex-col items-start justify-between gap-5 rounded-[1.8rem] border border-[#d9b85f]/22 bg-[#11173c]/78 p-6 sm:flex-row sm:items-center">
             <div className="flex items-start gap-4">
               <span className="grid size-11 shrink-0 place-items-center rounded-2xl border border-[#d9b85f]/25 bg-[#d9b85f]/[0.06] text-[#e1c573]">
                 <Gem className="size-5" />

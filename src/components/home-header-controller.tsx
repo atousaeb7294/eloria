@@ -346,7 +346,7 @@ export function HomeHeaderController({ locale }: HomeHeaderControllerProps) {
             dir={isPersian ? "rtl" : "ltr"}
             className="fixed inset-x-0 top-0 z-[70] px-4 pt-4 sm:px-6 sm:pt-5"
           >
-            <div className="relative mx-auto flex h-[62px] max-w-[1180px] items-center justify-between rounded-[18px] border border-[#d9ba67]/24 bg-[linear-gradient(135deg,rgba(2,29,20,0.84),rgba(1,17,12,0.72))] px-2 shadow-[0_18px_60px_rgba(0,0,0,0.34),inset_0_1px_0_rgba(255,255,255,0.05)] backdrop-blur-2xl sm:h-[68px] sm:px-2.5">
+            <div className="relative mx-auto flex h-[62px] max-w-[1180px] items-center justify-between rounded-[18px] border border-[#d9ba67]/24 bg-[linear-gradient(135deg,rgba(9,15,51,0.84),rgba(6,10,37,0.72))] px-2 shadow-[0_18px_60px_rgba(0,0,0,0.34),inset_0_1px_0_rgba(255,255,255,0.05)] backdrop-blur-2xl sm:h-[68px] sm:px-2.5">
               {/* نور ظریف بالای هدر */}
               <div
                 aria-hidden="true"
@@ -360,7 +360,7 @@ export function HomeHeaderController({ locale }: HomeHeaderControllerProps) {
                 aria-expanded={menuOpen}
                 aria-controls="eloria-home-menu"
                 onClick={toggleMenu}
-                className="group relative grid size-11 shrink-0 place-items-center rounded-[13px] border border-[#dabe6e]/28 bg-[linear-gradient(145deg,rgba(8,65,46,0.5),rgba(2,29,20,0.72))] text-[#e9d493] shadow-[inset_0_1px_0_rgba(255,255,255,0.055),0_8px_24px_rgba(0,0,0,0.2)] transition duration-300 hover:-translate-y-0.5 hover:border-[#edd387]/64 hover:bg-[linear-gradient(145deg,rgba(13,91,64,0.58),rgba(2,38,26,0.78))] hover:text-[#ffe8aa] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#e3c675]/55 sm:size-12"
+                className="group relative grid size-11 shrink-0 place-items-center rounded-[13px] border border-[#dabe6e]/28 bg-[linear-gradient(145deg,rgba(21,30,91,0.5),rgba(9,15,51,0.72))] text-[#e9d493] shadow-[inset_0_1px_0_rgba(255,255,255,0.055),0_8px_24px_rgba(0,0,0,0.2)] transition duration-300 hover:-translate-y-0.5 hover:border-[#edd387]/64 hover:bg-[linear-gradient(145deg,rgba(30,42,121,0.58),rgba(10,17,61,0.78))] hover:text-[#ffe8aa] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#e3c675]/55 sm:size-12"
               >
                 <span
                   aria-hidden="true"
@@ -511,7 +511,7 @@ export function HomeHeaderController({ locale }: HomeHeaderControllerProps) {
               }}
               className="fixed start-4 top-[84px] z-[80] w-[min(330px,calc(100vw-32px))] sm:start-6 sm:top-[98px]"
             >
-              <div className="relative overflow-hidden rounded-[24px] border border-[#dabe68]/32 bg-[linear-gradient(150deg,rgba(4,54,38,0.985),rgba(1,26,18,0.99)_56%,rgba(1,14,10,0.995))] p-3 shadow-[0_34px_110px_rgba(0,0,0,0.72),0_0_42px_rgba(216,177,74,0.1)] backdrop-blur-3xl">
+              <div className="relative overflow-hidden rounded-[24px] border border-[#dabe68]/32 bg-[linear-gradient(150deg,rgba(15,23,79,0.985),rgba(7,13,47,0.99)_56%,rgba(6,10,34,0.995))] p-3 shadow-[0_34px_110px_rgba(0,0,0,0.72),0_0_42px_rgba(216,177,74,0.1)] backdrop-blur-3xl">
                 {/* خط طلایی بالا */}
                 <div
                   aria-hidden="true"
@@ -526,7 +526,7 @@ export function HomeHeaderController({ locale }: HomeHeaderControllerProps) {
 
                 <div
                   aria-hidden="true"
-                  className="pointer-events-none absolute -bottom-24 -start-20 size-48 rounded-full bg-[#0a805a]/[0.07] blur-[52px]"
+                  className="pointer-events-none absolute -bottom-24 -start-20 size-48 rounded-full bg-[#1f30a2]/[0.07] blur-[52px]"
                 />
 
                 {/* عنوان پنجره */}
@@ -593,7 +593,7 @@ export function HomeHeaderController({ locale }: HomeHeaderControllerProps) {
                         className="group relative flex min-h-[66px] items-center gap-3 overflow-hidden rounded-[17px] border border-transparent px-3 transition duration-300 hover:border-[#d9bb68]/22 hover:bg-[#d5ad50]/[0.05] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[#d9bb68]/45"
                       >
                         {/* آیکون */}
-                        <span className="grid size-11 shrink-0 place-items-center rounded-[13px] border border-[#d8b85f]/18 bg-[#0c6648]/18 text-[#d7bd78]/64 transition duration-300 group-hover:border-[#e0c16d]/40 group-hover:bg-[#b99038]/[0.06] group-hover:text-[#f1d78e]">
+                        <span className="grid size-11 shrink-0 place-items-center rounded-[13px] border border-[#d8b85f]/18 bg-[#1e2c85]/18 text-[#d7bd78]/64 transition duration-300 group-hover:border-[#e0c16d]/40 group-hover:bg-[#b99038]/[0.06] group-hover:text-[#f1d78e]">
                           <NavigationIcon type={item.icon} className="size-5" />
                         </span>
 

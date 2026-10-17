@@ -32,7 +32,7 @@ export function CommercePageLoading({
       role="status"
       aria-live="polite"
       aria-busy="true"
-      className="relative min-h-screen overflow-hidden bg-[#02140f] text-[#f3e6c9]"
+      className="relative min-h-screen overflow-hidden bg-[#080d28] text-[#f3e6c9]"
     >
       <span className="sr-only">
         {statusText}
@@ -79,7 +79,7 @@ export function CommercePageLoading({
             }).map((_, index) => (
               <div
                 key={index}
-                className="relative overflow-hidden rounded-[2rem] border border-[#d9b85f]/12 bg-[linear-gradient(145deg,rgba(7,35,27,0.82),rgba(3,21,15,0.9))] p-4 after:pointer-events-none after:absolute after:inset-y-0 after:-left-1/2 after:w-1/2 after:animate-[eloria-shimmer_1.8s_ease-in-out_infinite] after:bg-gradient-to-r after:from-transparent after:via-white/[0.045] after:to-transparent"
+                className="relative overflow-hidden rounded-[2rem] border border-[#d9b85f]/12 bg-[linear-gradient(145deg,rgba(17,22,57,0.82),rgba(10,14,42,0.9))] p-4 after:pointer-events-none after:absolute after:inset-y-0 after:-left-1/2 after:w-1/2 after:animate-[eloria-shimmer_1.8s_ease-in-out_infinite] after:bg-gradient-to-r after:from-transparent after:via-white/[0.045] after:to-transparent"
               >
                 <div
                   className={[

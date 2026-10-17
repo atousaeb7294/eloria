@@ -42,7 +42,7 @@ export default async function AdminIntelligencePage({ params }: { params: Promis
 
   return (
     <div className="mx-auto max-w-[1540px] space-y-7">
-      <section className="relative overflow-hidden rounded-[2rem] border border-[#d7b95f]/20 bg-[linear-gradient(135deg,rgba(10,56,40,.95),rgba(3,24,17,.98))] px-6 py-7 shadow-[0_24px_70px_rgba(0,0,0,.28)] sm:px-8">
+      <section className="relative overflow-hidden rounded-[2rem] border border-[#d7b95f]/20 bg-[linear-gradient(135deg,rgba(22,30,81,.95),rgba(10,15,45,.98))] px-6 py-7 shadow-[0_24px_70px_rgba(0,0,0,.28)] sm:px-8">
         <div className="absolute -end-20 -top-24 size-72 rounded-full bg-[#d7b95f]/[.09] blur-[80px]" />
         <div className="relative flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
           <div>
@@ -57,12 +57,12 @@ export default async function AdminIntelligencePage({ params }: { params: Promis
       <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {cards.map((card) => {
           const Icon = card.icon;
-          return <article key={card.label} className="rounded-[1.7rem] border border-[#d7b95f]/17 bg-[#061c15]/86 p-5"><div className="flex items-center justify-between"><Icon className="size-5 text-[#e4c673]" /><span className="text-xl font-semibold text-[#f0db9b]">{card.value}</span></div><p className="mt-5 text-xs text-[#d8c9aa]/64">{card.label}</p><p className="mt-2 text-[11px] leading-6 text-[#c5b694]/52">{card.detail}</p></article>;
+          return <article key={card.label} className="rounded-[1.7rem] border border-[#d7b95f]/17 bg-[#0f1431]/86 p-5"><div className="flex items-center justify-between"><Icon className="size-5 text-[#e4c673]" /><span className="text-xl font-semibold text-[#f0db9b]">{card.value}</span></div><p className="mt-5 text-xs text-[#d8c9aa]/64">{card.label}</p><p className="mt-2 text-[11px] leading-6 text-[#c5b694]/52">{card.detail}</p></article>;
         })}
       </section>
 
       <section className="grid gap-6 xl:grid-cols-[1.12fr_.88fr]">
-        <article className="rounded-[1.9rem] border border-[#d7b95f]/18 bg-[#061c15]/86 p-5 sm:p-6">
+        <article className="rounded-[1.9rem] border border-[#d7b95f]/18 bg-[#0f1431]/86 p-5 sm:p-6">
           <div className="flex items-center gap-3"><Radar className="size-5 text-[#e4c673]" /><div><h2 className="text-lg text-[#f2e2bd]">صف اقدام هوشمند</h2><p className="mt-1 text-xs text-[#cbbd9d]/62">اولویت‌ها از وضعیت واقعی فروشگاه مرتب شده‌اند.</p></div></div>
           <div className="mt-5 space-y-3">
             {report.actions.map((action) => <div key={action.id} className={`rounded-2xl border p-4 ${priorityClass(action.priority)}`}><div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between"><div><div className="flex items-center gap-2"><AlertTriangle className="size-4 shrink-0" /><p className="text-sm font-medium">{action.title}</p></div><p className="mt-2 text-xs leading-6 opacity-75">{action.detail}</p></div><Link href={action.href.replace("/fa/", `/${locale}/`)} className="shrink-0 rounded-full border border-current/25 px-3 py-2 text-xs">{action.hrefLabel}</Link></div></div>)}
@@ -71,7 +71,7 @@ export default async function AdminIntelligencePage({ params }: { params: Promis
         </article>
 
         <div className="space-y-6">
-          <article className="rounded-[1.9rem] border border-[#d7b95f]/18 bg-[#061c15]/86 p-5 sm:p-6">
+          <article className="rounded-[1.9rem] border border-[#d7b95f]/18 bg-[#0f1431]/86 p-5 sm:p-6">
             <div className="flex items-center gap-3"><Radar className="size-5 text-[#e4c673]" /><div><h2 className="text-lg text-[#f2e2bd]">فرصت‌های تبدیل ۳۰ روز</h2><p className="mt-1 text-xs text-[#cbbd9d]/62">محصولاتی که دیده شده‌اند اما هنوز فروش نهایی ثبت نکرده‌اند.</p></div></div>
             <div className="mt-5 space-y-3">
               {report.marketing.opportunities.length ? report.marketing.opportunities.map((item) => (
@@ -82,7 +82,7 @@ export default async function AdminIntelligencePage({ params }: { params: Promis
               )) : <p className="text-xs leading-6 text-emerald-100/70">در داده‌های فعلی فرصت پرریسک بدون فروش دیده نشد.</p>}
             </div>
           </article>
-          <article className="rounded-[1.9rem] border border-[#d7b95f]/18 bg-[#061c15]/86 p-5 sm:p-6">
+          <article className="rounded-[1.9rem] border border-[#d7b95f]/18 bg-[#0f1431]/86 p-5 sm:p-6">
             <div className="flex items-center gap-3"><Sparkles className="size-5 text-[#e4c673]" /><div><h2 className="text-lg text-[#f2e2bd]">شتاب توجه ۷ روزه</h2><p className="mt-1 text-xs text-[#cbbd9d]/62">مقایسهٔ بازدید این هفته با هفت روز قبل برای تشخیص آثار رو به رشد.</p></div></div>
             <div className="mt-5 space-y-3">
               {report.marketing.momentum.length ? report.marketing.momentum.map((item) => (
@@ -94,7 +94,7 @@ export default async function AdminIntelligencePage({ params }: { params: Promis
               )) : <p className="text-xs leading-6 text-[#c5b694]/55">برای تشخیص شتاب، هنوز دادهٔ رضایتی کافی جمع نشده است.</p>}
             </div>
           </article>
-          <article className="rounded-[1.9rem] border border-[#d7b95f]/18 bg-[#061c15]/86 p-5 sm:p-6">
+          <article className="rounded-[1.9rem] border border-[#d7b95f]/18 bg-[#0f1431]/86 p-5 sm:p-6">
             <div className="flex items-center gap-3"><BarChart3 className="size-5 text-[#e4c673]" /><div><h2 className="text-lg text-[#f2e2bd]">قیف رضایتی ۳۰ روز</h2><p className="mt-1 text-xs text-[#cbbd9d]/62">تعداد رویدادهای بدون دادهٔ هویتی؛ فقط پس از اجازهٔ کاربر.</p></div></div>
             <div className="mt-5 grid grid-cols-2 gap-3">{[["بازدید", "page_view"], ["محصول", "view_item"], ["جست‌وجو", "search"], ["فیلتر", "catalog_filter"], ["منتخب", "favorite"], ["سبد", "view_cart"], ["افزودن به سبد", "add_to_cart"], ["شروع پرداخت", "begin_checkout"], ["کد موفق", "coupon_applied"], ["کد ناموفق", "coupon_rejected"]].map(([label, key]) => <div key={key} className="rounded-2xl border border-[#d7b95f]/12 bg-black/15 p-3"><p className="text-lg text-[#f0db9b]">{formatter.format(report.measurement.eventCounts[key] ?? 0)}</p><p className="mt-1 text-[11px] text-[#c5b694]/55">{label}</p></div>)}<div className="rounded-2xl border border-emerald-300/14 bg-emerald-950/12 p-3"><p className="text-lg text-emerald-100">{formatter.format(report.marketing.paidOrderCount)}</p><p className="mt-1 text-[11px] text-emerald-100/55">خرید نهایی</p></div></div>
             <div className="mt-4 grid gap-2 sm:grid-cols-3">
@@ -104,7 +104,7 @@ export default async function AdminIntelligencePage({ params }: { params: Promis
             </div>
             <p className="mt-4 text-[11px] leading-6 text-[#c5b694]/52">این نرخ‌ها برای تصمیم بازاریابی تقریبی‌اند و از شمارش ۳۰ روزه ساخته می‌شوند؛ وضعیت سنجش: {report.measurement.enabled ? "فعال و نیازمند رضایت" : "خاموش"}.</p>
           </article>
-          <article className="rounded-[1.9rem] border border-[#d7b95f]/18 bg-[#061c15]/86 p-5 sm:p-6">
+          <article className="rounded-[1.9rem] border border-[#d7b95f]/18 bg-[#0f1431]/86 p-5 sm:p-6">
             <div className="flex items-center gap-3"><BarChart3 className="size-5 text-[#e4c673]" /><div><h2 className="text-lg text-[#f2e2bd]">منابع فروش ۳۰ روز</h2><p className="mt-1 text-xs text-[#cbbd9d]/62">UTM سفارش‌های نهایی، بدون کوکی تبلیغاتی و بدون وابستگی به سرویس پولی.</p></div></div>
             <div className="mt-5 space-y-3">
               {report.marketing.topMarketingSources.length ? report.marketing.topMarketingSources.map((item) => (
@@ -116,20 +116,20 @@ export default async function AdminIntelligencePage({ params }: { params: Promis
             </div>
           </article>
 
-          <article className="rounded-[1.9rem] border border-[#d7b95f]/18 bg-[#061c15]/86 p-5 sm:p-6">
+          <article className="rounded-[1.9rem] border border-[#d7b95f]/18 bg-[#0f1431]/86 p-5 sm:p-6">
             <div className="flex items-center gap-3"><BrainCircuit className="size-5 text-[#e4c673]" /><div><h2 className="text-lg text-[#f2e2bd]">تقسیم‌بندی هوشمند مشتریان</h2><p className="mt-1 text-xs text-[#cbbd9d]/62">RFM زنده بر پایهٔ تازگی خرید، تکرار خرید و ارزش نسبی سفارش‌ها؛ بدون جدول یا Migration جدید.</p></div></div>
             <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-3">
               {[["VIP", report.marketing.customerSegments.vip], ["وفادار", report.marketing.customerSegments.loyal], ["جدید", report.marketing.customerSegments.newCustomers], ["در معرض ریزش", report.marketing.customerSegments.atRisk], ["فعال", report.marketing.customerSegments.active], ["کل مشتریان تحلیلی", report.marketing.customerSegments.total]].map(([label, value]) => <div key={String(label)} className="rounded-2xl border border-[#d7b95f]/12 bg-black/15 p-3"><p className="text-lg text-[#f0db9b]">{formatter.format(Number(value))}</p><p className="mt-1 text-[11px] text-[#c5b694]/55">{label}</p></div>)}
             </div>
           </article>
-          <article className="rounded-[1.9rem] border border-[#d7b95f]/18 bg-[#061c15]/86 p-5 sm:p-6">
+          <article className="rounded-[1.9rem] border border-[#d7b95f]/18 bg-[#0f1431]/86 p-5 sm:p-6">
             <div className="flex items-center gap-3"><Sparkles className="size-5 text-[#e4c673]" /><div><h2 className="text-lg text-[#f2e2bd]">کیفیت صفحه‌های محصول</h2><p className="mt-1 text-xs text-[#cbbd9d]/62">امتیاز بر اساس توضیح، داستان اثر، وزن/عیار، تصویر و alt؛ اجرت، سود و مالیات در این امتیاز عمومی نمایش داده نمی‌شوند.</p></div></div>
             <div className="mt-5 flex items-center justify-between rounded-2xl border border-[#d7b95f]/12 bg-black/15 p-4"><span className="text-xs text-[#c5b694]/60">میانگین کیفیت</span><strong className="text-xl text-[#f0db9b]">{formatter.format(report.marketing.productQuality.averageScore)} / ۱۰۰</strong></div>
             <div className="mt-3 space-y-2">
               {report.marketing.productQuality.needsAttention.length ? report.marketing.productQuality.needsAttention.map((item) => <Link key={item.slug} href={`/${locale}/products/${item.slug}`} className="flex items-center justify-between gap-3 rounded-xl border border-[#d7b95f]/10 px-3 py-2.5 text-xs transition hover:border-[#d7b95f]/28"><span className="min-w-0 truncate text-[#eadbb5]">{item.nameFa}</span><span className="shrink-0 text-[#c5b694]/55">{formatter.format(item.score)} / ۱۰۰</span></Link>) : <p className="text-xs text-emerald-100/70">محصول کم‌کیفیت در صف اول دیده نشد.</p>}
             </div>
           </article>
-          <article className="rounded-[1.9rem] border border-[#d7b95f]/18 bg-[#061c15]/86 p-5 sm:p-6"><div className="flex items-center gap-3"><Gauge className="size-5 text-[#e4c673]" /><div><h2 className="text-lg text-[#f2e2bd]">سرعت واقعی کاربران</h2><p className="mt-1 text-xs text-[#cbbd9d]/62">صدک ۷۵ از حداکثر ۵۰۰۰ نمونهٔ رضایتی در ۳۰ روز.</p></div></div><div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-3">{report.measurement.vitals.map((vital) => <div key={vital.name} className="rounded-2xl border border-[#d7b95f]/12 bg-black/15 p-3"><p className="text-sm text-[#f0db9b]">{formatVital(vital.name, vital.p75)}</p><p className="mt-1 text-[11px] text-[#c5b694]/55">{vital.name} · {formatter.format(vital.samples)} نمونه</p></div>)}</div></article>
+          <article className="rounded-[1.9rem] border border-[#d7b95f]/18 bg-[#0f1431]/86 p-5 sm:p-6"><div className="flex items-center gap-3"><Gauge className="size-5 text-[#e4c673]" /><div><h2 className="text-lg text-[#f2e2bd]">سرعت واقعی کاربران</h2><p className="mt-1 text-xs text-[#cbbd9d]/62">صدک ۷۵ از حداکثر ۵۰۰۰ نمونهٔ رضایتی در ۳۰ روز.</p></div></div><div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-3">{report.measurement.vitals.map((vital) => <div key={vital.name} className="rounded-2xl border border-[#d7b95f]/12 bg-black/15 p-3"><p className="text-sm text-[#f0db9b]">{formatVital(vital.name, vital.p75)}</p><p className="mt-1 text-[11px] text-[#c5b694]/55">{vital.name} · {formatter.format(vital.samples)} نمونه</p></div>)}</div></article>
         </div>
       </section>
     </div>

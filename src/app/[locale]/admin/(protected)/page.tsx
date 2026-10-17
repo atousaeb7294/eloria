@@ -240,14 +240,14 @@ export default async function AdminDashboardPage({
         <div className="flex flex-wrap gap-2">
           <Link
             href={`/${locale}/admin/automation`}
-            className="flex h-12 items-center justify-center gap-2 rounded-xl border border-[#d0b359]/22 bg-[#08251a] px-4 text-sm text-[#ecd17c] transition hover:bg-[#103525]"
+            className="flex h-12 items-center justify-center gap-2 rounded-xl border border-[#d0b359]/22 bg-[#13183c] px-4 text-sm text-[#ecd17c] transition hover:bg-[#1e244e]"
           >
             <Bot className="h-5 w-5" />
             خلبان خودکار
           </Link>
           <Link
             href={`/${locale}/admin/products/new`}
-            className="flex h-12 items-center justify-center gap-2 rounded-xl bg-[linear-gradient(135deg,#b9973f,#eed079)] px-5 text-sm font-semibold text-[#10251c] transition hover:brightness-105"
+            className="flex h-12 items-center justify-center gap-2 rounded-xl bg-[linear-gradient(135deg,#b9973f,#eed079)] px-5 text-sm font-semibold text-[#1e223c] transition hover:brightness-105"
           >
             <Plus className="h-5 w-5" />
             محصول جدید
@@ -265,7 +265,7 @@ export default async function AdminDashboardPage({
           }) => (
             <article
               key={label}
-              className="rounded-[22px] border border-[#d0b359]/15 bg-[#041d15]/82 p-5 shadow-[0_18px_55px_rgba(0,0,0,0.17)]"
+              className="rounded-[22px] border border-[#d0b359]/15 bg-[#0c1133]/82 p-5 shadow-[0_18px_55px_rgba(0,0,0,0.17)]"
             >
               <div className="flex items-start justify-between">
                 <div>
@@ -300,7 +300,7 @@ export default async function AdminDashboardPage({
       ) : null}
 
       <section className="grid gap-5 xl:grid-cols-[1.35fr_0.65fr]">
-        <article className="overflow-hidden rounded-[24px] border border-[#d0b359]/15 bg-[#041d15]/82">
+        <article className="overflow-hidden rounded-[24px] border border-[#d0b359]/15 bg-[#0c1133]/82">
           <header className="flex items-center justify-between border-b border-[#d0b359]/12 px-5 py-4">
             <div>
               <h2 className="font-semibold text-[#efd782]">
@@ -370,7 +370,7 @@ export default async function AdminDashboardPage({
           )}
         </article>
 
-        <article className="rounded-[24px] border border-[#d0b359]/15 bg-[#041d15]/82 p-5">
+        <article className="rounded-[24px] border border-[#d0b359]/15 bg-[#0c1133]/82 p-5">
           <div className="flex items-center gap-3">
             <span className="grid h-11 w-11 place-items-center rounded-xl border border-[#d1b45d]/20 bg-[#d0b258]/8 text-[#e1c56f]">
               <CircleDollarSign className="h-5 w-5" />
@@ -391,7 +391,7 @@ export default async function AdminDashboardPage({
                 (price) => (
                   <div
                     key={price.material}
-                    className="rounded-2xl border border-[#d0b359]/12 bg-[#02150f] p-4"
+                    className="rounded-2xl border border-[#d0b359]/12 bg-[#080d2a] p-4"
                   >
                     <div className="flex items-center justify-between gap-3">
                       <span className="text-sm text-[#d8c8a7]">

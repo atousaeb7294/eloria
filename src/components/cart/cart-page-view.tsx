@@ -50,7 +50,7 @@ export function CartPageView({
   ) {
     return (
       <section className="relative z-10 mx-auto flex min-h-[75vh] w-full max-w-[1100px] items-center justify-center px-4 pb-24 pt-36 sm:px-6">
-        <div className="w-full max-w-2xl rounded-[2.5rem] border border-[#d9b85f]/20 bg-[linear-gradient(145deg,rgba(7,36,27,0.9),rgba(2,18,13,0.94))] px-6 py-16 text-center shadow-[0_35px_100px_rgba(0,0,0,0.28)] sm:px-12">
+        <div className="w-full max-w-2xl rounded-[2.5rem] border border-[#d9b85f]/20 bg-[linear-gradient(145deg,rgba(17,23,59,0.9),rgba(8,12,38,0.94))] px-6 py-16 text-center shadow-[0_35px_100px_rgba(0,0,0,0.28)] sm:px-12">
           <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full border border-[#d9b85f]/30 bg-[#d9b85f]/[0.07]">
             <ShoppingBag className="h-9 w-9 text-[#e3c46b]" />
           </div>
@@ -100,7 +100,7 @@ export function CartPageView({
           role="status"
           aria-live="polite"
           className={[
-            "fixed top-24 z-[100] w-[calc(100%-2rem)] max-w-md overflow-hidden rounded-2xl border border-[#d9b85f]/35 bg-[linear-gradient(145deg,rgba(8,42,31,0.98),rgba(2,23,16,0.99))] p-4 shadow-[0_25px_90px_rgba(0,0,0,0.5)] backdrop-blur-xl sm:w-full",
+            "fixed top-24 z-[100] w-[calc(100%-2rem)] max-w-md overflow-hidden rounded-2xl border border-[#d9b85f]/35 bg-[linear-gradient(145deg,rgba(19,25,65,0.98),rgba(9,13,44,0.99))] p-4 shadow-[0_25px_90px_rgba(0,0,0,0.5)] backdrop-blur-xl sm:w-full",
             isPersian
               ? "right-4 sm:right-6"
               : "right-4 sm:right-6",
@@ -317,14 +317,14 @@ export function CartPageView({
                   >
                     <article
                       className={[
-                        "relative overflow-hidden rounded-[2rem] border bg-[linear-gradient(145deg,rgba(7,35,27,0.92),rgba(3,21,15,0.96))] p-4 shadow-[0_24px_80px_rgba(0,0,0,0.24)] transition-shadow duration-300 sm:p-5",
+                        "relative overflow-hidden rounded-[2rem] border bg-[linear-gradient(145deg,rgba(17,22,57,0.92),rgba(10,14,42,0.96))] p-4 shadow-[0_24px_80px_rgba(0,0,0,0.24)] transition-shadow duration-300 sm:p-5",
                         item.canPurchase
                           ? "border-[#d8b860]/22 hover:shadow-[0_34px_100px_rgba(0,0,0,0.34)]"
                           : "border-amber-300/25",
                       ].join(" ")}
                     >
                     <div className="grid grid-cols-[96px_minmax(0,1fr)] gap-4 sm:grid-cols-[150px_minmax(0,1fr)] sm:gap-5">
-                      <div className="relative aspect-square overflow-hidden rounded-[1.5rem] border border-white/[0.07] bg-[#041b14]">
+                      <div className="relative aspect-square overflow-hidden rounded-[1.5rem] border border-white/[0.07] bg-[#0c1130]">
                         {item.image ? (
                           <Image
                             src={
@@ -572,7 +572,7 @@ export function CartPageView({
 
           <aside className="lg:sticky lg:top-28">
             <div className="rounded-[2rem]">
-              <div className="relative rounded-[2rem] border border-[#d9b85f]/25 bg-[linear-gradient(150deg,rgba(9,39,29,0.97),rgba(3,21,15,0.99))] p-6 shadow-[0_30px_100px_rgba(0,0,0,0.32)]">
+              <div className="relative rounded-[2rem] border border-[#d9b85f]/25 bg-[linear-gradient(150deg,rgba(20,26,62,0.97),rgba(10,14,42,0.99))] p-6 shadow-[0_30px_100px_rgba(0,0,0,0.32)]">
               <p className="text-[9px] uppercase tracking-[0.4em] text-[#d7ba67]/50">
                 Eloria Order
               </p>
@@ -652,7 +652,7 @@ export function CartPageView({
                   value={orderNotes}
                   onChange={(event) => saveOrderNotes(event.target.value)}
                   placeholder={text.orderNotesPlaceholder}
-                  className="mt-3 w-full resize-y rounded-xl border border-white/10 bg-[#03130d] px-4 py-3 text-sm leading-7 text-[#f2dfaa] outline-none transition placeholder:text-white/25 focus:border-[#d9b85f]/45"
+                  className="mt-3 w-full resize-y rounded-xl border border-white/10 bg-[#0a0e27] px-4 py-3 text-sm leading-7 text-[#f2dfaa] outline-none transition placeholder:text-white/25 focus:border-[#d9b85f]/45"
                 />
                 <span className="mt-2 block text-[10px] leading-5 text-[#c9bb9a]/45">{text.orderNotesHelp}</span>
               </label>
@@ -665,7 +665,7 @@ export function CartPageView({
                   onChange={(event) => saveCouponCode(event.target.value)}
                   placeholder={text.couponPlaceholder}
                   autoComplete="off"
-                  className="mt-3 h-11 w-full rounded-xl border border-white/10 bg-[#03130d] px-4 text-left text-sm uppercase tracking-wider text-[#f2dfaa] outline-none transition placeholder:text-white/25 focus:border-[#d9b85f]/45"
+                  className="mt-3 h-11 w-full rounded-xl border border-white/10 bg-[#0a0e27] px-4 text-left text-sm uppercase tracking-wider text-[#f2dfaa] outline-none transition placeholder:text-white/25 focus:border-[#d9b85f]/45"
                 />
                 <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
                   <span className="block text-[10px] leading-5 text-[#c9bb9a]/45">{text.couponHelp}</span>
@@ -711,7 +711,7 @@ export function CartPageView({
             </div>
           </aside>
 
-            <div className="fixed inset-x-0 bottom-0 z-[80] border-t border-[#d9b85f]/22 bg-[linear-gradient(180deg,rgba(3,25,18,0.96),rgba(2,18,13,0.99))] px-4 pb-[calc(0.75rem+env(safe-area-inset-bottom))] pt-3 shadow-[0_-20px_60px_rgba(0,0,0,0.42)] backdrop-blur-2xl lg:hidden">
+            <div className="fixed inset-x-0 bottom-0 z-[80] border-t border-[#d9b85f]/22 bg-[linear-gradient(180deg,rgba(10,15,46,0.96),rgba(8,12,38,0.99))] px-4 pb-[calc(0.75rem+env(safe-area-inset-bottom))] pt-3 shadow-[0_-20px_60px_rgba(0,0,0,0.42)] backdrop-blur-2xl lg:hidden">
               <div className="mx-auto flex max-w-xl items-center gap-3">
                 <div className="min-w-0 flex-1">
                   <p className="text-[10px] text-[#c9bb9a]/55">

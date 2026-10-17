@@ -294,7 +294,7 @@ export function ProductGallery({
   return (
     <>
       <div className="grid gap-3 rounded-[2rem]">
-        <div className="relative aspect-[4/5] overflow-hidden rounded-[2rem] border border-white/[0.07] bg-[#031811] shadow-[0_22px_65px_rgba(0,0,0,0.38)]">
+        <div className="relative aspect-[4/5] overflow-hidden rounded-[2rem] border border-white/[0.07] bg-[#0a0f2d] shadow-[0_22px_65px_rgba(0,0,0,0.38)]">
           <PreparedGalleryImage
             images={safeImages}
             index={normalizedActiveIndex}
@@ -303,7 +303,7 @@ export function ProductGallery({
             className="object-cover transition-transform duration-200 ease-out hover:scale-[1.025]"
           />
 
-          <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#01130d]/85 via-transparent to-black/10" />
+          <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#070b27]/85 via-transparent to-black/10" />
           <div className="pointer-events-none absolute inset-0 shadow-[inset_0_0_95px_rgba(0,0,0,0.25)]" />
 
           <div className="absolute start-4 top-4 flex flex-wrap items-center gap-2 sm:start-5 sm:top-5">
@@ -346,7 +346,7 @@ export function ProductGallery({
                 ? "بزرگ‌نمایی تصویر"
                 : "Enlarge image"
             }
-            className="absolute end-4 top-4 flex h-11 w-11 items-center justify-center rounded-full border border-white/15 bg-[#031811]/70 text-[#f4e4b7] backdrop-blur-xl transition hover:scale-105 hover:border-[#e6c875]/50 hover:bg-[#0a2a1e]/90 sm:end-5 sm:top-5"
+            className="absolute end-4 top-4 flex h-11 w-11 items-center justify-center rounded-full border border-white/15 bg-[#0a0f2d]/70 text-[#f4e4b7] backdrop-blur-xl transition hover:scale-105 hover:border-[#e6c875]/50 hover:bg-[#161b41]/90 sm:end-5 sm:top-5"
           >
             <Maximize2 className="h-4.5 w-4.5" />
           </button>
@@ -363,7 +363,7 @@ export function ProductGallery({
                     ? "تصویر قبلی"
                     : "Previous image"
                 }
-                className="absolute start-4 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-white/12 bg-[#031811]/65 text-white/75 backdrop-blur-xl transition hover:border-[#e5c773]/45 hover:text-[#f5dfa2]"
+                className="absolute start-4 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-white/12 bg-[#0a0f2d]/65 text-white/75 backdrop-blur-xl transition hover:border-[#e5c773]/45 hover:text-[#f5dfa2]"
               >
                 {isPersian ? (
                   <ChevronRight className="h-5 w-5" />
@@ -382,7 +382,7 @@ export function ProductGallery({
                     ? "تصویر بعدی"
                     : "Next image"
                 }
-                className="absolute end-4 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-white/12 bg-[#031811]/65 text-white/75 backdrop-blur-xl transition hover:border-[#e5c773]/45 hover:text-[#f5dfa2]"
+                className="absolute end-4 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-white/12 bg-[#0a0f2d]/65 text-white/75 backdrop-blur-xl transition hover:border-[#e5c773]/45 hover:text-[#f5dfa2]"
               >
                 {isPersian ? (
                   <ChevronLeft className="h-5 w-5" />
@@ -465,7 +465,7 @@ export function ProductGallery({
                       : undefined
                   }
                   className={[
-                    "relative h-20 w-16 shrink-0 overflow-hidden rounded-2xl border bg-[#031811] transition sm:h-24 sm:w-20",
+                    "relative h-20 w-16 shrink-0 overflow-hidden rounded-2xl border bg-[#0a0f2d] transition sm:h-24 sm:w-20",
                     index ===
                     activeIndex
                       ? "border-[#e2c46f]/75 shadow-[0_0_22px_rgba(218,184,95,0.14)]"
@@ -499,7 +499,7 @@ export function ProductGallery({
               : "Expanded product image"
           }
           tabIndex={-1}
-          className="fixed inset-0 z-[120] flex items-center justify-center bg-[#010806]/95 p-3 backdrop-blur-xl sm:p-8"
+          className="fixed inset-0 z-[120] flex items-center justify-center bg-[#06091b]/95 p-3 backdrop-blur-xl sm:p-8"
           onClick={() =>
             setIsExpanded(false)
           }
@@ -525,7 +525,7 @@ export function ProductGallery({
           </button>
 
           <div
-            className="relative h-[82vh] w-full max-w-6xl overflow-hidden rounded-[2rem] border border-white/10 bg-[#020d09]"
+            className="relative h-[82vh] w-full max-w-6xl overflow-hidden rounded-[2rem] border border-white/10 bg-[#080c21]"
             onClick={
               event =>
                 event.stopPropagation()

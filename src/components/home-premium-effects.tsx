@@ -344,7 +344,7 @@ export function HomePremiumEffects() {
           circle at var(--eloria-pointer-x) var(--eloria-pointer-y),
           rgba(255, 235, 174, 0.105) 0%,
           rgba(218, 180, 87, 0.055) 18%,
-          rgba(15, 117, 83, 0.025) 34%,
+          rgba(35, 50, 150, 0.025) 34%,
           transparent 56%
         );
         mix-blend-mode: screen;

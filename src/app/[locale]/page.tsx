@@ -36,7 +36,7 @@ export default async function HomePage({
   );
 
   return (
-    <div className="relative min-h-screen overflow-x-clip bg-[#02140e] text-[#f8f0df]">
+    <div className="relative min-h-screen overflow-x-clip bg-[#080d28] text-[#f8f0df]">
 
 <HomeHeaderController
         locale={

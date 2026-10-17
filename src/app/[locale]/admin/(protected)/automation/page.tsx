@@ -76,7 +76,7 @@ export default async function AdminAutomationPage({
 
   return (
     <div className="mx-auto max-w-[1540px] space-y-7">
-      <section className="relative overflow-hidden rounded-[2rem] border border-[#d7b95f]/20 bg-[linear-gradient(135deg,rgba(10,56,40,.95),rgba(3,24,17,.98))] px-6 py-7 shadow-[0_24px_70px_rgba(0,0,0,.28)] sm:px-8">
+      <section className="relative overflow-hidden rounded-[2rem] border border-[#d7b95f]/20 bg-[linear-gradient(135deg,rgba(22,30,81,.95),rgba(10,15,45,.98))] px-6 py-7 shadow-[0_24px_70px_rgba(0,0,0,.28)] sm:px-8">
         <div className="absolute -end-20 -top-24 size-72 rounded-full bg-[#d7b95f]/[.09] blur-[80px]" />
         <div className="relative flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
           <div>
@@ -111,7 +111,7 @@ export default async function AdminAutomationPage({
           return (
             <article
               key={card.label}
-              className="rounded-[1.7rem] border border-[#d7b95f]/17 bg-[#061c15]/86 p-5"
+              className="rounded-[1.7rem] border border-[#d7b95f]/17 bg-[#0f1431]/86 p-5"
             >
               <div className="flex items-center justify-between gap-3">
                 <Icon className={`size-5 ${card.tone}`} />
@@ -129,7 +129,7 @@ export default async function AdminAutomationPage({
       </section>
 
       <section className="grid gap-6 xl:grid-cols-[1.06fr_.94fr]">
-        <article className="rounded-[1.9rem] border border-[#d7b95f]/18 bg-[#061c15]/86 p-5 sm:p-6">
+        <article className="rounded-[1.9rem] border border-[#d7b95f]/18 bg-[#0f1431]/86 p-5 sm:p-6">
           <div className="flex items-center gap-3">
             {scheduleReady ? (
               <CheckCircle2 className="size-5 text-emerald-200" />
@@ -161,12 +161,12 @@ export default async function AdminAutomationPage({
             </div>
           </div>
 
-          <div className="mt-4 rounded-2xl border border-[#d7b95f]/12 bg-[#08241a]/70 p-4 text-xs leading-7 text-[#d7c7a4]/65">
+          <div className="mt-4 rounded-2xl border border-[#d7b95f]/12 bg-[#12183b]/70 p-4 text-xs leading-7 text-[#d7c7a4]/65">
             پیش‌نویس خودکار فقط از مشخصات واقعی محصولی که متن و تصویر کافی دارد ساخته می‌شود؛ قیمت یا موجودی را داخل مقاله قطعی اعلام نمی‌کند و بدون کلیک شما منتشر نمی‌شود.
           </div>
         </article>
 
-        <article className="rounded-[1.9rem] border border-[#d7b95f]/18 bg-[#061c15]/86 p-5 sm:p-6">
+        <article className="rounded-[1.9rem] border border-[#d7b95f]/18 bg-[#0f1431]/86 p-5 sm:p-6">
           <div className="flex items-center gap-3">
             <CalendarClock className="size-5 text-[#e4c673]" />
             <div>
@@ -214,7 +214,7 @@ export default async function AdminAutomationPage({
         </article>
       </section>
 
-      <section className="rounded-[1.9rem] border border-[#d7b95f]/18 bg-[#061c15]/86 p-5 sm:p-6">
+      <section className="rounded-[1.9rem] border border-[#d7b95f]/18 bg-[#0f1431]/86 p-5 sm:p-6">
         <div className="flex items-center gap-3">
           <ListChecks className="size-5 text-[#e4c673]" />
           <div>

@@ -43,7 +43,7 @@ export default function ProductError({
   return (
     <InternalPageShell locale={locale}>
       <section className="relative z-10 mx-auto flex min-h-[78vh] w-full max-w-3xl items-center px-4 pb-24 pt-[130px] sm:px-6">
-        <div className="relative w-full overflow-hidden rounded-[2.4rem] border border-rose-200/15 bg-[linear-gradient(145deg,rgba(47,13,18,0.82),rgba(3,24,17,0.96))] p-6 text-center shadow-[0_35px_100px_rgba(0,0,0,0.42)] sm:p-10">
+        <div className="relative w-full overflow-hidden rounded-[2.4rem] border border-rose-200/15 bg-[linear-gradient(145deg,rgba(47,13,18,0.82),rgba(10,15,45,0.96))] p-6 text-center shadow-[0_35px_100px_rgba(0,0,0,0.42)] sm:p-10">
           <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full border border-rose-200/20 bg-rose-300/[0.06] text-rose-100">
             <AlertTriangle className="h-8 w-8" />
           </div>

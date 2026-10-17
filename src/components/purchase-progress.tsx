@@ -92,7 +92,7 @@ export function PurchaseProgress({
                       ? "border-[#efd27b]/70 bg-[#d9b85f]/15 text-[#f5df9c] shadow-[0_0_24px_rgba(217,184,95,0.16)]"
                       : isComplete
                         ? "border-[#d9b85f]/40 bg-[#d9b85f]/[0.08] text-[#e6cc7c]"
-                        : "border-white/[0.1] bg-[#041b14]/80 text-white/30",
+                        : "border-white/[0.1] bg-[#0c1130]/80 text-white/30",
                   ].join(" ")}
                 >
                   <Icon className="h-4 w-4" />

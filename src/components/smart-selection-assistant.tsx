@@ -142,7 +142,7 @@ export function SmartSelectionAssistant({ locale, initiallyOpen = false }: { loc
     <Dialog.Portal>
     <Dialog.Popup className="fixed inset-0 z-[100] grid place-items-center p-0 sm:p-6" role="dialog" aria-modal="true" aria-label={copy.title} dir={fa ? "rtl" : "ltr"}>
       <div aria-hidden="true" onClick={() => setOpen(false)} className="absolute inset-0 bg-black/80 backdrop-blur-md" />
-      <section className="relative flex h-[100svh] w-full max-w-4xl flex-col overflow-hidden border border-[#e6cc79]/35 bg-[radial-gradient(circle_at_50%_0%,rgba(22,101,72,.28),transparent_38%),linear-gradient(145deg,#063425,#01140e_72%)] shadow-[0_35px_130px_rgba(0,0,0,.78),0_0_50px_rgba(216,184,95,.12)] sm:h-auto sm:max-h-[88svh] sm:rounded-[2rem]">
+      <section className="relative flex h-[100svh] w-full max-w-4xl flex-col overflow-hidden border border-[#e6cc79]/35 bg-[radial-gradient(circle_at_50%_0%,rgba(41,53,132,.28),transparent_38%),linear-gradient(145deg,#11194d,#01140e_72%)] shadow-[0_35px_130px_rgba(0,0,0,.78),0_0_50px_rgba(216,184,95,.12)] sm:h-auto sm:max-h-[88svh] sm:rounded-[2rem]">
         <div aria-hidden="true" className="absolute inset-x-16 top-0 h-px bg-gradient-to-r from-transparent via-[#ffdf8b]/80 to-transparent" />
         <header className="relative border-b border-white/[.06] px-5 pb-5 pt-6 sm:px-8 sm:pt-7">
           <Dialog.Close aria-label={copy.close} className="absolute end-5 top-5 grid size-9 place-items-center rounded-full border border-white/10 bg-black/15 text-[#d8c9a8]/70 transition hover:border-[#e6ca76]/40 hover:text-[#f3dda0]">
@@ -237,9 +237,9 @@ export function SmartSelectionAssistant({ locale, initiallyOpen = false }: { loc
                     const alt = fa ? product.image?.altFa ?? name : product.image?.altEn ?? name;
                     return (
                       <Link key={product.id} href={`/${locale}/products/${encodeURIComponent(product.slug)}`} onClick={() => setOpen(false)} className="group overflow-hidden rounded-[1.4rem] border border-white/[.08] bg-black/15 transition hover:-translate-y-1 hover:border-[#e3c66f]/38">
-                        <div className="relative aspect-[4/3] overflow-hidden bg-[#031811]">
+                        <div className="relative aspect-[4/3] overflow-hidden bg-[#0a0f2d]">
                           <Image src={image} alt={alt} fill sizes="(max-width: 768px) 100vw, 33vw" className="object-cover transition duration-700 group-hover:scale-[1.04]" />
-                          <div className="absolute inset-0 bg-gradient-to-t from-[#01140e]/80 to-transparent" />
+                          <div className="absolute inset-0 bg-gradient-to-t from-[#070b28]/80 to-transparent" />
                         </div>
                         <div className="p-4">
                           <p className="text-sm text-[#f1e4c6]">{name}</p>

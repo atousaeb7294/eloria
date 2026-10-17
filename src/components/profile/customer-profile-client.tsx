@@ -145,12 +145,12 @@ export function CustomerProfileClient({ locale, initialData }: { locale: "fa" | 
     finally { setBusy(null); }
   }
 
-  const card = "rounded-[28px] border border-[#d8b967]/12 bg-[linear-gradient(155deg,rgba(6,33,24,.72),rgba(2,17,12,.72))] p-5 sm:p-7";
+  const card = "rounded-[28px] border border-[#d8b967]/12 bg-[linear-gradient(155deg,rgba(15,21,55,.72),rgba(8,12,37,.72))] p-5 sm:p-7";
   const input = "h-12 w-full rounded-2xl border border-[#d8b967]/12 bg-black/18 px-4 text-sm text-[#eee0bf] outline-none focus:border-[#dfc575]/35";
 
   return (
     <main dir={fa ? "rtl" : "ltr"} className="mx-auto max-w-7xl px-4 pb-24 pt-32 sm:px-6 sm:pt-40">
-      <header className="rounded-[34px] border border-[#d8b967]/14 bg-[linear-gradient(145deg,rgba(8,42,30,.84),rgba(2,18,13,.9))] p-6 sm:p-9">
+      <header className="rounded-[34px] border border-[#d8b967]/14 bg-[linear-gradient(145deg,rgba(19,25,65,.84),rgba(8,12,38,.9))] p-6 sm:p-9">
         <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
           <div>
             <p className="text-xs text-[#d9c277]/65">{fa ? "حساب واقعی مشتری" : "Customer account"}</p>
@@ -173,7 +173,7 @@ export function CustomerProfileClient({ locale, initialData }: { locale: "fa" | 
         <Link href={`/${locale}/profile/watches`} className="shrink-0 rounded-full border border-[#d8b967]/12 bg-black/10 px-4 py-2 text-xs text-[#d9ca9f]/68 transition hover:border-[#d8b967]/28 hover:text-[#ead58e]">{fa ? "پیگیری قیمت" : "Price watches"}</Link>
       </nav>
 
-      {message ? <div role="status" className="mt-5 rounded-2xl border border-[#d8b967]/12 bg-[#071d15]/80 p-4 text-sm text-[#e4d4ae]/75">{message}</div> : null}
+      {message ? <div role="status" className="mt-5 rounded-2xl border border-[#d8b967]/12 bg-[#111533]/80 p-4 text-sm text-[#e4d4ae]/75">{message}</div> : null}
 
       <div className="mt-6 grid grid-cols-2 gap-3 lg:grid-cols-4">
         {[
@@ -187,7 +187,7 @@ export function CustomerProfileClient({ locale, initialData }: { locale: "fa" | 
         })}
       </div>
 
-      {activeOrder && activeJourney ? <section id="active-order" className={`${card} mt-6 border-[#d8b967]/20 bg-[linear-gradient(135deg,rgba(16,57,41,.9),rgba(3,22,15,.9))]`}>
+      {activeOrder && activeJourney ? <section id="active-order" className={`${card} mt-6 border-[#d8b967]/20 bg-[linear-gradient(135deg,rgba(30,37,82,.9),rgba(10,15,43,.9))]`}>
         <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div className="flex items-start gap-3"><span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl border border-[#d8b967]/20 bg-[#d8b967]/[.07] text-[#e3c978]"><PackageCheck className="h-5 w-5" /></span><div><p className="text-xs text-[#d9c277]/65">{fa ? "سفارش فعال شما" : "Your active order"}</p><h2 className={fa ? "font-persian-title mt-2 text-xl text-[#f2e6c9]" : "mt-2 text-xl font-semibold text-[#f2e6c9]"}>{activeJourney.title}</h2><p className="mt-2 text-xs leading-6 text-[#cbbd9a]/62">{activeJourney.detail}</p></div></div>
           <div className="text-start sm:text-end"><p className="font-mono text-sm text-[#ead391]">{activeOrder.orderNumber}</p><p className="mt-2 text-xs text-[#d9bd72]/65">{statusLabel(activeOrder.status, fa)}</p></div>
@@ -204,7 +204,7 @@ export function CustomerProfileClient({ locale, initialData }: { locale: "fa" | 
             return <div key={String(label)} className={`rounded-2xl border p-3 text-center ${passed ? "border-[#d8b967]/26 bg-[#d8b967]/[.08] text-[#ecd482]" : "border-white/5 bg-black/10 text-[#bbaf8e]/50"}`}><StepIcon className="mx-auto h-4 w-4" /><p className="mt-2 text-[10px]">{String(label)}</p></div>;
           })}
         </div>
-        <div className="mt-5 flex flex-wrap items-center gap-3"><Link href={`/${locale}/order-tracking?code=${encodeURIComponent(activeOrder.orderNumber)}`} className="inline-flex h-10 items-center justify-center rounded-full border border-[#d8b967]/20 bg-[#123829] px-4 text-xs text-[#edd58b]">{fa ? "پیگیری دقیق سفارش" : "Track order"}</Link>{activeOrder.status === "PENDING_PAYMENT" || activeOrder.status === "PAYMENT_FAILED" ? <button type="button" disabled={busy === `pay-${activeOrder.id}`} onClick={() => void continuePayment(activeOrder.id)} className="inline-flex h-10 items-center justify-center rounded-full border border-[#d8b967]/20 px-4 text-xs text-[#edd58b] disabled:opacity-50">{fa ? "ادامه پرداخت" : "Continue payment"}</button> : null}</div>
+        <div className="mt-5 flex flex-wrap items-center gap-3"><Link href={`/${locale}/order-tracking?code=${encodeURIComponent(activeOrder.orderNumber)}`} className="inline-flex h-10 items-center justify-center rounded-full border border-[#d8b967]/20 bg-[#212751] px-4 text-xs text-[#edd58b]">{fa ? "پیگیری دقیق سفارش" : "Track order"}</Link>{activeOrder.status === "PENDING_PAYMENT" || activeOrder.status === "PAYMENT_FAILED" ? <button type="button" disabled={busy === `pay-${activeOrder.id}`} onClick={() => void continuePayment(activeOrder.id)} className="inline-flex h-10 items-center justify-center rounded-full border border-[#d8b967]/20 px-4 text-xs text-[#edd58b] disabled:opacity-50">{fa ? "ادامه پرداخت" : "Continue payment"}</button> : null}</div>
       </section> : null}
 
       <section id="orders" className={`${card} mt-6`}>
@@ -221,7 +221,7 @@ export function CustomerProfileClient({ locale, initialData }: { locale: "fa" | 
                 <Link href={`/${locale}/order-tracking?code=${encodeURIComponent(order.orderNumber)}`} className="inline-flex text-xs text-[#e1c576]">{fa ? "پیگیری سفارش" : "Track order"}</Link>
                 {order.status === "PENDING_PAYMENT" || order.status === "PAYMENT_FAILED" ? (
                   <>
-                    <button type="button" disabled={busy === `pay-${order.id}`} onClick={() => void continuePayment(order.id)} className="inline-flex min-h-9 items-center justify-center rounded-full border border-[#d8b967]/20 bg-[#123829] px-4 text-xs text-[#edd58b] disabled:opacity-50">
+                    <button type="button" disabled={busy === `pay-${order.id}`} onClick={() => void continuePayment(order.id)} className="inline-flex min-h-9 items-center justify-center rounded-full border border-[#d8b967]/20 bg-[#212751] px-4 text-xs text-[#edd58b] disabled:opacity-50">
                       {busy === `pay-${order.id}` ? (fa ? "در حال اتصال..." : "Connecting...") : (fa ? "ادامه پرداخت" : "Continue payment")}
                     </button>
                     <button type="button" disabled={busy === `cancel-${order.id}`} onClick={() => void cancelOrder(order.id)} className="inline-flex min-h-9 items-center justify-center rounded-full border border-red-300/15 px-4 text-xs text-red-100/60 disabled:opacity-50">
@@ -251,7 +251,7 @@ export function CustomerProfileClient({ locale, initialData }: { locale: "fa" | 
           <input className={input} placeholder={fa ? "کد پستی" : "Postal code"} value={addressForm.postalCode} onChange={e => setAddressForm(v => ({ ...v, postalCode: e.target.value }))} />
           <textarea className="min-h-28 rounded-2xl border border-[#d8b967]/12 bg-black/18 p-4 text-sm text-[#eee0bf] outline-none focus:border-[#dfc575]/35 md:col-span-2" placeholder={fa ? "نشانی کامل" : "Full address"} value={addressForm.address} onChange={e => setAddressForm(v => ({ ...v, address: e.target.value }))} />
           <label className="flex items-center gap-2 text-xs text-[#c7b998]/60"><input type="checkbox" checked={addressForm.isDefault} onChange={e => setAddressForm(v => ({ ...v, isDefault: e.target.checked }))} />{fa ? "آدرس پیش‌فرض" : "Default address"}</label>
-          <button disabled={busy === "address"} className="inline-flex h-11 items-center justify-center gap-2 rounded-xl border border-[#d8b967]/20 bg-[#123829] text-xs text-[#e8d18b]"><Save className="h-4 w-4" />{editingAddressId ? (fa ? "ذخیره ویرایش" : "Save changes") : (fa ? "افزودن آدرس" : "Add address")}</button>
+          <button disabled={busy === "address"} className="inline-flex h-11 items-center justify-center gap-2 rounded-xl border border-[#d8b967]/20 bg-[#212751] text-xs text-[#e8d18b]"><Save className="h-4 w-4" />{editingAddressId ? (fa ? "ذخیره ویرایش" : "Save changes") : (fa ? "افزودن آدرس" : "Add address")}</button>
         </form>
       </section>
 
@@ -269,12 +269,12 @@ export function CustomerProfileClient({ locale, initialData }: { locale: "fa" | 
 
       <section id="notifications" className={`${card} mt-6`}>
         <div className="flex items-center justify-between gap-3"><div className="flex items-center gap-3"><Bell className="h-5 w-5 text-[#dfc577]" /><h2 className={fa ? "font-persian-title text-xl" : "text-xl font-semibold"}>{fa ? "اعلان‌ها" : "Notifications"}</h2></div>{unread ? <button disabled={busy === "notifications"} onClick={() => void markAllRead()} className="inline-flex items-center gap-2 text-xs text-[#d8bd72]/70"><Check className="h-4 w-4" />{fa ? "خواندن همه" : "Mark all read"}</button> : null}</div>
-        <div className="mt-5 space-y-2">{initialData.notifications.map(n => <article key={n.id} className={`rounded-2xl border p-4 ${n.readAt ? "border-[#d8b967]/7 bg-black/8" : "border-[#d8b967]/16 bg-[#0b2c20]/45"}`}><p className="text-sm text-[#e9d7ad]">{fa ? n.titleFa : n.titleEn}</p><p className="mt-2 text-xs leading-6 text-[#c4b696]/55">{fa ? n.bodyFa : n.bodyEn}</p></article>)}{!initialData.notifications.length ? <p className="text-sm text-[#c7b995]/55">{fa ? "اعلان جدیدی ندارید." : "No notifications yet."}</p> : null}</div>
+        <div className="mt-5 space-y-2">{initialData.notifications.map(n => <article key={n.id} className={`rounded-2xl border p-4 ${n.readAt ? "border-[#d8b967]/7 bg-black/8" : "border-[#d8b967]/16 bg-[#171d44]/45"}`}><p className="text-sm text-[#e9d7ad]">{fa ? n.titleFa : n.titleEn}</p><p className="mt-2 text-xs leading-6 text-[#c4b696]/55">{fa ? n.bodyFa : n.bodyEn}</p></article>)}{!initialData.notifications.length ? <p className="text-sm text-[#c7b995]/55">{fa ? "اعلان جدیدی ندارید." : "No notifications yet."}</p> : null}</div>
       </section>
 
       <section id="account" className={`${card} mt-6`}>
         <div className="flex items-center gap-3"><UserRound className="h-5 w-5 text-[#dfc577]" /><h2 className={fa ? "font-persian-title text-xl" : "text-xl font-semibold"}>{fa ? "اطلاعات حساب" : "Account details"}</h2></div>
-        <form onSubmit={saveProfile} className="mt-5 grid gap-3 sm:grid-cols-2"><input className={input} value={profile.fullName} onChange={e => setProfile(v => ({ ...v, fullName: e.target.value }))} placeholder={fa ? "نام و نام خانوادگی" : "Full name"} /><input dir="ltr" className={`${input} opacity-65 text-left`} value={initialData.customer.mobile} disabled /><button disabled={busy === "profile"} className="inline-flex h-12 items-center justify-center gap-2 rounded-2xl border border-[#d8b967]/20 bg-[#123829] text-xs text-[#e8d18b]"><Save className="h-4 w-4" />{fa ? "ذخیره اطلاعات" : "Save details"}</button></form>
+        <form onSubmit={saveProfile} className="mt-5 grid gap-3 sm:grid-cols-2"><input className={input} value={profile.fullName} onChange={e => setProfile(v => ({ ...v, fullName: e.target.value }))} placeholder={fa ? "نام و نام خانوادگی" : "Full name"} /><input dir="ltr" className={`${input} opacity-65 text-left`} value={initialData.customer.mobile} disabled /><button disabled={busy === "profile"} className="inline-flex h-12 items-center justify-center gap-2 rounded-2xl border border-[#d8b967]/20 bg-[#212751] text-xs text-[#e8d18b]"><Save className="h-4 w-4" />{fa ? "ذخیره اطلاعات" : "Save details"}</button></form>
       </section>
 
       <section id="security" className={`${card} mt-6`}>
@@ -284,7 +284,7 @@ export function CustomerProfileClient({ locale, initialData }: { locale: "fa" | 
           {initialData.customer.hasPassword ? <input type="password" dir="ltr" autoComplete="current-password" className={`${input} text-left`} value={passwordForm.currentPassword} onChange={e => setPasswordForm(v => ({ ...v, currentPassword: e.target.value }))} placeholder={fa ? "رمز عبور فعلی" : "Current password"} required /> : null}
           <input type="password" dir="ltr" autoComplete="new-password" minLength={8} maxLength={128} className={`${input} text-left`} value={passwordForm.newPassword} onChange={e => setPasswordForm(v => ({ ...v, newPassword: e.target.value }))} placeholder={fa ? "رمز عبور جدید (حداقل ۸ نویسه)" : "New password (at least 8 characters)"} required />
           <input type="password" dir="ltr" autoComplete="new-password" minLength={8} maxLength={128} className={`${input} text-left`} value={passwordForm.confirmPassword} onChange={e => setPasswordForm(v => ({ ...v, confirmPassword: e.target.value }))} placeholder={fa ? "تکرار رمز عبور جدید" : "Confirm new password"} required />
-          <button disabled={busy === "password"} className="inline-flex h-12 items-center justify-center gap-2 rounded-2xl border border-[#d8b967]/20 bg-[#123829] text-xs text-[#e8d18b]"><KeyRound className="h-4 w-4" />{busy === "password" ? (fa ? "در حال ذخیره..." : "Saving...") : (fa ? "ذخیره رمز عبور" : "Save password")}</button>
+          <button disabled={busy === "password"} className="inline-flex h-12 items-center justify-center gap-2 rounded-2xl border border-[#d8b967]/20 bg-[#212751] text-xs text-[#e8d18b]"><KeyRound className="h-4 w-4" />{busy === "password" ? (fa ? "در حال ذخیره..." : "Saving...") : (fa ? "ذخیره رمز عبور" : "Save password")}</button>
         </form>
       </section>
     </main>

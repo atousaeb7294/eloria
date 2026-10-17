@@ -212,7 +212,7 @@ export function CustomerLoginClient({
 
   return (
     <section dir={fa ? "rtl" : "ltr"} className="mx-auto max-w-xl px-4 pb-24 pt-32 sm:px-6 sm:pt-40">
-      <div className="overflow-hidden rounded-[32px] border border-[#d8b967]/18 bg-[linear-gradient(155deg,rgba(7,40,29,.90),rgba(2,18,13,.94))] p-6 shadow-[0_30px_100px_rgba(0,0,0,.35)] sm:p-9">
+      <div className="overflow-hidden rounded-[32px] border border-[#d8b967]/18 bg-[linear-gradient(155deg,rgba(17,23,63,.90),rgba(8,12,38,.94))] p-6 shadow-[0_30px_100px_rgba(0,0,0,.35)] sm:p-9">
         <div className="flex items-center gap-3 text-[#e5ca7c]"><ShieldCheck className="h-5 w-5" /><span className="text-xs">{fa ? "دسترسی امن مشتری" : "Secure customer access"}</span></div>
         <h1 className={fa ? "font-persian-title mt-5 text-3xl text-[#f3e6c5]" : "mt-5 text-3xl font-semibold text-[#f3e6c5]"}>{fa ? "حساب الوریا" : "Your Eloria account"}</h1>
         <p className="mt-4 text-sm leading-8 text-[#cdbf9d]/65">{mode === "PASSWORD" ? passwordModeMessage() : fa ? "همهٔ مسیرهای عضویت و بازیابی با شمارهٔ موبایل و کد پیامکی SMS.ir انجام می‌شود." : "Sign-up and recovery use your mobile number and an SMS.ir verification code."}</p>
@@ -220,8 +220,8 @@ export function CustomerLoginClient({
         {!challengeId ? (
           <>
             <div className="mt-7 grid grid-cols-2 gap-2 rounded-2xl border border-[#d8b967]/12 bg-black/15 p-1.5">
-              <button type="button" onClick={() => resetFlow("PASSWORD")} className={"flex h-11 items-center justify-center gap-2 rounded-xl text-xs transition " + (mode === "PASSWORD" ? "bg-[#173e30] text-[#efd991]" : "text-[#baa982]/55")}><KeyRound className="h-4 w-4" />{fa ? "ورود با رمز" : "Password login"}</button>
-              <button type="button" disabled={!channelAvailability.smsEnabled} onClick={() => resetFlow("OTP")} className={"flex h-11 items-center justify-center gap-2 rounded-xl text-xs transition disabled:cursor-not-allowed disabled:opacity-35 " + (mode === "OTP" ? "bg-[#173e30] text-[#efd991]" : "text-[#baa982]/55")}><Phone className="h-4 w-4" />{fa ? "ورود پیامکی" : "SMS login"}</button>
+              <button type="button" onClick={() => resetFlow("PASSWORD")} className={"flex h-11 items-center justify-center gap-2 rounded-xl text-xs transition " + (mode === "PASSWORD" ? "bg-[#272e58] text-[#efd991]" : "text-[#baa982]/55")}><KeyRound className="h-4 w-4" />{fa ? "ورود با رمز" : "Password login"}</button>
+              <button type="button" disabled={!channelAvailability.smsEnabled} onClick={() => resetFlow("OTP")} className={"flex h-11 items-center justify-center gap-2 rounded-xl text-xs transition disabled:cursor-not-allowed disabled:opacity-35 " + (mode === "OTP" ? "bg-[#272e58] text-[#efd991]" : "text-[#baa982]/55")}><Phone className="h-4 w-4" />{fa ? "ورود پیامکی" : "SMS login"}</button>
             </div>
 
             {needsSms && !channelAvailability.smsEnabled ? <p role="alert" className="mt-4 rounded-xl border border-amber-300/20 bg-amber-950/20 p-3 text-xs leading-6 text-amber-100">{fa ? "سامانهٔ SMS.ir برای ارسال کد هنوز تنظیم نشده است." : "SMS.ir is not configured for verification codes yet."}</p> : null}
@@ -234,7 +234,7 @@ export function CustomerLoginClient({
                 <input id="customer-password" value={password} onChange={event => setPassword(event.target.value)} type="password" dir="ltr" autoComplete="current-password" minLength={8} maxLength={128} required className={passwordFieldClass} placeholder={fa ? "حداقل ۸ نویسه" : "At least 8 characters"} />
                 <TurnstileWidget key={turnstileAction + "-" + turnstileGeneration} locale={locale} action={turnstileAction} onTokenChange={onTokenChange} onStateChange={setTurnstileState} />
                 {!securityCheckComplete ? <p className="text-center text-[11px] leading-6 text-[#bcae8d]/45">{fa ? "پس از تکمیل بررسی امنیتی، ورود فعال می‌شود." : "Complete the security check to continue."}</p> : null}
-                <button disabled={loading || !securityCheckComplete} className="flex h-13 w-full items-center justify-center gap-2 rounded-2xl border border-[#e3c873]/30 bg-[#143c2d] text-sm text-[#efd991] disabled:opacity-50">{loading ? <LoaderCircle className="h-4 w-4 animate-spin" /> : <KeyRound className="h-4 w-4" />}{fa ? "ورود به حساب" : "Sign in"}</button>
+                <button disabled={loading || !securityCheckComplete} className="flex h-13 w-full items-center justify-center gap-2 rounded-2xl border border-[#e3c873]/30 bg-[#232a56] text-sm text-[#efd991] disabled:opacity-50">{loading ? <LoaderCircle className="h-4 w-4 animate-spin" /> : <KeyRound className="h-4 w-4" />}{fa ? "ورود به حساب" : "Sign in"}</button>
               </form>
             ) : (
               <form onSubmit={requestCode} className="mt-6 space-y-4">
@@ -244,7 +244,7 @@ export function CustomerLoginClient({
                 {mode === "SIGNUP" || mode === "RESET" ? <><label htmlFor="customer-password" className="block text-xs text-[#d9c79e]/65">{fa ? "رمز عبور جدید" : "New password"}</label><input id="customer-password" value={password} onChange={event => setPassword(event.target.value)} type="password" dir="ltr" autoComplete="new-password" minLength={8} maxLength={128} required className={passwordFieldClass} placeholder={fa ? "حداقل ۸ نویسه" : "At least 8 characters"} /><label htmlFor="customer-confirm" className="block text-xs text-[#d9c79e]/65">{fa ? "تکرار رمز عبور" : "Confirm password"}</label><input id="customer-confirm" value={confirmPassword} onChange={event => setConfirmPassword(event.target.value)} type="password" dir="ltr" autoComplete="new-password" minLength={8} maxLength={128} required className={passwordFieldClass} /></> : null}
                 <TurnstileWidget key={turnstileAction + "-" + turnstileGeneration} locale={locale} action={turnstileAction} onTokenChange={onTokenChange} onStateChange={setTurnstileState} />
                 {!securityCheckComplete ? <p className="text-center text-[11px] leading-6 text-[#bcae8d]/45">{fa ? "پس از تکمیل بررسی امنیتی، ارسال کد فعال می‌شود." : "Complete the security check to send the code."}</p> : null}
-                <button disabled={loading || !channelAvailability.smsEnabled || !securityCheckComplete} className="flex h-13 w-full items-center justify-center gap-2 rounded-2xl border border-[#e3c873]/30 bg-[#143c2d] text-sm text-[#efd991] disabled:opacity-50">{loading ? <LoaderCircle className="h-4 w-4 animate-spin" /> : <Phone className="h-4 w-4" />}{mode === "OTP" ? (fa ? "دریافت کد ورود" : "Send login code") : mode === "SIGNUP" ? (fa ? "دریافت کد عضویت" : "Send sign-up code") : (fa ? "دریافت کد بازیابی" : "Send recovery code")}</button>
+                <button disabled={loading || !channelAvailability.smsEnabled || !securityCheckComplete} className="flex h-13 w-full items-center justify-center gap-2 rounded-2xl border border-[#e3c873]/30 bg-[#232a56] text-sm text-[#efd991] disabled:opacity-50">{loading ? <LoaderCircle className="h-4 w-4 animate-spin" /> : <Phone className="h-4 w-4" />}{mode === "OTP" ? (fa ? "دریافت کد ورود" : "Send login code") : mode === "SIGNUP" ? (fa ? "دریافت کد عضویت" : "Send sign-up code") : (fa ? "دریافت کد بازیابی" : "Send recovery code")}</button>
               </form>
             )}
 
@@ -261,7 +261,7 @@ export function CustomerLoginClient({
             <label htmlFor="customer-code" className="block text-xs text-[#d9c79e]/65">{fa ? "کد ۶ رقمی" : "6-digit code"}</label>
             <input id="customer-code" value={code} onChange={event => setCode(normalizeOtpInput(event.target.value))} inputMode="numeric" autoComplete="one-time-code" placeholder="000000" required className="h-14 w-full rounded-2xl border border-[#d8b967]/14 bg-black/20 px-4 text-center font-mono text-xl tracking-[.35em] text-[#f1e5c9] outline-none focus:border-[#e2c779]/40" />
             {devCode ? <p className="rounded-xl border border-amber-300/15 bg-amber-300/[.05] p-3 text-xs text-amber-100/70">DEV OTP: {devCode}</p> : null}
-            <button disabled={loading || code.length !== 6} className="flex h-13 w-full items-center justify-center gap-2 rounded-2xl border border-[#e3c873]/30 bg-[#143c2d] text-sm text-[#efd991] disabled:opacity-50">{loading ? <LoaderCircle className="h-4 w-4 animate-spin" /> : <ShieldCheck className="h-4 w-4" />}{mode === "OTP" ? (fa ? "ورود به حساب" : "Sign in") : mode === "SIGNUP" ? (fa ? "تکمیل عضویت" : "Complete sign-up") : (fa ? "تنظیم رمز جدید" : "Set new password")}</button>
+            <button disabled={loading || code.length !== 6} className="flex h-13 w-full items-center justify-center gap-2 rounded-2xl border border-[#e3c873]/30 bg-[#232a56] text-sm text-[#efd991] disabled:opacity-50">{loading ? <LoaderCircle className="h-4 w-4 animate-spin" /> : <ShieldCheck className="h-4 w-4" />}{mode === "OTP" ? (fa ? "ورود به حساب" : "Sign in") : mode === "SIGNUP" ? (fa ? "تکمیل عضویت" : "Complete sign-up") : (fa ? "تنظیم رمز جدید" : "Set new password")}</button>
             <button type="button" onClick={() => resetFlow(mode)} className="w-full py-2 text-xs text-[#c5b58f]/55">{fa ? "بازگشت و اصلاح اطلاعات" : "Go back and edit details"}</button>
           </form>
         )}

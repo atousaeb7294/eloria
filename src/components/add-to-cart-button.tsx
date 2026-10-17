@@ -182,7 +182,7 @@ export function AddToCartButton({
       <button
         type="button"
         onClick={addFirstItem}
-        className="group relative flex min-h-14 w-full items-center justify-center gap-3 overflow-hidden rounded-full border border-[#e4c66f]/55 bg-[linear-gradient(105deg,rgba(83,59,17,0.34),rgba(213,177,82,0.3),rgba(13,82,58,0.35))] px-7 text-sm font-medium text-[#f7e6b5] shadow-[inset_0_1px_0_rgba(255,255,255,0.12)] transition duration-500 hover:-translate-y-0.5 hover:border-[#f0d681]/85 hover:shadow-[0_0_34px_rgba(218,183,91,0.16)]"
+        className="group relative flex min-h-14 w-full items-center justify-center gap-3 overflow-hidden rounded-full border border-[#e4c66f]/55 bg-[linear-gradient(105deg,rgba(83,59,17,0.34),rgba(213,177,82,0.3),rgba(29,40,111,0.35))] px-7 text-sm font-medium text-[#f7e6b5] shadow-[inset_0_1px_0_rgba(255,255,255,0.12)] transition duration-500 hover:-translate-y-0.5 hover:border-[#f0d681]/85 hover:shadow-[0_0_34px_rgba(218,183,91,0.16)]"
       >
         <span className="absolute inset-0 translate-x-full bg-[linear-gradient(110deg,transparent_25%,rgba(255,245,210,0.14)_50%,transparent_75%)] transition-transform duration-1000 group-hover:-translate-x-full" />
 
@@ -210,7 +210,7 @@ export function AddToCartButton({
   }
 
   return (
-    <div className="overflow-hidden rounded-[1.6rem] border border-[#dfc16e]/35 bg-[linear-gradient(145deg,rgba(7,39,29,0.92),rgba(2,25,18,0.96))] p-3 shadow-[0_20px_55px_rgba(0,0,0,0.22)]">
+    <div className="overflow-hidden rounded-[1.6rem] border border-[#dfc16e]/35 bg-[linear-gradient(145deg,rgba(17,23,62,0.92),rgba(9,14,46,0.96))] p-3 shadow-[0_20px_55px_rgba(0,0,0,0.22)]">
       <div className="flex items-center justify-between gap-3">
         <div className="inline-flex shrink-0 items-center rounded-full border border-[#dfc16e]/25 bg-black/15 p-1">
           <button

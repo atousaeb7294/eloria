@@ -14,7 +14,7 @@ function init(T){
 const host=root.querySelector('.ep-canvas'),scene=new T.Scene();scene.background=null;
 const renderer=new T.WebGLRenderer({antialias:true,alpha:true,powerPreference:'low-power'});renderer.setClearColor(0x000000,0);renderer.setPixelRatio(Math.min(devicePixelRatio,1.5));renderer.shadowMap.enabled=true;renderer.shadowMap.type=T.PCFSoftShadowMap;renderer.outputColorSpace=T.SRGBColorSpace;renderer.toneMapping=T.ACESFilmicToneMapping;renderer.toneMappingExposure=1.0;host.append(renderer.domElement);
 const camera=new T.PerspectiveCamera(46,1,.1,80);const look=new T.Vector3(0,1.7,-3);let goalYaw=0,goalCam=new T.Vector3(),goalLook=new T.Vector3();
-const mats={stone:new T.MeshStandardMaterial({color:'#cbb58a',roughness:.85}),stoneDark:new T.MeshStandardMaterial({color:'#9e8b64',roughness:.88}),gold:new T.MeshPhysicalMaterial({color:'#b38d51',metalness:.78,roughness:.38,clearcoat:.12}),silver:new T.MeshPhysicalMaterial({color:'#bdc5c5',metalness:.9,roughness:.23,clearcoat:.15}),green:new T.MeshStandardMaterial({color:'#064332',roughness:.9}),velvet:new T.MeshStandardMaterial({color:'#07372c',roughness:1}),wood:new T.MeshPhysicalMaterial({color:'#402719',roughness:.59,clearcoat:.12,clearcoatRoughness:.4}),gem:new T.MeshPhysicalMaterial({color:'#24747a',metalness:.12,roughness:.13,clearcoat:1,ior:1.48}),dark:new T.MeshStandardMaterial({color:'#112d22',roughness:.82})};
+const mats={stone:new T.MeshStandardMaterial({color:'#cbb58a',roughness:.85}),stoneDark:new T.MeshStandardMaterial({color:'#9e8b64',roughness:.88}),gold:new T.MeshPhysicalMaterial({color:'#b38d51',metalness:.78,roughness:.38,clearcoat:.12}),silver:new T.MeshPhysicalMaterial({color:'#bdc5c5',metalness:.9,roughness:.23,clearcoat:.15}),green:new T.MeshStandardMaterial({color:'#131d5e',roughness:.9}),velvet:new T.MeshStandardMaterial({color:'#131b50',roughness:1}),wood:new T.MeshPhysicalMaterial({color:'#402719',roughness:.59,clearcoat:.12,clearcoatRoughness:.4}),gem:new T.MeshPhysicalMaterial({color:'#24747a',metalness:.12,roughness:.13,clearcoat:1,ior:1.48}),dark:new T.MeshStandardMaterial({color:'#1f2445',roughness:.82})};
 function mesh(g,m,parent=scene){const a=new T.Mesh(g,m);a.castShadow=true;a.receiveShadow=true;parent.add(a);return a;}
 function box(w,h,d,x,y,z,m,parent=scene){
 let geo;if(w<2.5&&h>.045&&d>.045){const b=Math.min(.018,w*.05,h*.12,d*.12),hw=w/2-b,hh=h/2-b;const shape=new T.Shape();shape.moveTo(-hw,-hh);shape.lineTo(hw,-hh);shape.lineTo(hw,hh);shape.lineTo(-hw,hh);shape.closePath();geo=new T.ExtrudeGeometry(shape,{depth:d-2*b,bevelEnabled:true,bevelThickness:b,bevelSize:b,bevelSegments:3,steps:1});geo.translate(0,0,-d/2+b);}else geo=new T.BoxGeometry(w,h,d);const a=mesh(geo,m,parent);a.position.set(x,y,z);return a;}
@@ -41,7 +41,7 @@ const carvedLid=new T.MeshStandardMaterial({map:lidTexture,roughness:.53,metalne
 info.forEach((t,i)=>{
  const p=new T.Group();p.position.set(t.x,0,t.z);scene.add(p);
  const g=new T.Group();g.position.y=.0595*1.45;g.scale.set(1.85,1.45,1.80);p.add(g);
- const trim=mats.gold,lining=mats.velvet.clone();lining.color.set(i===0?'#351718':i===1?'#18252d':'#0b3025');
+ const trim=mats.gold,lining=mats.velvet.clone();lining.color.set(i===0?'#351718':i===1?'#18252d':'#171e48');
  for(const x of [-.66,.66])for(const z of [-.39,.39]){box(.19,.10,.18,x,0,z,trim,g);box(.22,.035,.20,x,-.042,z,trim,g);}
  box(1.58,.075,1.04,0,.065,0,trim,g);box(1.50,.56,.085,0,.375,.457,mats.wood,g);box(1.50,.56,.085,0,.375,-.457,mats.wood,g);
  for(const x of [-.705,.705])box(.085,.56,.84,x,.375,0,mats.wood,g);

@@ -58,7 +58,7 @@ export function HomeSmartDiscovery({ locale }: { locale: string }) {
       className="eloria-home-lazy-section relative mx-auto w-full max-w-6xl overflow-hidden px-4 py-14 sm:px-6 sm:py-18 lg:px-8 lg:py-22"
     >
       <div aria-hidden="true" className="pointer-events-none absolute inset-x-[12%] top-0 h-px bg-[linear-gradient(90deg,transparent,rgba(231,199,109,.3),transparent)]" />
-      <div aria-hidden="true" className="pointer-events-none absolute left-1/2 top-[46%] h-48 w-[72%] -translate-x-1/2 rounded-full bg-[#0c7f59]/[.08] blur-[90px]" />
+      <div aria-hidden="true" className="pointer-events-none absolute left-1/2 top-[46%] h-48 w-[72%] -translate-x-1/2 rounded-full bg-[#2132a1]/[.08] blur-[90px]" />
 
       <motion.div
         initial={reducedMotion ? false : { opacity: 0, y: 20 }}
@@ -85,7 +85,7 @@ export function HomeSmartDiscovery({ locale }: { locale: string }) {
         </div>
 
         <form onSubmit={submit} className="mx-auto mt-8 max-w-3xl">
-          <div className="group relative overflow-hidden rounded-full border border-[#e4c975]/22 bg-[linear-gradient(120deg,rgba(7,38,28,.88),rgba(2,20,14,.94))] p-1.5 shadow-[0_24px_70px_rgba(0,0,0,.26)] transition focus-within:border-[#ead17e]/52 focus-within:shadow-[0_26px_76px_rgba(0,0,0,.34),0_0_28px_rgba(224,193,103,.06)]">
+          <div className="group relative overflow-hidden rounded-full border border-[#e4c975]/22 bg-[linear-gradient(120deg,rgba(17,23,61,.88),rgba(8,13,40,.94))] p-1.5 shadow-[0_24px_70px_rgba(0,0,0,.26)] transition focus-within:border-[#ead17e]/52 focus-within:shadow-[0_26px_76px_rgba(0,0,0,.34),0_0_28px_rgba(224,193,103,.06)]">
             <Search className="pointer-events-none absolute start-5 top-1/2 size-4 -translate-y-1/2 text-[#dbc476]/58" />
             <input
               value={query}

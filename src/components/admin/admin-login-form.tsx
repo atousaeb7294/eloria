@@ -25,7 +25,7 @@ export function AdminLoginForm({
   const [totpCode, setTotpCode] = useState("");
   const securityCheckComplete =
     turnstileState === "disabled" || Boolean(turnstileToken);
-  const inputClass = "h-14 w-full rounded-2xl border border-[#cfb45f]/25 bg-[#02150f]/86 pr-12 pl-4 text-sm text-[#fff0ca] outline-none transition placeholder:text-[#8f846b]/65 focus:border-[#e3c56f]/65 focus:ring-4 focus:ring-[#d7b85e]/10";
+  const inputClass = "h-14 w-full rounded-2xl border border-[#cfb45f]/25 bg-[#080d2a]/86 pr-12 pl-4 text-sm text-[#fff0ca] outline-none transition placeholder:text-[#8f846b]/65 focus:border-[#e3c56f]/65 focus:ring-4 focus:ring-[#d7b85e]/10";
 
   function submitWithFreshChallenge(formData: FormData) {
     formAction(formData);
@@ -56,7 +56,7 @@ export function AdminLoginForm({
       <TurnstileWidget key={turnstileGeneration} locale={locale} action="admin-login" onTokenChange={setTurnstileToken} onStateChange={setTurnstileState} />
       {!securityCheckComplete ? <p className="text-center text-[11px] leading-6 text-[#bcae8d]/55">پس از تکمیل تأیید امنیتی، دکمه ورود فعال می‌شود.</p> : null}
       {state.error ? <p role="alert" className="rounded-xl border border-red-300/20 bg-red-950/25 px-4 py-3 text-sm leading-7 text-red-100">{state.error}</p> : null}
-      <button disabled={isPending || !securityCheckComplete} type="submit" className="flex h-14 w-full items-center justify-center gap-3 rounded-2xl border border-[#e0c36d]/40 bg-[linear-gradient(135deg,#c6a950,#f0d47f,#aa8738)] px-5 text-sm font-semibold text-[#10261d] shadow-[0_18px_50px_rgba(187,150,55,0.18)] transition hover:brightness-105 disabled:cursor-wait disabled:opacity-60"><LogIn className="h-5 w-5" />{isPending ? "در حال بررسی…" : "ورود به پنل الوریا"}</button>
+      <button disabled={isPending || !securityCheckComplete} type="submit" className="flex h-14 w-full items-center justify-center gap-3 rounded-2xl border border-[#e0c36d]/40 bg-[linear-gradient(135deg,#c6a950,#f0d47f,#aa8738)] px-5 text-sm font-semibold text-[#1e223d] shadow-[0_18px_50px_rgba(187,150,55,0.18)] transition hover:brightness-105 disabled:cursor-wait disabled:opacity-60"><LogIn className="h-5 w-5" />{isPending ? "در حال بررسی…" : "ورود به پنل الوریا"}</button>
     </form>
   );
 }

@@ -42,7 +42,7 @@ function scoreTone(score: number): string {
 }
 
 const inputClass =
-  "mt-2 min-h-11 w-full rounded-xl border border-[#d7b95f]/18 bg-[#041911] px-3.5 py-2.5 text-sm text-[#f0e1bf] outline-none transition placeholder:text-[#b6a986]/35 focus:border-[#e4c773]/55";
+  "mt-2 min-h-11 w-full rounded-xl border border-[#d7b95f]/18 bg-[#0c112e] px-3.5 py-2.5 text-sm text-[#f0e1bf] outline-none transition placeholder:text-[#b6a986]/35 focus:border-[#e4c773]/55";
 
 const labelClass = "text-xs text-[#d8c9aa]/70";
 
@@ -147,7 +147,7 @@ export default async function AdminContentEditorPage({
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_330px]">
         <form
           action={saveAction}
-          className="space-y-6 rounded-[1.9rem] border border-[#d7b95f]/18 bg-[#061c15]/86 p-5 sm:p-7"
+          className="space-y-6 rounded-[1.9rem] border border-[#d7b95f]/18 bg-[#0f1431]/86 p-5 sm:p-7"
         >
           <section>
             <div className="flex items-center gap-3">
@@ -352,7 +352,7 @@ export default async function AdminContentEditorPage({
         </form>
 
         <aside className="space-y-5">
-          <section className="rounded-[1.8rem] border border-[#d7b95f]/18 bg-[#061c15]/86 p-5">
+          <section className="rounded-[1.8rem] border border-[#d7b95f]/18 bg-[#0f1431]/86 p-5">
             <div className="flex items-center gap-3">
               <ShieldCheck className="size-5 text-[#e4c673]" />
               <h2 className="text-base text-[#f2e2bd]">منبع و کنترل انتشار</h2>
@@ -397,7 +397,7 @@ export default async function AdminContentEditorPage({
             </dl>
           </section>
 
-          <section className="rounded-[1.8rem] border border-[#d7b95f]/18 bg-[#061c15]/86 p-5">
+          <section className="rounded-[1.8rem] border border-[#d7b95f]/18 bg-[#0f1431]/86 p-5">
             <div className="flex items-center gap-3">
               <FileClock className="size-5 text-[#e4c673]" />
               <h2 className="text-base text-[#f2e2bd]">رویدادهای حسابرسی</h2>

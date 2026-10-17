@@ -53,7 +53,7 @@ export default async function JournalIndexPage({
     <InternalPageShell locale={locale}>
       <section className="relative z-10 mx-auto w-full max-w-[1450px] px-4 pb-28 pt-[138px] sm:px-6 sm:pt-[154px] lg:px-10">
         <header className="mx-auto max-w-4xl text-center">
-          <div className="mx-auto flex size-16 items-center justify-center rounded-full border border-[#d9ba63]/38 bg-[radial-gradient(circle,rgba(211,176,85,0.15),rgba(4,29,21,0.9)_70%)] text-[#e7ca77]">
+          <div className="mx-auto flex size-16 items-center justify-center rounded-full border border-[#d9ba63]/38 bg-[radial-gradient(circle,rgba(211,176,85,0.15),rgba(12,17,51,0.9)_70%)] text-[#e7ca77]">
             <span className="absolute size-12 rounded-full border border-dashed border-[#e0c26d]/22" />
             <BookOpen className="relative size-7" />
           </div>
@@ -101,7 +101,7 @@ export default async function JournalIndexPage({
             </Link>
           </div>
         ) : articles.length === 0 ? (
-          <div className="mx-auto mt-14 max-w-3xl rounded-[2.2rem] border border-[#d9b85f]/22 bg-[#061c15]/80 px-7 py-12 text-center shadow-[0_24px_65px_rgba(0,0,0,0.28)] backdrop-blur-xl">
+          <div className="mx-auto mt-14 max-w-3xl rounded-[2.2rem] border border-[#d9b85f]/22 bg-[#0f1431]/80 px-7 py-12 text-center shadow-[0_24px_65px_rgba(0,0,0,0.28)] backdrop-blur-xl">
             <Sparkles className="mx-auto size-7 text-[#e2c777]" />
             <h2 className="mt-4 text-xl text-[#f1dfb7]">
               {isPersian
@@ -132,9 +132,9 @@ export default async function JournalIndexPage({
               return (
                 <article
                   key={article.slug}
-                  className="group flex min-h-full flex-col overflow-hidden rounded-[2rem] border border-white/[0.075] bg-[linear-gradient(145deg,rgba(7,43,31,0.92),rgba(2,20,14,0.98))] shadow-[0_24px_65px_rgba(0,0,0,0.28)] transition duration-500 hover:-translate-y-1 hover:border-[#d9b85f]/34"
+                  className="group flex min-h-full flex-col overflow-hidden rounded-[2rem] border border-white/[0.075] bg-[linear-gradient(145deg,rgba(17,24,66,0.92),rgba(8,13,40,0.98))] shadow-[0_24px_65px_rgba(0,0,0,0.28)] transition duration-500 hover:-translate-y-1 hover:border-[#d9b85f]/34"
                 >
-                  <div className="relative aspect-[16/9] overflow-hidden border-b border-[#d9b85f]/12 bg-[#09291d]">
+                  <div className="relative aspect-[16/9] overflow-hidden border-b border-[#d9b85f]/12 bg-[#141a40]">
                     {article.coverImageUrl ? (
                       <Image
                         src={article.coverImageUrl}
@@ -145,10 +145,10 @@ export default async function JournalIndexPage({
                         className="object-cover transition duration-700 group-hover:scale-[1.045]"
                       />
                     ) : (
-                      <div className="absolute inset-0 bg-[radial-gradient(circle_at_76%_22%,rgba(211,177,86,0.26),transparent_27%),linear-gradient(145deg,#0b5b42,#031b13)]" />
+                      <div className="absolute inset-0 bg-[radial-gradient(circle_at_76%_22%,rgba(211,177,86,0.26),transparent_27%),linear-gradient(145deg,#1b2879,#0b1030)]" />
                     )}
-                    <div className="absolute inset-0 bg-[linear-gradient(180deg,transparent,rgba(1,12,8,0.68))]" />
-                    <span className="absolute bottom-4 end-4 rounded-full border border-[#e7ca78]/28 bg-[#041b13]/75 px-3 py-1.5 text-[10px] text-[#eed590] backdrop-blur-md">
+                    <div className="absolute inset-0 bg-[linear-gradient(180deg,transparent,rgba(6,9,31,0.68))]" />
+                    <span className="absolute bottom-4 end-4 rounded-full border border-[#e7ca78]/28 bg-[#0c1130]/75 px-3 py-1.5 text-[10px] text-[#eed590] backdrop-blur-md">
                       {keyword ||
                         (isPersian ? "مجلهٔ الوریا" : "Eloria Journal")}
                     </span>

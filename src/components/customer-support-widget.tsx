@@ -229,7 +229,7 @@ export function CustomerSupportWidget({ locale }: { locale: "fa" | "en" }) {
       aria-label={copy.widget}
     >
       {open ? (
-        <section className="w-[min(25rem,calc(100vw-2rem))] overflow-hidden rounded-[1.65rem] border border-[#e3c979]/35 bg-[linear-gradient(160deg,rgba(5,48,34,.98),rgba(1,20,14,.99))] shadow-[0_28px_95px_rgba(0,0,0,.62),0_0_38px_rgba(211,176,83,.12)] backdrop-blur-2xl">
+        <section className="w-[min(25rem,calc(100vw-2rem))] overflow-hidden rounded-[1.65rem] border border-[#e3c979]/35 bg-[linear-gradient(160deg,rgba(15,23,72,.98),rgba(7,11,40,.99))] shadow-[0_28px_95px_rgba(0,0,0,.62),0_0_38px_rgba(211,176,83,.12)] backdrop-blur-2xl">
           <header className="relative border-b border-[#e2c879]/16 px-4 py-4 sm:px-5">
             <div aria-hidden="true" className="absolute inset-x-10 top-0 h-px bg-gradient-to-r from-transparent via-[#f8df91]/80 to-transparent" />
             <div className="flex items-start justify-between gap-3">
@@ -352,7 +352,7 @@ export function CustomerSupportWidget({ locale }: { locale: "fa" | "en" }) {
         onClick={() => setOpen((value) => !value)}
         aria-expanded={open}
         aria-label={open ? copy.close : copy.widget}
-        className="group relative flex min-h-12 items-center gap-2.5 overflow-hidden rounded-full border border-[#e6ca76]/44 bg-[linear-gradient(135deg,rgba(8,74,52,.96),rgba(183,142,54,.31))] px-4 text-xs text-[#f6e2a2] shadow-[0_16px_45px_rgba(0,0,0,.38),0_0_24px_rgba(216,184,95,.11)] transition duration-300 hover:-translate-y-0.5 hover:border-[#f0d681]/72"
+        className="group relative flex min-h-12 items-center gap-2.5 overflow-hidden rounded-full border border-[#e6ca76]/44 bg-[linear-gradient(135deg,rgba(22,32,101,.96),rgba(183,142,54,.31))] px-4 text-xs text-[#f6e2a2] shadow-[0_16px_45px_rgba(0,0,0,.38),0_0_24px_rgba(216,184,95,.11)] transition duration-300 hover:-translate-y-0.5 hover:border-[#f0d681]/72"
       >
         <span aria-hidden="true" className="absolute inset-0 translate-x-full bg-[linear-gradient(105deg,transparent,rgba(255,239,177,.16),transparent)] transition-transform duration-1000 group-hover:-translate-x-full" />
         <span className="relative grid size-7 place-items-center rounded-full border border-[#f1d987]/24 bg-black/12">

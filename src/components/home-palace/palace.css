@@ -1,13 +1,13 @@
 /* The reference photographs supply the physical scene. Controls are real
    links with geometry tied to each image's intrinsic aspect ratio. */
 #treasury-gold{scroll-margin-top:100px}
-#eloria-home-palace{width:min(100% - 32px,1360px);margin:24px auto 48px;overflow:clip;isolation:isolate;background:#00271b;color:#edcf8c}
+#eloria-home-palace{width:min(100% - 32px,1360px);margin:24px auto 48px;overflow:clip;isolation:isolate;background:#09103e;color:#edcf8c}
 .ep-surface{font-family:"Vazirmatn Variable",Vazirmatn,Tahoma,sans-serif}
 .ep-surface *{box-sizing:border-box}
 .ep-surface picture,.ep-surface picture img{display:block;width:100%;height:100%}
 .ep-surface picture img{object-fit:fill}
 .ep-surface .ep-sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap;border:0}
-.ep-surface .ep-stage{position:relative;width:100%;aspect-ratio:1126/813;isolation:isolate;overflow:hidden;background:#062c20}
+.ep-surface .ep-stage{position:relative;width:100%;aspect-ratio:1126/813;isolation:isolate;overflow:hidden;background:#101744}
 .ep-surface .ep-desktop-art{position:absolute;inset:0;pointer-events:none}
 .ep-surface .ep-treasuries{display:contents}
 .ep-surface .ep-bay{position:absolute;inset:0;pointer-events:none}
@@ -19,12 +19,12 @@
 .ep-surface .ep-enter{left:var(--ep-center);top:30%;width:13.2%;height:5.8%;min-height:44px;transform:translate(-50%,-50%);z-index:5}
 .ep-surface .ep-chest-target{left:var(--ep-chest-center);top:44%;width:23%;height:17%;min-height:44px;transform:translateX(-50%);z-index:3}
 .ep-surface .ep-photos{position:absolute;left:var(--ep-center);top:20.6%;width:13.5%;height:6.2%;transform:translateX(-50%);display:flex;gap:3%;direction:ltr;pointer-events:none;z-index:4}
-.ep-surface .ep-photo{position:relative;flex:1;min-width:0;aspect-ratio:1;border-radius:50%;overflow:hidden;background:#12382a;border:1px solid #c6a56b}
-.ep-surface .ep-photo img{object-fit:cover}
+.ep-surface .ep-photo{position:relative;flex:1;min-width:0;aspect-ratio:1;border-radius:50%;overflow:hidden;background:#212751;border:1px solid #c6a56b}
+.ep-surface .ep-photo img{object-fit:contain;padding:4%;background:#e9dfcf}
 .ep-surface .ep-product-placeholder{pointer-events:none}
 .ep-surface .ep-bay-silver .ep-photos{width:10.4%}
 .ep-surface .ep-bay-silver .ep-photo-3{display:none}
-.ep-surface a:focus-visible{outline:3px solid #fff1b2;outline-offset:4px;box-shadow:0 0 0 7px #063a2acc}
+.ep-surface a:focus-visible{outline:3px solid #fff1b2;outline-offset:4px;box-shadow:0 0 0 7px #121a53cc}
 @media(hover:hover){.ep-surface .ep-enter:hover{box-shadow:inset 0 0 0 1px #ffe2a2,0 0 20px #f0d49744;background:#fff0b20b}.ep-surface .ep-chest-target:hover{background:#ffe7ad08}}
 .ep-surface .ep-open-patch{position:absolute;left:var(--ep-patch-left);top:var(--ep-patch-top);width:var(--ep-patch-width);height:var(--ep-patch-height);pointer-events:none;opacity:0;z-index:2;clip-path:polygon(9% 4%,94% 4%,94% 54%,100% 63%,99% 99%,5% 99%,4% 62%,7% 53%)}
 .ep-surface .ep-bay[data-open=true] .ep-open-patch{animation:ep-open-chest 210ms cubic-bezier(.2,.7,.2,1) both}
@@ -34,9 +34,9 @@
 .ep-surface .ep-brazier{position:absolute;top:47.7%;width:8.2%;height:28%;filter:drop-shadow(4px 8px 4px #24150844)}
 .ep-surface .ep-brazier-left{left:.8%}
 .ep-surface .ep-brazier-right{right:.8%;transform:scaleX(-1)}
-.ep-surface .ep-featured{position:relative;height:auto;aspect-ratio:1126/584;background:#00271b}
+.ep-surface .ep-featured{position:relative;height:auto;aspect-ratio:1126/584;background:#09103e}
 .ep-surface .ep-featured-art{position:absolute;inset:0;pointer-events:none}
-.ep-surface .ep-section-title{position:absolute;left:36%;top:0;width:28%;height:17%;display:flex;align-items:center;justify-content:center;margin:0;background:#00271b;border-radius:38%;font-size:clamp(28px,3.1vw,44px);font-weight:400;white-space:nowrap;z-index:1}
+.ep-surface .ep-section-title{position:absolute;left:36%;top:0;width:28%;height:17%;display:flex;align-items:center;justify-content:center;margin:0;background:#09103e;border-radius:38%;font-size:clamp(28px,3.1vw,44px);font-weight:400;white-space:nowrap;z-index:1}
 /* The original ornamental panel, gold rims and eight oval positions remain.
    Cover only the baked-in sample photos/labels with live product content. */
 .ep-surface .ep-featured-grid{position:absolute;inset:0;direction:ltr}
@@ -50,9 +50,15 @@
 .ep-surface .ep-featured-product:nth-child(6){left:29.75%}
 .ep-surface .ep-featured-product:nth-child(7){left:50.44%}
 .ep-surface .ep-featured-product:nth-child(8){left:71.4%}
-.ep-surface .ep-featured-image{display:block;position:absolute;inset:4% 4% 5%;overflow:hidden;border-radius:50%;background:#12382a}
-.ep-surface .ep-featured-image img{object-fit:cover}
-.ep-surface .ep-featured-name{position:absolute;left:18%;right:18%;bottom:4%;height:22%;display:flex;align-items:center;justify-content:center;overflow:hidden;background:#00291e;border:1px solid #aa8d52;border-radius:50%;text-align:center;font-size:clamp(13px,1.45vw,20px);white-space:nowrap;padding:0 3px}
+.ep-surface .ep-featured-backing{position:absolute;inset:3% 3% 4%;border-radius:50%;background:#e9dfcf;pointer-events:none}
+/* Reserve separate bands for number (6–24.5%), photograph (26.5–73%)
+   and name (74–96%). Every photo fits inside the unchanged oval rim. */
+.ep-surface .ep-featured-image{display:block;position:absolute;inset:26.5% 10% 27%;overflow:hidden;border-radius:8px;background:#e9dfcf}
+.ep-surface .ep-featured-image img{object-fit:contain;object-position:center}
+/* Foreground numbers cover the baked-in numbers at the same coordinates. */
+.ep-surface .ep-featured-number{position:absolute;left:8.2%;top:6%;width:15.5%;height:18.5%;z-index:2;display:grid;place-items:center;border:1px solid #c6a56b;border-radius:50%;background:var(--eloria-royal-surface);color:#f3dca6;font-family:"Vazirmatn Variable",Vazirmatn,Tahoma,sans-serif;font-size:clamp(10px,1.06vw,15px);font-variant-numeric:tabular-nums;line-height:1;pointer-events:none}
+.ep-surface .ep-featured-product:nth-child(n+5) .ep-featured-number{left:10%}
+.ep-surface .ep-featured-name{position:absolute;left:18%;right:18%;bottom:4%;height:22%;display:flex;align-items:center;justify-content:center;overflow:hidden;border:1px solid #aa8d52;border-radius:50%;text-align:center;font-size:clamp(13px,1.45vw,20px);white-space:nowrap;padding:0 8px;z-index:1;background:var(--eloria-royal-surface)}
 .ep-surface .ep-view-all{display:none}
 
 @keyframes ep-open-chest{from{opacity:0}to{opacity:1}}
@@ -76,12 +82,13 @@
  .ep-surface .ep-photos,.ep-surface .ep-bay-silver .ep-photos{left:2%;top:33%;width:51%;height:33%;transform:none;gap:2%}
  .ep-surface .ep-bay-silver .ep-photo-3{display:block}
  .ep-surface .ep-featured{aspect-ratio:auto;padding:22px 0 4px;margin-top:3px}
- .ep-surface .ep-featured-art{display:none}
+ .ep-surface .ep-featured-art,.ep-surface .ep-featured-backing,.ep-surface .ep-featured-number{display:none}
  .ep-surface .ep-section-title{position:relative;left:auto;top:auto;width:auto;height:auto;display:block;border-radius:0;overflow:visible;text-align:center;padding:0 0 21px;margin:0 0 16px;font-size:clamp(26px,6vw,42px);line-height:1.9;font-weight:400;color:#e5c486}
- .ep-surface .ep-section-title::after{content:"✻";position:absolute;left:5%;right:5%;bottom:0;height:16px;border-bottom:1px solid #bda166;color:#d5b46f;font-family:serif;font-size:25px;line-height:31px;background:linear-gradient(90deg,transparent 44%,#00271b 44%,#00271b 56%,transparent 56%)}
+ .ep-surface .ep-section-title::after{content:"✻";position:absolute;left:5%;right:5%;bottom:0;height:16px;border-bottom:1px solid #bda166;color:#d5b46f;font-family:serif;font-size:25px;line-height:31px;background:linear-gradient(90deg,transparent 44%,#09103e 44%,#09103e 56%,transparent 56%)}
  .ep-surface .ep-featured-grid{position:relative;inset:auto;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:auto;gap:18px 20px;padding:0 8px}
- .ep-surface .ep-featured-product:nth-child(n){position:relative;left:auto;top:auto;width:auto;height:auto;overflow:hidden;border:1px solid #c6a56b;border-radius:16px;background:#00291e;box-shadow:inset 0 0 0 1px #edcf8c22}
- .ep-surface .ep-featured-image{position:relative;inset:auto;display:block;aspect-ratio:337/184;height:auto;overflow:hidden;border-radius:0;background:#12382a}
+ .ep-surface .ep-featured-product:nth-child(n){position:relative;left:auto;top:auto;width:auto;height:auto;overflow:hidden;border:1px solid #c6a56b;border-radius:16px;background:#0a1140;box-shadow:inset 0 0 0 1px #edcf8c22}
+ .ep-surface .ep-featured-image{position:relative;inset:auto;display:block;aspect-ratio:337/184;height:auto;overflow:hidden;border-radius:0;background:#e9dfcf}
+ .ep-surface .ep-featured-image img{padding:6px;object-fit:contain}
  .ep-surface .ep-featured-name{position:relative;inset:auto;display:block;width:auto;height:calc(clamp(14px,3.7vw,24px) * 1.7 + 22px);overflow:hidden;border:0;border-radius:0;clip-path:none;text-align:center;padding:10px 6px 12px;font-size:clamp(14px,3.7vw,24px);line-height:1.6;text-overflow:ellipsis}
  .ep-surface .ep-desktop-only{display:none}
  .ep-surface .ep-view-all{display:flex;align-items:center;justify-content:center;gap:10px;width:fit-content;margin:22px auto 8px;padding:4px 0;color:#e3c27e;text-decoration:none;border-bottom:1px solid #aa8d52;font-size:14px;min-height:44px}

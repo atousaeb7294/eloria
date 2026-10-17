@@ -55,8 +55,8 @@ function MagicIconFrame({
       className={[
         "relative grid size-8 shrink-0 place-items-center rounded-[10px] border transition duration-500 sm:size-9 sm:rounded-xl",
         active
-          ? "border-[#f1d487]/55 bg-[radial-gradient(circle,rgba(255,234,171,0.25),rgba(17,108,78,0.34)_58%,rgba(2,38,27,0.86))] text-[#f4da8d] shadow-[0_0_18px_rgba(229,195,110,0.18)]"
-          : "border-[#e1c16f]/20 bg-[radial-gradient(circle,rgba(224,193,111,0.1),rgba(9,70,50,0.34)_60%,rgba(2,33,23,0.84))] text-white/65 group-hover:border-[#e7ca78]/45 group-hover:text-[#f1d486] group-hover:shadow-[0_0_20px_rgba(230,195,109,0.16)]",
+          ? "border-[#f1d487]/55 bg-[radial-gradient(circle,rgba(255,234,171,0.25),rgba(36,50,140,0.34)_58%,rgba(10,17,61,0.86))] text-[#f4da8d] shadow-[0_0_18px_rgba(229,195,110,0.18)]"
+          : "border-[#e1c16f]/20 bg-[radial-gradient(circle,rgba(224,193,111,0.1),rgba(23,33,97,0.34)_60%,rgba(10,16,55,0.84))] text-white/65 group-hover:border-[#e7ca78]/45 group-hover:text-[#f1d486] group-hover:shadow-[0_0_20px_rgba(230,195,109,0.16)]",
       ].join(" ")}
     >
       <motion.span
@@ -215,24 +215,24 @@ export function SiteHeader({ locale }: SiteHeaderProps) {
   }, [worldOpen]);
 
   const normalButtonClass =
-    "group relative inline-flex size-10 items-center justify-center gap-2 overflow-hidden rounded-xl sm:size-11 sm:rounded-2xl border border-white/10 bg-white/[0.045] text-white/70 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] transition duration-500 hover:-translate-y-0.5 hover:border-[#dfbd68]/55 hover:bg-[#168461]/15 hover:text-[#f7dda0] lg:h-11 lg:w-auto lg:min-w-28 lg:px-3";
+    "group relative inline-flex size-10 items-center justify-center gap-2 overflow-hidden rounded-xl sm:size-11 sm:rounded-2xl border border-white/10 bg-white/[0.045] text-white/70 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] transition duration-500 hover:-translate-y-0.5 hover:border-[#dfbd68]/55 hover:bg-[#2d3da7]/15 hover:text-[#f7dda0] lg:h-11 lg:w-auto lg:min-w-28 lg:px-3";
 
   return (
     <header style={{ viewTransitionName: "eloria-site-header" }} className="fixed inset-x-0 top-3 z-50 px-3 sm:top-6 sm:px-6">
       <a
         href="#main-content"
-        className="fixed start-4 top-2 z-[120] -translate-y-20 rounded-full border border-[#efd27c]/50 bg-[#062c20] px-4 py-2 text-xs text-[#f3d990] shadow-xl transition focus:translate-y-0"
+        className="fixed start-4 top-2 z-[120] -translate-y-20 rounded-full border border-[#efd27c]/50 bg-[#101744] px-4 py-2 text-xs text-[#f3d990] shadow-xl transition focus:translate-y-0"
       >
         {isPersian ? "رفتن به محتوای اصلی" : "Skip to main content"}
       </a>
       <div className="relative mx-auto max-w-7xl">
         <div
           aria-hidden="true"
-          className="absolute -inset-4 -z-10 rounded-[2.8rem] bg-[radial-gradient(circle_at_center,rgba(216,182,106,0.14),rgba(17,110,79,0.1),transparent_72%)] blur-2xl"
+          className="absolute -inset-4 -z-10 rounded-[2.8rem] bg-[radial-gradient(circle_at_center,rgba(216,182,106,0.14),rgba(36,50,142,0.1),transparent_72%)] blur-2xl"
         />
 
-        <div className="rounded-[2rem] border border-[#e7ca7b]/45 bg-[linear-gradient(135deg,rgba(255,255,255,0.24),rgba(211,174,83,0.13),rgba(13,92,65,0.16),rgba(255,255,255,0.05))] p-px shadow-[0_28px_80px_rgba(0,0,0,0.52),0_0_38px_rgba(214,182,106,0.12)]">
-          <div className="relative flex min-h-16 items-center justify-between overflow-visible rounded-[25px] border border-white/10 bg-[linear-gradient(145deg,rgba(3,48,34,0.92),rgba(1,25,18,0.88))] px-2 py-1.5 backdrop-blur-2xl sm:min-h-20 sm:rounded-[31px] sm:px-5 sm:py-2">
+        <div className="rounded-[2rem] border border-[#e7ca7b]/45 bg-[linear-gradient(135deg,rgba(255,255,255,0.24),rgba(211,174,83,0.13),rgba(30,42,122,0.16),rgba(255,255,255,0.05))] p-px shadow-[0_28px_80px_rgba(0,0,0,0.52),0_0_38px_rgba(214,182,106,0.12)]">
+          <div className="relative flex min-h-16 items-center justify-between overflow-visible rounded-[25px] border border-white/10 bg-[linear-gradient(145deg,rgba(13,21,72,0.92),rgba(7,12,46,0.88))] px-2 py-1.5 backdrop-blur-2xl sm:min-h-20 sm:rounded-[31px] sm:px-5 sm:py-2">
             <div
               aria-hidden="true"
               className="absolute inset-x-10 top-0 h-px bg-gradient-to-r from-transparent via-white/70 to-transparent"
@@ -268,11 +268,11 @@ export function SiteHeader({ locale }: SiteHeaderProps) {
                 className={[
                   "group relative inline-flex size-10 items-center justify-center gap-2 overflow-hidden rounded-xl border transition duration-500 hover:-translate-y-0.5 sm:size-11 sm:rounded-2xl lg:h-11 lg:w-auto lg:min-w-28 lg:px-3",
                   isHomeActive
-                    ? "border-[#f0d080]/60 bg-[linear-gradient(135deg,rgba(219,181,88,0.23),rgba(21,111,80,0.25))] text-[#ffe9af] shadow-[inset_0_1px_0_rgba(255,255,255,0.3),0_8px_24px_rgba(0,0,0,0.32),0_0_18px_rgba(218,179,86,0.12)] hover:border-[#f4d787]/80"
-                    : "border-white/10 bg-white/[0.045] text-white/70 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] hover:border-[#dfbd68]/55 hover:bg-[#168461]/15 hover:text-[#f7dda0]",
+                    ? "border-[#f0d080]/60 bg-[linear-gradient(135deg,rgba(219,181,88,0.23),rgba(41,55,143,0.25))] text-[#ffe9af] shadow-[inset_0_1px_0_rgba(255,255,255,0.3),0_8px_24px_rgba(0,0,0,0.32),0_0_18px_rgba(218,179,86,0.12)] hover:border-[#f4d787]/80"
+                    : "border-white/10 bg-white/[0.045] text-white/70 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] hover:border-[#dfbd68]/55 hover:bg-[#2d3da7]/15 hover:text-[#f7dda0]",
                 ].join(" ")}
               >
-                <span className="absolute inset-0 translate-y-full bg-gradient-to-t from-[#d5ad4d]/16 via-[#168461]/10 to-transparent transition-transform duration-500 group-hover:translate-y-0" />
+                <span className="absolute inset-0 translate-y-full bg-gradient-to-t from-[#d5ad4d]/16 via-[#2d3da7]/10 to-transparent transition-transform duration-500 group-hover:translate-y-0" />
 
                 <MagicIconFrame active={isHomeActive}>
                   <HomeRuneIcon className="size-[21px]" />
@@ -294,8 +294,8 @@ export function SiteHeader({ locale }: SiteHeaderProps) {
                   className={[
                     "group relative flex h-10 items-center overflow-hidden rounded-xl border transition duration-500 hover:-translate-y-0.5 sm:h-11 sm:rounded-2xl",
                     isWorldActive
-                      ? "border-[#f0d080]/48 bg-[linear-gradient(135deg,rgba(219,181,88,0.15),rgba(21,111,80,0.2))] text-[#f8dfa0]"
-                      : "border-white/10 bg-white/[0.045] text-white/70 hover:border-[#dfbd68]/55 hover:bg-[#168461]/15 hover:text-[#f7dda0]",
+                      ? "border-[#f0d080]/48 bg-[linear-gradient(135deg,rgba(219,181,88,0.15),rgba(41,55,143,0.2))] text-[#f8dfa0]"
+                      : "border-white/10 bg-white/[0.045] text-white/70 hover:border-[#dfbd68]/55 hover:bg-[#2d3da7]/15 hover:text-[#f7dda0]",
                   ].join(" ")}
                 >
                   <Link
@@ -382,7 +382,7 @@ export function SiteHeader({ locale }: SiteHeaderProps) {
                       }}
                       className="absolute left-1/2 top-full w-[min(94vw,430px)] -translate-x-1/2 pt-3 max-sm:fixed max-sm:left-1/2 max-sm:top-24"
                     >
-                      <div className="relative overflow-hidden rounded-[1.8rem] border border-[#e7ca78]/42 bg-[linear-gradient(145deg,rgba(4,61,43,0.99),rgba(1,24,17,0.99))] p-3 shadow-[0_30px_80px_rgba(0,0,0,0.65),0_0_36px_rgba(214,182,106,0.15)] backdrop-blur-2xl">
+                      <div className="relative overflow-hidden rounded-[1.8rem] border border-[#e7ca78]/42 bg-[linear-gradient(145deg,rgba(15,25,87,0.99),rgba(7,12,45,0.99))] p-3 shadow-[0_30px_80px_rgba(0,0,0,0.65),0_0_36px_rgba(214,182,106,0.15)] backdrop-blur-2xl">
                         <div className="absolute inset-x-8 top-0 h-px bg-gradient-to-r from-transparent via-[#f8e2a1]/85 to-transparent" />
 
                         <Link

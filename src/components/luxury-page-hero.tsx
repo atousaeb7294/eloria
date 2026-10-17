@@ -22,7 +22,7 @@ export function LuxuryPageHero({
     <header data-reveal className="mx-auto max-w-4xl text-center">
       <div className="mb-5 flex items-center justify-center gap-4">
         <span className="h-px w-14 bg-gradient-to-r from-transparent to-[#d3b35b]/68 sm:w-24" />
-        <div className="relative grid size-14 place-items-center rounded-full border border-[#d9ba63]/36 bg-[radial-gradient(circle,rgba(211,176,85,0.15),rgba(4,29,21,0.9)_70%)] text-[#e7ca77]">
+        <div className="relative grid size-14 place-items-center rounded-full border border-[#d9ba63]/36 bg-[radial-gradient(circle,rgba(211,176,85,0.15),rgba(12,17,51,0.9)_70%)] text-[#e7ca77]">
           <span className="absolute inset-[5px] rounded-full border border-dashed border-[#e0c26d]/22" />
           <span className="relative">{icon ?? <Sparkles className="size-6" />}</span>
         </div>

@@ -111,7 +111,7 @@ export function CartHeaderButton({
         className={[
           "group relative inline-flex h-11 shrink-0 items-center justify-center gap-2 rounded-xl px-3",
           "border border-[#dabe6e]/28",
-          "bg-[linear-gradient(145deg,rgba(8,65,46,0.5),rgba(2,29,20,0.72))]",
+          "bg-[linear-gradient(145deg,rgba(21,30,91,0.5),rgba(9,15,51,0.72))]",
           "text-[#e9d493]",
           "shadow-[inset_0_1px_0_rgba(255,255,255,0.055),0_8px_24px_rgba(0,0,0,0.2)]",
           "transition duration-300 hover:-translate-y-0.5",
@@ -126,7 +126,7 @@ export function CartHeaderButton({
         </span>
 
         {quantity > 0 && (
-          <span className="absolute -end-1 -top-1 z-20 flex min-h-[18px] min-w-[18px] items-center justify-center rounded-full border border-[#f1d483]/75 bg-[#0b4934] px-1 text-[8px] font-semibold leading-none text-[#ffe6a2]">
+          <span className="absolute -end-1 -top-1 z-20 flex min-h-[18px] min-w-[18px] items-center justify-center rounded-full border border-[#f1d483]/75 bg-[#192364] px-1 text-[8px] font-semibold leading-none text-[#ffe6a2]">
             {displayedQuantity}
           </span>
         )}
@@ -142,7 +142,7 @@ export function CartHeaderButton({
       className={[
         "group relative inline-flex h-11 shrink-0 items-center justify-center gap-2",
         "rounded-2xl border border-[#e4c66f]/35",
-        "bg-[linear-gradient(145deg,rgba(217,184,95,0.1),rgba(7,70,50,0.4),rgba(2,35,25,0.9))]",
+        "bg-[linear-gradient(145deg,rgba(217,184,95,0.1),rgba(20,30,97,0.4),rgba(10,16,57,0.9))]",
         "px-2.5 text-[#e9d493]",
         "shadow-[inset_0_1px_0_rgba(255,255,255,0.1),0_10px_25px_rgba(0,0,0,0.22)]",
         "transition duration-500",
@@ -168,7 +168,7 @@ export function CartHeaderButton({
         <EloriaBagIcon className="relative size-7 transition duration-500 group-hover:scale-110" />
 
         {quantity > 0 && (
-          <span className="absolute -end-1.5 -top-1.5 z-20 flex min-h-[18px] min-w-[18px] items-center justify-center rounded-full border border-[#f1d483]/75 bg-[#0d4a36] px-1 text-[8px] font-semibold leading-none text-[#ffe6a2] shadow-[0_0_10px_rgba(239,207,121,0.34)]">
+          <span className="absolute -end-1.5 -top-1.5 z-20 flex min-h-[18px] min-w-[18px] items-center justify-center rounded-full border border-[#f1d483]/75 bg-[#1c2665] px-1 text-[8px] font-semibold leading-none text-[#ffe6a2] shadow-[0_0_10px_rgba(239,207,121,0.34)]">
             {displayedQuantity}
           </span>
         )}

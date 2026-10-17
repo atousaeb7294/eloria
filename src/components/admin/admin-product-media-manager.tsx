@@ -16,7 +16,7 @@ type ImageValue = {
   displayOrder: number;
 };
 const input =
-  "h-11 w-full rounded-xl border border-[#cfb45f]/20 bg-[#031a13] px-3 text-sm text-[#f7e7c2] outline-none placeholder:text-[#887c65] focus:border-[#dfc36d]/60";
+  "h-11 w-full rounded-xl border border-[#cfb45f]/20 bg-[#0a0f2f] px-3 text-sm text-[#f7e7c2] outline-none placeholder:text-[#887c65] focus:border-[#dfc36d]/60";
 
 export function AdminProductMediaManager({
   productId,
@@ -38,7 +38,7 @@ export function AdminProductMediaManager({
   error?: string;
 }) {
   return (
-    <section className="overflow-hidden rounded-[26px] border border-[#d0b359]/16 bg-[#041d15]/82">
+    <section className="overflow-hidden rounded-[26px] border border-[#d0b359]/16 bg-[#0c1133]/82">
       <header className="border-b border-[#d0b359]/12 px-5 py-5">
         <h2 className="flex items-center gap-2 font-semibold text-[#efd782]">
           <ImagePlus className="size-5" />
@@ -104,7 +104,7 @@ export function AdminProductMediaManager({
             {images.map((image) => (
               <article
                 key={image.id}
-                className="overflow-hidden rounded-2xl border border-[#d0b359]/14 bg-[#02150f]/80"
+                className="overflow-hidden rounded-2xl border border-[#d0b359]/14 bg-[#080d2a]/80"
               >
                 <div className="relative aspect-[4/3] bg-black/20">
                   {/* eslint-disable-next-line @next/next/no-img-element -- Admin-entered URLs can be local or remote and must render without a fixed image host allowlist. */}
@@ -114,7 +114,7 @@ export function AdminProductMediaManager({
                     src={image.imageUrl}
                   />
                   {image.isPrimary ? (
-                    <span className="absolute start-3 top-3 inline-flex items-center gap-1 rounded-full bg-[#061a12]/90 px-2.5 py-1 text-[11px] text-[#f0d478]">
+                    <span className="absolute start-3 top-3 inline-flex items-center gap-1 rounded-full bg-[#0f142f]/90 px-2.5 py-1 text-[11px] text-[#f0d478]">
                       <Star className="size-3 fill-current" />
                       اصلی
                     </span>
@@ -149,7 +149,7 @@ export function AdminProductMediaManager({
                       name="displayOrder"
                       type="number"
                     />
-                    <label className="flex items-center gap-2 rounded-xl border border-[#cfb45f]/18 bg-[#031a13] px-3 text-xs text-[#cdbd9e]">
+                    <label className="flex items-center gap-2 rounded-xl border border-[#cfb45f]/18 bg-[#0a0f2f] px-3 text-xs text-[#cdbd9e]">
                       <input
                         defaultChecked={image.isPrimary}
                         name="isPrimary"

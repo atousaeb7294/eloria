@@ -51,7 +51,7 @@ export function CheckoutPageView({
   ) {
     return (
       <section className="relative z-10 mx-auto flex min-h-[75vh] w-full max-w-[1100px] items-center justify-center px-4 pb-24 pt-36 sm:px-6">
-        <div className="w-full max-w-2xl rounded-[2.5rem] border border-[#d9b85f]/20 bg-[linear-gradient(145deg,rgba(7,36,27,0.92),rgba(2,18,13,0.96))] px-6 py-16 text-center shadow-[0_35px_100px_rgba(0,0,0,0.3)] sm:px-12">
+        <div className="w-full max-w-2xl rounded-[2.5rem] border border-[#d9b85f]/20 bg-[linear-gradient(145deg,rgba(17,23,59,0.92),rgba(8,12,38,0.96))] px-6 py-16 text-center shadow-[0_35px_100px_rgba(0,0,0,0.3)] sm:px-12">
           <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full border border-[#d9b85f]/30 bg-[#d9b85f]/[0.07]">
             <ShoppingBag className="h-9 w-9 text-[#e3c46b]" />
           </div>
@@ -96,7 +96,7 @@ export function CheckoutPageView({
         <div
           role="status"
           aria-live="polite"
-          className="fixed right-4 top-24 z-[100] w-[calc(100%-2rem)] max-w-md rounded-2xl border border-[#d9b85f]/35 bg-[linear-gradient(145deg,rgba(8,42,31,0.98),rgba(2,23,16,0.99))] p-4 shadow-[0_25px_90px_rgba(0,0,0,0.52)] backdrop-blur-xl sm:right-6 sm:w-full"
+          className="fixed right-4 top-24 z-[100] w-[calc(100%-2rem)] max-w-md rounded-2xl border border-[#d9b85f]/35 bg-[linear-gradient(145deg,rgba(19,25,65,0.98),rgba(9,13,44,0.99))] p-4 shadow-[0_25px_90px_rgba(0,0,0,0.52)] backdrop-blur-xl sm:right-6 sm:w-full"
         >
           <div className="flex items-start gap-3">
             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-[#d9b85f]/30 bg-[#d9b85f]/[0.08] text-[#ead27e]">
@@ -248,7 +248,7 @@ export function CheckoutPageView({
             >
               <div className="space-y-6">
                 <div className="rounded-[2rem]">
-                  <section className="relative rounded-[2rem] border border-[#d9b85f]/20 bg-[linear-gradient(145deg,rgba(7,35,27,0.94),rgba(3,21,15,0.97))] p-5 shadow-[0_24px_80px_rgba(0,0,0,0.24)] sm:p-7">
+                  <section className="relative rounded-[2rem] border border-[#d9b85f]/20 bg-[linear-gradient(145deg,rgba(17,22,57,0.94),rgba(10,14,42,0.97))] p-5 shadow-[0_24px_80px_rgba(0,0,0,0.24)] sm:p-7">
                   <div className="flex items-start gap-4">
                     <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-[#d9b85f]/25 bg-[#d9b85f]/[0.06]">
                       <UserRound className="h-5 w-5 text-[#e2c872]" />
@@ -517,7 +517,7 @@ export function CheckoutPageView({
                 </div>
 
                 <div className="rounded-[2rem]">
-                  <section className="relative rounded-[2rem] border border-[#d9b85f]/20 bg-[linear-gradient(145deg,rgba(7,35,27,0.94),rgba(3,21,15,0.97))] p-5 shadow-[0_24px_80px_rgba(0,0,0,0.24)] sm:p-7">
+                  <section className="relative rounded-[2rem] border border-[#d9b85f]/20 bg-[linear-gradient(145deg,rgba(17,22,57,0.94),rgba(10,14,42,0.97))] p-5 shadow-[0_24px_80px_rgba(0,0,0,0.24)] sm:p-7">
                   <div className="flex items-center gap-3">
                     <ShoppingBag className="h-5 w-5 text-[#dfc46d]" />
 
@@ -610,7 +610,7 @@ export function CheckoutPageView({
 
               <aside className="lg:sticky lg:top-28">
                 <div className="rounded-[2rem]">
-                  <div className="relative rounded-[2rem] border border-[#d9b85f]/25 bg-[linear-gradient(150deg,rgba(9,39,29,0.98),rgba(3,21,15,0.995))] p-6 shadow-[0_30px_100px_rgba(0,0,0,0.34)]">
+                  <div className="relative rounded-[2rem] border border-[#d9b85f]/25 bg-[linear-gradient(150deg,rgba(20,26,62,0.98),rgba(10,14,42,0.995))] p-6 shadow-[0_30px_100px_rgba(0,0,0,0.34)]">
                   {createdOrder ? (
                     <>
                       <div className="flex h-12 w-12 items-center justify-center rounded-full border border-emerald-300/25 bg-emerald-200/[0.07] text-emerald-200">
@@ -911,7 +911,7 @@ export function CheckoutPageView({
               </aside>
 
               {!createdOrder && (
-                <div className="fixed inset-x-0 bottom-0 z-[80] border-t border-[#d9b85f]/22 bg-[linear-gradient(180deg,rgba(3,25,18,0.96),rgba(2,18,13,0.99))] px-4 pb-[calc(0.75rem+env(safe-area-inset-bottom))] pt-3 shadow-[0_-20px_60px_rgba(0,0,0,0.42)] backdrop-blur-2xl lg:hidden">
+                <div className="fixed inset-x-0 bottom-0 z-[80] border-t border-[#d9b85f]/22 bg-[linear-gradient(180deg,rgba(10,15,46,0.96),rgba(8,12,38,0.99))] px-4 pb-[calc(0.75rem+env(safe-area-inset-bottom))] pt-3 shadow-[0_-20px_60px_rgba(0,0,0,0.42)] backdrop-blur-2xl lg:hidden">
                   <div className="mx-auto flex max-w-xl items-center gap-3">
                     <Link
                       href={`/${locale}/cart`}

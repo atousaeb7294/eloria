@@ -24,7 +24,7 @@ export default function LocaleNotFound() {
   return (
     <InternalPageShell locale={locale}>
       <section className="relative z-10 mx-auto flex min-h-[78vh] w-full max-w-3xl items-center px-4 pb-24 pt-[130px] sm:px-6">
-        <div className="relative w-full overflow-hidden rounded-[2.4rem] border border-[#d9b85f]/20 bg-[linear-gradient(145deg,rgba(8,39,29,0.92),rgba(2,19,14,0.98))] p-7 text-center shadow-[0_35px_100px_rgba(0,0,0,0.42)] sm:p-11">
+        <div className="relative w-full overflow-hidden rounded-[2.4rem] border border-[#d9b85f]/20 bg-[linear-gradient(145deg,rgba(19,24,62,0.92),rgba(8,12,39,0.98))] p-7 text-center shadow-[0_35px_100px_rgba(0,0,0,0.42)] sm:p-11">
           <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full border border-[#dfc36f]/30 bg-[#d9b85f]/[0.06] text-[#ead07d]">
             <SearchX className="h-8 w-8" />
           </div>

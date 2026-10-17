@@ -267,7 +267,7 @@ export function ProductCatalogFilters({
   return (
     <form
       onSubmit={(event) => { event.preventDefault(); submitFilters(); }}
-      className="relative mx-auto max-w-6xl overflow-hidden rounded-[1.8rem] border border-[#d9b85f]/20 bg-[linear-gradient(145deg,rgba(7,38,28,0.92),rgba(2,21,15,0.96))] p-4 shadow-[0_20px_55px_rgba(0,0,0,0.3)] backdrop-blur-2xl sm:p-5"
+      className="relative mx-auto max-w-6xl overflow-hidden rounded-[1.8rem] border border-[#d9b85f]/20 bg-[linear-gradient(145deg,rgba(17,23,61,0.92),rgba(8,13,42,0.96))] p-4 shadow-[0_20px_55px_rgba(0,0,0,0.3)] backdrop-blur-2xl sm:p-5"
     >
       <div
         aria-hidden="true"
@@ -366,7 +366,7 @@ export function ProductCatalogFilters({
                     ? "نام اثر یا کد محصول..."
                     : "Creation name or SKU..."
                 }
-                className="h-12 w-full rounded-xl border border-[#d9b85f]/22 bg-[#031d15]/90 pe-12 ps-11 text-sm text-[#f2e8d5] outline-none placeholder:text-[#a99f89]/40 transition focus:border-[#e4c873]/55 focus:shadow-[0_0_18px_rgba(218,184,95,0.08)]"
+                className="h-12 w-full rounded-xl border border-[#d9b85f]/22 bg-[#0b1033]/90 pe-12 ps-11 text-sm text-[#f2e8d5] outline-none placeholder:text-[#a99f89]/40 transition focus:border-[#e4c873]/55 focus:shadow-[0_0_18px_rgba(218,184,95,0.08)]"
               />
 
               <button
@@ -483,7 +483,7 @@ export function ProductCatalogFilters({
                 setMinPrice(normalizeNumericInput(event.target.value))
               }
               placeholder={isPersian ? "مثلاً 10000000" : "e.g. 10000000"}
-              className="h-10 w-full rounded-xl border border-[#d9b85f]/20 bg-[#031d15]/90 pe-14 ps-3 text-xs text-[#e8ddc7] outline-none placeholder:text-white/25 transition focus:border-[#e4c873]/50"
+              className="h-10 w-full rounded-xl border border-[#d9b85f]/20 bg-[#0b1033]/90 pe-14 ps-3 text-xs text-[#e8ddc7] outline-none placeholder:text-white/25 transition focus:border-[#e4c873]/50"
             />
 
             <span className="pointer-events-none absolute bottom-[11px] end-3 text-[10px] text-[#d4bd7a]/58">
@@ -504,7 +504,7 @@ export function ProductCatalogFilters({
                 setMaxPrice(normalizeNumericInput(event.target.value))
               }
               placeholder={isPersian ? "مثلاً 100000000" : "e.g. 100000000"}
-              className="h-10 w-full rounded-xl border border-[#d9b85f]/20 bg-[#031d15]/90 pe-14 ps-3 text-xs text-[#e8ddc7] outline-none placeholder:text-white/25 transition focus:border-[#e4c873]/50"
+              className="h-10 w-full rounded-xl border border-[#d9b85f]/20 bg-[#0b1033]/90 pe-14 ps-3 text-xs text-[#e8ddc7] outline-none placeholder:text-white/25 transition focus:border-[#e4c873]/50"
             />
 
             <span className="pointer-events-none absolute bottom-[11px] end-3 text-[10px] text-[#d4bd7a]/58">

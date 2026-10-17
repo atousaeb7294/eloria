@@ -198,8 +198,8 @@ export function AdminSupportInboxClient() {
   const unreadCount = useMemo(() => items.reduce((total, item) => total + item.unreadCount, 0), [items]);
 
   return (
-    <div className="grid min-h-[680px] overflow-hidden rounded-[2rem] border border-[#d7b95f]/18 bg-[#041b14]/85 shadow-[0_24px_70px_rgba(0,0,0,.24)] xl:grid-cols-[22rem_minmax(0,1fr)]">
-      <aside className="border-l border-[#d7b95f]/14 bg-[#031811]/70">
+    <div className="grid min-h-[680px] overflow-hidden rounded-[2rem] border border-[#d7b95f]/18 bg-[#0c1130]/85 shadow-[0_24px_70px_rgba(0,0,0,.24)] xl:grid-cols-[22rem_minmax(0,1fr)]">
+      <aside className="border-l border-[#d7b95f]/14 bg-[#0a0f2d]/70">
         <header className="border-b border-[#d7b95f]/14 p-5">
           <div className="flex items-start justify-between gap-3">
             <div>
@@ -226,7 +226,7 @@ export function AdminSupportInboxClient() {
             >
               <div className="flex items-center justify-between gap-2">
                 <span className="min-w-0 truncate text-xs text-[#f1e3c3]">{item.visitor.name || item.visitor.email || item.visitor.phone || "مهمان الوریا"}</span>
-                {item.unreadCount > 0 ? <span className="grid min-w-5 place-items-center rounded-full bg-[#e0bd65] px-1.5 py-0.5 text-[10px] text-[#162218]">{item.unreadCount.toLocaleString("fa-IR")}</span> : null}
+                {item.unreadCount > 0 ? <span className="grid min-w-5 place-items-center rounded-full bg-[#e0bd65] px-1.5 py-0.5 text-[10px] text-[#252738]">{item.unreadCount.toLocaleString("fa-IR")}</span> : null}
               </div>
               <p className="mt-2 line-clamp-2 text-[11px] leading-5 text-[#c9b993]/58">{item.lastMessage?.body || "بدون پیام"}</p>
               <div className="mt-2 flex items-center justify-between gap-2 text-[9px] text-[#bba96e]/55">
@@ -279,7 +279,7 @@ export function AdminSupportInboxClient() {
               })}
             </div>
 
-            <form onSubmit={submitReply} className="border-t border-[#d7b95f]/14 bg-[#031711]/80 p-5 sm:p-6">
+            <form onSubmit={submitReply} className="border-t border-[#d7b95f]/14 bg-[#0a0f2c]/80 p-5 sm:p-6">
               <textarea value={reply} onChange={(event) => setReply(event.target.value)} placeholder="پاسخ پشتیبانی را بنویسید…" maxLength={1200} className="min-h-24 w-full resize-y rounded-2xl border border-white/[.09] bg-black/15 px-4 py-3 text-sm leading-7 text-[#f2e5c8] outline-none placeholder:text-white/30 focus:border-[#e5c970]/45" />
               <div className="mt-3 flex items-center justify-between gap-3">
                 <p className="text-[10px] leading-6 text-[#c5b693]/52">ارسال پاسخ، پیام‌های بازدیدکننده را خوانده‌شده علامت می‌زند و حضور شما را آنلاین نگه می‌دارد.</p>

@@ -62,7 +62,7 @@ export default async function AdminWorldPage({
 
   return (
     <div className="mx-auto max-w-[1540px] space-y-7">
-      <section className="relative overflow-hidden rounded-[2rem] border border-[#d7b95f]/20 bg-[linear-gradient(135deg,rgba(10,56,40,.95),rgba(3,24,17,.98))] px-6 py-7 sm:px-8">
+      <section className="relative overflow-hidden rounded-[2rem] border border-[#d7b95f]/20 bg-[linear-gradient(135deg,rgba(22,30,81,.95),rgba(10,15,45,.98))] px-6 py-7 sm:px-8">
         <div className="relative flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
           <div>
             <div className="flex items-center gap-3 text-[#e7c86f]">
@@ -96,7 +96,7 @@ export default async function AdminWorldPage({
         {ELORIA_GUARDIANS.map((guardian) => (
           <article
             key={guardian.id}
-            className="overflow-hidden rounded-2xl border border-[#d7b95f]/16 bg-[#061c15]/86"
+            className="overflow-hidden rounded-2xl border border-[#d7b95f]/16 bg-[#0f1431]/86"
           >
             <div className="relative aspect-[3/2]">
               <Image
@@ -123,7 +123,7 @@ export default async function AdminWorldPage({
       </section>
 
       <section className="grid gap-4 sm:grid-cols-3">
-        <div className="rounded-2xl border border-[#d7b95f]/16 bg-[#061c15]/86 p-5">
+        <div className="rounded-2xl border border-[#d7b95f]/16 bg-[#0f1431]/86 p-5">
           <Sparkles className="size-5 text-[#e4c673]" />
           <strong className="mt-4 block text-2xl text-[#f0db9b]">
             {new Intl.NumberFormat("fa-IR").format(profiles.length)}
@@ -132,7 +132,7 @@ export default async function AdminWorldPage({
             نشان ثبت‌شده در بایگانی
           </span>
         </div>
-        <div className="rounded-2xl border border-[#d7b95f]/16 bg-[#061c15]/86 p-5">
+        <div className="rounded-2xl border border-[#d7b95f]/16 bg-[#0f1431]/86 p-5">
           <UserRound className="size-5 text-[#e4c673]" />
           <strong className="mt-4 block text-2xl text-[#f0db9b]">
             {new Intl.NumberFormat("fa-IR").format(
@@ -143,7 +143,7 @@ export default async function AdminWorldPage({
           </strong>
           <span className="text-xs text-[#c5b694]/55">شخصیت یکتا</span>
         </div>
-        <div className="rounded-2xl border border-[#d7b95f]/16 bg-[#061c15]/86 p-5">
+        <div className="rounded-2xl border border-[#d7b95f]/16 bg-[#0f1431]/86 p-5">
           <MapPinned className="size-5 text-[#e4c673]" />
           <strong className="mt-4 block text-2xl text-[#f0db9b]">
             {new Intl.NumberFormat("fa-IR").format(
@@ -163,7 +163,7 @@ export default async function AdminWorldPage({
           return (
             <article
               key={product.id}
-              className="rounded-[1.8rem] border border-[#d7b95f]/17 bg-[#061c15]/86 p-5 sm:p-6"
+              className="rounded-[1.8rem] border border-[#d7b95f]/17 bg-[#0f1431]/86 p-5 sm:p-6"
             >
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div>
@@ -211,7 +211,7 @@ export default async function AdminWorldPage({
           );
         })}
         {!profiles.length ? (
-          <p className="rounded-2xl border border-[#d7b95f]/15 bg-[#061c15]/80 p-6 text-sm text-[#c8ba99]/60">
+          <p className="rounded-2xl border border-[#d7b95f]/15 bg-[#0f1431]/80 p-6 text-sm text-[#c8ba99]/60">
             با ساخت اولین محصول، شخصیت و افسانهٔ مستقل آن در اینجا ظاهر می‌شود.
           </p>
         ) : null}

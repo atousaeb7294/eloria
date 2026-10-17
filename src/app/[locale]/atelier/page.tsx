@@ -147,8 +147,8 @@ export default async function AtelierPage({
           </div>
           <div className="grid auto-rows-fr items-stretch gap-4 sm:grid-cols-2 xl:grid-cols-4">
             {ELORIA_GUARDIANS.map((guardian) => (
-              <article id={`guardian-${guardian.id}`} key={guardian.id} className="flex h-full scroll-mt-28 flex-col overflow-hidden rounded-[2rem] border border-[#d8ba64]/18 bg-[#061c15]/88 shadow-[0_28px_75px_rgba(0,0,0,.32)]">
-                <div className="relative h-[420px] shrink-0 overflow-hidden bg-[#03130e] sm:h-[440px] xl:h-[390px] 2xl:h-[430px]">
+              <article id={`guardian-${guardian.id}`} key={guardian.id} className="flex h-full scroll-mt-28 flex-col overflow-hidden rounded-[2rem] border border-[#d8ba64]/18 bg-[#0f1431]/88 shadow-[0_28px_75px_rgba(0,0,0,.32)]">
+                <div className="relative h-[420px] shrink-0 overflow-hidden bg-[#0a0e27] sm:h-[440px] xl:h-[390px] 2xl:h-[430px]">
                   <Image
                     src={guardian.imageUrl}
                     alt={fa ? `پرترهٔ ${guardian.nameFa}، ${guardian.titleFa}` : `Portrait of ${guardian.nameEn}, ${guardian.titleEn}`}
@@ -158,7 +158,7 @@ export default async function AtelierPage({
                     priority={guardian.id === "yalda"}
                   />
 
-                  <p className="absolute bottom-4 start-4 rounded-full border border-white/15 bg-[#04150f]/75 px-3 py-1.5 text-[10px] text-[#f0ddab] backdrop-blur-sm">
+                  <p className="absolute bottom-4 start-4 rounded-full border border-white/15 bg-[#0c102a]/75 px-3 py-1.5 text-[10px] text-[#f0ddab] backdrop-blur-sm">
                     {fa ? guardian.realmFa : guardian.realmEn}
                   </p>
                 </div>
@@ -205,15 +205,15 @@ export default async function AtelierPage({
               const imageUrl = product.worldSceneImageUrl || product.characterImageUrl || product.images[0]?.imageUrl;
               const imageAlt = product.images[0] ? (fa ? product.images[0].altFa : product.images[0].altEn) : null;
               return (
-                <article key={product.id} className="group overflow-hidden rounded-[2rem] border border-[#d8ba64]/18 bg-[#061c15]/88 shadow-[0_28px_75px_rgba(0,0,0,.32)]">
+                <article key={product.id} className="group overflow-hidden rounded-[2rem] border border-[#d8ba64]/18 bg-[#0f1431]/88 shadow-[0_28px_75px_rgba(0,0,0,.32)]">
                   <Link href={`/${locale}/products/${product.slug}`} className="block">
-                    <div className="relative aspect-[4/3] overflow-hidden bg-[#03130e]">
+                    <div className="relative aspect-[4/3] overflow-hidden bg-[#0a0e27]">
                       {imageUrl ? (
                         <Image src={imageUrl} alt={imageAlt || (fa ? product.nameFa : product.nameEn)} fill sizes="(max-width:768px) 100vw,(max-width:1280px) 50vw,33vw" className="object-cover transition duration-700 group-hover:scale-[1.035]" />
                       ) : (
                         <div className="grid h-full place-items-center text-[#d8bb6a]/28"><MapPinned className="size-10" /></div>
                       )}
-                      <div className="absolute inset-0 bg-gradient-to-t from-[#03130e] via-transparent to-transparent" />
+                      <div className="absolute inset-0 bg-gradient-to-t from-[#0a0e27] via-transparent to-transparent" />
                     </div>
                     <div className="p-5 sm:p-6">
                       <p className="text-[10px] text-[#d8bb70]/58">{fa ? product.mythNameFa || myth.mythNameFa : product.mythNameEn || myth.mythNameEn}</p>
@@ -230,7 +230,7 @@ export default async function AtelierPage({
             })}
           </div>
           {!products.length ? (
-            <p className="mt-6 rounded-3xl border border-[#d8ba64]/15 bg-[#061c15]/80 p-8 text-center text-sm text-[#c8b995]/65">
+            <p className="mt-6 rounded-3xl border border-[#d8ba64]/15 bg-[#0f1431]/80 p-8 text-center text-sm text-[#c8b995]/65">
               {fa ? "با انتشار نخستین اثر، افسانهٔ پنهان، شخصیت و فضای آن در اینجا پدیدار می‌شود." : "The first hidden legend, character and setting will appear here when the first creation is published."}
             </p>
           ) : null}

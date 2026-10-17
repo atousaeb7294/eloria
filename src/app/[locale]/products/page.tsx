@@ -222,7 +222,7 @@ export default async function ProductsPage({
         <header className="mx-auto max-w-4xl text-center">
           <div className="mb-4 flex items-center justify-center gap-4">
             <span className="h-px w-14 bg-gradient-to-r from-transparent to-[#d3b35b]/70 sm:w-24" />
-            <div className="relative flex h-14 w-14 items-center justify-center rounded-full border border-[#d9ba63]/35 bg-[radial-gradient(circle,rgba(211,176,85,0.14),rgba(4,29,21,0.88)_70%)]">
+            <div className="relative flex h-14 w-14 items-center justify-center rounded-full border border-[#d9ba63]/35 bg-[radial-gradient(circle,rgba(211,176,85,0.14),rgba(12,17,51,0.88)_70%)]">
               <span className="absolute inset-[5px] rounded-full border border-dashed border-[#e0c26d]/20" />
               <AllProductsRuneIcon className="relative h-8 w-8 text-[#e7ca77]" />
             </div>
@@ -286,14 +286,14 @@ export default async function ProductsPage({
         )}
 
         {catalog.priceFilterActive && (
-          <div className="mt-5 rounded-2xl border border-[#d9b85f]/18 bg-[#061f17]/55 px-4 py-3 text-xs leading-6 text-[#cdbd91]/75 backdrop-blur-xl">
+          <div className="mt-5 rounded-2xl border border-[#d9b85f]/18 bg-[#0f1435]/55 px-4 py-3 text-xs leading-6 text-[#cdbd91]/75 backdrop-blur-xl">
             {isPersian
               ? "فیلتر قیمت با محاسبه دسته‌ای قیمت نهایی زنده انجام شده است."
               : "The price range uses batched live final-price calculation."}
           </div>
         )}
 
-        <div className="mt-8 flex items-center gap-4 rounded-2xl border border-white/[0.06] bg-[#041b14]/50 px-4 py-3 backdrop-blur-xl">
+        <div className="mt-8 flex items-center gap-4 rounded-2xl border border-white/[0.06] bg-[#0c1130]/50 px-4 py-3 backdrop-blur-xl">
           <span className="flex h-8 min-w-8 shrink-0 items-center justify-center rounded-full border border-[#d9b85f]/20 bg-[#d9b85f]/[0.05] px-2 text-xs text-[#e5cb79]">
             {catalog.total.toLocaleString(isPersian ? "fa-IR" : "en-US")}
           </span>
@@ -314,7 +314,7 @@ export default async function ProductsPage({
         )}
 
         {catalog.products.length === 0 ? (
-          <div className="mx-auto mt-10 max-w-2xl rounded-[2rem] border border-[#d8b860]/20 bg-[#061b14]/75 px-6 py-16 text-center backdrop-blur-xl">
+          <div className="mx-auto mt-10 max-w-2xl rounded-[2rem] border border-[#d8b860]/20 bg-[#0f1430]/75 px-6 py-16 text-center backdrop-blur-xl">
             <AllProductsRuneIcon className="mx-auto mb-5 h-10 w-10 text-[#d9b85f]" />
             <p className="text-base leading-8 text-[#eadfca]">
               {isPersian

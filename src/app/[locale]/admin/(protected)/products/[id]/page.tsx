@@ -267,7 +267,7 @@ export default async function EditAdminProductPage({
         error={decoded(query.variantError)}
       />
 
-      <section className="overflow-hidden rounded-2xl border border-[#d1b45c]/18 bg-[#071a14]/70">
+      <section className="overflow-hidden rounded-2xl border border-[#d1b45c]/18 bg-[#11152f]/70">
         <header className="flex items-center gap-3 border-b border-[#d1b45c]/14 px-5 py-4 sm:px-6">
           <span className="grid size-10 place-items-center rounded-xl border border-[#d1b45c]/20 bg-[#d1b45c]/[0.06] text-[#dfc46e]">
             <History className="size-5" />

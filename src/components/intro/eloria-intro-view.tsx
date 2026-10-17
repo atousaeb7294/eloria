@@ -42,7 +42,7 @@ export function EloriaIntroView({
   ) {
     return (
       <button type="button" onClick={replayIntro}
-        className="fixed start-4 bottom-4 z-50 min-h-11 rounded-full border border-[#eed3a0]/60 bg-[#123e2d] px-5 py-3 text-xs text-[#ffe5a3] shadow-lg">
+        className="fixed start-4 bottom-4 z-50 min-h-11 rounded-full border border-[#eed3a0]/60 bg-[#212858] px-5 py-3 text-xs text-[#ffe5a3] shadow-lg">
         {isPersian ? "پخش ویدئوی ورود" : "Play entrance video"}
       </button>
     );
@@ -50,10 +50,10 @@ export function EloriaIntroView({
 
   if (phase === "ready-to-play") {
     return (
-      <div className="eloria-intro-root fixed inset-0 z-[100] grid place-items-center bg-[#031811] px-6" role="dialog" aria-modal="true" aria-label={isPersian ? "ویدئوی ورود الوریا" : "Eloria entrance video"}>
+      <div className="eloria-intro-root fixed inset-0 z-[100] grid place-items-center bg-[#0a0f2d] px-6" role="dialog" aria-modal="true" aria-label={isPersian ? "ویدئوی ورود الوریا" : "Eloria entrance video"}>
         <div className="max-w-sm text-center text-[#ffe5a3]">
           <p className="mb-6 text-xl">{isPersian ? "به دنیای الوریا خوش آمدید" : "Welcome to Eloria"}</p>
-          <button type="button" onClick={handleManualStart} className="min-h-12 w-full rounded-full border border-[#eed3a0] bg-[#123e2d] px-6 py-3">
+          <button type="button" onClick={handleManualStart} className="min-h-12 w-full rounded-full border border-[#eed3a0] bg-[#212858] px-6 py-3">
             {isPersian ? "پخش ویدئوی ورود" : "Play entrance video"}
           </button>
           <button type="button" onClick={handleSkipIntro} className="mt-3 min-h-12 w-full rounded-full px-6 py-3 text-sm underline">
@@ -190,7 +190,7 @@ export function EloriaIntroView({
               firstVideoRef
             }
             className={[
-              "absolute inset-0 size-full bg-black object-contain object-center transition-opacity duration-300",
+              "eloria-royal-motion absolute inset-0 size-full bg-black object-contain object-center transition-opacity duration-300",
               showFirstVideo
                 ? "opacity-100"
                 : "pointer-events-none opacity-0",
@@ -221,7 +221,7 @@ export function EloriaIntroView({
               secondVideoRef
             }
             className={[
-              "absolute inset-0 size-full bg-black object-contain object-center transition-opacity duration-300",
+              "eloria-royal-motion absolute inset-0 size-full bg-black object-contain object-center transition-opacity duration-300",
               showSecondVideo
                 ? "opacity-100"
                 : "pointer-events-none opacity-0",
@@ -252,17 +252,17 @@ export function EloriaIntroView({
 
           <div
             aria-hidden="true"
-            className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,7,4,0.13),transparent_34%,transparent_67%,rgba(0,9,5,0.6))]"
+            className="absolute inset-0 bg-[linear-gradient(180deg,rgba(4,7,26,0.13),transparent_34%,transparent_67%,rgba(4,7,28,0.6))]"
           />
 
           <div
             aria-hidden="true"
-            className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_30%,rgba(0,7,4,0.14)_66%,rgba(0,4,2,0.65)_100%)]"
+            className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_30%,rgba(4,7,26,0.14)_66%,rgba(3,6,22,0.65)_100%)]"
           />
 
           <div
             aria-hidden="true"
-            className="absolute inset-x-0 bottom-0 h-[42%] bg-[linear-gradient(180deg,transparent,rgba(0,7,4,0.72))] sm:h-[34%]"
+            className="absolute inset-x-0 bottom-0 h-[42%] bg-[linear-gradient(180deg,transparent,rgba(4,7,26,0.72))] sm:h-[34%]"
           />
         </motion.div>
 
@@ -467,7 +467,7 @@ export function EloriaIntroView({
           <button
             type="button"
             onClick={handleSkipIntro}
-            className="absolute end-4 bottom-[max(1.5rem,env(safe-area-inset-bottom))] z-[190] inline-flex min-h-12 items-center gap-3 rounded-full border border-[#efd382]/70 bg-[#123e2d]/95 px-6 text-sm font-semibold text-[#ffe5a3] shadow-[0_8px_32px_rgba(239,211,130,.22)] backdrop-blur-xl transition hover:bg-[#1b5039] active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffe5a3] focus-visible:ring-offset-4 focus-visible:ring-offset-black sm:bottom-auto sm:end-8 sm:top-8"
+            className="absolute end-4 bottom-[max(1.5rem,env(safe-area-inset-bottom))] z-[190] inline-flex min-h-12 items-center gap-3 rounded-full border border-[#efd382]/70 bg-[#212858]/95 px-6 text-sm font-semibold text-[#ffe5a3] shadow-[0_8px_32px_rgba(239,211,130,.22)] backdrop-blur-xl transition hover:bg-[#2d366c] active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffe5a3] focus-visible:ring-offset-4 focus-visible:ring-offset-black sm:bottom-auto sm:end-8 sm:top-8"
             aria-label={isPersian ? "رد کردن اینترو و ورود به سایت" : "Skip intro and enter site"}
           >
             <span>{isPersian ? "رد کردن و ورود به فروشگاه" : "Skip to shop"}</span>
@@ -558,7 +558,7 @@ export function EloriaIntroView({
                 onClick={
                   handleManualStart
                 }
-                className="group relative min-h-12 w-full max-w-xs overflow-hidden rounded-full border border-[#efd17f]/65 bg-[linear-gradient(135deg,rgba(222,187,99,0.25),rgba(6,64,44,0.82))] px-7 py-3.5 text-sm text-[#ffebaf] shadow-[0_0_48px_rgba(226,190,98,0.22)] transition duration-500 hover:scale-[1.03] hover:border-[#ffe09a]"
+                className="group relative min-h-12 w-full max-w-xs overflow-hidden rounded-full border border-[#efd17f]/65 bg-[linear-gradient(135deg,rgba(222,187,99,0.25),rgba(18,28,90,0.82))] px-7 py-3.5 text-sm text-[#ffebaf] shadow-[0_0_48px_rgba(226,190,98,0.22)] transition duration-500 hover:scale-[1.03] hover:border-[#ffe09a]"
               >
                 <span className="absolute inset-0 translate-y-full bg-gradient-to-t from-[#f0ce75]/20 to-transparent transition-transform duration-500 group-hover:translate-y-0" />
 
@@ -574,7 +574,7 @@ export function EloriaIntroView({
         {/* خطای رسانه هرگز باعث پرش به Home نمی‌شود. کاربر باید همان پرده را دوباره اجرا کند. */}
         {firstVideoError && phase === "video-one" && (
           <div className="absolute inset-0 z-[160] grid place-items-center bg-black/72 px-6 backdrop-blur-md">
-            <div className="w-full max-w-md rounded-[2rem] border border-amber-200/20 bg-[#041a12]/95 p-7 text-center shadow-[0_30px_90px_rgba(0,0,0,0.55)]">
+            <div className="w-full max-w-md rounded-[2rem] border border-amber-200/20 bg-[#0c112f]/95 p-7 text-center shadow-[0_30px_90px_rgba(0,0,0,0.55)]">
               <p className="text-sm leading-7 text-[#f2dfb4]">
                 {isPersian
                   ? "پخش پردهٔ نخست کامل نشد. برای ادامه، ویدیو را دوباره بارگذاری کنید."
@@ -593,7 +593,7 @@ export function EloriaIntroView({
 
         {secondVideoError && phase === "awaiting-entry" && (
           <div className="absolute inset-0 z-[160] grid place-items-center bg-black/72 px-6 backdrop-blur-md">
-            <div className="w-full max-w-md rounded-[2rem] border border-amber-200/20 bg-[#041a12]/95 p-7 text-center shadow-[0_30px_90px_rgba(0,0,0,0.55)]">
+            <div className="w-full max-w-md rounded-[2rem] border border-amber-200/20 bg-[#0c112f]/95 p-7 text-center shadow-[0_30px_90px_rgba(0,0,0,0.55)]">
               <p className="text-sm leading-7 text-[#f2dfb4]">
                 {isPersian
                   ? "پردهٔ دوم پخش نشد. دوباره تلاش کنید یا اگر تمایل ندارید، اینترو را رد کنید."
@@ -761,16 +761,16 @@ export function EloriaIntroView({
                   )
                   67%,
                 rgba(
+                    63,
                     70,
-                    83,
-                    42,
+                    112,
                     0.42
                   )
                   84%,
                 rgba(
-                    2,
-                    20,
-                    14,
+                    8,
+                    13,
+                    40,
                     0.2
                   )
                   100%
@@ -808,9 +808,9 @@ export function EloriaIntroView({
                   )
                   72%,
                 rgba(
-                    16,
-                    96,
-                    67,
+                    34,
+                    46,
+                    126,
                     0.26
                   )
               );

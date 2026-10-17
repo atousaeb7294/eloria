@@ -161,7 +161,7 @@ export function AdminImageUploader({ productId }: { productId: string }) {
           !entries.length ||
           entries.every((entry) => entry.status === "saved")
         }
-        className="mt-4 min-h-11 rounded-xl bg-[#d7bb6b] px-5 text-sm font-semibold text-[#10251c] disabled:opacity-50"
+        className="mt-4 min-h-11 rounded-xl bg-[#d7bb6b] px-5 text-sm font-semibold text-[#1e223c] disabled:opacity-50"
       >
         {busy ? "در حال ذخیرهٔ تصاویر…" : "بارگذاری تصاویر"}
       </button>

@@ -258,7 +258,7 @@ export function EloriaSigilEntryButton({
         frameRef.current,
         {
           filter:
-            "drop-shadow(0 0 8px rgba(255,226,145,0.55)) drop-shadow(0 0 22px rgba(86,151,105,0.28))",
+            "drop-shadow(0 0 8px rgba(255,226,145,0.55)) drop-shadow(0 0 22px rgba(162,117,188,0.28))",
           duration:
             0.35,
         },
@@ -464,7 +464,7 @@ export function EloriaSigilEntryButton({
         <span
           ref={glowRef}
           aria-hidden="true"
-          className="pointer-events-none absolute inset-x-7 -bottom-1 h-8 bg-[radial-gradient(ellipse,rgba(233,194,101,0.35),rgba(72,130,91,0.17)_45%,transparent_74%)] opacity-55 blur-xl"
+          className="pointer-events-none absolute inset-x-7 -bottom-1 h-8 bg-[radial-gradient(ellipse,rgba(233,194,101,0.35),rgba(141,100,165,0.17)_45%,transparent_74%)] opacity-55 blur-xl"
         />
 
         {[
@@ -481,7 +481,7 @@ export function EloriaSigilEntryButton({
             <span
               key={index}
               aria-hidden="true"
-              className="eloria-sigil-spark pointer-events-none absolute z-30 size-[3px] rounded-full bg-[#fff0b4] opacity-25 shadow-[0_0_7px_#ffe29a,0_0_15px_rgba(154,217,169,0.52)]"
+              className="eloria-sigil-spark pointer-events-none absolute z-30 size-[3px] rounded-full bg-[#fff0b4] opacity-25 shadow-[0_0_7px_#ffe29a,0_0_15px_rgba(222,166,255,0.52)]"
               style={{
                 left:
                   position[0],
@@ -503,14 +503,14 @@ export function EloriaSigilEntryButton({
               ? ENTRY_LABEL_FA
               : "Enter the World of Eloria"
           }
-          className="relative isolate block min-h-[64px] w-full overflow-hidden outline-none focus-visible:ring-2 focus-visible:ring-[#f5dc94] focus-visible:ring-offset-2 focus-visible:ring-offset-[#03110b] sm:min-h-[68px]"
+          className="relative isolate block min-h-[64px] w-full overflow-hidden outline-none focus-visible:ring-2 focus-visible:ring-[#f5dc94] focus-visible:ring-offset-2 focus-visible:ring-offset-[#0a0e25] sm:min-h-[68px]"
           style={{
             clipPath,
           }}
         >
           <span
             aria-hidden="true"
-            className="absolute inset-[2px] bg-[linear-gradient(115deg,rgba(2,17,12,0.98),rgba(5,39,28,0.96)_48%,rgba(22,20,8,0.98))] shadow-[inset_0_1px_0_rgba(255,245,202,0.11),inset_0_-10px_24px_rgba(0,0,0,0.28),0_12px_34px_rgba(0,0,0,0.48)]"
+            className="absolute inset-[2px] bg-[linear-gradient(115deg,rgba(8,12,37,0.98),rgba(14,21,62,0.96)_48%,rgba(22,20,8,0.98))] shadow-[inset_0_1px_0_rgba(255,245,202,0.11),inset_0_-10px_24px_rgba(0,0,0,0.28),0_12px_34px_rgba(0,0,0,0.48)]"
             style={{
               clipPath,
             }}
@@ -518,7 +518,7 @@ export function EloriaSigilEntryButton({
 
           <span
             aria-hidden="true"
-            className="absolute inset-[3px] bg-[radial-gradient(circle_at_50%_-25%,rgba(255,231,157,0.16),transparent_42%),radial-gradient(circle_at_8%_50%,rgba(92,160,112,0.1),transparent_36%),radial-gradient(circle_at_92%_50%,rgba(202,158,63,0.1),transparent_36%)]"
+            className="absolute inset-[3px] bg-[radial-gradient(circle_at_50%_-25%,rgba(255,231,157,0.16),transparent_42%),radial-gradient(circle_at_8%_50%,rgba(171,124,199,0.1),transparent_36%),radial-gradient(circle_at_92%_50%,rgba(202,158,63,0.1),transparent_36%)]"
             style={{
               clipPath,
             }}

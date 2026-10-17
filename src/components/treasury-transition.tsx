@@ -14,7 +14,7 @@ function NavigationStatus() {
   const { pending } = useLinkStatus();
   if (!pending) return null;
   return createPortal(
-    <div role="status" aria-live="polite" className="pointer-events-none fixed inset-x-4 bottom-6 z-[10000] mx-auto w-fit rounded-2xl border border-[#ead3a0]/40 bg-[#062c20] px-6 py-3 text-center text-sm text-[#f8f0df] shadow-xl">
+    <div role="status" aria-live="polite" className="pointer-events-none fixed inset-x-4 bottom-6 z-[10000] mx-auto w-fit rounded-2xl border border-[#ead3a0]/40 bg-[#101744] px-6 py-3 text-center text-sm text-[#f8f0df] shadow-xl">
       <span lang="fa" dir="rtl">در حال بازکردن صفحه…</span>
       <span lang="en" className="ms-2 text-xs">Loading…</span>
     </div>,

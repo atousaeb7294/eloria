@@ -217,7 +217,7 @@ export function MobileSiteMenu() {
         }
         aria-expanded={open}
         aria-controls="eloria-mobile-navigation"
-        className="relative grid size-10 place-items-center overflow-hidden rounded-xl border border-[#e1c16f]/22 bg-white/[0.045] text-[#efd58c] shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] transition hover:border-[#e8c96f]/52 hover:bg-[#168461]/14 sm:size-11 sm:rounded-2xl"
+        className="relative grid size-10 place-items-center overflow-hidden rounded-xl border border-[#e1c16f]/22 bg-white/[0.045] text-[#efd58c] shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] transition hover:border-[#e8c96f]/52 hover:bg-[#2d3da7]/14 sm:size-11 sm:rounded-2xl"
       >
         <span
           aria-hidden="true"
@@ -265,7 +265,7 @@ export function MobileSiteMenu() {
               aria-modal="true"
               aria-label={isPersian ? "منوی اصلی الوریا" : "Eloria main menu"}
               dir={isPersian ? "rtl" : "ltr"}
-              className="transition-opacity duration-300 data-[starting-style]:opacity-0 data-[ending-style]:opacity-0 motion-reduce:transition-none fixed inset-x-3 top-[82px] z-[80] max-h-[calc(100dvh-96px)] overflow-y-auto overscroll-contain rounded-[1.8rem] border border-[#e4c570]/38 bg-[linear-gradient(155deg,rgba(4,58,41,0.995),rgba(1,24,17,0.995)_55%,rgba(1,13,9,0.998))] p-3 shadow-[0_34px_110px_rgba(0,0,0,0.76),0_0_46px_rgba(216,177,74,0.12)] sm:inset-x-5 sm:top-[96px]"
+              className="transition-opacity duration-300 data-[starting-style]:opacity-0 data-[ending-style]:opacity-0 motion-reduce:transition-none fixed inset-x-3 top-[82px] z-[80] max-h-[calc(100dvh-96px)] overflow-y-auto overscroll-contain rounded-[1.8rem] border border-[#e4c570]/38 bg-[linear-gradient(155deg,rgba(15,24,83,0.995),rgba(7,12,45,0.995)_55%,rgba(6,10,33,0.998))] p-3 shadow-[0_34px_110px_rgba(0,0,0,0.76),0_0_46px_rgba(216,177,74,0.12)] sm:inset-x-5 sm:top-[96px]"
             >
               <Dialog.Close aria-label={isPersian ? "بستن منو" : "Close menu"} className="absolute end-5 top-5 z-10 grid size-10 place-items-center rounded-full border border-[#e4c570]/38 text-[#efd58c]">
                 <X className="size-5" />
@@ -320,7 +320,7 @@ export function MobileSiteMenu() {
                             : "border-transparent bg-white/[0.015] hover:border-[#d9bb68]/22 hover:bg-[#d5ad50]/[0.045]",
                         ].join(" ")}
                       >
-                        <span className="grid size-11 shrink-0 place-items-center rounded-[13px] border border-[#d8b85f]/20 bg-[#0c6648]/18 text-[#e2c777] transition group-hover:border-[#e0c16d]/40 group-hover:text-[#f1d78e]">
+                        <span className="grid size-11 shrink-0 place-items-center rounded-[13px] border border-[#d8b85f]/20 bg-[#1e2c85]/18 text-[#e2c777] transition group-hover:border-[#e0c16d]/40 group-hover:text-[#f1d78e]">
                           <Icon className="size-6" />
                         </span>
 

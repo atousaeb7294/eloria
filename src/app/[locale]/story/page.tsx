@@ -71,7 +71,7 @@ export default async function StoryPage({ params }: StoryPageProps) {
         className="relative z-10 mx-auto w-full max-w-[1450px] px-4 pb-28 pt-[132px] sm:px-6 sm:pt-[144px] lg:px-10"
       >
         <header className="mx-auto max-w-4xl text-center">
-          <div className="mx-auto grid size-16 place-items-center rounded-full border border-[#d9ba63]/38 bg-[radial-gradient(circle,rgba(211,176,85,0.16),rgba(4,29,21,0.9)_70%)] text-[#e7ca77]">
+          <div className="mx-auto grid size-16 place-items-center rounded-full border border-[#d9ba63]/38 bg-[radial-gradient(circle,rgba(211,176,85,0.16),rgba(12,17,51,0.9)_70%)] text-[#e7ca77]">
             <BookOpenText className="size-7" />
           </div>
           <p className="mt-6 text-[9px] uppercase tracking-[.42em] text-[#cfb66f]/60">
@@ -87,7 +87,7 @@ export default async function StoryPage({ params }: StoryPageProps) {
           </p>
         </header>
 
-        <article id="mother-legend" className="relative mx-auto mt-14 max-w-6xl overflow-hidden rounded-[2.8rem] border border-[#d8b860]/22 bg-[linear-gradient(145deg,rgba(9,45,32,0.94),rgba(2,20,14,0.99))] px-6 py-10 shadow-[0_34px_100px_rgba(0,0,0,0.4)] sm:px-10 sm:py-14 lg:px-16">
+        <article id="mother-legend" className="relative mx-auto mt-14 max-w-6xl overflow-hidden rounded-[2.8rem] border border-[#d8b860]/22 bg-[linear-gradient(145deg,rgba(20,27,69,0.94),rgba(8,13,40,0.99))] px-6 py-10 shadow-[0_34px_100px_rgba(0,0,0,0.4)] sm:px-10 sm:py-14 lg:px-16">
           <div aria-hidden="true" className="absolute inset-x-16 top-0 h-px bg-gradient-to-r from-transparent via-[#efd17a]/65 to-transparent" />
           <div className="relative mx-auto max-w-4xl">
             <p className="text-[9px] uppercase tracking-[.4em] text-[#d3bb78]/58">The Mother Legend</p>
@@ -114,7 +114,7 @@ export default async function StoryPage({ params }: StoryPageProps) {
           </div>
           <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
             {ELORIA_GUARDIANS.map((guardian) => (
-              <Link key={guardian.id} id={`guardian-${guardian.id}`} href={`/${locale}/atelier#guardian-${guardian.id}`} className="scroll-mt-28 rounded-[2rem] border border-[#d8ba64]/18 bg-[#061c15]/88 p-5 shadow-[0_22px_65px_rgba(0,0,0,.30)] transition hover:-translate-y-1 hover:border-[#dfc36d]/38">
+              <Link key={guardian.id} id={`guardian-${guardian.id}`} href={`/${locale}/atelier#guardian-${guardian.id}`} className="scroll-mt-28 rounded-[2rem] border border-[#d8ba64]/18 bg-[#0f1431]/88 p-5 shadow-[0_22px_65px_rgba(0,0,0,.30)] transition hover:-translate-y-1 hover:border-[#dfc36d]/38">
                 <Stars className="size-5 text-[#dfc26e]" />
                 <p className="mt-5 text-[10px] text-[#d8bb70]/58">{fa ? guardian.domainFa : guardian.domainEn}</p>
                 <h3 className="mt-1 text-xl text-[#f1e0b9]">{fa ? guardian.nameFa : guardian.nameEn}</h3>
@@ -126,12 +126,12 @@ export default async function StoryPage({ params }: StoryPageProps) {
         </section>
 
         <section className="mx-auto mt-8 grid max-w-6xl gap-4 lg:grid-cols-2">
-          <Link href={`/${locale}/atelier#hidden-legends`} className="rounded-[2rem] border border-[#d8ba64]/18 bg-[#061c15]/88 p-7 shadow-[0_22px_65px_rgba(0,0,0,.30)] transition hover:border-[#dfc36d]/38">
+          <Link href={`/${locale}/atelier#hidden-legends`} className="rounded-[2rem] border border-[#d8ba64]/18 bg-[#0f1431]/88 p-7 shadow-[0_22px_65px_rgba(0,0,0,.30)] transition hover:border-[#dfc36d]/38">
             <Sparkles className="size-6 text-[#dfc26e]" />
             <h2 className={`${fa ? "font-persian-title" : "font-semibold"} mt-5 text-2xl text-[#f2e1ba]`}>{fa ? "افسانه‌های پنهان محصولات" : "Hidden legends of creations"}</h2>
             <p className="mt-3 text-sm leading-8 text-[#d6c8aa]/66">{fa ? "هر محصول یک افسانهٔ یکتا دارد؛ داستانی مستقل که زیر پرچم یکی از هفت نگهبان ثبت می‌شود." : "Every product has one unique story, independently told beneath the banner of one of the Seven Guardians."}</p>
           </Link>
-          <Link href={`/${locale}/about`} className="rounded-[2rem] border border-[#d8ba64]/18 bg-[#061c15]/88 p-7 shadow-[0_22px_65px_rgba(0,0,0,.30)] transition hover:border-[#dfc36d]/38">
+          <Link href={`/${locale}/about`} className="rounded-[2rem] border border-[#d8ba64]/18 bg-[#0f1431]/88 p-7 shadow-[0_22px_65px_rgba(0,0,0,.30)] transition hover:border-[#dfc36d]/38">
             <BookOpenText className="size-6 text-[#dfc26e]" />
             <h2 className={`${fa ? "font-persian-title" : "font-semibold"} mt-5 text-2xl text-[#f2e1ba]`}>{fa ? "دربارهٔ رسمی برند" : "The official brand introduction"}</h2>
             <p className="mt-3 text-sm leading-8 text-[#d6c8aa]/66">{fa ? "برای آشنایی با نگاه طراحی، متریال و شیوهٔ انتخاب زیورهای دست‌ساز الوریا، بخش درباره ما را ببینید." : "Visit About Eloria for our design philosophy, materials and approach to handmade jewelry."}</p>

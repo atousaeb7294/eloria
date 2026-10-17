@@ -32,7 +32,7 @@ export function BuyerReviewForm({ slug }: { slug: string }) {
     }
   }
   const style =
-    "block w-full rounded-xl border border-[#d9b85f]/30 bg-[#041b13] p-3 mt-2";
+    "block w-full rounded-xl border border-[#d9b85f]/30 bg-[#0c1130] p-3 mt-2";
   return (
     <form onSubmit={submit} className="mt-6 space-y-4" dir="rtl">
       <p className="text-sm leading-7">

@@ -86,7 +86,7 @@ export function SiteMeasurementTracker({ locale, enabled }: SiteMeasurementTrack
     <section
       dir={fa ? "rtl" : "ltr"}
       aria-label={fa ? "انتخاب حریم خصوصی" : "Privacy choice"}
-      className="fixed bottom-4 start-4 z-[80] w-[min(25rem,calc(100vw-2rem))] rounded-3xl border border-[#dfc16f]/25 bg-[#031a12]/95 p-4 text-[#eadbb7] shadow-[0_18px_60px_rgba(0,0,0,.42)] backdrop-blur-xl"
+      className="fixed bottom-4 start-4 z-[80] w-[min(25rem,calc(100vw-2rem))] rounded-3xl border border-[#dfc16f]/25 bg-[#0a0f2f]/95 p-4 text-[#eadbb7] shadow-[0_18px_60px_rgba(0,0,0,.42)] backdrop-blur-xl"
     >
       <div className="flex gap-3">
         <span className="grid size-10 shrink-0 place-items-center rounded-2xl border border-[#dfc16f]/20 bg-[#d7b95f]/[.08] text-[#e8cc7a]">

@@ -78,10 +78,10 @@ const initialState: AdminProductActionState = {
 };
 
 const inputClassName =
-  "h-12 w-full rounded-xl border border-[#cfb45f]/20 bg-[#031a13] px-3.5 text-sm text-[#f7e7c2] outline-none transition placeholder:text-[#887c65] focus:border-[#dfc36d]/60 focus:ring-4 focus:ring-[#cfad4e]/8";
+  "h-12 w-full rounded-xl border border-[#cfb45f]/20 bg-[#0a0f2f] px-3.5 text-sm text-[#f7e7c2] outline-none transition placeholder:text-[#887c65] focus:border-[#dfc36d]/60 focus:ring-4 focus:ring-[#cfad4e]/8";
 
 const textareaClassName =
-  "min-h-32 w-full resize-y rounded-xl border border-[#cfb45f]/20 bg-[#031a13] px-3.5 py-3 text-sm leading-7 text-[#f7e7c2] outline-none transition placeholder:text-[#887c65] focus:border-[#dfc36d]/60 focus:ring-4 focus:ring-[#cfad4e]/8";
+  "min-h-32 w-full resize-y rounded-xl border border-[#cfb45f]/20 bg-[#0a0f2f] px-3.5 py-3 text-sm leading-7 text-[#f7e7c2] outline-none transition placeholder:text-[#887c65] focus:border-[#dfc36d]/60 focus:ring-4 focus:ring-[#cfad4e]/8";
 
 function Field({
   label,
@@ -117,7 +117,7 @@ function FormSection({
   children: ReactNode;
 }) {
   return (
-    <section className="rounded-[24px] border border-[#d0b359]/16 bg-[#041d15]/78 p-4 shadow-[0_18px_60px_rgba(0,0,0,0.16)] sm:p-6">
+    <section className="rounded-[24px] border border-[#d0b359]/16 bg-[#0c1133]/78 p-4 shadow-[0_18px_60px_rgba(0,0,0,0.16)] sm:p-6">
       <header className="mb-5 border-b border-[#d2b45b]/12 pb-4">
         <h2 className="text-lg font-semibold text-[#f1d98e]">
           {title}
@@ -274,7 +274,7 @@ export function AdminProductForm({
             </select>
           </Field>
 
-          <div className="md:col-span-2 rounded-2xl border border-[#cfb45f]/18 bg-[#061f17]/65 p-4">
+          <div className="md:col-span-2 rounded-2xl border border-[#cfb45f]/18 bg-[#0f1435]/65 p-4">
             <p className="text-sm text-[#ead79f]">ترکیب فلز و عضویت در گنجینه‌ها</p>
             <p className="mt-1 text-xs leading-6 text-[#9f9278]">برای اثر ترکیبی، هر دو گزینه و وزن جداگانهٔ هر فلز را وارد کنید. اثر در هر دو گنجینه نمایش داده می‌شود؛ هنر دست و بسته‌بندی یک‌بار حساب می‌شوند. برای بافت بدون فلز، هر دو گزینه را بردارید و قیمت ثابت بگذارید.</p>
             <button type="button" aria-pressed={weaveOnly}
@@ -530,7 +530,7 @@ export function AdminProductForm({
             </select>
           </Field>
 
-          <label className="flex min-h-12 items-center gap-3 self-end rounded-xl border border-[#cfb45f]/20 bg-[#031a13] px-4 text-sm text-[#d5c5a2]">
+          <label className="flex min-h-12 items-center gap-3 self-end rounded-xl border border-[#cfb45f]/20 bg-[#0a0f2f] px-4 text-sm text-[#d5c5a2]">
             <input
               defaultChecked={value.isFeatured}
               name="isFeatured"
@@ -542,11 +542,11 @@ export function AdminProductForm({
         </div>
       </FormSection>
 
-      <div className="sticky bottom-4 z-20 flex justify-end rounded-2xl border border-[#d4b75f]/18 bg-[#02160f]/92 p-3 shadow-[0_20px_70px_rgba(0,0,0,0.35)] backdrop-blur-xl">
+      <div className="sticky bottom-4 z-20 flex justify-end rounded-2xl border border-[#d4b75f]/18 bg-[#090d2b]/92 p-3 shadow-[0_20px_70px_rgba(0,0,0,0.35)] backdrop-blur-xl">
         <button
           disabled={isPending}
           type="submit"
-          className="flex h-12 items-center justify-center gap-2 rounded-xl bg-[linear-gradient(135deg,#b9983f,#efd37b)] px-7 text-sm font-semibold text-[#10251c] transition hover:brightness-105 disabled:cursor-wait disabled:opacity-60"
+          className="flex h-12 items-center justify-center gap-2 rounded-xl bg-[linear-gradient(135deg,#b9983f,#efd37b)] px-7 text-sm font-semibold text-[#1e223c] transition hover:brightness-105 disabled:cursor-wait disabled:opacity-60"
         >
           <Save className="h-5 w-5" />
           {isPending

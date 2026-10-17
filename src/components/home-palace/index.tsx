@@ -30,7 +30,7 @@ function ReferencePicture({ art, media, className, sizes, alt = "" }: {
 }) {
   return <picture className={className}>
     <source media={media} srcSet={sourceSet(art)} sizes={sizes} type="image/webp" />
-    <img src={media ? emptyPixel : art.variants.at(-1)!.url}
+    <img className="eloria-royal-art" src={media ? emptyPixel : art.variants.at(-1)!.url}
       width={art.width} height={art.height} alt={alt}
       loading="lazy" decoding="async" fetchPriority="low" />
   </picture>;
@@ -176,7 +176,7 @@ export function HomePalace() {
                 <source media={mobileMedia} srcSet={sourceSet(mobile.open)}
                   sizes="(max-width: 774px) calc(100vw - 24px), 750px" type="image/webp" />
                 <source media={desktopMedia} srcSet={sourceSet(desktop)} sizes="300px" type="image/webp" />
-                <img src={emptyPixel} alt="" width={desktop.width} height={desktop.height}
+                <img className="eloria-royal-art" src={emptyPixel} alt="" width={desktop.width} height={desktop.height}
                   loading="eager" decoding="async" fetchPriority="low" />
               </picture>
               <picture className="ep-hinged-lid" aria-hidden="true">
@@ -184,7 +184,7 @@ export function HomePalace() {
                   sizes="(max-width: 774px) calc(100vw - 24px), 750px" type="image/webp" />
                 <source media={desktopMedia} srcSet={sourceSet(assets.desktop)}
                   sizes="(max-width: 1392px) calc(100vw - 32px), 1360px" type="image/webp" />
-                <img src={emptyPixel} alt="" width={1126} height={813}
+                <img className="eloria-royal-art" src={emptyPixel} alt="" width={1126} height={813}
                   loading="lazy" decoding="async" fetchPriority="low" />
               </picture>
               {/* Preserve the scene and its frames; real product layers cover
@@ -226,11 +226,13 @@ export function HomePalace() {
           {featured.map((product, index) => {
             const className = `ep-featured-product${index >= 4 ? " ep-desktop-only" : ""}`;
             const contents = <>
+              <div className="ep-featured-backing" aria-hidden="true" />
               <div className="ep-featured-image">
                 {product && <ProductImage src={product.imageUrl} alt={product.name} fill
                   sizes="(max-width:774px) calc((100vw - 44px) / 2), (max-width:900px) 365px, 260px" />}
               </div>
               <span className="ep-featured-name font-persian-title" dir="rtl">{product?.name ?? "—"}</span>
+              <span className="ep-featured-number" aria-hidden="true" dir="ltr">{String(index + 1).padStart(2, "0")}</span>
             </>;
             return product ? <TreasuryLink key={index} className={className}
               href={productHref(product)} prefetch={false} showPending={false} aria-label={`مشاهدهٔ ${product.name}`}>

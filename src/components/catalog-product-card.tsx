@@ -86,7 +86,7 @@ export function CatalogProductCard({
     <InteractiveTiltCard className="group rounded-[1.75rem] sm:rounded-[2rem]">
       <article
         className={[
-          "relative overflow-hidden rounded-[1.75rem] border bg-[linear-gradient(145deg,rgba(7,34,25,0.97),rgba(2,20,14,0.99))] p-3 shadow-[0_26px_70px_rgba(0,0,0,0.38)] transition-[border-color,box-shadow] duration-500 sm:rounded-[2rem]",
+          "relative overflow-hidden rounded-[1.75rem] border bg-[linear-gradient(145deg,rgba(17,22,56,0.97),rgba(8,13,40,0.99))] p-3 shadow-[0_26px_70px_rgba(0,0,0,0.38)] transition-[border-color,box-shadow] duration-500 sm:rounded-[2rem]",
         isGold
           ? "border-[#d8b860]/22 hover:border-[#e8cc78]/55 hover:shadow-[0_34px_95px_rgba(0,0,0,0.5),0_0_34px_rgba(216,184,96,0.1)]"
           : "border-[#c5d2d7]/20 hover:border-[#dbe5e8]/45 hover:shadow-[0_34px_95px_rgba(0,0,0,0.5),0_0_34px_rgba(210,225,230,0.08)]",
@@ -107,7 +107,7 @@ export function CatalogProductCard({
             ? `مشاهده ${productName}`
             : `View ${productName}`
         }
-        className="relative block aspect-[4/5] overflow-hidden rounded-[1.4rem] border border-white/[0.06] bg-[#031811] sm:rounded-[1.65rem]"
+        className="relative block aspect-[4/5] overflow-hidden rounded-[1.4rem] border border-white/[0.06] bg-[#0a0f2d] sm:rounded-[1.65rem]"
       >
         <Image
           src={imageUrl}
@@ -121,7 +121,7 @@ export function CatalogProductCard({
 
         <div
           aria-hidden="true"
-          className="absolute inset-0 bg-gradient-to-t from-[#01120c]/92 via-transparent to-black/10"
+          className="absolute inset-0 bg-gradient-to-t from-[#060b26]/92 via-transparent to-black/10"
         />
 
         <div className="absolute inset-x-3 top-3 flex items-start justify-between gap-2">
@@ -156,7 +156,7 @@ export function CatalogProductCard({
         </div>
 
         <div className="absolute inset-x-0 bottom-0 translate-y-3 px-4 pb-4 opacity-0 transition duration-400 group-hover:translate-y-0 group-hover:opacity-100">
-          <span className="flex min-h-11 items-center justify-center rounded-full border border-[#ead07e]/32 bg-[#031a13]/78 text-xs text-[#f1dda4] backdrop-blur-xl">
+          <span className="flex min-h-11 items-center justify-center rounded-full border border-[#ead07e]/32 bg-[#0a0f2f]/78 text-xs text-[#f1dda4] backdrop-blur-xl">
             {isPersian ? "مشاهده جواهر" : "View jewellery"}
           </span>
         </div>
@@ -238,7 +238,7 @@ export function CatalogProductCard({
           </span>
         </Link>
       </div>
-        {!product.isAvailable && <Link href={`/${locale}/preorder/${product.slug}`} className="mt-3 inline-flex min-h-12 w-full cursor-pointer items-center justify-center rounded-xl border border-[#ead18a] bg-[linear-gradient(135deg,#b49445,#efd58b)] px-5 py-3 text-center text-sm font-semibold text-[#10251c] shadow-[0_4px_16px_rgba(207,180,95,0.15)] transition-[filter,box-shadow] duration-150 hover:brightness-110 active:brightness-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#f6e8c6] focus-visible:ring-offset-2 focus-visible:ring-offset-[#031a13]">{isPersian ? "درخواست پیش‌سفارش" : "Request a preorder"}</Link>}
+        {!product.isAvailable && <Link href={`/${locale}/preorder/${product.slug}`} className="mt-3 inline-flex min-h-12 w-full cursor-pointer items-center justify-center rounded-xl border border-[#ead18a] bg-[linear-gradient(135deg,#b49445,#efd58b)] px-5 py-3 text-center text-sm font-semibold text-[#1e223c] shadow-[0_4px_16px_rgba(207,180,95,0.15)] transition-[filter,box-shadow] duration-150 hover:brightness-110 active:brightness-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#f6e8c6] focus-visible:ring-offset-2 focus-visible:ring-offset-[#0a0f2f]">{isPersian ? "درخواست پیش‌سفارش" : "Request a preorder"}</Link>}
       </article>
     </InteractiveTiltCard>
   );

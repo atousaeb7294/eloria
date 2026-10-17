@@ -89,7 +89,7 @@ export default async function AdminContentPage({
 
   return (
     <div className="mx-auto max-w-[1540px] space-y-7">
-      <section className="relative overflow-hidden rounded-[2rem] border border-[#d7b95f]/20 bg-[linear-gradient(135deg,rgba(10,56,40,0.95),rgba(3,24,17,0.98))] px-6 py-7 shadow-[0_24px_70px_rgba(0,0,0,0.28)] sm:px-8">
+      <section className="relative overflow-hidden rounded-[2rem] border border-[#d7b95f]/20 bg-[linear-gradient(135deg,rgba(22,30,81,0.95),rgba(10,15,45,0.98))] px-6 py-7 shadow-[0_24px_70px_rgba(0,0,0,0.28)] sm:px-8">
         <div className="absolute -end-20 -top-24 size-72 rounded-full bg-[#d7b95f]/[0.09] blur-[80px]" />
         <div className="relative flex flex-col justify-between gap-6 lg:flex-row lg:items-end">
           <div>
@@ -141,7 +141,7 @@ export default async function AdminContentPage({
       ) : null}
 
       <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-        <article className="rounded-[1.7rem] border border-[#d7b95f]/17 bg-[#061c15]/86 p-5">
+        <article className="rounded-[1.7rem] border border-[#d7b95f]/17 bg-[#0f1431]/86 p-5">
           <div className="flex items-center justify-between">
             <Gauge className="size-5 text-[#e4c673]" />
             <span
@@ -161,7 +161,7 @@ export default async function AdminContentPage({
           </p>
         </article>
 
-        <article className="rounded-[1.7rem] border border-[#d7b95f]/17 bg-[#061c15]/86 p-5">
+        <article className="rounded-[1.7rem] border border-[#d7b95f]/17 bg-[#0f1431]/86 p-5">
           <div className="flex items-center justify-between">
             <BookMarked className="size-5 text-[#e4c673]" />
             <span className="text-2xl font-semibold text-[#f0db9b]">
@@ -177,7 +177,7 @@ export default async function AdminContentPage({
           </p>
         </article>
 
-        <article className="rounded-[1.7rem] border border-[#d7b95f]/17 bg-[#061c15]/86 p-5">
+        <article className="rounded-[1.7rem] border border-[#d7b95f]/17 bg-[#0f1431]/86 p-5">
           <div className="flex items-center justify-between">
             <Languages className="size-5 text-[#e4c673]" />
             <span className="text-2xl font-semibold text-[#f0db9b]">
@@ -192,7 +192,7 @@ export default async function AdminContentPage({
           </p>
         </article>
 
-        <article className="rounded-[1.7rem] border border-[#d7b95f]/17 bg-[#061c15]/86 p-5">
+        <article className="rounded-[1.7rem] border border-[#d7b95f]/17 bg-[#0f1431]/86 p-5">
           <div className="flex items-center justify-between">
             <ImageOff className="size-5 text-[#e4c673]" />
             <span className="text-2xl font-semibold text-[#f0db9b]">
@@ -208,7 +208,7 @@ export default async function AdminContentPage({
           </p>
         </article>
 
-        <article className="rounded-[1.7rem] border border-[#d7b95f]/17 bg-[#061c15]/86 p-5">
+        <article className="rounded-[1.7rem] border border-[#d7b95f]/17 bg-[#0f1431]/86 p-5">
           <div className="flex items-center justify-between">
             <ScrollText className="size-5 text-[#e4c673]" />
             <span className="text-2xl font-semibold text-[#f0db9b]">
@@ -224,7 +224,7 @@ export default async function AdminContentPage({
           </p>
         </article>
 
-        <article className="rounded-[1.7rem] border border-[#d7b95f]/17 bg-[#061c15]/86 p-5">
+        <article className="rounded-[1.7rem] border border-[#d7b95f]/17 bg-[#0f1431]/86 p-5">
           <div className="flex items-center justify-between">
             <ImageOff className="size-5 text-[#e4c673]" />
             <span className="text-2xl font-semibold text-[#f0db9b]">
@@ -244,7 +244,7 @@ export default async function AdminContentPage({
       <section className="grid gap-6 xl:grid-cols-[1.15fr_0.85fr]">
         <div
           id="product-draft"
-          className="scroll-mt-28 rounded-[1.9rem] border border-[#d7b95f]/18 bg-[#061c15]/86 p-5 sm:p-6"
+          className="scroll-mt-28 rounded-[1.9rem] border border-[#d7b95f]/18 bg-[#0f1431]/86 p-5 sm:p-6"
         >
           <div className="flex items-start gap-3">
             <span className="grid size-10 shrink-0 place-items-center rounded-xl border border-[#d7b95f]/22 bg-[#d7b95f]/[0.06] text-[#e4c673]">
@@ -269,7 +269,7 @@ export default async function AdminContentPage({
               name="productId"
               required
               defaultValue=""
-              className="min-h-12 rounded-xl border border-[#d7b95f]/20 bg-[#041911] px-4 text-sm text-[#eadfbf] outline-none transition focus:border-[#e4c773]/55"
+              className="min-h-12 rounded-xl border border-[#d7b95f]/20 bg-[#0c112e] px-4 text-sm text-[#eadfbf] outline-none transition focus:border-[#e4c773]/55"
             >
               <option value="" disabled>
                 یک محصول فعال انتخاب کنید…
@@ -299,7 +299,7 @@ export default async function AdminContentPage({
           </form>
         </div>
 
-        <div className="rounded-[1.9rem] border border-[#d7b95f]/18 bg-[#061c15]/86 p-5 sm:p-6">
+        <div className="rounded-[1.9rem] border border-[#d7b95f]/18 bg-[#0f1431]/86 p-5 sm:p-6">
           <div className="flex items-center justify-between gap-3">
             <div className="flex items-center gap-3">
               <ListChecks className="size-5 text-[#e4c673]" />
@@ -345,7 +345,7 @@ export default async function AdminContentPage({
         </div>
       </section>
 
-      <section className="rounded-[1.9rem] border border-[#d7b95f]/18 bg-[#061c15]/86 p-5 sm:p-6">
+      <section className="rounded-[1.9rem] border border-[#d7b95f]/18 bg-[#0f1431]/86 p-5 sm:p-6">
         <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
           <div>
             <h2 className="text-lg text-[#f2e2bd]">مقاله‌ها و صف بازبینی</h2>
@@ -421,7 +421,7 @@ export default async function AdminContentPage({
       </section>
 
       {snapshots.length > 0 ? (
-        <section className="rounded-[1.9rem] border border-[#d7b95f]/18 bg-[#061c15]/72 p-5 sm:p-6">
+        <section className="rounded-[1.9rem] border border-[#d7b95f]/18 bg-[#0f1431]/72 p-5 sm:p-6">
           <h2 className="text-base text-[#f2e2bd]">روند ثبت‌شدهٔ سلامت سئو</h2>
           <p className="mt-1 text-xs text-[#cbbd9d]/62">
             هر بار اجرای کار روزانه، فقط یک تصویر غیرقابل‌ویرایش از وضعیت همان

@@ -92,7 +92,7 @@ function CollectionCard({
     radial-gradient(
       circle at ${glowX}% ${glowY}%,
       rgba(255, 235, 176, 0.24),
-      rgba(22, 132, 97, 0.1) 28%,
+      rgba(45, 61, 167, 0.1) 28%,
       transparent 56%
     )
   `;
@@ -179,10 +179,10 @@ function CollectionCard({
       className="group/card relative scroll-mt-36"
     >
       {/* هاله بیرونی کارت */}
-      <div className="absolute -inset-6 -z-10 rounded-[3rem] bg-[radial-gradient(circle_at_center,rgba(218,181,87,0.2),rgba(22,132,97,0.08),transparent_70%)] opacity-40 blur-3xl transition duration-700 group-hover/card:opacity-100" />
+      <div className="absolute -inset-6 -z-10 rounded-[3rem] bg-[radial-gradient(circle_at_center,rgba(218,181,87,0.2),rgba(45,61,167,0.08),transparent_70%)] opacity-40 blur-3xl transition duration-700 group-hover/card:opacity-100" />
 
       {/* بدنه کارت */}
-      <div className="relative overflow-hidden rounded-[2.4rem] border border-[#e3c273]/35 bg-[linear-gradient(145deg,rgba(8,64,46,0.92),rgba(1,26,18,0.98))] p-px shadow-[0_30px_85px_rgba(0,0,0,0.5),inset_0_1px_0_rgba(255,255,255,0.18)] transition duration-700 group-hover/card:border-[#efd487]/70 group-hover/card:shadow-[0_42px_105px_rgba(0,0,0,0.6),0_0_40px_rgba(220,183,87,0.16),inset_0_1px_0_rgba(255,255,255,0.24)]">
+      <div className="relative overflow-hidden rounded-[2.4rem] border border-[#e3c273]/35 bg-[linear-gradient(145deg,rgba(21,30,90,0.92),rgba(7,13,47,0.98))] p-px shadow-[0_30px_85px_rgba(0,0,0,0.5),inset_0_1px_0_rgba(255,255,255,0.18)] transition duration-700 group-hover/card:border-[#efd487]/70 group-hover/card:shadow-[0_42px_105px_rgba(0,0,0,0.6),0_0_40px_rgba(220,183,87,0.16),inset_0_1px_0_rgba(255,255,255,0.24)]">
         {/* نور دنبال‌کننده موس */}
         <motion.div
           aria-hidden="true"
@@ -207,7 +207,7 @@ function CollectionCard({
             }}
           >
             <motion.span
-              className="relative grid size-[60px] place-items-center rounded-2xl border border-[#e4c473]/40 bg-[radial-gradient(circle,rgba(246,220,151,0.22),rgba(20,116,84,0.26)_56%,rgba(2,37,26,0.9))] text-[#edcf7e] shadow-[inset_0_1px_0_rgba(255,255,255,0.23),0_14px_34px_rgba(0,0,0,0.32),0_0_20px_rgba(220,181,82,0.12)]"
+              className="relative grid size-[60px] place-items-center rounded-2xl border border-[#e4c473]/40 bg-[radial-gradient(circle,rgba(246,220,151,0.22),rgba(40,55,149,0.26)_56%,rgba(10,17,60,0.9))] text-[#edcf7e] shadow-[inset_0_1px_0_rgba(255,255,255,0.23),0_14px_34px_rgba(0,0,0,0.32),0_0_20px_rgba(220,181,82,0.12)]"
               animate={
                 reducedMotion
                   ? undefined
@@ -253,7 +253,7 @@ function CollectionCard({
 
           {/* تصویر */}
           <div
-            className="relative z-20 aspect-[4/5] overflow-hidden rounded-[1.7rem] border border-[#e0bf6a]/30 bg-[#03271c] shadow-[0_20px_45px_rgba(0,0,0,0.4)]"
+            className="relative z-20 aspect-[4/5] overflow-hidden rounded-[1.7rem] border border-[#e0bf6a]/30 bg-[#0c123e] shadow-[0_20px_45px_rgba(0,0,0,0.4)]"
             style={{
               transform: "translateZ(55px)",
             }}
@@ -268,7 +268,7 @@ function CollectionCard({
             />
 
             {/* سایه روی عکس */}
-            <div className="absolute inset-0 bg-[linear-gradient(180deg,transparent_26%,rgba(1,19,13,0.08)_48%,rgba(1,16,11,0.9)_100%)]" />
+            <div className="absolute inset-0 bg-[linear-gradient(180deg,transparent_26%,rgba(7,11,39,0.08)_48%,rgba(6,10,36,0.9)_100%)]" />
 
             {/* نور طلایی */}
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_18%,rgba(255,231,164,0.17),transparent_44%)] opacity-60 transition duration-700 group-hover/card:opacity-100" />
@@ -341,14 +341,14 @@ function CollectionCard({
             {/* دکمه */}
             <Link
               href={`/collections/${item.slug}`}
-              className="group/button relative mt-7 flex w-full items-center justify-between overflow-hidden rounded-[1.45rem] border border-[#e8c875]/50 bg-[linear-gradient(135deg,rgba(13,103,74,0.97),rgba(3,43,30,0.98)_54%,rgba(136,96,26,0.68))] p-2 pe-3 text-[#fff0bd] shadow-[inset_0_1px_0_rgba(255,255,255,0.25),0_16px_40px_rgba(0,0,0,0.42),0_0_26px_rgba(216,182,106,0.12)] transition duration-500 hover:-translate-y-1 hover:border-[#f4d989]/90 hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.34),0_22px_52px_rgba(0,0,0,0.5),0_0_40px_rgba(216,182,106,0.26)]"
+              className="group/button relative mt-7 flex w-full items-center justify-between overflow-hidden rounded-[1.45rem] border border-[#e8c875]/50 bg-[linear-gradient(135deg,rgba(31,45,134,0.97),rgba(12,19,66,0.98)_54%,rgba(136,96,26,0.68))] p-2 pe-3 text-[#fff0bd] shadow-[inset_0_1px_0_rgba(255,255,255,0.25),0_16px_40px_rgba(0,0,0,0.42),0_0_26px_rgba(216,182,106,0.12)] transition duration-500 hover:-translate-y-1 hover:border-[#f4d989]/90 hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.34),0_22px_52px_rgba(0,0,0,0.5),0_0_40px_rgba(216,182,106,0.26)]"
             >
               <span className="absolute inset-[3px] rounded-[1.2rem] border border-white/10" />
 
               <span className="absolute -left-1/2 top-0 h-full w-1/3 skew-x-[-22deg] bg-gradient-to-r from-transparent via-white/[0.25] to-transparent blur-sm transition-all duration-700 group-hover/button:left-[125%]" />
 
               <span className="relative z-10 flex items-center gap-3">
-                <span className="relative grid size-11 place-items-center rounded-xl border border-[#f0d487]/45 bg-[radial-gradient(circle,rgba(255,239,188,0.24),rgba(7,68,48,0.64))]">
+                <span className="relative grid size-11 place-items-center rounded-xl border border-[#f0d487]/45 bg-[radial-gradient(circle,rgba(255,239,188,0.24),rgba(20,30,95,0.64))]">
                   <motion.span
                     aria-hidden="true"
                     className="absolute inset-1 rounded-lg border border-dashed border-[#efd27f]/30"

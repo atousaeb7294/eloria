@@ -75,9 +75,9 @@ export function HeroShowcase({
       id="hero"
       aria-labelledby="eloria-hero-title"
       dir={isPersian ? "rtl" : "ltr"}
-      className="relative min-h-[100svh] scroll-mt-0 overflow-hidden bg-[#02140e] p-2.5 text-[#f8f0df] sm:p-5"
+      className="relative min-h-[100svh] scroll-mt-0 overflow-hidden bg-[#080d28] p-2.5 text-[#f8f0df] sm:p-5"
     >
-      <div className="relative isolate flex min-h-[calc(100svh-20px)] w-full items-center justify-center overflow-hidden rounded-[1.65rem] border border-[#dec06d]/24 bg-[#02140e] shadow-[0_34px_110px_rgba(0,0,0,0.7),0_0_55px_rgba(216,180,88,0.08)] sm:min-h-[calc(100svh-40px)] sm:rounded-[2.4rem]">
+      <div className="relative isolate flex min-h-[calc(100svh-20px)] w-full items-center justify-center overflow-hidden rounded-[1.65rem] border border-[#dec06d]/24 bg-[#080d28] shadow-[0_34px_110px_rgba(0,0,0,0.7),0_0_55px_rgba(216,180,88,0.08)] sm:min-h-[calc(100svh-40px)] sm:rounded-[2.4rem]">
         <SectionBackground
           sectionKey="home-hero"
           priority
@@ -90,13 +90,13 @@ export function HeroShowcase({
         {/* پوشش تصویر */}
         <div
           aria-hidden="true"
-          className="pointer-events-none absolute inset-0 z-[2] bg-[linear-gradient(180deg,rgba(1,11,7,0.22)_0%,rgba(1,20,13,0.08)_32%,rgba(1,16,10,0.4)_70%,rgba(1,9,6,0.9)_100%)]"
+          className="pointer-events-none absolute inset-0 z-[2] bg-[linear-gradient(180deg,rgba(6,9,30,0.22)_0%,rgba(7,11,40,0.08)_32%,rgba(6,10,36,0.4)_70%,rgba(6,9,28,0.9)_100%)]"
         />
 
         {/* تیرگی کناره‌ها */}
         <div
           aria-hidden="true"
-          className="pointer-events-none absolute inset-0 z-[3] bg-[radial-gradient(ellipse_at_center,transparent_13%,rgba(1,19,12,0.13)_47%,rgba(0,7,4,0.82)_100%)]"
+          className="pointer-events-none absolute inset-0 z-[3] bg-[radial-gradient(ellipse_at_center,transparent_13%,rgba(7,11,39,0.13)_47%,rgba(4,7,26,0.82)_100%)]"
         />
 
         {/* خط طلایی بالا */}
@@ -214,7 +214,7 @@ export function HeroShowcase({
               onClick={() =>
                 window.dispatchEvent(new Event("eloria-open-selection"))
               }
-              className="group relative isolate flex h-[50px] flex-1 items-center justify-center overflow-hidden rounded-[13px] border border-[#efd181]/62 bg-[linear-gradient(140deg,rgba(12,91,64,0.98),rgba(3,49,34,0.99)_52%,rgba(44,32,8,0.98))] px-5 text-[12px] font-semibold text-[#fff0bd] shadow-[0_16px_40px_rgba(0,0,0,0.42),0_0_28px_rgba(223,181,78,0.12)] transition duration-500 hover:-translate-y-1 hover:border-[#ffe7a4] hover:shadow-[0_22px_52px_rgba(0,0,0,0.52),0_0_36px_rgba(230,187,82,0.26)] sm:text-[13px]"
+              className="group relative isolate flex h-[50px] flex-1 items-center justify-center overflow-hidden rounded-[13px] border border-[#efd181]/62 bg-[linear-gradient(140deg,rgba(28,41,121,0.98),rgba(13,21,73,0.99)_52%,rgba(44,32,8,0.98))] px-5 text-[12px] font-semibold text-[#fff0bd] shadow-[0_16px_40px_rgba(0,0,0,0.42),0_0_28px_rgba(223,181,78,0.12)] transition duration-500 hover:-translate-y-1 hover:border-[#ffe7a4] hover:shadow-[0_22px_52px_rgba(0,0,0,0.52),0_0_36px_rgba(230,187,82,0.26)] sm:text-[13px]"
             >
               <span className="pointer-events-none absolute inset-[3px] rounded-[10px] border border-[#f5dc98]/13" />
 
@@ -222,9 +222,9 @@ export function HeroShowcase({
 
               <span className="pointer-events-none absolute inset-y-0 -left-1/2 w-1/3 -skew-x-12 bg-gradient-to-r from-transparent via-white/30 to-transparent blur-sm transition-transform duration-1000 group-hover:translate-x-[560%]" />
 
-              <span className="pointer-events-none absolute start-3 top-1/2 size-2 -translate-y-1/2 rotate-45 border border-[#e8c872]/55 bg-[#0b5b40]" />
+              <span className="pointer-events-none absolute start-3 top-1/2 size-2 -translate-y-1/2 rotate-45 border border-[#e8c872]/55 bg-[#1b2879]" />
 
-              <span className="pointer-events-none absolute end-3 top-1/2 size-2 -translate-y-1/2 rotate-45 border border-[#e8c872]/55 bg-[#0b5b40]" />
+              <span className="pointer-events-none absolute end-3 top-1/2 size-2 -translate-y-1/2 rotate-45 border border-[#e8c872]/55 bg-[#1b2879]" />
 
               <span className="relative z-10 flex items-center justify-center gap-2.5">
                 <svg
@@ -257,7 +257,7 @@ export function HeroShowcase({
             {/* دکمه دوم */}
             <Link
               href={`/${locale}/products`}
-              className="group relative isolate flex h-[50px] flex-1 items-center justify-center overflow-hidden rounded-[13px] border border-[#dfc16f]/34 bg-[linear-gradient(140deg,rgba(2,24,17,0.8),rgba(8,67,47,0.62))] px-5 text-[12px] font-medium text-[#f8e9c8] shadow-[inset_0_1px_0_rgba(255,255,255,0.07),0_16px_38px_rgba(0,0,0,0.34)] backdrop-blur-xl transition duration-500 hover:-translate-y-1 hover:border-[#eccd77]/66 hover:bg-[linear-gradient(140deg,rgba(3,36,25,0.92),rgba(12,88,62,0.72))] hover:text-[#ffe4a0] sm:text-[13px]"
+              className="group relative isolate flex h-[50px] flex-1 items-center justify-center overflow-hidden rounded-[13px] border border-[#dfc16f]/34 bg-[linear-gradient(140deg,rgba(9,14,45,0.8),rgba(21,31,94,0.62))] px-5 text-[12px] font-medium text-[#f8e9c8] shadow-[inset_0_1px_0_rgba(255,255,255,0.07),0_16px_38px_rgba(0,0,0,0.34)] backdrop-blur-xl transition duration-500 hover:-translate-y-1 hover:border-[#eccd77]/66 hover:bg-[linear-gradient(140deg,rgba(11,18,59,0.92),rgba(28,40,117,0.72))] hover:text-[#ffe4a0] sm:text-[13px]"
             >
               <span className="pointer-events-none absolute inset-[3px] rounded-[10px] border border-white/[0.04]" />
 

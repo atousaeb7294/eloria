@@ -81,7 +81,7 @@ export function CommerceRouteError({
   return (
     <InternalPageShell locale={pathLocale}>
       <section className="relative z-10 mx-auto flex min-h-[78vh] w-full max-w-3xl items-center px-4 pb-24 pt-[132px] sm:px-6 sm:pt-[154px]">
-        <div className="relative w-full overflow-hidden rounded-[2.35rem] border border-rose-200/18 bg-[linear-gradient(145deg,rgba(38,15,19,0.82),rgba(3,29,21,0.96)_58%,rgba(1,17,12,0.99))] px-6 py-11 text-center shadow-[0_38px_110px_rgba(0,0,0,0.48)] sm:px-11 sm:py-14">
+        <div className="relative w-full overflow-hidden rounded-[2.35rem] border border-rose-200/18 bg-[linear-gradient(145deg,rgba(38,15,19,0.82),rgba(11,16,51,0.96)_58%,rgba(6,10,37,0.99))] px-6 py-11 text-center shadow-[0_38px_110px_rgba(0,0,0,0.48)] sm:px-11 sm:py-14">
           <div
             aria-hidden="true"
             className="pointer-events-none absolute inset-x-14 top-0 h-px bg-gradient-to-r from-transparent via-rose-100/55 to-transparent"

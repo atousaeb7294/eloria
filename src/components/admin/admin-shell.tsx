@@ -86,14 +86,14 @@ export function AdminShell({
   const basePath = `/${locale}/admin`;
 
   return (
-    <main dir="rtl" className="min-h-screen bg-[#01110c] text-[#f6e8c6]">
-      <div className="pointer-events-none fixed inset-0 bg-[radial-gradient(circle_at_80%_0%,rgba(194,157,58,0.09),transparent_32%),radial-gradient(circle_at_10%_75%,rgba(8,101,69,0.18),transparent_34%)]" />
+    <main dir="rtl" className="min-h-screen bg-[#060a25] text-[#f6e8c6]">
+      <div className="pointer-events-none fixed inset-0 bg-[radial-gradient(circle_at_80%_0%,rgba(194,157,58,0.09),transparent_32%),radial-gradient(circle_at_10%_75%,rgba(25,39,132,0.18),transparent_34%)]" />
 
       <div className="relative mx-auto flex min-h-screen w-full max-w-[1800px]">
-        <aside className="sticky top-0 hidden h-screen w-[280px] shrink-0 border-l border-[#d5b75f]/15 bg-[#021811]/92 p-5 backdrop-blur-xl lg:flex lg:flex-col">
+        <aside className="sticky top-0 hidden h-screen w-[280px] shrink-0 border-l border-[#d5b75f]/15 bg-[#090e2d]/92 p-5 backdrop-blur-xl lg:flex lg:flex-col">
           <Link
             href={`/${locale}#hero`}
-            className="flex items-center gap-3 rounded-2xl border border-[#d3b45c]/20 bg-[#061f17] px-4 py-4"
+            className="flex items-center gap-3 rounded-2xl border border-[#d3b45c]/20 bg-[#0f1435] px-4 py-4"
           >
             <span className="grid h-11 w-11 place-items-center rounded-full border border-[#e0c36d]/30 bg-[#d6b95f]/10">
               <Gem className="h-6 w-6 text-[#e7c86f]" />
@@ -147,7 +147,7 @@ export function AdminShell({
         </aside>
 
         <section className="min-w-0 flex-1">
-          <header className="sticky top-0 z-30 flex min-h-20 items-center justify-between border-b border-[#d7b95f]/14 bg-[#01130d]/88 px-4 backdrop-blur-xl sm:px-6 lg:px-9">
+          <header className="sticky top-0 z-30 flex min-h-20 items-center justify-between border-b border-[#d7b95f]/14 bg-[#070b27]/88 px-4 backdrop-blur-xl sm:px-6 lg:px-9">
             <div>
               <p className="text-[10px] uppercase tracking-[0.32em] text-[#c3a955]/70">
                 Eloria Operations
@@ -161,63 +161,63 @@ export function AdminShell({
               <Link
                 href={basePath}
                 aria-label="داشبورد"
-                className="grid h-10 w-10 place-items-center rounded-xl border border-[#d1b45c]/20 bg-[#08241a] text-[#ddc36f]"
+                className="grid h-10 w-10 place-items-center rounded-xl border border-[#d1b45c]/20 bg-[#12183b] text-[#ddc36f]"
               >
                 <LayoutDashboard className="h-5 w-5" />
               </Link>
               <Link
                 href={`${basePath}/products`}
                 aria-label="محصولات"
-                className="grid h-10 w-10 place-items-center rounded-xl border border-[#d1b45c]/20 bg-[#08241a] text-[#ddc36f]"
+                className="grid h-10 w-10 place-items-center rounded-xl border border-[#d1b45c]/20 bg-[#12183b] text-[#ddc36f]"
               >
                 <PackageSearch className="h-5 w-5" />
               </Link>
               <Link
                 href={`${basePath}/orders`}
                 aria-label="سفارش‌ها"
-                className="hidden h-10 w-10 place-items-center rounded-xl border border-[#d1b45c]/20 bg-[#08241a] text-[#ddc36f] sm:grid"
+                className="hidden h-10 w-10 place-items-center rounded-xl border border-[#d1b45c]/20 bg-[#12183b] text-[#ddc36f] sm:grid"
               >
                 <ShoppingBag className="h-5 w-5" />
               </Link>
               <Link
                 href={`${basePath}/finance`}
                 aria-label="حسابداری و تحلیل"
-                className="grid h-10 w-10 place-items-center rounded-xl border border-[#d1b45c]/20 bg-[#08241a] text-[#ddc36f]"
+                className="grid h-10 w-10 place-items-center rounded-xl border border-[#d1b45c]/20 bg-[#12183b] text-[#ddc36f]"
               >
                 <BarChart3 className="h-5 w-5" />
               </Link>
               <Link
                 href={`${basePath}/content`}
                 aria-label="محتوا و سئو"
-                className="hidden h-10 w-10 place-items-center rounded-xl border border-[#d1b45c]/20 bg-[#08241a] text-[#ddc36f] sm:grid"
+                className="hidden h-10 w-10 place-items-center rounded-xl border border-[#d1b45c]/20 bg-[#12183b] text-[#ddc36f] sm:grid"
               >
                 <FileText className="h-5 w-5" />
               </Link>
               <Link
                 href={`${basePath}/security`}
                 aria-label="امنیت و هشدارها"
-                className="hidden h-10 w-10 place-items-center rounded-xl border border-[#d1b45c]/20 bg-[#08241a] text-[#ddc36f] md:grid"
+                className="hidden h-10 w-10 place-items-center rounded-xl border border-[#d1b45c]/20 bg-[#12183b] text-[#ddc36f] md:grid"
               >
                 <ShieldAlert className="h-5 w-5" />
               </Link>
               <Link
                 href={`${basePath}/intelligence`}
                 aria-label="هوشمندی عملیات"
-                className="hidden h-10 w-10 place-items-center rounded-xl border border-[#d1b45c]/20 bg-[#08241a] text-[#ddc36f] md:grid"
+                className="hidden h-10 w-10 place-items-center rounded-xl border border-[#d1b45c]/20 bg-[#12183b] text-[#ddc36f] md:grid"
               >
                 <Radar className="h-5 w-5" />
               </Link>
               <Link
                 href={`${basePath}/automation`}
                 aria-label="خلبان خودکار"
-                className="hidden h-10 w-10 place-items-center rounded-xl border border-[#d1b45c]/20 bg-[#08241a] text-[#ddc36f] lg:grid"
+                className="hidden h-10 w-10 place-items-center rounded-xl border border-[#d1b45c]/20 bg-[#12183b] text-[#ddc36f] lg:grid"
               >
                 <Bot className="h-5 w-5" />
               </Link>
               <Link
                 href={`${basePath}/support`}
                 aria-label="پشتیبانی آنلاین"
-                className="hidden h-10 w-10 place-items-center rounded-xl border border-[#d1b45c]/20 bg-[#08241a] text-[#ddc36f] lg:grid"
+                className="hidden h-10 w-10 place-items-center rounded-xl border border-[#d1b45c]/20 bg-[#12183b] text-[#ddc36f] lg:grid"
               >
                 <MessagesSquare className="h-5 w-5" />
               </Link>

@@ -282,8 +282,8 @@ export function TreasuryPanel({
     storedItems.length === 0
   ) {
     return (
-      <div className="relative overflow-hidden rounded-[28px] border border-[#d8b967]/10 bg-[linear-gradient(150deg,rgba(7,34,25,.50),rgba(3,18,13,.42))] px-5 py-10 text-center sm:px-8">
-        <div className="mx-auto grid h-14 w-14 place-items-center rounded-[19px] border border-[#d8b967]/14 bg-[#0a2a1f]/56 text-[#ddc47e]/72">
+      <div className="relative overflow-hidden rounded-[28px] border border-[#d8b967]/10 bg-[linear-gradient(150deg,rgba(17,22,56,.50),rgba(10,14,38,.42))] px-5 py-10 text-center sm:px-8">
+        <div className="mx-auto grid h-14 w-14 place-items-center rounded-[19px] border border-[#d8b967]/14 bg-[#161b41]/56 text-[#ddc47e]/72">
           <Heart
             className="h-6 w-6"
             strokeWidth={
@@ -318,8 +318,8 @@ export function TreasuryPanel({
           href={`/${locale}/collections`}
           className={
             isPersian
-              ? "font-sans mt-6 inline-flex items-center rounded-full border border-[#d9bc6d]/20 bg-[#0b3023]/62 px-5 py-2.5 text-[12px] font-medium tracking-normal text-[#ead18a] transition hover:border-[#e5c874]/35 hover:bg-[#0d3929]"
-              : "mt-6 inline-flex items-center rounded-full border border-[#d9bc6d]/20 bg-[#0b3023]/62 px-5 py-2.5 text-xs font-medium text-[#ead18a] transition hover:border-[#e5c874]/35 hover:bg-[#0d3929]"
+              ? "font-sans mt-6 inline-flex items-center rounded-full border border-[#d9bc6d]/20 bg-[#171e48]/62 px-5 py-2.5 text-[12px] font-medium tracking-normal text-[#ead18a] transition hover:border-[#e5c874]/35 hover:bg-[#1a2252]"
+              : "mt-6 inline-flex items-center rounded-full border border-[#d9bc6d]/20 bg-[#171e48]/62 px-5 py-2.5 text-xs font-medium text-[#ead18a] transition hover:border-[#e5c874]/35 hover:bg-[#1a2252]"
           }
         >
           {
@@ -367,19 +367,19 @@ export function TreasuryPanel({
                 key={
                   stored.slug
                 }
-                className="group overflow-hidden rounded-[24px] border border-[#d8b967]/10 bg-[linear-gradient(150deg,rgba(7,34,25,.58),rgba(3,18,13,.52))] shadow-[0_16px_50px_rgba(0,0,0,.14)]"
+                className="group overflow-hidden rounded-[24px] border border-[#d8b967]/10 bg-[linear-gradient(150deg,rgba(17,22,56,.58),rgba(10,14,38,.52))] shadow-[0_16px_50px_rgba(0,0,0,.14)]"
               >
                 <Link
                   href={`/${locale}/products/${encodeURIComponent(stored.slug)}`}
                   className="block"
                 >
                   <div
-                    className="aspect-[4/3] w-full bg-[#082219] bg-cover bg-center transition duration-500 group-hover:scale-[1.015] motion-reduce:transform-none"
+                    className="aspect-[4/3] w-full bg-[#121738] bg-cover bg-center transition duration-500 group-hover:scale-[1.015] motion-reduce:transform-none"
                     style={
                       product?.imageUrl
                         ? {
                             backgroundImage:
-                              `linear-gradient(rgba(3,18,13,.04),rgba(3,18,13,.22)),url("${product.imageUrl.replaceAll('"', "%22")}")`,
+                              `linear-gradient(rgba(10,14,38,.04),rgba(10,14,38,.22)),url("${product.imageUrl.replaceAll('"', "%22")}")`,
                           }
                         : undefined
                     }

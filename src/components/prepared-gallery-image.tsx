@@ -118,7 +118,7 @@ export function PreparedGalleryImage({
       <span
         role="status"
         aria-live="polite"
-        className="pointer-events-none absolute inset-x-4 bottom-20 z-10 mx-auto w-fit rounded-full border border-[#e6c781]/30 bg-[#062c20] px-4 py-2 text-xs text-[#f8f0df]"
+        className="pointer-events-none absolute inset-x-4 bottom-20 z-10 mx-auto w-fit rounded-full border border-[#e6c781]/30 bg-[#101744] px-4 py-2 text-xs text-[#f8f0df]"
       >
         {locale === "fa"
           ? "\u062f\u0631 \u062d\u0627\u0644 \u0628\u0627\u0631\u06af\u0630\u0627\u0631\u06cc \u062a\u0635\u0648\u06cc\u0631\u2026"

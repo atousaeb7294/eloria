@@ -90,7 +90,7 @@ export default async function ContactPage({ params }: ContactPageProps) {
         </div>
 
         <div className="mt-10 grid gap-6 lg:grid-cols-[1.25fr_0.75fr]">
-          <div className="self-start overflow-hidden rounded-[2.25rem] border border-[#dfc16f]/18 bg-[linear-gradient(145deg,rgba(7,39,29,.92),rgba(2,20,14,.965))] p-1 shadow-[0_26px_90px_rgba(0,0,0,.30)]">
+          <div className="self-start overflow-hidden rounded-[2.25rem] border border-[#dfc16f]/18 bg-[linear-gradient(145deg,rgba(17,23,62,.92),rgba(8,13,40,.965))] p-1 shadow-[0_26px_90px_rgba(0,0,0,.30)]">
             <ContactRequestForm locale={locale} />
           </div>
 

@@ -221,7 +221,7 @@ export function TreasuryProductSalon({
                       loading={index === selected ? "eager" : "lazy"}
                       fetchPriority={index === selected ? "high" : "auto"}
                       className="object-cover"
-                    /> : <div aria-hidden="true" className="absolute inset-0 bg-[#09241c]" />}
+                    /> : <div aria-hidden="true" className="absolute inset-0 bg-[#14193b]" />}
                   </ViewTransition>
                 </TreasuryLink>
                 <h2 className={fa ? "font-persian-calligraphy" : "font-serif"}>

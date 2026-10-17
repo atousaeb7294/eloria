@@ -155,7 +155,7 @@ export function TreasuryPromenade({
                     loader={staticBackdropLoader}
                     fill
                     sizes="100vw"
-                    className="eloria-treasury-backdrop"
+                    className="eloria-treasury-backdrop eloria-royal-art"
                     loading={index === 0 ? "eager" : "lazy"}
                     fetchPriority="low"
                   />

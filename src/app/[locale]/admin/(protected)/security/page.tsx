@@ -210,7 +210,7 @@ export default async function AdminSecurityPage() {
         {stats.map(({ label, value, icon: Icon }) => (
           <article
             key={label}
-            className="rounded-[22px] border border-[#d0b359]/15 bg-[#041d15]/82 p-5"
+            className="rounded-[22px] border border-[#d0b359]/15 bg-[#0c1133]/82 p-5"
           >
             <div className="flex items-center justify-between">
               <div>
@@ -226,7 +226,7 @@ export default async function AdminSecurityPage() {
       </section>
 
       <section className="grid gap-4 lg:grid-cols-3">
-        <article className="rounded-[22px] border border-[#d0b359]/15 bg-[#041d15]/82 p-5 lg:col-span-2">
+        <article className="rounded-[22px] border border-[#d0b359]/15 bg-[#0c1133]/82 p-5 lg:col-span-2">
           <div className="flex items-center gap-3">
             <ShieldCheck className="h-5 w-5 text-emerald-200" />
             <h2 className="font-semibold text-[#efd782]">کانال و صف هشدار</h2>
@@ -251,7 +251,7 @@ export default async function AdminSecurityPage() {
           </div>
         </article>
 
-        <article className="rounded-[22px] border border-[#d0b359]/15 bg-[#041d15]/82 p-5">
+        <article className="rounded-[22px] border border-[#d0b359]/15 bg-[#0c1133]/82 p-5">
           <div className="flex items-center gap-3">
             <BellRing className="h-5 w-5 text-sky-200" />
             <h2 className="font-semibold text-[#efd782]">Delivery Outbox</h2>
@@ -263,7 +263,7 @@ export default async function AdminSecurityPage() {
         </article>
       </section>
 
-      <section className="overflow-hidden rounded-[24px] border border-[#d0b359]/15 bg-[#041d15]/82">
+      <section className="overflow-hidden rounded-[24px] border border-[#d0b359]/15 bg-[#0c1133]/82">
         <header className="border-b border-[#d0b359]/12 px-5 py-4">
           <h2 className="font-semibold text-[#efd782]">آخرین رخدادهای امنیتی</h2>
           <p className="mt-1 text-xs text-[#8f846d]">

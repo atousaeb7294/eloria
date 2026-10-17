@@ -31,11 +31,11 @@ type SectionBackgroundProps = {
 const toneClasses: Record<BackgroundTone, string> = {
   none: "",
 
-  soft: "bg-[linear-gradient(180deg,rgba(1,18,12,0.18),rgba(1,18,12,0.4))]",
+  soft: "bg-[linear-gradient(180deg,rgba(6,11,38,0.18),rgba(6,11,38,0.4))]",
 
-  dark: "bg-[linear-gradient(180deg,rgba(1,17,11,0.4),rgba(1,14,9,0.72))]",
+  dark: "bg-[linear-gradient(180deg,rgba(6,10,37,0.4),rgba(6,10,34,0.72))]",
 
-  deep: "bg-[linear-gradient(180deg,rgba(1,15,10,0.56),rgba(1,11,7,0.88))]",
+  deep: "bg-[linear-gradient(180deg,rgba(6,10,35,0.56),rgba(6,9,30,0.88))]",
 };
 
 export function SectionBackground({
@@ -135,7 +135,7 @@ export function SectionBackground({
         className,
       ].join(" ")}
     >
-      <div className="absolute inset-0 bg-[#02140e]">
+      <div className="absolute inset-0 bg-[#080d28]">
         <picture className="absolute inset-0">
           <source media="(min-width: 768px)" srcSet={desktopSrcSet} />
           <source media="(max-width: 767px)" srcSet={mobileSrcSet} />
@@ -145,7 +145,7 @@ export function SectionBackground({
             alt=""
             draggable={false}
             className={[
-              "absolute inset-0 size-full select-none object-cover",
+              "eloria-royal-art absolute inset-0 size-full select-none object-cover",
               imageClassName,
             ].join(" ")}
             style={{ objectPosition }}
@@ -156,7 +156,7 @@ export function SectionBackground({
           <div className={["absolute inset-0", toneClasses[tone]].join(" ")} />
         )}
 
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_42%,rgba(229,194,103,0.1),transparent_38%),linear-gradient(110deg,rgba(2,45,31,0.24),transparent_42%,rgba(166,116,26,0.08))]" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_42%,rgba(229,194,103,0.1),transparent_38%),linear-gradient(110deg,rgba(11,19,69,0.24),transparent_42%,rgba(166,116,26,0.08))]" />
 
         <div className="absolute inset-0 shadow-[inset_0_0_160px_35px_rgba(0,0,0,0.52)]" />
       </div>

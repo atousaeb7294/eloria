@@ -52,7 +52,7 @@ export default async function SeoAuditPage({ params, searchParams }: {
     </section>
     <form action={repairSeoAction.bind(null,locale)} className="rounded-2xl border border-[#dec478]/25 p-5">
       <p className="mb-4 text-sm leading-7">اجرای دستی همان اصلاحات محدود و قابل‌بازگشت دستیار را انجام می‌دهد. هر نوبت حداکثر ۴۰ مقاله و ۱۰۰ تصویر بررسی می‌شود؛ اجرای دوره‌ای از ادامهٔ فهرست پیش می‌رود.</p>
-      <button className="min-h-12 rounded-full bg-[#dec478] px-6 font-semibold text-[#082a1e]" type="submit">بررسی و اعمال اصلاحات خودکار</button>
+      <button className="min-h-12 rounded-full bg-[#dec478] px-6 font-semibold text-[#131941]" type="submit">بررسی و اعمال اصلاحات خودکار</button>
     </form>
     <div className="overflow-x-auto rounded-2xl border border-[#dec478]/20"><table className="w-full text-right text-sm"><thead><tr className="bg-white/5"><th className="p-4">صفحه</th><th>ایراد</th><th>اهمیت</th><th>روش اصلاح</th></tr></thead><tbody>{findings.map((f,i)=><tr key={`${f.path}-${i}`} className="border-t border-white/10"><td className="p-4"><Link className="underline" href={f.path}>{f.path}</Link></td><td className="p-3">{f.issue}</td><td>{f.severity === "HIGH" ? "زیاد" : "متوسط"}</td><td className="p-3">{f.repairable ? "بررسی اصلاح خودکار" : "بازبینی محتوا"}</td></tr>)}</tbody></table>{findings.length === 0 && <p className="p-6">در محدوده بررسی فعلی ایرادی پیدا نشد.</p>}</div>
   </div>;

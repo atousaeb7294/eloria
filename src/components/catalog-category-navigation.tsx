@@ -65,7 +65,7 @@ export function CatalogCategoryNavigation({
               "group flex min-h-14 items-center justify-center gap-2 rounded-2xl border px-3 text-xs transition duration-300 sm:text-sm",
               active
                 ? "border-[#e5c874]/55 bg-[#d9b85f]/[0.11] text-[#f4df9f] shadow-[0_12px_35px_rgba(0,0,0,0.24),0_0_20px_rgba(217,184,95,0.07)]"
-                : "border-white/[0.08] bg-[#041b14]/55 text-[#cbbd9d]/75 hover:border-[#d9b85f]/32 hover:text-[#ead8aa]",
+                : "border-white/[0.08] bg-[#0c1130]/55 text-[#cbbd9d]/75 hover:border-[#d9b85f]/32 hover:text-[#ead8aa]",
             ].join(" ")}
           >
             <span

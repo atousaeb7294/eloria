@@ -336,7 +336,7 @@ export default async function AdminFinancePage({
 
         <nav
           aria-label="بازهٔ گزارش"
-          className="flex w-full flex-wrap gap-1.5 rounded-2xl border border-[#d0b359]/15 bg-[#041d15]/82 p-1.5 xl:w-fit"
+          className="flex w-full flex-wrap gap-1.5 rounded-2xl border border-[#d0b359]/15 bg-[#0c1133]/82 p-1.5 xl:w-fit"
         >
           {financePeriods.map(
             option => (
@@ -351,7 +351,7 @@ export default async function AdminFinancePage({
                     ? "page"
                     : undefined
                 }
-                className={`flex-1 whitespace-nowrap rounded-xl px-3 py-2.5 text-center text-sm transition sm:flex-none sm:px-4 ${period === option ? "bg-[#d2b55f] font-semibold text-[#10251c]" : "text-[#cdbf9f] hover:bg-white/5 hover:text-[#f0d981]"}`}
+                className={`flex-1 whitespace-nowrap rounded-xl px-3 py-2.5 text-center text-sm transition sm:flex-none sm:px-4 ${period === option ? "bg-[#d2b55f] font-semibold text-[#1e223c]" : "text-[#cdbf9f] hover:bg-white/5 hover:text-[#f0d981]"}`}
               >
                 {formatFinancePeriod(option)}
               </Link>
@@ -394,7 +394,7 @@ export default async function AdminFinancePage({
           <p className="mt-2 text-xs leading-6 text-[#a99c82]">ارزش فلز هنگام سفارش: {formatAdminMoney(report.metalAudit.silver.valueToman)} · {new Intl.NumberFormat("fa-IR").format(report.metalAudit.silver.itemQuantity)} قلم</p>
         </article>
 
-        <article className="rounded-[22px] border border-[#d0b359]/15 bg-[#041d15]/82 p-5 shadow-[0_18px_55px_rgba(0,0,0,0.17)]">
+        <article className="rounded-[22px] border border-[#d0b359]/15 bg-[#0c1133]/82 p-5 shadow-[0_18px_55px_rgba(0,0,0,0.17)]">
           <div className="flex items-start justify-between gap-3">
             <div>
               <p className="text-sm text-[#a99c82]">
@@ -416,7 +416,7 @@ export default async function AdminFinancePage({
           </div>
         </article>
 
-        <article className="rounded-[22px] border border-[#d0b359]/15 bg-[#041d15]/82 p-5 shadow-[0_18px_55px_rgba(0,0,0,0.17)]">
+        <article className="rounded-[22px] border border-[#d0b359]/15 bg-[#0c1133]/82 p-5 shadow-[0_18px_55px_rgba(0,0,0,0.17)]">
           <div className="flex items-start justify-between gap-3">
             <div>
               <p className="text-sm text-[#a99c82]">
@@ -435,7 +435,7 @@ export default async function AdminFinancePage({
           </p>
         </article>
 
-        <article className="rounded-[22px] border border-[#d0b359]/15 bg-[#041d15]/82 p-5 shadow-[0_18px_55px_rgba(0,0,0,0.17)]">
+        <article className="rounded-[22px] border border-[#d0b359]/15 bg-[#0c1133]/82 p-5 shadow-[0_18px_55px_rgba(0,0,0,0.17)]">
           <div className="flex items-start justify-between gap-3">
             <div>
               <p className="text-sm text-[#a99c82]">
@@ -454,7 +454,7 @@ export default async function AdminFinancePage({
           </p>
         </article>
 
-        <article className="rounded-[22px] border border-[#d0b359]/15 bg-[#041d15]/82 p-5 shadow-[0_18px_55px_rgba(0,0,0,0.17)]">
+        <article className="rounded-[22px] border border-[#d0b359]/15 bg-[#0c1133]/82 p-5 shadow-[0_18px_55px_rgba(0,0,0,0.17)]">
           <div className="flex items-start justify-between gap-3">
             <div>
               <p className="text-sm text-[#a99c82]">
@@ -473,7 +473,7 @@ export default async function AdminFinancePage({
           </p>
         </article>
 
-        <article className="rounded-[22px] border border-[#d0b359]/15 bg-[#041d15]/82 p-5 shadow-[0_18px_55px_rgba(0,0,0,0.17)]">
+        <article className="rounded-[22px] border border-[#d0b359]/15 bg-[#0c1133]/82 p-5 shadow-[0_18px_55px_rgba(0,0,0,0.17)]">
           <div className="flex items-start justify-between gap-3">
             <div>
               <p className="text-sm text-[#a99c82]">
@@ -492,7 +492,7 @@ export default async function AdminFinancePage({
           </p>
         </article>
 
-        <article className="rounded-[22px] border border-[#d0b359]/15 bg-[#041d15]/82 p-5 shadow-[0_18px_55px_rgba(0,0,0,0.17)]">
+        <article className="rounded-[22px] border border-[#d0b359]/15 bg-[#0c1133]/82 p-5 shadow-[0_18px_55px_rgba(0,0,0,0.17)]">
           <div className="flex items-start justify-between gap-3">
             <div>
               <p className="text-sm text-[#a99c82]">
@@ -513,7 +513,7 @@ export default async function AdminFinancePage({
       </section>
 
       <section className="grid gap-5 xl:grid-cols-[1.3fr_0.7fr]">
-        <article className="rounded-[24px] border border-[#d0b359]/15 bg-[#041d15]/82 p-5 sm:p-6">
+        <article className="rounded-[24px] border border-[#d0b359]/15 bg-[#0c1133]/82 p-5 sm:p-6">
           <header className="flex items-start justify-between gap-4">
             <div className="flex items-center gap-3">
               <span className="grid h-10 w-10 place-items-center rounded-xl border border-[#d1b45d]/18 bg-[#d1b45d]/8 text-[#e4c870]">
@@ -577,7 +577,7 @@ export default async function AdminFinancePage({
           )}
         </article>
 
-        <article className="rounded-[24px] border border-[#d0b359]/15 bg-[#041d15]/82 p-5 sm:p-6">
+        <article className="rounded-[24px] border border-[#d0b359]/15 bg-[#0c1133]/82 p-5 sm:p-6">
           <div className="flex items-center gap-3">
             <span className="grid h-10 w-10 place-items-center rounded-xl border border-violet-300/15 bg-violet-950/20 text-violet-200">
               <Sparkles className="h-5 w-5" />
@@ -613,7 +613,7 @@ export default async function AdminFinancePage({
       </section>
 
       <section className="grid gap-5 xl:grid-cols-[0.92fr_1.08fr]">
-        <article className="rounded-[24px] border border-[#d0b359]/15 bg-[#041d15]/82 p-5 sm:p-6">
+        <article className="rounded-[24px] border border-[#d0b359]/15 bg-[#0c1133]/82 p-5 sm:p-6">
           <div className="flex items-start gap-3">
             <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl border border-[#d1b45d]/18 bg-[#d1b45d]/8 text-[#e4c870]">
               <FilePlus2 className="h-5 w-5" />
@@ -637,7 +637,7 @@ export default async function AdminFinancePage({
                 name="category"
                 required
                 defaultValue=""
-                className="h-11 rounded-xl border border-[#d0b359]/18 bg-[#02150f] px-3 text-sm text-[#f4e2b9] outline-none focus:border-[#d8ba62]/55"
+                className="h-11 rounded-xl border border-[#d0b359]/18 bg-[#080d2a] px-3 text-sm text-[#f4e2b9] outline-none focus:border-[#d8ba62]/55"
               >
                 <option value="" disabled>انتخاب کنید</option>
                 {financeExpenseCategories.map(
@@ -658,7 +658,7 @@ export default async function AdminFinancePage({
                   type="date"
                   required
                   defaultValue={expenseDate}
-                  className="h-11 rounded-xl border border-[#d0b359]/18 bg-[#02150f] px-3 text-sm text-[#f4e2b9] outline-none focus:border-[#d8ba62]/55"
+                  className="h-11 rounded-xl border border-[#d0b359]/18 bg-[#080d2a] px-3 text-sm text-[#f4e2b9] outline-none focus:border-[#d8ba62]/55"
                 />
               </label>
               <label className="grid gap-1.5 text-sm text-[#cbbd9d]">
@@ -670,7 +670,7 @@ export default async function AdminFinancePage({
                   required
                   maxLength={30}
                   placeholder="مثال: ۱۲۵۰۰۰۰"
-                  className="h-11 rounded-xl border border-[#d0b359]/18 bg-[#02150f] px-3 text-sm text-[#f4e2b9] outline-none placeholder:text-[#776d5a] focus:border-[#d8ba62]/55"
+                  className="h-11 rounded-xl border border-[#d0b359]/18 bg-[#080d2a] px-3 text-sm text-[#f4e2b9] outline-none placeholder:text-[#776d5a] focus:border-[#d8ba62]/55"
                 />
               </label>
             </div>
@@ -683,7 +683,7 @@ export default async function AdminFinancePage({
                 inputMode="numeric"
                 maxLength={30}
                 placeholder="در صورت نداشتن، خالی بگذارید"
-                className="h-11 rounded-xl border border-[#d0b359]/18 bg-[#02150f] px-3 text-sm text-[#f4e2b9] outline-none placeholder:text-[#776d5a] focus:border-[#d8ba62]/55"
+                className="h-11 rounded-xl border border-[#d0b359]/18 bg-[#080d2a] px-3 text-sm text-[#f4e2b9] outline-none placeholder:text-[#776d5a] focus:border-[#d8ba62]/55"
               />
             </label>
 
@@ -697,7 +697,7 @@ export default async function AdminFinancePage({
                   minLength={2}
                   maxLength={160}
                   placeholder="مثال: تامین‌کننده طلا"
-                  className="h-11 rounded-xl border border-[#d0b359]/18 bg-[#02150f] px-3 text-sm text-[#f4e2b9] outline-none placeholder:text-[#776d5a] focus:border-[#d8ba62]/55"
+                  className="h-11 rounded-xl border border-[#d0b359]/18 bg-[#080d2a] px-3 text-sm text-[#f4e2b9] outline-none placeholder:text-[#776d5a] focus:border-[#d8ba62]/55"
                 />
               </label>
               <label className="grid gap-1.5 text-sm text-[#cbbd9d]">
@@ -709,7 +709,7 @@ export default async function AdminFinancePage({
                   minLength={3}
                   maxLength={160}
                   placeholder="مثال: inv-1405-101"
-                  className="h-11 rounded-xl border border-[#d0b359]/18 bg-[#02150f] px-3 text-sm text-[#f4e2b9] outline-none placeholder:text-[#776d5a] focus:border-[#d8ba62]/55"
+                  className="h-11 rounded-xl border border-[#d0b359]/18 bg-[#080d2a] px-3 text-sm text-[#f4e2b9] outline-none placeholder:text-[#776d5a] focus:border-[#d8ba62]/55"
                 />
               </label>
             </div>
@@ -721,20 +721,20 @@ export default async function AdminFinancePage({
                 maxLength={2000}
                 rows={3}
                 placeholder="دلیل، نوع پرداخت یا هر جزئیات لازم برای حسابرسی"
-                className="resize-y rounded-xl border border-[#d0b359]/18 bg-[#02150f] px-3 py-2.5 text-sm text-[#f4e2b9] outline-none placeholder:text-[#776d5a] focus:border-[#d8ba62]/55"
+                className="resize-y rounded-xl border border-[#d0b359]/18 bg-[#080d2a] px-3 py-2.5 text-sm text-[#f4e2b9] outline-none placeholder:text-[#776d5a] focus:border-[#d8ba62]/55"
               />
             </label>
 
             <button
               type="submit"
-              className="mt-1 inline-flex h-11 items-center justify-center rounded-xl bg-[#d2b55f] px-4 text-sm font-semibold text-[#10251c] transition hover:bg-[#e0c973]"
+              className="mt-1 inline-flex h-11 items-center justify-center rounded-xl bg-[#d2b55f] px-4 text-sm font-semibold text-[#1e223c] transition hover:bg-[#e0c973]"
             >
               ثبت قطعی سند و رویداد حسابرسی
             </button>
           </form>
         </article>
 
-        <article className="overflow-hidden rounded-[24px] border border-[#d0b359]/15 bg-[#041d15]/82">
+        <article className="overflow-hidden rounded-[24px] border border-[#d0b359]/15 bg-[#0c1133]/82">
           <header className="flex flex-col gap-4 border-b border-[#d0b359]/12 px-5 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6">
             <div className="flex items-center gap-3">
               <span className="grid h-10 w-10 place-items-center rounded-xl border border-[#d1b45d]/18 bg-[#d1b45d]/8 text-[#e4c870]">
@@ -859,7 +859,7 @@ export default async function AdminFinancePage({
                                     maxLength={1000}
                                     rows={2}
                                     placeholder="دلیل ابطال (حداقل ۵ حرف)"
-                                    className="resize-y rounded-lg border border-amber-300/20 bg-[#02150f] px-2.5 py-2 text-xs text-[#f4e2b9] outline-none placeholder:text-[#776d5a] focus:border-amber-300/50"
+                                    className="resize-y rounded-lg border border-amber-300/20 bg-[#080d2a] px-2.5 py-2 text-xs text-[#f4e2b9] outline-none placeholder:text-[#776d5a] focus:border-amber-300/50"
                                   />
                                   <button
                                     type="submit"
@@ -891,7 +891,7 @@ export default async function AdminFinancePage({
       </section>
 
       <section className="grid gap-5 xl:grid-cols-[1.05fr_0.95fr]">
-        <article className="overflow-hidden rounded-[24px] border border-[#d0b359]/15 bg-[#041d15]/82">
+        <article className="overflow-hidden rounded-[24px] border border-[#d0b359]/15 bg-[#0c1133]/82">
           <header className="flex items-center justify-between border-b border-[#d0b359]/12 px-5 py-4 sm:px-6">
             <div className="flex items-center gap-3">
               <span className={`grid h-10 w-10 place-items-center rounded-xl border ${reconciliationIsClear ? "border-emerald-300/15 bg-emerald-950/20 text-emerald-200" : "border-red-300/20 bg-red-950/20 text-red-200"}`}>
@@ -915,15 +915,15 @@ export default async function AdminFinancePage({
           </header>
 
           <div className="grid gap-px bg-[#d0b359]/10 sm:grid-cols-3">
-            <div className="bg-[#041d15]/82 px-5 py-4">
+            <div className="bg-[#0c1133]/82 px-5 py-4">
               <p className="text-xs text-[#8f846d]">سفارش بررسی‌شده</p>
               <p className="mt-1 font-semibold text-[#e5d3ab]">{new Intl.NumberFormat("fa-IR").format(report.reconciliation.inspectedOrderCount)}</p>
             </div>
-            <div className="bg-[#041d15]/82 px-5 py-4">
+            <div className="bg-[#0c1133]/82 px-5 py-4">
               <p className="text-xs text-[#8f846d]">اختلاف مجموع</p>
               <p className={`mt-1 font-semibold ${report.reconciliation.mismatchCount ? "text-red-200" : "text-emerald-200"}`}>{formatAdminMoney(report.reconciliation.mismatchToman)}</p>
             </div>
-            <div className="bg-[#041d15]/82 px-5 py-4">
+            <div className="bg-[#0c1133]/82 px-5 py-4">
               <p className="text-xs text-[#8f846d]">صف بررسی درگاه</p>
               <p className={`mt-1 font-semibold ${report.reconciliation.paymentReview.count ? "text-red-200" : "text-emerald-200"}`}>{new Intl.NumberFormat("fa-IR").format(report.reconciliation.paymentReview.count)}</p>
             </div>
@@ -967,7 +967,7 @@ export default async function AdminFinancePage({
           )}
         </article>
 
-        <article className="rounded-[24px] border border-[#d0b359]/15 bg-[#041d15]/82 p-5 sm:p-6">
+        <article className="rounded-[24px] border border-[#d0b359]/15 bg-[#0c1133]/82 p-5 sm:p-6">
           <div className="flex items-center gap-3">
             <span className="grid h-10 w-10 place-items-center rounded-xl border border-[#d1b45d]/18 bg-[#d1b45d]/8 text-[#e4c870]">
               <ReceiptText className="h-5 w-5" />
@@ -983,7 +983,7 @@ export default async function AdminFinancePage({
           </div>
 
           {report.expenses.categories.length ? (
-            <div className="mt-5 divide-y divide-[#d0b359]/10 rounded-2xl border border-[#d0b359]/12 bg-[#02150f] px-4">
+            <div className="mt-5 divide-y divide-[#d0b359]/10 rounded-2xl border border-[#d0b359]/12 bg-[#080d2a] px-4">
               {report.expenses.categories.map(
                 expense => {
                   const share =
@@ -1013,7 +1013,7 @@ export default async function AdminFinancePage({
       </section>
 
       <section className="grid gap-5 xl:grid-cols-[1.1fr_0.9fr]">
-        <article className="overflow-hidden rounded-[24px] border border-[#d0b359]/15 bg-[#041d15]/82">
+        <article className="overflow-hidden rounded-[24px] border border-[#d0b359]/15 bg-[#0c1133]/82">
           <header className="flex items-center justify-between border-b border-[#d0b359]/12 px-5 py-4 sm:px-6">
             <div>
               <h2 className="font-semibold text-[#efd782]">
@@ -1058,7 +1058,7 @@ export default async function AdminFinancePage({
           )}
         </article>
 
-        <article className="rounded-[24px] border border-[#d0b359]/15 bg-[#041d15]/82 p-5 sm:p-6">
+        <article className="rounded-[24px] border border-[#d0b359]/15 bg-[#0c1133]/82 p-5 sm:p-6">
           <div className="flex items-center gap-3">
             <span className="grid h-10 w-10 place-items-center rounded-xl border border-[#d1b45d]/18 bg-[#d1b45d]/8 text-[#e4c870]">
               <ReceiptText className="h-5 w-5" />
@@ -1073,7 +1073,7 @@ export default async function AdminFinancePage({
             </div>
           </div>
 
-          <dl className="mt-5 divide-y divide-[#d0b359]/10 rounded-2xl border border-[#d0b359]/12 bg-[#02150f] px-4">
+          <dl className="mt-5 divide-y divide-[#d0b359]/10 rounded-2xl border border-[#d0b359]/12 bg-[#080d2a] px-4">
             <div className="flex items-center justify-between gap-4 py-3.5 text-sm">
               <dt className="text-[#b8aa8e]">فروش اقلام</dt>
               <dd className="font-medium text-[#e5d3ab]">{formatAdminMoney(report.itemRevenueToman)}</dd>
@@ -1102,7 +1102,7 @@ export default async function AdminFinancePage({
         </article>
       </section>
 
-      <article className="flex flex-col gap-4 rounded-[24px] border border-[#d0b359]/15 bg-[#061f17]/85 p-5 sm:flex-row sm:items-start sm:justify-between sm:p-6">
+      <article className="flex flex-col gap-4 rounded-[24px] border border-[#d0b359]/15 bg-[#0f1435]/85 p-5 sm:flex-row sm:items-start sm:justify-between sm:p-6">
         <div className="flex max-w-4xl gap-3">
           <span className="mt-0.5 text-[#d3b55f]">
             <TrendingDown className="h-5 w-5" />

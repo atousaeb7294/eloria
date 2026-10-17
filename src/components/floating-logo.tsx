@@ -38,7 +38,7 @@ export function FloatingLogo({ compact = false }: { compact?: boolean }) {
 
       <span
         aria-hidden="true"
-        className="absolute inset-[4px] rounded-[1rem] border border-[#f0d480]/32 bg-[radial-gradient(circle,rgba(247,219,136,0.22),rgba(2,39,27,0.25)_60%,transparent_80%)] shadow-[0_0_34px_rgba(229,194,101,0.22)]"
+        className="absolute inset-[4px] rounded-[1rem] border border-[#f0d480]/32 bg-[radial-gradient(circle,rgba(247,219,136,0.22),rgba(10,17,62,0.25)_60%,transparent_80%)] shadow-[0_0_34px_rgba(229,194,101,0.22)]"
       />
 
       <motion.div

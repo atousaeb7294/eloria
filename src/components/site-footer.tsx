@@ -195,11 +195,11 @@ export function SiteFooter({ locale }: SiteFooterProps) {
   return (
     <footer
       id="contact"
-      className="relative z-10 scroll-mt-32 overflow-hidden border-t border-[#d8bb69]/16 bg-[#010b07] px-4 pb-7 pt-12 sm:px-6 lg:px-10"
+      className="relative z-10 scroll-mt-32 overflow-hidden border-t border-[#d8bb69]/16 bg-[#06091e] px-4 pb-7 pt-12 sm:px-6 lg:px-10"
     >
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(198,157,61,0.12),transparent_28%),linear-gradient(180deg,rgba(4,29,20,0.88),rgba(1,10,7,0.98))]"
+        className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(198,157,61,0.12),transparent_28%),linear-gradient(180deg,rgba(12,17,51,0.88),rgba(6,9,29,0.98))]"
       />
       <div
         aria-hidden="true"

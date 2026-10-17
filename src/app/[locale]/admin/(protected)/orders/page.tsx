@@ -179,21 +179,21 @@ export default async function AdminOrdersPage({
         </p>
       </header>
 
-      <form className="grid gap-3 rounded-[22px] border border-[#d0b359]/15 bg-[#041d15]/82 p-4 md:grid-cols-[1fr_240px_auto]">
+      <form className="grid gap-3 rounded-[22px] border border-[#d0b359]/15 bg-[#0c1133]/82 p-4 md:grid-cols-[1fr_240px_auto]">
         <label className="relative block">
           <Search className="pointer-events-none absolute right-3.5 top-1/2 h-5 w-5 -translate-y-1/2 text-[#aa9451]" />
           <input
             defaultValue={search}
             name="q"
             placeholder="شماره سفارش، نام، موبایل یا ایمیل"
-            className="h-12 w-full rounded-xl border border-[#d0b359]/18 bg-[#02150f] pr-11 pl-4 text-sm text-[#f4e2b9] outline-none placeholder:text-[#827763] focus:border-[#d8ba62]/55"
+            className="h-12 w-full rounded-xl border border-[#d0b359]/18 bg-[#080d2a] pr-11 pl-4 text-sm text-[#f4e2b9] outline-none placeholder:text-[#827763] focus:border-[#d8ba62]/55"
           />
         </label>
 
         <select
           defaultValue={status ?? ""}
           name="status"
-          className="h-12 rounded-xl border border-[#d0b359]/18 bg-[#02150f] px-3 text-sm text-[#d5c5a2] outline-none focus:border-[#d8ba62]/55"
+          className="h-12 rounded-xl border border-[#d0b359]/18 bg-[#080d2a] px-3 text-sm text-[#d5c5a2] outline-none focus:border-[#d8ba62]/55"
         >
           <option value="">همه وضعیت‌ها</option>
           {allowedStatuses.map(
@@ -218,7 +218,7 @@ export default async function AdminOrdersPage({
         </button>
       </form>
 
-      <section className="overflow-hidden rounded-[24px] border border-[#d0b359]/15 bg-[#041d15]/82">
+      <section className="overflow-hidden rounded-[24px] border border-[#d0b359]/15 bg-[#0c1133]/82">
         <header className="flex items-center justify-between border-b border-[#d0b359]/12 px-5 py-4">
           <h2 className="font-semibold text-[#efd782]">
             فهرست سفارش‌ها

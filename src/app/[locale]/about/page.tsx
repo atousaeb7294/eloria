@@ -105,7 +105,7 @@ export default async function AboutPage({ params }: AboutPageProps) {
         className="relative z-10 mx-auto w-full max-w-[1450px] px-4 pb-28 pt-[132px] sm:px-6 sm:pt-[144px] lg:px-10"
       >
         <header className="mx-auto max-w-4xl text-center">
-          <div className="mx-auto grid size-16 place-items-center rounded-full border border-[#d9ba63]/38 bg-[radial-gradient(circle,rgba(211,176,85,0.15),rgba(4,29,21,0.9)_70%)] text-[#e7ca77]">
+          <div className="mx-auto grid size-16 place-items-center rounded-full border border-[#d9ba63]/38 bg-[radial-gradient(circle,rgba(211,176,85,0.15),rgba(12,17,51,0.9)_70%)] text-[#e7ca77]">
             <Sparkles className="size-7" />
           </div>
           <p className="mt-6 text-[9px] uppercase tracking-[.42em] text-[#cfb66f]/60">
@@ -121,7 +121,7 @@ export default async function AboutPage({ params }: AboutPageProps) {
           </p>
         </header>
 
-        <section className="mx-auto mt-14 max-w-6xl overflow-hidden rounded-[2.8rem] border border-[#d8b860]/22 bg-[linear-gradient(145deg,rgba(9,45,32,0.94),rgba(2,20,14,0.99))] px-6 py-10 shadow-[0_34px_100px_rgba(0,0,0,0.4)] sm:px-10 sm:py-14 lg:px-16">
+        <section className="mx-auto mt-14 max-w-6xl overflow-hidden rounded-[2.8rem] border border-[#d8b860]/22 bg-[linear-gradient(145deg,rgba(20,27,69,0.94),rgba(8,13,40,0.99))] px-6 py-10 shadow-[0_34px_100px_rgba(0,0,0,0.4)] sm:px-10 sm:py-14 lg:px-16">
           <div className="mx-auto max-w-4xl">
             <p className="text-[9px] uppercase tracking-[.4em] text-[#d3bb78]/58">
               Eloria Design Philosophy
@@ -148,7 +148,7 @@ export default async function AboutPage({ params }: AboutPageProps) {
           {principles.map((principle) => {
             const Icon = principle.icon;
             return (
-              <article key={principle.title} className="rounded-[2rem] border border-white/[.075] bg-[#061c15]/78 p-6 shadow-[0_24px_65px_rgba(0,0,0,.3)]">
+              <article key={principle.title} className="rounded-[2rem] border border-white/[.075] bg-[#0f1431]/78 p-6 shadow-[0_24px_65px_rgba(0,0,0,.3)]">
                 <div className="grid size-12 place-items-center rounded-2xl border border-[#d9b85f]/24 bg-[#d9b85f]/[.05] text-[#dfc26e]">
                   <Icon className="size-6" />
                 </div>
@@ -160,7 +160,7 @@ export default async function AboutPage({ params }: AboutPageProps) {
         </section>
 
         <section className="mx-auto mt-8 grid max-w-6xl gap-4 lg:grid-cols-2" aria-label={fa ? "بخش‌های مرتبط الوریا" : "Related Eloria sections"}>
-          <Link href={`/${locale}/story`} className="group rounded-[2rem] border border-[#d8ba64]/18 bg-[#061c15]/88 p-7 shadow-[0_24px_65px_rgba(0,0,0,.3)] transition hover:-translate-y-1 hover:border-[#dfc36d]/38">
+          <Link href={`/${locale}/story`} className="group rounded-[2rem] border border-[#d8ba64]/18 bg-[#0f1431]/88 p-7 shadow-[0_24px_65px_rgba(0,0,0,.3)] transition hover:-translate-y-1 hover:border-[#dfc36d]/38">
             <BookOpenText className="size-6 text-[#dfc26e]" />
             <p className="mt-6 text-[9px] uppercase tracking-[.34em] text-[#d3bb78]/58">Eloria Story</p>
             <h2 className={`${fa ? "font-persian-title" : "font-semibold"} mt-3 text-2xl text-[#f2e1ba]`}>
@@ -171,7 +171,7 @@ export default async function AboutPage({ params }: AboutPageProps) {
             </p>
             <span className="mt-5 inline-flex items-center gap-2 text-xs text-[#e7cc7f]">{fa ? "خواندن داستان" : "Read the story"}<ArrowUpLeft className="size-4" /></span>
           </Link>
-          <Link href={`/${locale}/atelier`} className="group rounded-[2rem] border border-[#d8ba64]/18 bg-[#061c15]/88 p-7 shadow-[0_24px_65px_rgba(0,0,0,.3)] transition hover:-translate-y-1 hover:border-[#dfc36d]/38">
+          <Link href={`/${locale}/atelier`} className="group rounded-[2rem] border border-[#d8ba64]/18 bg-[#0f1431]/88 p-7 shadow-[0_24px_65px_rgba(0,0,0,.3)] transition hover:-translate-y-1 hover:border-[#dfc36d]/38">
             <ScrollText className="size-6 text-[#dfc26e]" />
             <p className="mt-6 text-[9px] uppercase tracking-[.34em] text-[#d3bb78]/58">Eloria Atelier</p>
             <h2 className={`${fa ? "font-persian-title" : "font-semibold"} mt-3 text-2xl text-[#f2e1ba]`}>

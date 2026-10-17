@@ -37,7 +37,7 @@ export default async function CommercePage({
       skip: (page - 1) * 30,
     }),
   ]);
-  const cls = "w-full rounded-lg border border-white/20 bg-[#041b13] p-3";
+  const cls = "w-full rounded-lg border border-white/20 bg-[#0c1130] p-3";
   return (
     <div className="space-y-8" dir="rtl">
       <h1 className="text-2xl">نظر خریداران و پیش‌سفارش‌ها</h1>{q.error && <p role="alert" className="rounded-xl border border-red-300/30 p-4 text-red-200">{q.error.slice(0,500)}</p>}{q.done==="1" && <p role="status">تغییرات ثبت شد.</p>}

@@ -17,10 +17,10 @@ export function EloriaWovenThreads({ placement = "showcase" }: EloriaWovenThread
             <stop offset="1" stopColor="#a67b2e" stopOpacity="0" />
           </linearGradient>
           <linearGradient id={`woven-emerald-${placement}`} x1="1" y1="0" x2="0" y2="1">
-            <stop offset="0" stopColor="#2a8b68" stopOpacity="0" />
-            <stop offset=".42" stopColor="#55a988" stopOpacity=".34" />
+            <stop offset="0" stopColor="#4452af" stopOpacity="0" />
+            <stop offset=".42" stopColor="#af75d1" stopOpacity=".34" />
             <stop offset=".68" stopColor="#c4a95d" stopOpacity=".44" />
-            <stop offset="1" stopColor="#0a4f39" stopOpacity="0" />
+            <stop offset="1" stopColor="#19246b" stopOpacity="0" />
           </linearGradient>
         </defs>
 
@@ -36,7 +36,7 @@ export function EloriaWovenThreads({ placement = "showcase" }: EloriaWovenThread
 
         <g className="eloria-thread-knot" transform="translate(720 455)" stroke="#e2c474">
           <path pathLength="1" d="M-74 0C-54-53 0-53 0 0C0 53 54 53 74 0C54-53 0-53 0 0C0 53-54 53-74 0Z" strokeWidth="1.4" />
-          <circle r="7" fill="#0b4b36" fillOpacity=".74" strokeWidth="1" />
+          <circle r="7" fill="#1a2467" fillOpacity=".74" strokeWidth="1" />
           <circle r="2.2" fill="#f4d98c" stroke="none" />
         </g>
       </svg>

@@ -195,7 +195,7 @@ export default async function AdminOrderDetailPage({
       ) : null}
 
       <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-        <article className="rounded-[22px] border border-[#d0b359]/15 bg-[#041d15]/82 p-5">
+        <article className="rounded-[22px] border border-[#d0b359]/15 bg-[#0c1133]/82 p-5">
           <div className="flex items-center gap-3 text-[#d8bd68]">
             <UserRound className="h-5 w-5" />
             <h2 className="font-semibold">مشتری</h2>
@@ -207,7 +207,7 @@ export default async function AdminOrderDetailPage({
           </div>
         </article>
 
-        <article className="rounded-[22px] border border-[#d0b359]/15 bg-[#041d15]/82 p-5">
+        <article className="rounded-[22px] border border-[#d0b359]/15 bg-[#0c1133]/82 p-5">
           <div className="flex items-center gap-3 text-[#d8bd68]">
             <MapPin className="h-5 w-5" />
             <h2 className="font-semibold">نشانی</h2>
@@ -219,7 +219,7 @@ export default async function AdminOrderDetailPage({
           </div>
         </article>
 
-        <article className="rounded-[22px] border border-[#d0b359]/15 bg-[#041d15]/82 p-5">
+        <article className="rounded-[22px] border border-[#d0b359]/15 bg-[#0c1133]/82 p-5">
           <div className="flex items-center gap-3 text-[#d8bd68]">
             <Banknote className="h-5 w-5" />
             <h2 className="font-semibold">مبالغ</h2>
@@ -232,7 +232,7 @@ export default async function AdminOrderDetailPage({
           </div>
         </article>
 
-        <article className="rounded-[22px] border border-[#d0b359]/15 bg-[#041d15]/82 p-5">
+        <article className="rounded-[22px] border border-[#d0b359]/15 bg-[#0c1133]/82 p-5">
           <div className="flex items-center gap-3 text-[#d8bd68]">
             <ReceiptText className="h-5 w-5" />
             <h2 className="font-semibold">زمان‌بندی</h2>
@@ -247,7 +247,7 @@ export default async function AdminOrderDetailPage({
       </section>
 
       {order.marketingSource || order.marketingCampaign ? (
-        <section className="rounded-[24px] border border-[#d0b359]/15 bg-[#041d15]/82 p-5">
+        <section className="rounded-[24px] border border-[#d0b359]/15 bg-[#0c1133]/82 p-5">
           <div className="flex items-center gap-3 text-[#d8bd68]">
             <ReceiptText className="h-5 w-5" />
             <h2 className="font-semibold">منبع بازاریابی سفارش</h2>
@@ -262,7 +262,7 @@ export default async function AdminOrderDetailPage({
       ) : null}
 
       {order.orderNotes ? (
-        <section className="rounded-[24px] border border-[#d0b359]/15 bg-[#041d15]/82 p-5">
+        <section className="rounded-[24px] border border-[#d0b359]/15 bg-[#0c1133]/82 p-5">
           <div className="flex items-center gap-3 text-[#d8bd68]">
             <MessageSquareText className="h-5 w-5" />
             <h2 className="font-semibold">توضیحات مشتری و شخصی‌سازی</h2>
@@ -273,7 +273,7 @@ export default async function AdminOrderDetailPage({
         </section>
       ) : null}
 
-      <section className="overflow-hidden rounded-[24px] border border-[#d0b359]/15 bg-[#041d15]/82">
+      <section className="overflow-hidden rounded-[24px] border border-[#d0b359]/15 bg-[#0c1133]/82">
         <header className="flex items-center gap-3 border-b border-[#d0b359]/12 px-5 py-4">
           <Package className="h-5 w-5 text-[#d8bd68]" />
           <h2 className="font-semibold text-[#efd782]">
@@ -329,7 +329,7 @@ export default async function AdminOrderDetailPage({
       </section>
 
       <section className="grid gap-5 xl:grid-cols-2">
-        <article className="overflow-hidden rounded-[24px] border border-[#d0b359]/15 bg-[#041d15]/82">
+        <article className="overflow-hidden rounded-[24px] border border-[#d0b359]/15 bg-[#0c1133]/82">
           <header className="border-b border-[#d0b359]/12 px-5 py-4">
             <h2 className="font-semibold text-[#efd782]">تلاش‌های پرداخت</h2>
           </header>
@@ -392,7 +392,7 @@ export default async function AdminOrderDetailPage({
           )}
         </article>
 
-        <article className="overflow-hidden rounded-[24px] border border-[#d0b359]/15 bg-[#041d15]/82">
+        <article className="overflow-hidden rounded-[24px] border border-[#d0b359]/15 bg-[#0c1133]/82">
           <header className="border-b border-[#d0b359]/12 px-5 py-4">
             <h2 className="font-semibold text-[#efd782]">تاریخچه سیستمی</h2>
           </header>
@@ -426,7 +426,7 @@ export default async function AdminOrderDetailPage({
         </article>
       </section>
 
-      <details className="rounded-[24px] border border-[#d0b359]/15 bg-[#041d15]/82 p-5">
+      <details className="rounded-[24px] border border-[#d0b359]/15 bg-[#0c1133]/82 p-5">
         <summary className="cursor-pointer font-semibold text-[#efd782]">
           Snapshot قیمت‌گذاری سفارش
         </summary>
