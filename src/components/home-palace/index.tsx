@@ -172,19 +172,19 @@ export function HomePalace() {
               <h3 id={`ep-title-${slug}`} className="ep-sr-only">{name}</h3>
               <ReferencePicture art={mobile.closed} media={mobileMedia} className="ep-mobile-art"
                 sizes="(max-width: 774px) calc(100vw - 24px), 750px" />
-              <picture className="ep-open-patch" aria-hidden="true">
+              <picture className="ep-open-patch">
                 <source media={mobileMedia} srcSet={sourceSet(mobile.open)}
                   sizes="(max-width: 774px) calc(100vw - 24px), 750px" type="image/webp" />
                 <source media={desktopMedia} srcSet={sourceSet(desktop)} sizes="300px" type="image/webp" />
-                <img className="eloria-royal-art" src={emptyPixel} alt="" width={desktop.width} height={desktop.height}
+                <img className="eloria-royal-art" src={emptyPixel} alt="" aria-hidden="true" width={desktop.width} height={desktop.height}
                   loading="eager" decoding="async" fetchPriority="low" />
               </picture>
-              <picture className="ep-hinged-lid" aria-hidden="true">
+              <picture className="ep-hinged-lid">
                 <source media={mobileMedia} srcSet={sourceSet(mobile.closed)}
                   sizes="(max-width: 774px) calc(100vw - 24px), 750px" type="image/webp" />
                 <source media={desktopMedia} srcSet={sourceSet(assets.desktop)}
                   sizes="(max-width: 1392px) calc(100vw - 32px), 1360px" type="image/webp" />
-                <img className="eloria-royal-art" src={emptyPixel} alt="" width={1126} height={813}
+                <img className="eloria-royal-art" src={emptyPixel} alt="" aria-hidden="true" width={1126} height={813}
                   loading="lazy" decoding="async" fetchPriority="low" />
               </picture>
               {/* Preserve the scene and its frames; real product layers cover

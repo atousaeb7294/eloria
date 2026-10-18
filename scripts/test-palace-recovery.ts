@@ -35,9 +35,9 @@ async function scenario({ intro = false, saveData = false, unavailable = false }
     dataset: { treasury }, getBoundingClientRect: () => ({ top: index * 1000, bottom: index * 1000 + 400 }),
   }));
   const root = { querySelectorAll: () => bays, getBoundingClientRect: () => ({ bottom: 3000 }) };
-  const module = { exports: {} as any };
+  const sandboxModule = { exports: {} as any };
   runInNewContext(compile("src/components/home-palace/index.tsx"), {
-    module, exports: module.exports, console, AbortController, Date: { now: () => now },
+    module: sandboxModule, exports: sandboxModule.exports, console, AbortController, Date: { now: () => now },
     navigator: { connection: { saveData } },
     document: {
       visibilityState: "visible", querySelector: () => intro ? {} : null,
@@ -81,7 +81,7 @@ async function scenario({ intro = false, saveData = false, unavailable = false }
       return require(name);
     },
   });
-  const Component = module.exports.HomePalace;
+  const Component = sandboxModule.exports.HomePalace;
   const html = renderToStaticMarkup(React.createElement(Component));
   for (const slug of ["gold", "silver", "weave"]) assert.ok(html.includes(`/fa/collections/${slug}`));
   assert.equal((html.match(/class="ep-enter"/g) || []).length, 3);
@@ -151,13 +151,13 @@ async function scenario({ intro = false, saveData = false, unavailable = false }
 async function apiScenario() {
   const queries: any[] = [];
   const row = { ...catalogue[0], createdAt: new Date(), nameFa: "دلبر", nameEn: "Delbar", isFeatured: true, images: [{ imageUrl: catalogue[0].imageUrl }] };
-  const module = { exports: {} as any };
+  const sandboxModule = { exports: {} as any };
   runInNewContext(compile("src/app/api/treasury/preview/route.ts"), {
-    module, exports: module.exports, URL, Date, Map,
+    module: sandboxModule, exports: sandboxModule.exports, URL, Date, Map,
     require: (name: string) => name === "next/server" ? { NextResponse: { json: (data: unknown) => data } }
       : { withDatabaseStatementTimeout: (_ms: number, fn: any) => fn({ product: { findMany: async (query: any) => { queries.push(query); return [row]; } } }) },
   });
-  const response = await module.exports.GET({ url: "https://eloriagallery.ir/api/treasury/preview?locale=fa" });
+  const response = await sandboxModule.exports.GET({ url: "https://eloriagallery.ir/api/treasury/preview?locale=fa" });
   assert.equal(response.items.length, 1, "Mixed/category/featured duplicates collapse to one record");
   assert.equal(response.items[0].imageUrl, row.images[0].imageUrl);
   assert.equal(response.items[0].isFeatured, true);

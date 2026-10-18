@@ -1,6 +1,7 @@
 import { execFileSync } from "node:child_process";
 import { readdirSync, readFileSync, statSync } from "node:fs";
 import path from "node:path";
+import ts from "typescript";
 
 type Check = {
   name: string;
@@ -465,6 +466,40 @@ const dangerousRuntime: string[] = [];
 const rawImages: string[] = [];
 const unsafeBlankTargets: string[] = [];
 
+// Palace scene artwork uses media-specific <picture> sources. Keep this
+// exception limited to sized, labelled artwork inside those pictures; product
+// photography still goes through ProductImage and any standalone <img> fails.
+function isReviewedPalaceArtwork(content: string): boolean {
+  const source = ts.createSourceFile("palace.tsx", content, ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
+  let imageCount = 0;
+  let valid = true;
+  function visit(node: ts.Node) {
+    if ((ts.isJsxSelfClosingElement(node) || ts.isJsxOpeningElement(node)) && node.tagName.getText(source) === "img") {
+      imageCount++;
+      const image = ts.isJsxOpeningElement(node) ? node.parent : node;
+      const picture = image.parent;
+      const attributes = node.attributes.properties;
+      const hasAttribute = (name: string) => attributes.some(attribute =>
+        ts.isJsxAttribute(attribute) && attribute.name.getText(source) === name);
+      const artworkClass = attributes.some(attribute =>
+        ts.isJsxAttribute(attribute) && attribute.name.getText(source) === "className" &&
+        attribute.initializer && ts.isStringLiteral(attribute.initializer) &&
+        attribute.initializer.text.split(/\s+/).includes("eloria-royal-art"));
+      valid &&= Boolean(picture && ts.isJsxElement(picture) &&
+        picture.openingElement.tagName.getText(source) === "picture" &&
+        picture.children.some(child => ts.isJsxSelfClosingElement(child) &&
+          child.tagName.getText(source) === "source") &&
+        artworkClass && hasAttribute("alt") && hasAttribute("width") && hasAttribute("height"));
+    }
+    ts.forEachChild(node, visit);
+  }
+  visit(source);
+  return imageCount > 0 && valid;
+}
+
+const palaceArtworkFile = "src/components/home-palace/index.tsx";
+const palaceArtworkReviewed = isReviewedPalaceArtwork(read(palaceArtworkFile));
+
 const reviewedAdminRawImageFiles = new Set([
   "src/app/[locale]/admin/(protected)/products/page.tsx",
   "src/components/admin/admin-product-media-manager.tsx",
@@ -518,7 +553,8 @@ check(
 );
 
 const unexpectedRawImages = rawImages.filter(
-  (file) => !reviewedAdminRawImageFiles.has(file),
+  (file) => !reviewedAdminRawImageFiles.has(file) &&
+    !(file === palaceArtworkFile && palaceArtworkReviewed),
 );
 
 const unannotatedReviewedRawImages = rawImages.filter(
@@ -528,7 +564,7 @@ const unannotatedReviewedRawImages = rawImages.filter(
 );
 
 check(
-  "Raw image usage is limited to reviewed admin or eNamad surfaces",
+  "Raw image usage is limited to reviewed admin, responsive artwork or eNamad surfaces",
   unexpectedRawImages.length === 0 && unannotatedReviewedRawImages.length === 0,
   [...unexpectedRawImages, ...unannotatedReviewedRawImages].join(", "),
 );
