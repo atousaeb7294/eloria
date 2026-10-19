@@ -1,85 +1,96 @@
 "use client";
 
-import { useLinkStatus } from "next/link";
-import { useCallback, useEffect, useRef, useState, type CSSProperties } from "react";
+import Image from "next/image";
+import { useRouter } from "next/navigation";
+import { useCallback, useEffect, useRef, useState, useTransition, type CSSProperties } from "react";
 import { TreasuryLink } from "@/components/treasury-transition";
 import { ProductImage } from "@/components/product-image";
-import { startPalaceEntry } from "./palace-entry";
+import { PALACE_OPENING_MS, startPalaceEntry } from "./palace-entry";
 import { featuredProducts, productHref, readPalaceProducts, treasuryProducts, type PalaceProduct, type Treasury } from "./palace-products";
-import assets from "./palace-reference-assets.json";
 import "./palace.css";
 
-const emptyPixel = "data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=";
-const mobileMedia = "(max-width: 900px)";
-const desktopMedia = "(min-width: 901px)";
 const destinations = [
-  { slug: "gold", name: "گنجینهٔ طلا" },
-  { slug: "silver", name: "گنجینهٔ نقره" },
-  { slug: "weave", name: "گنجینهٔ بافت" },
+  { slug: "gold", name: "گنجینهٔ طلا", story: "نقشی از آفتاب، برای ماندن" },
+  { slug: "silver", name: "گنجینهٔ نقره", story: "روایتی آرام از روشنایی" },
+  { slug: "weave", name: "گنجینهٔ بافت", story: "گره‌به‌گره، بافته از مهر" },
 ] as const;
-type Artwork = typeof assets.desktop;
 
-function sourceSet(art: Artwork) {
-  return art.variants.map(variant => `${variant.url} ${variant.width}w`).join(", ");
-}
-
-// Art-directed sources prevent a phone downloading the desktop scene as well.
-// Native lazy loading also works before hydration and without the catalogue API.
-function ReferencePicture({ art, media, className, sizes, alt = "" }: {
-  art: Artwork; media?: string; className: string; sizes: string; alt?: string;
-}) {
-  return <picture className={className}>
-    <source media={media} srcSet={sourceSet(art)} sizes={sizes} type="image/webp" />
-    <img className="eloria-royal-art" src={media ? emptyPixel : art.variants.at(-1)!.url}
-      width={art.width} height={art.height} alt={alt}
-      loading="lazy" decoding="async" fetchPriority="low" />
-  </picture>;
-}
-
-// A cancelled navigation can settle without unmounting the home page.
-// Reset only after a real pending navigation, never on an animation timer.
-function EntryStatus({ treasury, onSettled }: { treasury: Treasury; onSettled: (treasury: Treasury) => void }) {
-  const { pending } = useLinkStatus();
-  const wasPending = useRef(false);
-  useEffect(() => {
-    if (pending) wasPending.current = true;
-    else if (wasPending.current) { wasPending.current = false; onSettled(treasury); }
-  }, [pending, treasury, onSettled]);
-  return null;
+function ChestArtwork({ slug, name }: { slug: Treasury; name: string }) {
+  const src = `/images/palace/royal-20261019/${slug}.jpg`;
+  return <div className="ep-chest-art">
+    {/* Exact uploaded JPEGs: no resize, quality filter or second compression. */}
+    <Image src={src} alt={`صندوقچهٔ ${name}`} width={1312} height={1199}
+      unoptimized loading="lazy" decoding="async" className="ep-chest-base" />
+    <span className="ep-chest-interior" aria-hidden="true" />
+    <div className="ep-hinged-lid" aria-hidden="true">
+      <Image src={src} alt="" width={1312} height={1199} unoptimized loading="lazy" decoding="async" />
+    </div>
+    <span className="ep-chest-light" aria-hidden="true" />
+  </div>;
 }
 
 export function HomePalace() {
+  const router = useRouter();
   const root = useRef<HTMLElement>(null);
+  const entryTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  const ownNavigation = useRef(false);
+  const wasPending = useRef(false);
+  const [isPending, startTransition] = useTransition();
   const [opened, setOpened] = useState<Treasury | null>(null);
   const [catalog, setCatalog] = useState<PalaceProduct[]>([]);
   const [previewState, setPreviewState] = useState<"loading" | "ready" | "unavailable">("loading");
-  const reset = useCallback(() => setOpened(null), []);
-  const settle = useCallback((treasury: Treasury) => setOpened(current => current === treasury ? null : current), []);
+  const [refreshKey, setRefreshKey] = useState(0);
+  const [warmed, setWarmed] = useState<Treasury[]>([]);
+
+  const reset = useCallback(() => {
+    clearTimeout(entryTimer.current);
+    entryTimer.current = undefined;
+    setOpened(null);
+  }, []);
 
   useEffect(() => {
+    const otherNavigation = () => { if (!ownNavigation.current) reset(); };
+    const escape = (event: KeyboardEvent) => { if (event.key === "Escape") reset(); };
     window.addEventListener("pageshow", reset);
     window.addEventListener("popstate", reset);
+    window.addEventListener("eloria:navigate", otherNavigation);
+    window.addEventListener("keydown", escape);
     return () => {
+      clearTimeout(entryTimer.current);
       window.removeEventListener("pageshow", reset);
       window.removeEventListener("popstate", reset);
+      window.removeEventListener("eloria:navigate", otherNavigation);
+      window.removeEventListener("keydown", escape);
     };
   }, [reset]);
 
-  const [warmed, setWarmed] = useState<Treasury[]>([]);
+  useEffect(() => {
+    if (isPending) wasPending.current = true;
+    else if (wasPending.current) { wasPending.current = false; reset(); }
+  }, [isPending, reset]);
+
   const warm = useCallback((slug: Treasury) => {
     const connection = (navigator as Navigator & {
       connection?: { saveData?: boolean; effectiveType?: string };
     }).connection;
     if (connection?.saveData || /(^|-)2g$/.test(connection?.effectiveType ?? "")) return;
-    // Link's full prefetch also owns invalidation and deduplicates both links.
     setWarmed(current => current.includes(slug) ? current : [...current, slug]);
   }, []);
 
-  function enter(slug: Treasury) {
+  function enter(event: { preventDefault: () => void }, slug: Treasury) {
+    clearTimeout(entryTimer.current);
     if (root.current) startPalaceEntry(root.current, slug);
     setOpened(slug);
-    // Keep the actual chest open while Next renders the destination. There is
-    // no cloned/zoomed scene, timed reset, text overlay or navigation gate.
+    // onNavigate preserves native new-tab, modifier-click and no-JS links.
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    event.preventDefault();
+    entryTimer.current = setTimeout(() => {
+      entryTimer.current = undefined;
+      ownNavigation.current = true;
+      window.dispatchEvent(new Event("eloria:navigate"));
+      ownNavigation.current = false;
+      startTransition(() => router.push(`/fa/collections/${slug}`, { transitionTypes: [] }));
+    }, PALACE_OPENING_MS);
   }
 
   useEffect(() => {
@@ -92,7 +103,6 @@ export function HomePalace() {
     let observer: IntersectionObserver | undefined;
     function start() {
       if (disposed || !nearby || (!introFinished && document.querySelector(".eloria-intro-root"))) return;
-      // Warm visible treasuries before a mobile tap; hover alone is too late.
       element?.querySelectorAll<HTMLElement>("[data-treasury]").forEach(bay => {
         const rect = bay.getBoundingClientRect();
         if (rect.bottom >= 0 && rect.top <= window.innerHeight + 200) warm(bay.dataset.treasury as Treasury);
@@ -102,7 +112,7 @@ export function HomePalace() {
       lastFetch = Date.now();
       controller = new AbortController();
       timeout = setTimeout(() => controller?.abort(), 8000);
-      void fetch("/api/treasury/preview?locale=fa", { signal: controller.signal })
+      void fetch("/api/treasury/preview?locale=fa", { signal: controller.signal, cache: "no-store" })
         .then(response => response.ok ? response.json() : null)
         .then(data => {
           if (disposed) return;
@@ -143,107 +153,90 @@ export function HomePalace() {
       controller?.abort();
       clearTimeout(timeout);
     };
-  }, [warm]);
-  const featured = featuredProducts(catalog);
+  }, [warm, refreshKey]);
 
-  return <section id="treasury-gold" aria-label="گنجینه‌های الوریا" ref={root}>
-    <div id="eloria-home-palace" className="ep-surface" dir="rtl">
+  const featured = featuredProducts(catalog);
+  const status = previewState === "loading" ? "در حال دریافت آثار…"
+    : previewState === "unavailable" ? "دریافت تصاویر محصولات موقتاً ممکن نیست."
+      : "منتخب‌های تازه به‌زودی در اینجا قرار می‌گیرند.";
+
+  return <section id="treasury-gold" aria-labelledby="ep-treasuries-title" ref={root}>
+    <div id="eloria-home-palace" className="ep-surface" dir="rtl"
+      style={{ "--ep-opening-ms": `${PALACE_OPENING_MS}ms` } as CSSProperties}>
+      <div className="ep-royal-veins" aria-hidden="true" />
+      <header className="ep-heading">
+        <span className="ep-eyebrow" lang="en">ELORIA · THE TREASURIES</span>
+        <h2 id="ep-treasuries-title" className="font-persian-title">گنجینه‌های الوریا</h2>
+        <p>هر صندوقچه، آغاز یک روایت</p>
+      </header>
       <div className="ep-stage" data-open={opened}>
-        <ReferencePicture art={assets.desktop} media={desktopMedia} className="ep-desktop-art"
-          sizes="(max-width: 1392px) calc(100vw - 32px), 1360px" />
-        <div className="ep-braziers" aria-hidden="true">
-          {["left", "right"].map(side => <ReferencePicture key={side} art={assets.brazier}
-            media={desktopMedia} className={`ep-brazier ep-brazier-${side}`} sizes="110px" />)}
-        </div>
         <nav className="ep-treasuries" aria-label="انتخاب و ورود به گنجینه">
-          {destinations.map(({ slug, name }) => {
+          {destinations.map(({ slug, name, story }) => {
             const products = treasuryProducts(catalog, slug);
-            const mobile = assets.mobile[slug];
-            const desktop = assets.opened[slug];
-            const rectangle = desktop.rectangle;
-            const style = {
-              "--ep-patch-left": `${rectangle.left / 1126 * 100}%`,
-              "--ep-patch-top": `${rectangle.top / 813 * 100}%`,
-              "--ep-patch-width": `${rectangle.width / 1126 * 100}%`,
-              "--ep-patch-height": `${rectangle.height / 813 * 100}%`,
-            } as CSSProperties;
-            return <section key={slug} className={`ep-bay ep-bay-${slug}`}
-              data-treasury={slug} data-open={opened === slug} style={style} aria-labelledby={`ep-title-${slug}`}>
-              <h3 id={`ep-title-${slug}`} className="ep-sr-only">{name}</h3>
-              <ReferencePicture art={mobile.closed} media={mobileMedia} className="ep-mobile-art"
-                sizes="(max-width: 774px) calc(100vw - 24px), 750px" />
-              <picture className="ep-open-patch">
-                <source media={mobileMedia} srcSet={sourceSet(mobile.open)}
-                  sizes="(max-width: 774px) calc(100vw - 24px), 750px" type="image/webp" />
-                <source media={desktopMedia} srcSet={sourceSet(desktop)} sizes="300px" type="image/webp" />
-                <img className="eloria-royal-art" src={emptyPixel} alt="" aria-hidden="true" width={desktop.width} height={desktop.height}
-                  loading="eager" decoding="async" fetchPriority="low" />
-              </picture>
-              <picture className="ep-hinged-lid">
-                <source media={mobileMedia} srcSet={sourceSet(mobile.closed)}
-                  sizes="(max-width: 774px) calc(100vw - 24px), 750px" type="image/webp" />
-                <source media={desktopMedia} srcSet={sourceSet(assets.desktop)}
-                  sizes="(max-width: 1392px) calc(100vw - 32px), 1360px" type="image/webp" />
-                <img className="eloria-royal-art" src={emptyPixel} alt="" aria-hidden="true" width={1126} height={813}
-                  loading="lazy" decoding="async" fetchPriority="low" />
-              </picture>
-              {/* Preserve the scene and its frames; real product layers cover
-                  the decorative samples before and after catalogue loading. */}
-              <ReferencePicture art={mobile.reference} media={mobileMedia} className="ep-reference-copy"
-                sizes="(max-width: 774px) calc(100vw - 24px), 750px" />
-              <div className="ep-photos" aria-label={`نمونه‌های ${name}`}>
-                {[0, 1, 2].map(index => {
-                  const product = products[index];
-                  const className = `ep-photo ep-photo-${index + 1}`;
-                  return product ? <TreasuryLink key={product.slug} className={className}
-                    href={productHref(product)} prefetch={false} showPending={false}
-                    title={product.name} aria-label={`مشاهدهٔ ${product.name}`}>
-                    <ProductImage src={product.imageUrl} alt={product.name} fill sizes="(max-width:900px) 17vw, 60px" />
-                  </TreasuryLink> : <span key={index} className={`${className} ep-product-placeholder`} aria-hidden="true" />;
-                })}
+            const linkProps = {
+              href: `/fa/collections/${slug}`,
+              prefetch: warmed.includes(slug),
+              showPending: false,
+              onPointerEnter: () => warm(slug),
+              onPointerDown: () => warm(slug),
+              onFocus: () => warm(slug),
+              onNavigate: (event: { preventDefault: () => void }) => enter(event, slug),
+            };
+            return <section key={slug} className={`ep-bay ep-bay-${slug}`} dir="rtl"
+              id={slug === "gold" ? "ep-bay-gold" : `treasury-${slug}`}
+              data-treasury={slug} data-open={opened === slug} aria-labelledby={`ep-title-${slug}`}>
+              <TreasuryLink {...linkProps} className={`ep-chest-target ep-chest-${slug}`}
+                aria-label={`باز کردن صندوقچه و ورود به ${name}`}>
+                <ChestArtwork slug={slug} name={name} />
+              </TreasuryLink>
+              <div className="ep-bay-content">
+                <h3 id={`ep-title-${slug}`} className="ep-bay-title font-persian-title">{name}</h3>
+                <p className="ep-bay-story">{story}</p>
+                <div className="ep-photos" aria-label={`نمونه‌های ${name}`}>
+                  {[0, 1, 2].map(index => {
+                    const product = products[index];
+                    return product ? <TreasuryLink key={product.slug} className="ep-photo"
+                      href={productHref(product)} prefetch={false} showPending={false}
+                      title={product.name} aria-label={`مشاهدهٔ ${product.name}`}>
+                      <ProductImage src={product.imageUrl} alt={product.name} fill unoptimized
+                        sizes="(max-width: 700px) 17vw, 92px" />
+                    </TreasuryLink> : <span key={index} className="ep-photo ep-product-placeholder" aria-hidden="true"><span>✧</span></span>;
+                  })}
+                </div>
+                <TreasuryLink {...linkProps} className="ep-enter">
+                  <span>ورود به {name}</span><span className="ep-enter-mark" aria-hidden="true">‹</span>
+                </TreasuryLink>
               </div>
-              <TreasuryLink className="ep-enter" href={`/fa/collections/${slug}`}
-                prefetch={warmed.includes(slug)} showPending={false} onPointerEnter={() => warm(slug)}
-                onPointerDown={() => warm(slug)} onFocus={() => warm(slug)} onNavigate={() => enter(slug)}>
-                <span className="ep-sr-only">ورود به {name}</span>
-                <EntryStatus treasury={slug} onSettled={settle} />
-              </TreasuryLink>
-              <TreasuryLink className={`ep-chest-target ep-chest-${slug}`} href={`/fa/collections/${slug}`}
-                prefetch={warmed.includes(slug)} showPending={false} aria-label={`باز کردن صندوقچه و ورود به ${name}`}
-                onPointerEnter={() => warm(slug)} onPointerDown={() => warm(slug)}
-                onFocus={() => warm(slug)} onNavigate={() => enter(slug)}>
-                <EntryStatus treasury={slug} onSettled={settle} />
-              </TreasuryLink>
             </section>;
           })}
         </nav>
+        <p className="ep-entry-status" role="status" aria-live="polite">
+          {opened ? `در حال باز کردن ${destinations.find(item => item.slug === opened)?.name}…` : ""}
+        </p>
       </div>
       <section className="ep-featured" aria-labelledby="ep-featured-title">
-        <h2 id="ep-featured-title" className="ep-section-title font-persian-title">منتخب‌های الوریا</h2>
-        <ReferencePicture art={assets.featured} media={desktopMedia} className="ep-featured-art"
-          sizes="(max-width: 1392px) calc(100vw - 32px), 1360px" />
-        <div className="ep-featured-grid">
-          {featured.map((product, index) => {
-            const className = `ep-featured-product${index >= 4 ? " ep-desktop-only" : ""}`;
-            const contents = <>
-              <div className="ep-featured-backing" aria-hidden="true" />
-              <div className="ep-featured-image">
-                {product && <ProductImage src={product.imageUrl} alt={product.name} fill
-                  sizes="(max-width:774px) calc((100vw - 44px) / 2), (max-width:900px) 365px, 260px" />}
-              </div>
-              <span className="ep-featured-name font-persian-title" dir="rtl">{product?.name ?? "—"}</span>
-              <span className="ep-featured-number" aria-hidden="true" dir="ltr">{String(index + 1).padStart(2, "0")}</span>
-            </>;
-            return product ? <TreasuryLink key={index} className={className}
-              href={productHref(product)} prefetch={false} showPending={false} aria-label={`مشاهدهٔ ${product.name}`}>
-              {contents}
-            </TreasuryLink> : <div key={index} className={`${className} ep-product-placeholder`} aria-hidden="true">{contents}</div>;
-          })}
+        <div className="ep-featured-heading">
+          <h2 id="ep-featured-title" className="ep-section-title font-persian-title">منتخب‌های الوریا</h2>
+          <p>دست‌چین‌شده برای سلیقهٔ شما</p>
         </div>
-        <p className="ep-sr-only" role="status">{previewState === "loading" ? "در حال دریافت محصولات"
-          : previewState === "unavailable" ? "نمایش محصولات موقتاً در دسترس نیست" : ""}</p>
+        {featured.length > 0 ? <div className="ep-featured-grid">
+          {featured.map(product => <TreasuryLink key={product.slug} className="ep-featured-product"
+            href={productHref(product)} prefetch={false} showPending={false} aria-label={`مشاهدهٔ ${product.name}`}>
+            <div className="ep-featured-image">
+              <ProductImage src={product.imageUrl} alt={product.name} fill unoptimized
+                sizes="(max-width: 700px) 45vw, (max-width: 1100px) 30vw, 400px" />
+            </div>
+            <span className="ep-featured-caption"><span className="ep-featured-name">{product.name}</span>
+              <span aria-hidden="true">‹</span></span>
+          </TreasuryLink>)}
+        </div> : <p className="ep-catalog-status" role="status">{status}</p>}
+        {previewState === "unavailable" && <div className="ep-retry">
+          {featured.length > 0 && <p role="status">به‌روزرسانی تصاویر موقتاً ممکن نیست.</p>}
+          <button type="button" onClick={() => { setPreviewState("loading"); setRefreshKey(key => key + 1); }}>تلاش دوباره</button>
+        </div>}
+        <noscript><p className="ep-catalog-status">برای دیدن همهٔ آثار، وارد گنجینه‌ها یا فروشگاه شوید.</p></noscript>
         <TreasuryLink className="ep-view-all" href="/fa/products" prefetch={false} showPending={false}>
-          مشاهدهٔ همه <span aria-hidden="true">‹</span>
+          مشاهدهٔ همهٔ آثار <span aria-hidden="true">‹</span>
         </TreasuryLink>
       </section>
     </div>

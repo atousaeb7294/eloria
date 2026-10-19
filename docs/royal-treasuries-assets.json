@@ -1,0 +1,29 @@
+[
+  {
+    "treasury": "gold",
+    "path": "public/images/palace/royal-20261019/gold.jpg",
+    "original_filename": "eba8c3bc-3a66-4477-a51c-000ff69914df(2).jpg",
+    "width": 1312,
+    "height": 1199,
+    "bytes": 516826,
+    "sha256": "27dcde2b8b5d732f92006670f51cfb128d48454483b8f0d963e1935186ba3060"
+  },
+  {
+    "treasury": "silver",
+    "path": "public/images/palace/royal-20261019/silver.jpg",
+    "original_filename": "04ff8fcf-f46b-458f-9a93-354cb7820947(2).jpg",
+    "width": 1312,
+    "height": 1199,
+    "bytes": 439663,
+    "sha256": "9e53dfb23d5a637539dfefe294e9c014877aea5b39e673f1eacbd063b39280a6"
+  },
+  {
+    "treasury": "weave",
+    "path": "public/images/palace/royal-20261019/weave.jpg",
+    "original_filename": "363e10a5-d957-452a-ab45-af6eaf7c2c2e(2).jpg",
+    "width": 1312,
+    "height": 1199,
+    "bytes": 430558,
+    "sha256": "1ccf4766026bccf71172f08e4679bb254622586e4f383c1fa4d18643ce874f17"
+  }
+]

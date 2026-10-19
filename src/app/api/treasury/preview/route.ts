@@ -28,10 +28,12 @@ export async function GET(request: Request) {
               collection: { isActive: true },
               images: { some: { imageUrl: { not: "" } } },
             },
-            take: "isFeatured" in metal ? 8 : 5,
-            orderBy: [{ isFeatured: "desc" }, { displayOrder: "asc" }, { createdAt: "desc" }, { id: "desc" }],
+            take: "isFeatured" in metal ? 9 : 5,
+            orderBy: [{ displayOrder: "asc" }, { createdAt: "desc" }, { id: "desc" }],
             select: {
+              id: true,
               slug: true,
+              displayOrder: true,
               createdAt: true,
               nameFa: true,
               nameEn: true,
@@ -55,8 +57,9 @@ export async function GET(request: Request) {
       ).values(),
     ].sort(
       (a, b) =>
+        a.displayOrder - b.displayOrder ||
         b.createdAt.getTime() - a.createdAt.getTime() ||
-        b.slug.localeCompare(a.slug),
+        b.id.localeCompare(a.id),
     );
     return NextResponse.json(
       {
@@ -69,6 +72,7 @@ export async function GET(request: Request) {
             hasGold: p.hasGold,
             hasSilver: p.hasSilver,
             isFeatured: p.isFeatured,
+            displayOrder: p.displayOrder,
             imageUrl: p.images[0].imageUrl,
           })),
       },

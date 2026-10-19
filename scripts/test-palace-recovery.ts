@@ -1,6 +1,7 @@
-/* eslint-disable @typescript-eslint/no-explicit-any -- Isolated browser doubles. */
+/* eslint-disable @typescript-eslint/no-explicit-any -- Isolated UI and database doubles. */
 import assert from "node:assert/strict";
 import { readFileSync, existsSync } from "node:fs";
+import { createHash } from "node:crypto";
 import { createRequire } from "node:module";
 import { runInNewContext } from "node:vm";
 import ts from "typescript";
@@ -8,8 +9,7 @@ import React, { act } from "react";
 import { create, type ReactTestRenderer } from "react-test-renderer";
 import { renderToStaticMarkup } from "react-dom/server";
 import * as products from "../src/components/home-palace/palace-products";
-import { startPalaceEntry } from "../src/components/home-palace/palace-entry";
-import assets from "../src/components/home-palace/palace-reference-assets.json";
+import * as entry from "../src/components/home-palace/palace-entry";
 
 const require = createRequire(import.meta.url);
 function compile(file: string) {
@@ -18,26 +18,30 @@ function compile(file: string) {
   }).outputText;
 }
 const catalogue = [
-  { slug: "gold/دلبر", name: "دلبَر", imageUrl: "/api/media/products/real-delbar", hasGold: true, hasSilver: false },
-  { slug: "silver", name: "نقره ماه", imageUrl: "/api/media/products/real-silver", hasGold: false, hasSilver: true },
-  { slug: "weave", name: "مینای شب", imageUrl: "/api/media/products/real-weave", hasGold: false, hasSilver: false },
-  { slug: "mixed", name: "ترکیب", imageUrl: "/api/media/products/real-mixed", hasGold: true, hasSilver: true },
+  { slug: "gold/دلبر", name: "دلبر", imageUrl: "/api/media/products/real-delbar", hasGold: true, hasSilver: false, displayOrder: 20, isFeatured: true },
+  { slug: "silver", name: "نقره ماه", imageUrl: "/api/media/products/real-silver", hasGold: false, hasSilver: true, displayOrder: 3, isFeatured: true },
+  { slug: "weave", name: "مینای شب", imageUrl: "/api/media/products/real-weave", hasGold: false, hasSilver: false, displayOrder: 4, isFeatured: false },
+  { slug: "mixed", name: "ترکیب", imageUrl: "/api/media/products/real-mixed", hasGold: true, hasSilver: true, displayOrder: 1, isFeatured: true },
 ];
 
-async function scenario({ intro = false, saveData = false, unavailable = false } = {}) {
+async function scenario({ intro = false, saveData = false, unavailable = false, reduced = false } = {}) {
   let observerCallback: any, catalogReady!: (result: unknown) => void;
-  let fetchCalls = 0, now = 20000, pending = false;
+  let fetchCalls = 0, now = 20000, nextTimer = 1;
   let fetchSignal: AbortSignal | undefined;
-  const events = new Map<string, () => void>(), documentEvents = new Map<string, () => void>();
-  const timers = new Map<number, () => void>(), intervals = new Map<number, () => void>();
+  const events = new Map<string, (event?: any) => void>(), documentEvents = new Map<string, () => void>();
+  const timers = new Map<number, { fn: () => void; ms: number }>(), intervals = new Map<number, () => void>();
   const navigations: string[] = [];
   const bays = ["gold", "silver", "weave"].map((treasury, index) => ({
     dataset: { treasury }, getBoundingClientRect: () => ({ top: index * 1000, bottom: index * 1000 + 400 }),
   }));
-  const root = { querySelectorAll: () => bays, getBoundingClientRect: () => ({ bottom: 3000 }) };
+  const root = { querySelectorAll: () => bays };
   const sandboxModule = { exports: {} as any };
+  const ImageDouble = ({ fill, unoptimized, ...props }: any) => {
+    void fill;
+    return React.createElement("img", { ...props, "data-original": String(unoptimized) });
+  };
   runInNewContext(compile("src/components/home-palace/index.tsx"), {
-    module: sandboxModule, exports: sandboxModule.exports, console, AbortController, Date: { now: () => now },
+    module: sandboxModule, exports: sandboxModule.exports, console, AbortController, Event, Date: { now: () => now },
     navigator: { connection: { saveData } },
     document: {
       visibilityState: "visible", querySelector: () => intro ? {} : null,
@@ -45,11 +49,12 @@ async function scenario({ intro = false, saveData = false, unavailable = false }
       removeEventListener: (name: string) => documentEvents.delete(name),
     },
     window: {
-      innerHeight: 700,
+      innerHeight: 700, matchMedia: () => ({ matches: reduced }),
+      dispatchEvent: (event: Event) => events.get(event.type)?.(event),
       addEventListener: (name: string, fn: () => void) => events.set(name, fn),
       removeEventListener: (name: string) => events.delete(name),
     },
-    setTimeout: (fn: () => void) => { const id = timers.size + 1; timers.set(id, fn); return id; },
+    setTimeout: (fn: () => void, ms: number) => { const id = nextTimer++; timers.set(id, { fn, ms }); return id; },
     clearTimeout: (id: number) => timers.delete(id),
     setInterval: (fn: () => void) => { intervals.set(1, fn); return 1; },
     clearInterval: (id: number) => intervals.delete(id),
@@ -60,20 +65,20 @@ async function scenario({ intro = false, saveData = false, unavailable = false }
     },
     require: (name: string) => {
       if (name.endsWith(".css")) return {};
-      if (name === "next/link") return { useLinkStatus: () => ({ pending }) };
+      if (name === "next/image") return { __esModule: true, default: ImageDouble };
+      if (name === "next/navigation") return { useRouter: () => ({ push: (href: string) => navigations.push(href) }) };
       if (name === "./palace-products") return products;
-      if (name === "./palace-entry") return { startPalaceEntry };
-      if (name === "./palace-reference-assets.json") return assets;
-      if (name === "@/components/product-image") return {
-        ProductImage: ({ fill, ...props }: any) => { void fill; return React.createElement("img", props); },
-      };
+      if (name === "./palace-entry") return entry;
+      if (name === "@/components/product-image") return { ProductImage: ImageDouble };
       if (name === "@/components/treasury-transition") return {
-        TreasuryLink: ({ children, prefetch, showPending = true, ...props }: any) => {
+        TreasuryLink: ({ children, prefetch, showPending, ...props }: any) => {
+          void showPending;
           return React.createElement("a", {
-            ...props, "data-pending-indicator": String(showPending), "data-prefetch": prefetch,
-            onNavigate: (event: any) => {
-              props.onNavigate?.(event);
-              navigations.push(props.href);
+            ...props, "data-prefetch": prefetch,
+            onNavigate: () => {
+              let cancelled = false;
+              props.onNavigate?.({ preventDefault: () => { cancelled = true; } });
+              if (!cancelled) { events.get("eloria:navigate")?.(); navigations.push(props.href); }
             },
           }, children);
         },
@@ -83,65 +88,83 @@ async function scenario({ intro = false, saveData = false, unavailable = false }
   });
   const Component = sandboxModule.exports.HomePalace;
   const html = renderToStaticMarkup(React.createElement(Component));
-  for (const slug of ["gold", "silver", "weave"]) assert.ok(html.includes(`/fa/collections/${slug}`));
+  for (const slug of ["gold", "silver", "weave"]) {
+    assert.ok(html.includes(`/fa/collections/${slug}`), "SSR retains native destinations without JavaScript");
+    assert.ok(html.includes(`/royal-20261019/${slug}.jpg`));
+  }
   assert.equal((html.match(/class="ep-enter"/g) || []).length, 3);
-  assert.ok(!html.includes("/fa/products?q="), "Never invent a product/search destination");
-  assert.ok(!html.includes("تصویر مرجع"));
+  assert.ok(!html.includes("/images/palace/reference/"), "Old baked-in jewellery is never rendered, even on failure");
   let tree!: ReactTestRenderer;
   await act(async () => { tree = create(React.createElement(Component), { createNodeMock: () => root }); });
-  assert.equal(fetchCalls, 0, "Below-fold catalogue does not compete with the intro");
+  assert.equal(fetchCalls, 0, "Below-fold catalogue does not compete with the existing intro");
   await act(async () => observerCallback([{ target: root, isIntersecting: true }]));
   if (intro) {
     assert.equal(fetchCalls, 0);
     await act(async () => events.get("eloria:intro-complete")?.());
   }
   assert.equal(fetchCalls, 1);
-  const entry = () => tree.root.findAll(node => node.type === "a" && node.props.className === "ep-enter")[0];
-  assert.equal(entry().props["data-prefetch"], !saveData, "Visible treasury fully prefetches before tapping");
-  const silverEntry = () => tree.root.findAll(node => node.type === "a" && node.props.className === "ep-enter")[1];
-  assert.equal(silverEntry().props["data-prefetch"], false, "Offscreen treasuries wait for visibility or intent");
-  await act(async () => silverEntry().props.onFocus());
-  assert.equal(silverEntry().props["data-prefetch"], !saveData);
-  assert.equal(entry().props["data-pending-indicator"], "false");
-  await act(async () => entry().props.onNavigate({ preventDefault() { assert.fail("Entry must start immediately"); } }));
-  assert.deepEqual(navigations, ["/fa/collections/gold"]);
-  assert.deepEqual(bays.map(bay => (bay.dataset as any).open), ["true", "false", "false"]);
-  assert.equal(tree.root.findByProps({ className: "ep-stage" }).props["data-open"], "gold");
-  assert.equal(timers.size, 1, "Only the network timeout exists; no scene reset or route delay");
-  const links = () => tree.root.findAll(node => node.type === "a" && node.props.className.startsWith("ep-featured-product"));
-  assert.equal(links().length, 0, "Before data arrives, ornamental slots are not fake products");
+  const entries = () => tree.root.findAll(node => node.type === "a" && node.props.className === "ep-enter");
+  assert.equal(entries()[0].props["data-prefetch"], !saveData);
+  assert.equal(entries()[1].props["data-prefetch"], false);
+  await act(async () => entries()[1].props.onFocus());
+  assert.equal(entries()[1].props["data-prefetch"], !saveData);
+  const featured = () => tree.root.findAll(node => node.type === "a" && node.props.className === "ep-featured-product");
+  assert.equal(featured().length, 0);
   await act(async () => catalogReady({ ok: !unavailable, json: async () => ({ source: "database", items: catalogue }) }));
-  assert.equal(timers.size, 0);
   if (unavailable) {
-    assert.equal(links().length, 0);
+    assert.equal(featured().length, 0);
     now += 16000;
     await act(async () => events.get("online")?.());
-    assert.equal(fetchCalls, 2, "Network recovery retries unavailable previews");
+    assert.equal(fetchCalls, 2);
     await act(async () => catalogReady({ ok: true, json: async () => ({ source: "database", items: catalogue }) }));
   }
-  assert.equal(links().length, 4);
-  for (const link of links()) {
+  assert.equal(featured().length, 3, "Unselected products cannot fill curated slots");
+  assert.deepEqual(featured().map(link => link.props.href), products.featuredProducts(catalogue).map(p => products.productHref(p)));
+  for (const link of featured()) {
     const image = link.findByType("img");
     const record = catalogue.find(p => p.imageUrl === image.props.src)!;
-    assert.ok(record, "Only a catalogue product supplies the photograph");
+    assert.ok(record);
     assert.equal(link.props.href, products.productHref(record));
     assert.equal(image.props.alt, record.name);
-    assert.equal(link.props["data-pending-indicator"], "false");
+    assert.equal(image.props["data-original"], "true");
   }
   for (const treasury of ["gold", "silver", "weave"] as const) {
-    const bay = tree.root.findByProps({ "data-treasury": treasury });
-    const thumbnails = bay.findAll(node => node.type === "a" && node.props.className.startsWith("ep-photo "));
-    assert.deepEqual(thumbnails.map(node => node.props.href), products.treasuryProducts(catalogue, treasury).map(products.productHref));
-    assert.ok(thumbnails.every(node => !node.props.href.includes("collections")));
+    const thumbnails = tree.root.findByProps({ "data-treasury": treasury }).findAll(node => node.type === "a" && node.props.className === "ep-photo");
+    assert.deepEqual(thumbnails.map(node => node.props.href), products.treasuryProducts(catalogue, treasury).map(p => products.productHref(p)));
   }
-  // A slow navigation must leave the chest open after all unrelated timers.
-  assert.equal(tree.root.findByProps({ className: "ep-stage" }).props["data-open"], "gold");
-  pending = true; await act(async () => tree.update(React.createElement(Component)));
-  pending = false; await act(async () => tree.update(React.createElement(Component)));
-  assert.equal(tree.root.findByProps({ className: "ep-stage" }).props["data-open"], null, "Cancelled navigation recovers");
-  await act(async () => entry().props.onNavigate({}));
-  await act(async () => events.get("pageshow")?.());
-  assert.equal(tree.root.findByProps({ className: "ep-stage" }).props["data-open"], null);
+  const openingTimers = () => [...timers].filter(([, timer]) => timer.ms === entry.PALACE_OPENING_MS);
+  const finishOpening = async () => {
+    const [id, timer] = openingTimers()[0]; timers.delete(id);
+    await act(async () => timer.fn());
+  };
+  await act(async () => entries()[0].props.onNavigate());
+  if (reduced) {
+    assert.deepEqual(navigations, ["/fa/collections/gold"]);
+    assert.equal(openingTimers().length, 0, "Reduced-motion navigation is immediate");
+  } else {
+    assert.deepEqual(navigations, [], "Fast prefetched routes must wait for the lid to open");
+    assert.equal(tree.root.findByProps({ className: "ep-stage" }).props["data-open"], "gold");
+    await act(async () => entries()[1].props.onNavigate());
+    assert.equal(openingTimers().length, 1, "Rapid clicks cancel the obsolete destination");
+    await finishOpening();
+    assert.deepEqual(navigations, ["/fa/collections/silver"]);
+    for (const slugIndex of [0, 1, 2]) {
+      await act(async () => entries()[slugIndex].props.onNavigate());
+      await finishOpening();
+      assert.equal(navigations.at(-1), `/fa/collections/${["gold", "silver", "weave"][slugIndex]}`);
+    }
+    await act(async () => entries()[0].props.onNavigate());
+    await act(async () => featured()[0].props.onNavigate());
+    assert.equal(openingTimers().length, 0, "A direct product click cancels a delayed treasury route");
+    assert.equal(navigations.at(-1), featured()[0].props.href);
+    for (const event of ["pageshow", "popstate", "keydown"]) {
+      await act(async () => entries()[0].props.onNavigate());
+      await act(async () => events.get(event)?.({ key: "Escape" }));
+      assert.equal(openingTimers().length, 0);
+      assert.equal(tree.root.findByProps({ className: "ep-stage" }).props["data-open"], null);
+    }
+  }
+  await act(async () => entries()[0].props.onNavigate());
   await act(async () => tree.unmount());
   assert.equal(timers.size + intervals.size, 0);
   assert.ok(fetchSignal?.aborted);
@@ -150,40 +173,42 @@ async function scenario({ intro = false, saveData = false, unavailable = false }
 
 async function apiScenario() {
   const queries: any[] = [];
-  const row = { ...catalogue[0], createdAt: new Date(), nameFa: "دلبر", nameEn: "Delbar", isFeatured: true, images: [{ imageUrl: catalogue[0].imageUrl }] };
+  const rows = catalogue.map((p, index) => ({ ...p, id: String(index), createdAt: new Date(2026, 0, index + 1), nameFa: p.name, nameEn: `English ${p.name}`, images: [{ imageUrl: p.imageUrl }] }));
   const sandboxModule = { exports: {} as any };
   runInNewContext(compile("src/app/api/treasury/preview/route.ts"), {
     module: sandboxModule, exports: sandboxModule.exports, URL, Date, Map,
     require: (name: string) => name === "next/server" ? { NextResponse: { json: (data: unknown) => data } }
-      : { withDatabaseStatementTimeout: (_ms: number, fn: any) => fn({ product: { findMany: async (query: any) => { queries.push(query); return [row]; } } }) },
+      : { withDatabaseStatementTimeout: (_ms: number, fn: any) => fn({ product: { findMany: async (query: any) => { queries.push(query); return rows; } } }) },
   });
   const response = await sandboxModule.exports.GET({ url: "https://eloriagallery.ir/api/treasury/preview?locale=fa" });
-  assert.equal(response.items.length, 1, "Mixed/category/featured duplicates collapse to one record");
-  assert.equal(response.items[0].imageUrl, row.images[0].imageUrl);
-  assert.equal(response.items[0].isFeatured, true);
+  assert.equal(response.items.length, 4, "Mixed/category/featured duplicates collapse to one record");
+  assert.deepEqual(Array.from(response.items, (p: any) => p.slug), ["mixed", "silver", "weave", "gold/دلبر"], "Admin order takes precedence over age and hard-coded names");
   assert.equal(queries.length, 4);
   assert.equal(queries[3].where.isFeatured, true);
-  assert.equal(queries[3].take, 8, "All eight featured products can come from the same treasury");
+  assert.equal(queries[3].take, 9, "All nine curated products can come from one treasury");
   for (const query of queries) {
     assert.deepEqual(Array.from(query.where.status.in), ["ACTIVE", "OUT_OF_STOCK"]);
     assert.equal(query.where.collection.isActive, true);
     assert.equal(query.select.images.orderBy[0].isPrimary, "desc");
+    assert.equal(query.orderBy[0].displayOrder, "asc");
   }
 }
 
 async function main() {
   (globalThis as any).IS_REACT_ACT_ENVIRONMENT = true;
   assert.equal(products.readPalaceProducts([...catalogue, catalogue[0], { ...catalogue[0], slug: "bad", imageUrl: "javascript:alert(1)" }, { slug: "no-photo", name: "بدون عکس" }]).length, 4);
-  const selected = products.featuredProducts(catalogue.map((p, i) => ({ ...p, isFeatured: i === 3 })));
-  assert.equal(selected[0]?.slug, "mixed", "A short featured list still starts in the first mobile slot");
-  assert.equal(selected.filter(Boolean).length, 4, "Spare slots use other real products");
+  assert.equal(products.featuredProducts(catalogue.map(p => ({ ...p, isFeatured: false }))).length, 4, "An unconfigured store starts with real catalogue products");
+  assert.equal(products.featuredProducts(catalogue.map((p, index) => ({ ...p, isFeatured: index === 2 }))).length, 1, "A manual selection is never padded");
   assert.equal(products.treasuryProducts(catalogue, "weave").length, 1);
-  await scenario(); await scenario({ intro: true }); await scenario({ unavailable: true }); await scenario({ saveData: true });
-  await apiScenario();
-  // The existing frame and scene binaries are reused without replacements.
-  for (const art of [assets.desktop, assets.featured, assets.brazier, ...Object.values(assets.mobile).flatMap(p => Object.values(p)), ...Object.values(assets.opened)]) {
-    for (const variant of art.variants) assert.ok(existsSync(`public${variant.url}`));
-  }
-  console.log("PASS: real product/photo/direct-link identity, treasury membership, admin selections, safe empty/outage/retry states, immediate entry, no timed scene reset, cancelled/back navigation, visible-route prefetch and Save-Data.");
+  assert.equal(products.treasuryProducts(catalogue, "gold")[0].slug, "mixed");
+  assert.equal(products.productHref(catalogue[0]), "/fa/products/gold%2F%D8%AF%D9%84%D8%A8%D8%B1");
+  const many = Array.from({ length: 12 }, (_, i) => ({ ...catalogue[0], slug: `selected-${i}`, displayOrder: i }));
+  assert.equal(products.featuredProducts(many).length, 9);
+  await scenario(); await scenario({ intro: true }); await scenario({ unavailable: true });
+  await scenario({ saveData: true }); await scenario({ reduced: true }); await apiScenario();
+  for (const slug of ["gold", "silver", "weave"]) assert.ok(existsSync(`public/images/palace/royal-20261019/${slug}.jpg`));
+  const originals = JSON.parse(readFileSync("docs/royal-treasuries-assets.json", "utf8")) as Array<{ path: string; sha256: string }>;
+  for (const original of originals) assert.equal(createHash("sha256").update(readFileSync(original.path)).digest("hex"), original.sha256, "The uploaded image bytes must remain unchanged");
+  console.log("PASS: product/photo/link identity; manual selections and order; three treasury destinations after opening; cancelled/rapid/back/product navigation; reduced motion; original images; empty/outage/retry states; prefetch and Save-Data. Database and browser are mocked.");
 }
 main().catch(error => { console.error(error); process.exitCode = 1; });

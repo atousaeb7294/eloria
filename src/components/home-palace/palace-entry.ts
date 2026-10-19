@@ -1,7 +1,9 @@
-type Treasury = "gold" | "silver" | "weave";
+import type { Treasury } from "./palace-products";
 
-/** Open the existing chest in place in the click event. React keeps this
- * attribute in sync until navigation settles; no snapshot, zoom or timer. */
+// Kept in sync with the --ep-opening-ms value supplied by HomePalace.
+export const PALACE_OPENING_MS = 520;
+
+/** Paint the open state in the same event that starts the hinged lid. */
 export function startPalaceEntry(root: HTMLElement, slug: Treasury) {
   root.querySelectorAll<HTMLElement>("[data-treasury]").forEach(bay => {
     bay.dataset.open = String(bay.dataset.treasury === slug);
