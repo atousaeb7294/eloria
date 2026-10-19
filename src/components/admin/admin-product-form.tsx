@@ -1,4 +1,5 @@
 "use client";
+import { ProductImage } from "@/components/product-image";
 import { AdminWeightInput } from "@/components/admin/admin-weight-input";
 
 import {
@@ -140,6 +141,7 @@ export function AdminProductForm({
   collections: CollectionOption[];
   value: AdminProductFormValue;
 }) {
+  const [previewImage, setPreviewImage] = useState(value.primaryImageUrl);
   const [selectedMaterial, setSelectedMaterial] = useState(value.material);
   const [hasGold, setHasGold] = useState(value.hasGold);
   const [hasSilver, setHasSilver] = useState(value.hasSilver);
@@ -294,15 +296,32 @@ export function AdminProductForm({
             </div>
           </div>
 
-          <Field label="آدرس تصویر اصلی">
+          <Field label="آدرس تصویر اصلی" hint="این عکس در قاب صفحهٔ خانه هم نمایش داده می‌شود. قاب با برش مرکزی پر می‌شود؛ فایل اصلی محصول تغییر نمی‌کند.">
             <input
               className={inputClassName}
               defaultValue={value.primaryImageUrl}
+              onBlur={(event) => setPreviewImage(event.currentTarget.value.trim())}
               dir="ltr"
               name="primaryImageUrl"
               placeholder="/images/products/example.jpg"
             />
           </Field>
+
+          {/^\/(?!\/)|^https:\/\//.test(previewImage) && <div className="md:col-span-2 rounded-xl border border-[#cfb45f]/25 p-4">
+            <p className="mb-3 text-sm text-[#ead79f]">پیش‌نمایش عکس در قاب‌های صفحهٔ خانه</p>
+            <div className="flex flex-wrap items-center gap-4">
+              <div className="relative size-24 overflow-hidden rounded-full border border-[#cfb45f]">
+                <ProductImage src={previewImage} alt="پیش‌نمایش قاب دایره‌ای گنجینه" fill unoptimized className="object-cover object-center" sizes="96px" />
+              </div>
+              <div className="relative h-24 w-28 overflow-hidden rounded border border-[#cfb45f]">
+                <ProductImage src={previewImage} alt="پیش‌نمایش قاب محصول در موبایل" fill unoptimized className="object-cover object-center" sizes="112px" />
+              </div>
+              <div className="relative h-24 w-72 max-w-full overflow-hidden rounded border border-[#cfb45f]">
+                <ProductImage src={previewImage} alt="پیش‌نمایش قاب منتخب‌های الوریا" fill unoptimized className="object-cover object-center" sizes="288px" />
+              </div>
+            </div>
+            <p className="mt-3 text-xs leading-6 text-[#d5c5a2]">برای تغییر قاب‌ها، عکس اصلی همین محصول را عوض کنید. برای انتخاب آثار منتخب، گزینهٔ «نمایش در منتخب‌های الوریا» را فعال کنید و ترتیب نمایش را تعیین کنید. پس از ذخیره، عکس‌ها و لینک‌ها از همان محصول خوانده می‌شوند.</p>
+          </div>}
 
           <Field label="ترتیب نمایش" hint="عدد کمتر، جایگاه جلوتر. سه محصول دارای عکس با کمترین عدد در هر گنجینه، زیر صندوقچهٔ آن نمایش داده می‌شوند. برای انتخاب آن سه اثر، عدد آن‌ها را کمتر از بقیه بگذارید. این ترتیب در فهرست محصولات هم اعمال می‌شود.">
             <input

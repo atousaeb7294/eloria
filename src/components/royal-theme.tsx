@@ -1,13 +1,13 @@
-// Recolor decorative scenery only. The green mask excludes gold, stone, skin,
+// Royal-purple decorative scenery with lapis veins only. The green mask excludes gold, stone, skin,
 // and neutral highlights; catalogue ProductImage elements never use this filter.
 // The existing artwork remains the source of every frame and its geometry.
 const veins = `data:image/svg+xml,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1126 584">
   <g fill="none" stroke-linecap="round" stroke-linejoin="round">
-    <g stroke="#673087" stroke-width="7" opacity=".22">
+    <g stroke="#243d91" stroke-width="7" opacity=".22">
       <path d="M-25 417C30 401 48 366 90 362S130 382 151 376 208 319 235 313 260 333 278 326 327 270 356 258 391 276 419 270 457 222 486 216 558 240 584 233 617 186 649 181 710 205 735 197 793 140 820 134 887 161 910 153 961 98 989 94 1093 60 1154 41"/>
       <path d="M88-20C95 13 128 42 128 63S102 115 111 139 153 169 160 193 143 233 153 255 195 278 204 293 178 333 185 352 229 390 224 409 205 461 218 486 262 550 270 601M649 181C642 155 613 135 618 113S644 88 641 73 620 28 630-14M735 197C752 221 783 243 780 265S752 299 763 320 806 361 807 383 778 421 786 442 827 490 829 514 800 570 812 599"/>
     </g>
-    <g stroke="#ac70ce" stroke-width=".8" opacity=".30">
+    <g stroke="#7189da" stroke-width=".8" opacity=".30">
       <path d="M-25 417C30 401 48 366 90 362S130 382 151 376 208 319 235 313 260 333 278 326 327 270 356 258 391 276 419 270 457 222 486 216 558 240 584 233 617 186 649 181 710 205 735 197 793 140 820 134 887 161 910 153 961 98 989 94 1093 60 1154 41"/>
       <path d="M88-20C95 13 128 42 128 63S102 115 111 139 153 169 160 193 143 233 153 255 195 278 204 293 178 333 185 352 229 390 224 409 205 461 218 486 262 550 270 601M649 181C642 155 613 135 618 113S644 88 641 73 620 28 630-14M735 197C752 221 783 243 780 265S752 299 763 320 806 361 807 383 778 421 786 442 827 490 829 514 800 570 812 599"/>
     </g>
@@ -73,7 +73,7 @@ export function RoyalThemeDefinitions() {
             <feColorMatrix
               in="SourceGraphic"
               type="matrix"
-              values=".1 .28 .12 0 0  .1 .60 .12 0 0  .1 1.2 .24 0 0  0 0 0 1 0"
+              values=".12 .92 .16 0 0  .08 .25 .06 0 0  .12 .86 .22 0 0  0 0 0 1 0"
               result="lapis"
             />
             {!motion && (
@@ -81,10 +81,10 @@ export function RoyalThemeDefinitions() {
                 <feImage
                   href={veins}
                   preserveAspectRatio="none"
-                  result="purpleVeins"
+                  result="lapisVeins"
                 />
                 <feComposite
-                  in="purpleVeins"
+                  in="lapisVeins"
                   in2="lapis"
                   operator="over"
                   result="royalStone"

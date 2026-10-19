@@ -10,6 +10,8 @@ import { create, type ReactTestRenderer } from "react-test-renderer";
 import { renderToStaticMarkup } from "react-dom/server";
 import * as products from "../src/components/home-palace/palace-products";
 import * as entry from "../src/components/home-palace/palace-entry";
+import * as scene from "../src/components/home-palace/palace-scene";
+import { LIDS, openingAngle, projectWorld, MAX_LID_ANGLE, lidVertex } from "../src/components/home-palace/palace-hinge";
 
 const require = createRequire(import.meta.url);
 function compile(file: string) {
@@ -24,7 +26,7 @@ const catalogue = [
   { slug: "mixed", name: "ترکیب", imageUrl: "/api/media/products/real-mixed", hasGold: true, hasSilver: true, displayOrder: 1, isFeatured: true },
 ];
 
-async function scenario({ intro = false, saveData = false, unavailable = false, reduced = false } = {}) {
+async function scenario({ intro = false, saveData = false, unavailable = false, reduced = false, artworkUnavailable = false } = {}) {
   let observerCallback: any, catalogReady!: (result: unknown) => void;
   let fetchCalls = 0, now = 20000, nextTimer = 1;
   let fetchSignal: AbortSignal | undefined;
@@ -32,7 +34,7 @@ async function scenario({ intro = false, saveData = false, unavailable = false, 
   const timers = new Map<number, { fn: () => void; ms: number }>(), intervals = new Map<number, () => void>();
   const navigations: string[] = [];
   const bays = ["gold", "silver", "weave"].map((treasury, index) => ({
-    dataset: { treasury }, getBoundingClientRect: () => ({ top: index * 1000, bottom: index * 1000 + 400 }),
+    dataset: { treasury, treasuryTarget: treasury }, getBoundingClientRect: () => ({ top: index * 1000, bottom: index * 1000 + 400 }),
   }));
   const root = { querySelectorAll: () => bays };
   const sandboxModule = { exports: {} as any };
@@ -69,6 +71,8 @@ async function scenario({ intro = false, saveData = false, unavailable = false, 
       if (name === "next/navigation") return { useRouter: () => ({ push: (href: string) => navigations.push(href) }) };
       if (name === "./palace-products") return products;
       if (name === "./palace-entry") return entry;
+      if (name === "./palace-scene") return scene;
+      if (name === "./palace-scene-motion") return { createChestMotion: () => ({ warm() {}, open: () => !artworkUnavailable, reset() {}, destroy() {} }) };
       if (name === "@/components/product-image") return { ProductImage: ImageDouble };
       if (name === "@/components/treasury-transition") return {
         TreasuryLink: ({ children, prefetch, showPending, ...props }: any) => {
@@ -90,9 +94,12 @@ async function scenario({ intro = false, saveData = false, unavailable = false, 
   const html = renderToStaticMarkup(React.createElement(Component));
   for (const slug of ["gold", "silver", "weave"]) {
     assert.ok(html.includes(`/fa/collections/${slug}`), "SSR retains native destinations without JavaScript");
-    assert.ok(html.includes(`/royal-20261019/${slug}.jpg`));
+
   }
   assert.equal((html.match(/class="ep-enter"/g) || []).length, 3);
+  assert.ok(html.includes(scene.SCENES.desktop.src) && html.includes(scene.SCENES.mobile.src), "Both COMPLETE references have art-directed picture sources");
+  assert.equal((html.match(/data-product-slot="true"/g) || []).length, 18, "All nine preview and nine featured frames are opaque before hydration");
+  assert.equal((html.match(/data-product-present="false"/g) || []).length, 18, "No invented products during loading");
   assert.ok(!html.includes("/images/palace/reference/"), "Old baked-in jewellery is never rendered, even on failure");
   let tree!: ReactTestRenderer;
   await act(async () => { tree = create(React.createElement(Component), { createNodeMock: () => root }); });
@@ -108,7 +115,7 @@ async function scenario({ intro = false, saveData = false, unavailable = false, 
   assert.equal(entries()[1].props["data-prefetch"], false);
   await act(async () => entries()[1].props.onFocus());
   assert.equal(entries()[1].props["data-prefetch"], !saveData);
-  const featured = () => tree.root.findAll(node => node.type === "a" && node.props.className === "ep-featured-product");
+  const featured = () => tree.root.findAll(node => node.type === "a" && node.props.className === "ep-featured-product" && node.props["data-product-present"]);
   assert.equal(featured().length, 0);
   await act(async () => catalogReady({ ok: !unavailable, json: async () => ({ source: "database", items: catalogue }) }));
   if (unavailable) {
@@ -126,10 +133,11 @@ async function scenario({ intro = false, saveData = false, unavailable = false, 
     assert.ok(record);
     assert.equal(link.props.href, products.productHref(record));
     assert.equal(image.props.alt, record.name);
-    assert.equal(image.props["data-original"], "true");
+    assert.equal(image.props["data-original"], "false", "Local previews use responsive Next image variants without changing source files");
+    assert.equal(image.props.quality, 92);
   }
   for (const treasury of ["gold", "silver", "weave"] as const) {
-    const thumbnails = tree.root.findByProps({ "data-treasury": treasury }).findAll(node => node.type === "a" && node.props.className === "ep-photo");
+    const thumbnails = tree.root.findByProps({ "data-treasury": treasury }).findAll(node => node.type === "a" && node.props.className === "ep-photo" && node.props["data-product-present"]);
     assert.deepEqual(thumbnails.map(node => node.props.href), products.treasuryProducts(catalogue, treasury).map(p => products.productHref(p)));
   }
   const openingTimers = () => [...timers].filter(([, timer]) => timer.ms === entry.PALACE_OPENING_MS);
@@ -138,9 +146,9 @@ async function scenario({ intro = false, saveData = false, unavailable = false, 
     await act(async () => timer.fn());
   };
   await act(async () => entries()[0].props.onNavigate());
-  if (reduced) {
+  if (reduced || artworkUnavailable) {
     assert.deepEqual(navigations, ["/fa/collections/gold"]);
-    assert.equal(openingTimers().length, 0, "Reduced-motion navigation is immediate");
+    assert.equal(openingTimers().length, 0, "Reduced motion and unavailable artwork both navigate immediately");
   } else {
     assert.deepEqual(navigations, [], "Fast prefetched routes must wait for the lid to open");
     assert.equal(tree.root.findByProps({ className: "ep-stage" }).props["data-open"], "gold");
@@ -205,10 +213,29 @@ async function main() {
   const many = Array.from({ length: 12 }, (_, i) => ({ ...catalogue[0], slug: `selected-${i}`, displayOrder: i }));
   assert.equal(products.featuredProducts(many).length, 9);
   await scenario(); await scenario({ intro: true }); await scenario({ unavailable: true });
-  await scenario({ saveData: true }); await scenario({ reduced: true }); await apiScenario();
+  await scenario({ saveData: true }); await scenario({ reduced: true }); await scenario({ artworkUnavailable: true }); await apiScenario();
   for (const slug of ["gold", "silver", "weave"]) assert.ok(existsSync(`public/images/palace/royal-20261019/${slug}.jpg`));
   const originals = JSON.parse(readFileSync("docs/royal-treasuries-assets.json", "utf8")) as Array<{ path: string; sha256: string }>;
   for (const original of originals) assert.equal(createHash("sha256").update(readFileSync(original.path)).digest("hex"), original.sha256, "The uploaded image bytes must remain unchanged");
+  const sceneAssets = JSON.parse(readFileSync("docs/royal-complete-scene-assets.json", "utf8")) as Array<{ path: string; sha256: string }>;
+  for (const original of sceneAssets) assert.equal(createHash("sha256").update(readFileSync(original.path)).digest("hex"), original.sha256);
+  for (const mode of ["desktop", "mobile"] as const) {
+    for (const frame of [...Object.values(scene.CHEST_FRAMES), ...Object.values(scene.ENTRY_FRAMES), ...Object.values(scene.PREVIEW_FRAMES).flat(), ...scene.FEATURED_FRAMES]) {
+      const [x,y,w,h] = frame[mode], {width,height} = scene.SCENES[mode];
+      assert.ok(x >= 0 && y >= 0 && w > 0 && h > 0 && x+w <= width && y+h <= height, "Hotspots stay inside their complete reference canvas");
+    }
+    for (const lid of Object.values(LIDS[mode])) {
+      for (const angle of [0, .4, 1, MAX_LID_ANGLE]) assert.deepEqual(projectWorld(lid,lid.rear[0],0,0,angle),lid.rear,"The rear hinge must never drift");
+      for (const p of lid.outline) {
+        const initial=lidVertex(lid,p,0);assert.ok(Math.abs(initial[0]-p[0])<1e-7&&Math.abs(initial[1]-p[1])<1e-7,"The closed lid exactly registers with the original picture");
+      }
+    }
+  }
+  let previous=0;
+  for(let ms=0;ms<=entry.PALACE_OPENING_MS;ms+=10){const angle=openingAngle(ms);assert.ok(angle>=previous&&angle<=MAX_LID_ANGLE);previous=angle;}
+  const css=readFileSync("src/components/home-palace/palace.css","utf8");
+  assert.ok(css.includes("object-fit:cover")&&css.includes("padding:0"));
+  assert.ok(css.includes("aspect-ratio:1584/993")&&css.includes("aspect-ratio:850/1850"));
   console.log("PASS: product/photo/link identity; manual selections and order; three treasury destinations after opening; cancelled/rapid/back/product navigation; reduced motion; original images; empty/outage/retry states; prefetch and Save-Data. Database and browser are mocked.");
 }
 main().catch(error => { console.error(error); process.exitCode = 1; });

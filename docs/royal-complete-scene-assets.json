@@ -1,0 +1,18 @@
+[
+  {
+    "path": "public/images/palace/royal-scene-v2/desktop.jpg",
+    "original": "84be381e-42b8-4aa2-9b2e-f4de93c5fb04 (1)(2).jpg",
+    "width": 1584,
+    "height": 993,
+    "sha256": "6bf200333c6c819e02555dcaa6e60832799d8a75356592aa7dd19f00f661303a",
+    "bytes": 534156
+  },
+  {
+    "path": "public/images/palace/royal-scene-v2/mobile.jpg",
+    "original": "dc48bc0b-3956-4a05-a1ed-0b7bbda4284c(3).jpg",
+    "width": 850,
+    "height": 1850,
+    "sha256": "1ed3edc586d1a834f521fde941ae919dc5ef6ebfcce6c6e21dc57ac919fb6964",
+    "bytes": 375149
+  }
+]
