@@ -71,7 +71,7 @@ async function createFixture(input: {
   const attempt = await prisma.paymentAttempt.create({
     data: {
       orderId: order.id,
-      provider: "ZARINPAL",
+      provider: "ZIBAL",
       status: input.attemptStatus ?? "PENDING_VERIFICATION",
       amountToman: "100000",
       gatewayAuthority: authority,
@@ -141,7 +141,7 @@ async function testDuplicatePaymentRefundDoesNotChangeOrder() {
     const duplicate = await prisma.paymentAttempt.create({
       data: {
         orderId: fixture.order.id,
-        provider: "ZARINPAL",
+        provider: "ZIBAL",
         status: "REQUIRES_REVIEW",
         amountToman: "100000",
         gatewayAuthority: `A${randomUUID().replace(/-/g, "")}`,
