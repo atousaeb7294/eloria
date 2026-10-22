@@ -32,19 +32,24 @@ try {
 }
 
 const homeRootPage = read("src/app/[locale]/page.tsx");
+const homeView = read("src/components/eloria-home.tsx");
 const promenade = read("src/components/treasury-promenade.tsx");
 const salon = read("src/components/treasury-product-salon.tsx");
 const storyController = read("src/lib/treasury-story.ts");
 const treasuryPreview = read("src/app/api/treasury/preview/route.ts");
 
 check(
-  "Home mounts the story controller with cleanup and native chapter anchors",
-  homeRootPage.includes("<TreasuryPromenade") &&
-    promenade.includes("mountTreasuryStory(root.current)") &&
-    promenade.includes("data-promenade-chapter") &&
-    promenade.includes('id="promenade-intro"') &&
-    promenade.includes('"#promenade-end"') &&
-    homeRootPage.includes('id="promenade-end"'),
+  "Home mounts the managed design with cleanup and native section anchors",
+  homeRootPage.includes("<HomeContent") &&
+    homeRootPage.includes("<EloriaHome") &&
+    homeRootPage.includes("await getHomeDesign(locale)") &&
+    ["treasuries", "featured", "story"].every(
+      id => homeView.includes(`id="${id}"`) &&
+        homeView.includes(`href: "#${id}"`),
+    ) &&
+    homeView.includes("href={link.href}") &&
+    homeView.includes("observer.disconnect()") &&
+    homeView.includes('removeEventListener("visibilitychange", visibility)'),
 );
 check(
   "Treasury previews use live catalog data with explicit unavailable state",
@@ -201,15 +206,20 @@ check(
       internalShell.indexOf("<SiteFooter locale={locale} />"),
 );
 
-const homePage = read("src/app/[locale]/page.tsx");
-const homeMainMatch = homePage.match(/<main\b[^>]*>/i);
+// The managed home owns its main landmark; the route streams that component
+// before rendering the shared footer. Do not require main to live in page.tsx.
+const homeMainMatch = homeView.match(/<main\b[^>]*>/i);
 const homeMainTag = homeMainMatch?.[0] ?? "";
+const homeRenderIndex = homeRootPage.indexOf("<HomeContent");
+const homeFooterIndex = homeRootPage.indexOf("<SiteFooter");
 check(
   "Home has a focusable dedicated main landmark",
   homeMainTag.includes('id="main-content"') &&
     homeMainTag.includes("tabIndex={-1}") &&
-    (homeMainMatch?.index ?? Number.POSITIVE_INFINITY) <
-      homePage.indexOf("<SiteFooter"),
+    (homeView.match(/<main\b/gi) ?? []).length === 1 &&
+    !/<main\b/i.test(homeRootPage) &&
+    homeRenderIndex >= 0 &&
+    homeRenderIndex < homeFooterIndex,
 );
 
 const catalogCard = read("src/components/catalog-product-card.tsx");
@@ -481,10 +491,13 @@ function isReviewedPalaceArtwork(content: string): boolean {
       const attributes = node.attributes.properties;
       const hasAttribute = (name: string) => attributes.some(attribute =>
         ts.isJsxAttribute(attribute) && attribute.name.getText(source) === name);
-      const artworkClass = attributes.some(attribute =>
+      const pictureAttributes = picture && ts.isJsxElement(picture)
+        ? picture.openingElement.attributes.properties
+        : [];
+      const artworkClass = pictureAttributes.some(attribute =>
         ts.isJsxAttribute(attribute) && attribute.name.getText(source) === "className" &&
         attribute.initializer && ts.isStringLiteral(attribute.initializer) &&
-        attribute.initializer.text.split(/\s+/).includes("eloria-royal-art"));
+        attribute.initializer.text.split(/\s+/).includes("ep-scene-picture"));
       valid &&= Boolean(picture && ts.isJsxElement(picture) &&
         picture.openingElement.tagName.getText(source) === "picture" &&
         picture.children.some(child => ts.isJsxSelfClosingElement(child) &&
