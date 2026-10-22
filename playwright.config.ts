@@ -114,6 +114,8 @@ const webkitProjects:
   ];
 
 export default defineConfig({
+  // Requires admin-selected live data; run separately with playwright.home.config.ts.
+  testIgnore: "**/home-design.spec.ts",
   testDir:
     "./tests",
 

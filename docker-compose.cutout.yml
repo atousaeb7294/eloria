@@ -1,0 +1,26 @@
+# Overlay for docker-compose.parspack.yml. No public worker port.
+services:
+  eloria:
+    networks: [eloria-internal, cutout-private]
+    environment:
+      ELORIA_CUTOUT_URL: http://eloria-cutout:8765
+      ELORIA_CUTOUT_TOKEN: ${ELORIA_CUTOUT_TOKEN:?Set a random token of at least 32 characters}
+    depends_on: [eloria-cutout]
+  eloria-cutout:
+    build:
+      context: .
+      dockerfile: services/cutout/Dockerfile
+    environment:
+      ELORIA_CUTOUT_TOKEN: ${ELORIA_CUTOUT_TOKEN}
+    restart: unless-stopped
+    mem_limit: 4g
+    cpus: 2
+    read_only: true
+    tmpfs:
+      - /tmp:size=128m,mode=1777
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    networks: [cutout-private]
+networks:
+  cutout-private:
+    internal: true

@@ -286,14 +286,14 @@ export default async function ProductsPage({
         )}
 
         {catalog.priceFilterActive && (
-          <div className="mt-5 rounded-2xl border border-[#d9b85f]/18 bg-[#0f1435]/55 px-4 py-3 text-xs leading-6 text-[#cdbd91]/75 backdrop-blur-xl">
+          <div className="eloria-glass-panel mt-5 rounded-2xl border border-[#d9b85f]/18 bg-[#0f1435]/55 px-4 py-3 text-xs leading-6 text-[#cdbd91]/75 backdrop-blur-xl">
             {isPersian
               ? "فیلتر قیمت با محاسبه دسته‌ای قیمت نهایی زنده انجام شده است."
               : "The price range uses batched live final-price calculation."}
           </div>
         )}
 
-        <div className="mt-8 flex items-center gap-4 rounded-2xl border border-white/[0.06] bg-[#0c1130]/50 px-4 py-3 backdrop-blur-xl">
+        <div className="eloria-glass-panel mt-8 flex items-center gap-4 rounded-2xl border border-white/[0.06] bg-[#0c1130]/50 px-4 py-3 backdrop-blur-xl">
           <span className="flex h-8 min-w-8 shrink-0 items-center justify-center rounded-full border border-[#d9b85f]/20 bg-[#d9b85f]/[0.05] px-2 text-xs text-[#e5cb79]">
             {catalog.total.toLocaleString(isPersian ? "fa-IR" : "en-US")}
           </span>

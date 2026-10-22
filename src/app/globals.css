@@ -1100,3 +1100,25 @@ body,[class~="min-h-screen"]{
  background-image:var(--eloria-royal-veins),var(--eloria-royal-surface);
  background-size:1100px auto,100% 100%;background-repeat:repeat, no-repeat;
 }
+
+/* The internal storefront shares the approved home palette. */
+.eloria-glass-storefront{--eloria-glass:rgba(237,226,243,.92);--eloria-ink:#382542;--eloria-secondary:#604c6a;background-color:#3b2946}
+.eloria-glass-storefront .eloria-glass-backdrop{background:linear-gradient(180deg,rgba(104,80,118,.12),rgba(58,36,70,.38))}
+.eloria-glass-storefront :is(.eloria-glass-panel,.eloria-salon-purchase-card,.eloria-quick-dialog,.eloria-live-purchase){background:var(--eloria-glass)!important;color:var(--eloria-ink);border-color:rgba(156,124,66,.5)!important;backdrop-filter:blur(16px);box-shadow:0 16px 44px #24132c26,inset 0 1px 0 #fff9}
+.eloria-glass-storefront :is(.eloria-glass-panel,.eloria-salon-purchase-card,.eloria-quick-dialog,.eloria-live-purchase) :is([class*="text-[#"],[class*="text-white"]){color:var(--eloria-ink)!important}
+.eloria-glass-storefront :is(.eloria-glass-panel,.eloria-quick-dialog,.eloria-live-purchase) :is(input,select,textarea){color:var(--eloria-ink);background:#f7f1f9;border-color:#9c7c4255}
+.eloria-glass-storefront :is(.eloria-glass-panel,.eloria-quick-dialog,.eloria-live-purchase) :is(input,textarea)::placeholder{color:#6c5876}
+.eloria-glass-storefront :is(.eloria-glass-panel,.eloria-quick-dialog,.eloria-live-purchase) :is([class*="bg-[#0"],[class*="bg-[#1"],[class*="bg-black/"]){background:#e3d5eb!important}
+.eloria-glass-storefront :is(.eloria-glass-panel,.eloria-quick-dialog,.eloria-live-purchase) [class*="text-amber"]{color:#744a13}
+.eloria-glass-storefront .eloria-salon-piece h2{background:rgba(235,222,242,.97);color:var(--eloria-ink);border-color:#a78b5366;box-shadow:0 8px 22px #25132e22}
+.eloria-glass-storefront .eloria-salon-image{background:rgba(224,207,234,.86);box-shadow:0 0 0 6px #ddc48b18,0 18px 45px #25132e33}
+/* The entire rectangular photograph sits inside the circular treasury opening. */
+.eloria-glass-storefront .eloria-salon-image img{object-fit:contain!important;padding:16%;transform:none!important;filter:none!important}
+.eloria-glass-storefront .eloria-salon-price :is(p,strong,span){color:var(--eloria-ink)!important;opacity:1}
+.eloria-glass-storefront :is(.eloria-raw-gold,.eloria-raw-gold strong,.eloria-raw-gold small){color:var(--eloria-secondary);opacity:1}
+.eloria-glass-storefront :is(.eloria-quick-button,.eloria-piece-details,.eloria-dialog-close){color:var(--eloria-ink);border-color:#9c7c4277;background:#e9ddef;min-height:44px}
+.eloria-glass-storefront .eloria-quick-dialog::backdrop{background:rgba(49,29,61,.46);backdrop-filter:blur(7px)}
+.eloria-glass-storefront :is(.eloria-salon-instruction,.eloria-salon-controls){color:#fbf5fc;text-shadow:0 1px 5px #28172e}
+.eloria-glass-storefront .eloria-salon-piece-inner{opacity:1}
+.eloria-glass-storefront :is(.eloria-glass-panel,.eloria-live-purchase,.eloria-quick-dialog) :focus-visible{outline:2px solid #79532d;outline-offset:4px}
+@supports not (backdrop-filter:blur(1px)){.eloria-glass-storefront :is(.eloria-glass-panel,.eloria-salon-purchase-card,.eloria-quick-dialog,.eloria-live-purchase){background:#ede2f3!important}}

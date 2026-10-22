@@ -300,11 +300,9 @@ export function ProductGallery({
             index={normalizedActiveIndex}
             locale={locale}
             sizes="(max-width: 1024px) 100vw, 55vw"
-            className="object-cover transition-transform duration-200 ease-out hover:scale-[1.025]"
+            className="object-contain p-10"
           />
 
-          <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#070b27]/85 via-transparent to-black/10" />
-          <div className="pointer-events-none absolute inset-0 shadow-[inset_0_0_95px_rgba(0,0,0,0.25)]" />
 
           <div className="absolute start-4 top-4 flex flex-wrap items-center gap-2 sm:start-5 sm:top-5">
             <span
@@ -479,7 +477,7 @@ export function ProductGallery({
                     alt=""
                     fill
                     sizes="80px"
-                    className="object-cover"
+                    className="object-contain p-2"
                   />
                 </button>
               ),
@@ -536,7 +534,7 @@ export function ProductGallery({
               index={normalizedActiveIndex}
               locale={locale}
               sizes="100vw"
-              className="object-contain"
+              className="object-contain p-6"
             />
 
             {hasMultipleImages && (

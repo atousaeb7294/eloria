@@ -1,82 +1,26 @@
-import { TreasuryPageTransition } from "@/components/treasury-transition";
-import {
-  setRequestLocale,
-} from "next-intl/server";
+import { setRequestLocale } from "next-intl/server";
+import { EloriaHome } from "@/components/eloria-home";
+import { SiteFooter } from "@/components/site-footer";
+import { getHomeDesign } from "@/lib/home-design";
+import "../home-design.css";
 
-import {
-  EloriaIntroExperience,
-} from "@/components/eloria-intro-experience";
-import {
-  HeroShowcase,
-} from "@/components/hero-showcase";
-import {
-  HomeHeaderController,
-} from "@/components/home-header-controller";
-import { TreasuryPromenade } from "@/components/treasury-promenade";
-import { HomePalace } from "@/components/home-palace";
-import {
-  SiteFooter,
-} from "@/components/site-footer";
-
-type HomePageProps = {
-  params: Promise<{
-    locale: string;
-  }>;
-};
+export const dynamic = "force-dynamic";
 
 export default async function HomePage({
   params,
-}: HomePageProps) {
-  const {
-    locale,
-  } = await params;
-
-  setRequestLocale(
-    locale,
-  );
-
+}: {
+  params: Promise<{ locale: string }>;
+}) {
+  const { locale } = await params;
+  setRequestLocale(locale);
+  const resolvedLocale = locale === "en" ? "en" : "fa";
+  const design = await getHomeDesign(resolvedLocale);
   return (
-    <div className="relative min-h-screen overflow-x-clip bg-[#080d28] text-[#f8f0df]">
-
-<HomeHeaderController
-        locale={
-          locale
-        }
-      />
-
-      <TreasuryPageTransition>
-      <main
-        id="main-content"
-        tabIndex={-1}
-        className="relative z-10 outline-none"
-      >
-        {locale === "fa" ? <>
-          <HeroShowcase locale={locale} persianTitleClassName="font-persian-title" />
-          <HomePalace />
-        </> : <TreasuryPromenade locale={locale}>
-        <HeroShowcase
-          locale={
-            locale
-          }
-          persianTitleClassName={
-            "font-persian-title"
-          }
-        />
-
-        </TreasuryPromenade>}
-        <div id="promenade-end" />
-      </main>
-      </TreasuryPageTransition>
-
-      <div className="relative z-10">
+    <>
+      <EloriaHome locale={resolvedLocale} design={design} />
+      <div className="home-site-footer relative z-10 pb-20 md:pb-0">
         <SiteFooter locale={locale} />
       </div>
-
-      <EloriaIntroExperience
-        locale={
-          locale
-        }
-      />
-    </div>
+    </>
   );
 }

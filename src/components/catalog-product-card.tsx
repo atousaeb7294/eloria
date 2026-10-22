@@ -86,7 +86,7 @@ export function CatalogProductCard({
     <InteractiveTiltCard className="group rounded-[1.75rem] sm:rounded-[2rem]">
       <article
         className={[
-          "relative overflow-hidden rounded-[1.75rem] border bg-[linear-gradient(145deg,rgba(17,22,56,0.97),rgba(8,13,40,0.99))] p-3 shadow-[0_26px_70px_rgba(0,0,0,0.38)] transition-[border-color,box-shadow] duration-500 sm:rounded-[2rem]",
+          "eloria-glass-panel relative overflow-hidden rounded-[1.75rem] border bg-[linear-gradient(145deg,rgba(17,22,56,0.97),rgba(8,13,40,0.99))] p-3 shadow-[0_26px_70px_rgba(0,0,0,0.38)] transition-[border-color,box-shadow] duration-500 sm:rounded-[2rem]",
         isGold
           ? "border-[#d8b860]/22 hover:border-[#e8cc78]/55 hover:shadow-[0_34px_95px_rgba(0,0,0,0.5),0_0_34px_rgba(216,184,96,0.1)]"
           : "border-[#c5d2d7]/20 hover:border-[#dbe5e8]/45 hover:shadow-[0_34px_95px_rgba(0,0,0,0.5),0_0_34px_rgba(210,225,230,0.08)]",
@@ -116,12 +116,12 @@ export function CatalogProductCard({
           loading={eager ? "eager" : "lazy"}
           fetchPriority={eager ? "high" : "auto"}
           sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-          className="object-cover transition duration-1000 ease-out group-hover:scale-[1.055]"
+          className="object-contain p-6"
         />
 
         <div
           aria-hidden="true"
-          className="absolute inset-0 bg-gradient-to-t from-[#060b26]/92 via-transparent to-black/10"
+          className="absolute inset-0 bg-gradient-to-t from-transparent via-transparent to-transparent"
         />
 
         <div className="absolute inset-x-3 top-3 flex items-start justify-between gap-2">

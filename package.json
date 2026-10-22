@@ -98,7 +98,11 @@
     "verify:audit": "node scripts/verify-audit-release.mjs",
     "check:database": "node --import tsx scripts/check-database-connection.ts",
     "test:dev-local": "node scripts/test-dev-local.mjs",
-    "test:treasury-browser": "node scripts/test-treasury-browser.mjs"
+    "test:treasury-browser": "node scripts/test-treasury-browser.mjs",
+    "cutout:start": "node scripts/start-cutout.mjs",
+    "test:home-design": "node --import tsx scripts/test-home-design.ts",
+    "test:home-browser": "playwright test --config playwright.home.config.ts",
+    "test:inplace-update": "node scripts/test-inplace-update.mjs"
   },
   "dependencies": {
     "@base-ui/react": "^1.6.0",

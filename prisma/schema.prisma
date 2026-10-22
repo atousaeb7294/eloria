@@ -133,6 +133,7 @@ model Product {
   orderItems     OrderItem[]
   images         ProductImage[]
   mediaAssets    ProductMediaAsset[]
+  heroCutouts    HeroCutout[]
   variants       ProductVariant[]
   timelineEvents ProductTimelineEvent[]
   collection     Collection             @relation(fields: [collectionId], references: [id])
@@ -144,6 +145,37 @@ model Product {
   @@index([pricingMode, status])
   @@index([isFeatured, status])
   @@map("products")
+}
+
+// Prepared hero images are independent of the original product gallery.
+model HeroCutout {
+  id             String   @id @default(uuid()) @db.Uuid
+  productId      String   @db.Uuid
+  sourceImageId  String   @db.Uuid
+  sourceImageUrl String
+  sourceHash     String   @db.VarChar(64)
+  pipelineVersion String  @db.VarChar(80)
+  bytes          Bytes
+  width          Int
+  height         Int
+  createdAt      DateTime @default(now())
+  product        Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  appearances    StorefrontAppearance[]
+
+  @@unique([productId, sourceImageId, sourceHash, pipelineVersion], name: "sourcePipeline", map: "hero_cutouts_source_pipeline_key")
+  @@map("hero_cutouts")
+}
+
+model StorefrontAppearance {
+  id                 String      @id @default("home") @db.VarChar(40)
+  heroCutoutId       String?     @db.Uuid
+  heroScale          Int         @default(90)
+  featuredProductIds String[]    @default([]) @db.Uuid
+  featuredCutoutIds  String[]    @default([]) @db.Uuid
+  updatedAt          DateTime    @updatedAt
+  heroCutout         HeroCutout? @relation(fields: [heroCutoutId], references: [id], onDelete: SetNull)
+
+  @@map("storefront_appearance")
 }
 
 model ProductTimelineEvent {

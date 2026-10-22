@@ -725,7 +725,7 @@ export default async function ProductPage({
         <div className="mt-7 grid items-start gap-8 lg:grid-cols-[minmax(0,1.05fr)_minmax(380px,0.95fr)]">
           <div
             className={[
-              "relative overflow-visible rounded-[2.5rem] border bg-[linear-gradient(145deg,rgba(18,24,59,0.96),rgba(8,13,40,0.99))] p-3 shadow-[0_35px_100px_rgba(0,0,0,0.48)] transition-[border-color,box-shadow] duration-500",
+              "eloria-glass-panel relative overflow-visible rounded-[2.5rem] border bg-[linear-gradient(145deg,rgba(18,24,59,0.96),rgba(8,13,40,0.99))] p-3 shadow-[0_35px_100px_rgba(0,0,0,0.48)] transition-[border-color,box-shadow] duration-500",
 
               isGold
                 ? "border-[#d8b860]/25 hover:border-[#ebcf7b]/42 hover:shadow-[0_42px_120px_rgba(0,0,0,0.56),0_0_44px_rgba(216,184,96,0.08)]"
@@ -755,7 +755,7 @@ export default async function ProductPage({
           <div className="grid gap-5">
             <article
               className={[
-                "relative overflow-hidden rounded-[2.2rem] border bg-[linear-gradient(145deg,rgba(17,22,56,0.96),rgba(8,13,40,0.99))] p-5 shadow-[0_28px_80px_rgba(0,0,0,0.38)] sm:p-7",
+                "eloria-glass-panel relative overflow-hidden rounded-[2.2rem] border bg-[linear-gradient(145deg,rgba(17,22,56,0.96),rgba(8,13,40,0.99))] p-5 shadow-[0_28px_80px_rgba(0,0,0,0.38)] sm:p-7",
 
                 isGold ? "border-[#d8b860]/23" : "border-[#d6e1e4]/18",
               ].join(" ")}
@@ -1028,7 +1028,7 @@ export default async function ProductPage({
           </section>
         ) : null}
 
-        <article className="relative mt-8 overflow-hidden rounded-[2.2rem] border border-[#d9b85f]/22 bg-[linear-gradient(135deg,rgba(19,24,62,0.94),rgba(8,13,40,0.98))] px-5 py-7 shadow-[0_28px_80px_rgba(0,0,0,0.34)] backdrop-blur-xl sm:px-8 sm:py-8">
+        <article className="eloria-glass-panel relative mt-8 overflow-hidden rounded-[2.2rem] border border-[#d9b85f]/22 bg-[linear-gradient(135deg,rgba(19,24,62,0.94),rgba(8,13,40,0.98))] px-5 py-7 shadow-[0_28px_80px_rgba(0,0,0,0.34)] backdrop-blur-xl sm:px-8 sm:py-8">
           <div
             aria-hidden="true"
             className="absolute inset-x-20 top-0 h-px bg-gradient-to-r from-transparent via-[#efd17a]/65 to-transparent"

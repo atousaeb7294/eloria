@@ -54,3 +54,9 @@ Thumbs.db
 .idea/
 
 public/videos/Aiarty.Video.Enhancer.3.7.x64.rar
+
+# Local cutout service, weights and credentials
+.venv-cutout/
+.cache/eloria-cutout/
+__pycache__/
+*.pyc

@@ -220,7 +220,7 @@ export function TreasuryProductSalon({
                       sizes="(max-width:640px) 70vw, 31vw"
                       loading={index === selected ? "eager" : "lazy"}
                       fetchPriority={index === selected ? "high" : "auto"}
-                      className="object-cover"
+                      className="object-contain"
                     /> : <div aria-hidden="true" className="absolute inset-0 bg-[#14193b]" />}
                   </ViewTransition>
                 </TreasuryLink>
@@ -322,7 +322,7 @@ export function TreasuryProductSalon({
               alt=""
               fill
               sizes="52px"
-              className="object-cover"
+              className="object-contain"
             />
           </button>
         ))}

@@ -22,6 +22,7 @@ import {
 import { adminLogoutAction } from "@/app/[locale]/admin/(protected)/actions";
 
 const navigation = [
+  { href: "/appearance", label: "چیدمان هوم و تصویر شناور", icon: Gem },
   { href: "/commerce", label: "نظرها و پیش‌سفارش‌ها", icon: MessagesSquare },
   { href: "/operations", label: "پایش و آمادگی فروشگاه", icon: Radar },
   {

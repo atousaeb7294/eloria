@@ -65,6 +65,10 @@ function resolveBackgroundProfile(
       pathname,
     );
 
+  if (/^\/(products|collections)(?:\/|$)/.test(path)) {
+    return { tone: "soft", objectPosition: "center 44%", imageClassName: "scale-[1.02]", overlayClassName: "eloria-glass-backdrop" };
+  }
+
   if (
     path.startsWith(
       "/checkout",
@@ -218,6 +222,7 @@ export function InternalPageShell({
       }
       className={[
         "relative isolate min-h-screen overflow-x-hidden bg-[#080d28] text-[#f8f0df]",
+        /^\/(products|collections)(?:\/|$)/.test(removeLocaleFromPath(pathname)) ? "eloria-glass-storefront" : "",
         className,
       ].join(" ")}
     >

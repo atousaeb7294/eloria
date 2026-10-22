@@ -267,7 +267,7 @@ export function ProductCatalogFilters({
   return (
     <form
       onSubmit={(event) => { event.preventDefault(); submitFilters(); }}
-      className="relative mx-auto max-w-6xl overflow-hidden rounded-[1.8rem] border border-[#d9b85f]/20 bg-[linear-gradient(145deg,rgba(17,23,61,0.92),rgba(8,13,42,0.96))] p-4 shadow-[0_20px_55px_rgba(0,0,0,0.3)] backdrop-blur-2xl sm:p-5"
+      className="eloria-glass-panel relative mx-auto max-w-6xl overflow-hidden rounded-[1.8rem] border border-[#d9b85f]/20 bg-[linear-gradient(145deg,rgba(17,23,61,0.92),rgba(8,13,42,0.96))] p-4 shadow-[0_20px_55px_rgba(0,0,0,0.3)] backdrop-blur-2xl sm:p-5"
     >
       <div
         aria-hidden="true"

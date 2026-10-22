@@ -14,23 +14,15 @@ test("health endpoints distinguish liveness from readiness", async ({ request })
 test("Hero actions and the seeded catalog are connected", async ({ page }, testInfo) => {
   await page.goto("/fa#hero");
 
-  await expect(page.locator(".eloria-intro-root")).toBeVisible();
-  await page.locator("video").first().evaluate((video) => {
-    video.dispatchEvent(new Event("ended"));
-  });
-  const enterButton = page.getByRole("button", { name: /ورود به دنیای الوریا/ });
-  await expect(enterButton).toBeVisible();
-  await enterButton.click();
-  await page.locator("video").nth(1).evaluate((video) => {
-    video.dispatchEvent(new Event("ended"));
-  });
-  await expect(page.locator(".eloria-intro-root")).toBeHidden({ timeout: 5000 });
-  await expect(page.getByRole("heading", { name: /روایتی ماندگار/ })).toBeVisible();
-
-  const creationsLink = page.getByRole("link", { name: "تماشای آثار" });
-  await expect(creationsLink).toHaveAttribute("href", "/fa/products");
-  await creationsLink.click();
-
+  await expect(page.locator(".eloria-home")).toBeVisible();
+  await expect(page.locator("h1")).toContainText("روایتی");
+  await page.locator(".hero-actions").getByRole("link", { name: /ورود به گنجینه‌ها/ }).click();
+  await expect(page).toHaveURL(/#treasuries$/);
+  const gold = page.getByRole("link", { name: "ورود به گنجینهٔ طلا", exact: true });
+  await expect(gold).toHaveAttribute("href", "/fa/collections/gold");
+  await gold.click();
+  await expect(page).toHaveURL(/\/fa\/collections\/gold/);
+  await page.goto("/fa/products");
   await expect(page).toHaveURL(/\/fa\/products/);
   await expect(page.getByRole("heading", { name: "تمام آثار الوریا" })).toBeVisible();
   await expect(page.getByText("جست‌وجو و فیلتر")).toBeVisible();

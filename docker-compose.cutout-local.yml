@@ -1,0 +1,20 @@
+# Docker Desktop + Next on host. Runtime is confined to an internal network.
+services:
+  eloria-cutout:
+    build:
+      context: .
+      dockerfile: services/cutout/Dockerfile
+    environment:
+      ELORIA_CUTOUT_TOKEN: ${ELORIA_CUTOUT_TOKEN:?Run scripts/configure-cutout.mjs first}
+    ports: ["127.0.0.1:8765:8765"]
+    mem_limit: 4g
+    cpus: 2
+    read_only: true
+    tmpfs:
+      - /tmp:size=128m,mode=1777
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    networks: [cutout-private]
+networks:
+  cutout-private:
+    internal: true
