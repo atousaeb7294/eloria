@@ -8,6 +8,7 @@ type ProductCardLivePriceProps = {
   initialPriceToman?: string | null;
   previewOnly?: boolean;
   compact?: boolean;
+  enabled?: boolean;
 };
 
 type PriceResponse = {
@@ -31,13 +32,14 @@ export function ProductCardLivePrice({
   initialPriceToman = null,
   previewOnly = false,
   compact = false,
+  enabled = true,
 }: ProductCardLivePriceProps) {
   const [price, setPrice] = useState<string | null>(initialPriceToman);
   const [failed, setFailed] = useState(false);
   const isPersian = locale === "fa";
 
   useEffect(() => {
-    if (previewOnly) return;
+    if (previewOnly || !enabled) return;
     const controller = new AbortController();
 
     async function loadPrice() {
@@ -84,7 +86,7 @@ export function ProductCardLivePrice({
       window.clearInterval(intervalId);
       controller.abort();
     };
-  }, [previewOnly, slug]);
+  }, [previewOnly, slug, enabled]);
 
   if (failed && !price) {
     return (

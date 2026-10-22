@@ -2,10 +2,10 @@ import { expect, test } from "@playwright/test";
 test("eight circular pieces, original treasury routes and quick view", async ({
   page,
 }, info) => {
-  await page.goto("/fa");
+  await page.goto("/fa#featured");
   await expect(
     page.locator(".eloria-home .medallion"),
-    "Save eight products in Admin > Appearance first",
+    "The catalog must have at least eight public products with images",
   ).toHaveCount(8);
   for (const key of ["gold", "silver", "weave"])
     await expect(page.locator(`.portal.${key}`)).toHaveAttribute(
@@ -13,11 +13,11 @@ test("eight circular pieces, original treasury routes and quick view", async ({
       `/fa/collections/${key}`,
     );
   await page.locator("#featured").scrollIntoViewIfNeeded();
-  await expect(page.locator(".medallion .image-seat.is-cutout")).toHaveCount(8);
+  await expect(page.locator(".hero-actions .eloria-cta-secondary")).toHaveAttribute("href", "/fa/products");
   await expect
     .poll(() =>
       page
-        .locator(".medallion .image-seat img")
+        .locator(".medallion .eloria-circle-subject img")
         .evaluateAll((images) =>
           images.every(
             (image) =>
@@ -42,7 +42,7 @@ test("eight circular pieces, original treasury routes and quick view", async ({
             circle.right <= frame.right &&
             circle.top >= frame.top &&
             circle.bottom <= frame.bottom,
-          fit: getComputedStyle(seat.querySelector("img")!).objectFit,
+          fit: getComputedStyle(seat.querySelector(".eloria-circle-subject img")!).objectFit,
         };
       }),
     );
@@ -51,6 +51,10 @@ test("eight circular pieces, original treasury routes and quick view", async ({
     expect(check.contained).toBe(true);
     expect(check.fit).toBe("contain");
     expect(check.radius).toBe("50%");
+  }
+  for (const selector of [".hero-copy h1 em", ".story h2"]) {
+    const font = await page.locator(selector).evaluate(element => getComputedStyle(element).fontFamily);
+    expect(font).toContain((page.viewportSize()?.width ?? 1440) > 760 ? "Eloria Iran Nastaliq" : "Eloria Vazir");
   }
   expect(
     await page.evaluate(
@@ -101,10 +105,10 @@ test("hero respects reduced motion; admin is protected", async ({
   page,
 }, info) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
-  await page.goto("/fa");
+  await page.goto("/fa#hero");
   await expect(
     page.locator(".hero-scale img"),
-    "Prepare a real hero in admin first",
+    "A live product image must remain visible even before cutout preparation",
   ).toBeVisible();
   expect(
     await page
@@ -114,4 +118,15 @@ test("hero respects reduced motion; admin is protected", async ({
   await page.screenshot({ path: info.outputPath("home.png"), fullPage: true });
   await page.goto("/fa/admin/appearance");
   await expect(page).toHaveURL(/\/fa\/admin\/login/);
+});
+
+test("intro is mounted, uses the device rendition and permits skipping", async ({ page }) => {
+  await page.goto("/fa");
+  const first = page.locator(".eloria-intro-root video").first();
+  await expect(first).toHaveAttribute("src", (page.viewportSize()?.width ?? 1440) <= 1024 ? /eloria-entry-mobile/ : /eloria-entry-v3/);
+  await expect(first).toHaveJSProperty("muted", true);
+  await expect(first).toHaveJSProperty("playsInline", true);
+  await page.getByRole("button", { name: "رد کردن اینترو و ورود به سایت" }).click();
+  await expect(page.locator(".eloria-intro-root")).toHaveCount(0);
+  await expect(page.getByRole("button", { name: "پخش ویدئوی ورود", exact: true })).toBeVisible();
 });

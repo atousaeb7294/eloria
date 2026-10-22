@@ -11,8 +11,10 @@ export function useIntroComplete() {
     const finish = () => {
       if (!disposed) setComplete(true);
     };
+    const start = () => { if (!disposed) setComplete(false); };
 
-    window.addEventListener("eloria:intro-complete", finish, { once: true });
+    window.addEventListener("eloria:intro-complete", finish);
+    window.addEventListener("eloria:intro-start", start);
 
     // On non-home pages the intro component does not exist, so dependent
     // effects may start normally. On Home we never infer completion while
@@ -25,6 +27,7 @@ export function useIntroComplete() {
       disposed = true;
       window.clearTimeout(fallbackTimer);
       window.removeEventListener("eloria:intro-complete", finish);
+      window.removeEventListener("eloria:intro-start", start);
     };
   }, []);
 

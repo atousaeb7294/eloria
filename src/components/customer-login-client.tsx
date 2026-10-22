@@ -4,7 +4,7 @@ import { useCallback, useState } from "react";
 import type { FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { KeyRound, LoaderCircle, Phone, ShieldCheck, UserRound } from "lucide-react";
-import { TurnstileWidget, type TurnstileState } from "@/components/turnstile-widget";
+import { TurnstileWidget, type TurnstileState, type PublicTurnstileConfig } from "@/components/turnstile-widget";
 import type { CustomerAuthChannelAvailability } from "@/lib/customer-auth-channels";
 import { readTreasury } from "@/lib/treasury-storage";
 import { normalizeOtpInput } from "@/lib/otp-input";
@@ -23,10 +23,12 @@ export function CustomerLoginClient({
   locale,
   nextPath,
   channelAvailability,
+  turnstileConfig,
 }: {
   locale: "fa" | "en";
   nextPath?: string | null;
   channelAvailability: CustomerAuthChannelAvailability;
+  turnstileConfig?: PublicTurnstileConfig;
 }) {
   const fa = locale === "fa";
   const router = useRouter();
@@ -232,7 +234,7 @@ export function CustomerLoginClient({
                 <div className="relative"><Phone className="absolute start-4 top-1/2 h-4 w-4 -translate-y-1/2 text-[#d7bd72]/50" /><input id="customer-mobile" value={mobile} onChange={event => setMobile(event.target.value)} inputMode="tel" autoComplete="tel" placeholder="09121234567" required className={fieldClass + " ps-11"} /></div>
                 <label htmlFor="customer-password" className="block text-xs text-[#d9c79e]/65">{fa ? "رمز عبور" : "Password"}</label>
                 <input id="customer-password" value={password} onChange={event => setPassword(event.target.value)} type="password" dir="ltr" autoComplete="current-password" minLength={8} maxLength={128} required className={passwordFieldClass} placeholder={fa ? "حداقل ۸ نویسه" : "At least 8 characters"} />
-                <TurnstileWidget key={turnstileAction + "-" + turnstileGeneration} locale={locale} action={turnstileAction} onTokenChange={onTokenChange} onStateChange={setTurnstileState} />
+                <TurnstileWidget initialConfig={turnstileConfig} key={turnstileAction + "-" + turnstileGeneration} locale={locale} action={turnstileAction} onTokenChange={onTokenChange} onStateChange={setTurnstileState} />
                 {!securityCheckComplete ? <p className="text-center text-[11px] leading-6 text-[#bcae8d]/45">{fa ? "پس از تکمیل بررسی امنیتی، ورود فعال می‌شود." : "Complete the security check to continue."}</p> : null}
                 <button disabled={loading || !securityCheckComplete} className="flex h-13 w-full items-center justify-center gap-2 rounded-2xl border border-[#e3c873]/30 bg-[#232a56] text-sm text-[#efd991] disabled:opacity-50">{loading ? <LoaderCircle className="h-4 w-4 animate-spin" /> : <KeyRound className="h-4 w-4" />}{fa ? "ورود به حساب" : "Sign in"}</button>
               </form>
@@ -242,7 +244,7 @@ export function CustomerLoginClient({
                 <label htmlFor="customer-mobile" className="block text-xs text-[#d9c79e]/65">{fa ? "شماره موبایل" : "Mobile number"}</label>
                 <div className="relative"><Phone className="absolute start-4 top-1/2 h-4 w-4 -translate-y-1/2 text-[#d7bd72]/50" /><input id="customer-mobile" value={mobile} onChange={event => setMobile(event.target.value)} inputMode="tel" autoComplete="tel" placeholder="09121234567" required className={fieldClass + " ps-11"} /></div>
                 {mode === "SIGNUP" || mode === "RESET" ? <><label htmlFor="customer-password" className="block text-xs text-[#d9c79e]/65">{fa ? "رمز عبور جدید" : "New password"}</label><input id="customer-password" value={password} onChange={event => setPassword(event.target.value)} type="password" dir="ltr" autoComplete="new-password" minLength={8} maxLength={128} required className={passwordFieldClass} placeholder={fa ? "حداقل ۸ نویسه" : "At least 8 characters"} /><label htmlFor="customer-confirm" className="block text-xs text-[#d9c79e]/65">{fa ? "تکرار رمز عبور" : "Confirm password"}</label><input id="customer-confirm" value={confirmPassword} onChange={event => setConfirmPassword(event.target.value)} type="password" dir="ltr" autoComplete="new-password" minLength={8} maxLength={128} required className={passwordFieldClass} /></> : null}
-                <TurnstileWidget key={turnstileAction + "-" + turnstileGeneration} locale={locale} action={turnstileAction} onTokenChange={onTokenChange} onStateChange={setTurnstileState} />
+                <TurnstileWidget initialConfig={turnstileConfig} key={turnstileAction + "-" + turnstileGeneration} locale={locale} action={turnstileAction} onTokenChange={onTokenChange} onStateChange={setTurnstileState} />
                 {!securityCheckComplete ? <p className="text-center text-[11px] leading-6 text-[#bcae8d]/45">{fa ? "پس از تکمیل بررسی امنیتی، ارسال کد فعال می‌شود." : "Complete the security check to send the code."}</p> : null}
                 <button disabled={loading || !channelAvailability.smsEnabled || !securityCheckComplete} className="flex h-13 w-full items-center justify-center gap-2 rounded-2xl border border-[#e3c873]/30 bg-[#232a56] text-sm text-[#efd991] disabled:opacity-50">{loading ? <LoaderCircle className="h-4 w-4 animate-spin" /> : <Phone className="h-4 w-4" />}{mode === "OTP" ? (fa ? "دریافت کد ورود" : "Send login code") : mode === "SIGNUP" ? (fa ? "دریافت کد عضویت" : "Send sign-up code") : (fa ? "دریافت کد بازیابی" : "Send recovery code")}</button>
               </form>

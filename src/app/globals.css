@@ -1112,8 +1112,7 @@ body,[class~="min-h-screen"]{
 .eloria-glass-storefront :is(.eloria-glass-panel,.eloria-quick-dialog,.eloria-live-purchase) [class*="text-amber"]{color:#744a13}
 .eloria-glass-storefront .eloria-salon-piece h2{background:rgba(235,222,242,.97);color:var(--eloria-ink);border-color:#a78b5366;box-shadow:0 8px 22px #25132e22}
 .eloria-glass-storefront .eloria-salon-image{background:rgba(224,207,234,.86);box-shadow:0 0 0 6px #ddc48b18,0 18px 45px #25132e33}
-/* The entire rectangular photograph sits inside the circular treasury opening. */
-.eloria-glass-storefront .eloria-salon-image img{object-fit:contain!important;padding:16%;transform:none!important;filter:none!important}
+/* CircularProductImage handles the full photograph and its edge-to-edge surround. */
 .eloria-glass-storefront .eloria-salon-price :is(p,strong,span){color:var(--eloria-ink)!important;opacity:1}
 .eloria-glass-storefront :is(.eloria-raw-gold,.eloria-raw-gold strong,.eloria-raw-gold small){color:var(--eloria-secondary);opacity:1}
 .eloria-glass-storefront :is(.eloria-quick-button,.eloria-piece-details,.eloria-dialog-close){color:var(--eloria-ink);border-color:#9c7c4277;background:#e9ddef;min-height:44px}
@@ -1122,3 +1121,17 @@ body,[class~="min-h-screen"]{
 .eloria-glass-storefront .eloria-salon-piece-inner{opacity:1}
 .eloria-glass-storefront :is(.eloria-glass-panel,.eloria-live-purchase,.eloria-quick-dialog) :focus-visible{outline:2px solid #79532d;outline-offset:4px}
 @supports not (backdrop-filter:blur(1px)){.eloria-glass-storefront :is(.eloria-glass-panel,.eloria-salon-purchase-card,.eloria-quick-dialog,.eloria-live-purchase){background:#ede2f3!important}}
+
+/* The surround fills the circle; the original image stays complete, at its
+   natural proportions, in the largest safe rectangle inside that circle. */
+.eloria-circle-photo { position:absolute; inset:0; display:block; width:100%; height:100%; overflow:hidden; border-radius:50%; isolation:isolate; background:radial-gradient(circle at 40% 25%,#f3e9ef,#c6b1ce); }
+.eloria-circle-photo .eloria-circle-ambient { object-fit:cover!important; padding:0!important; transform:scale(1.08)!important; filter:blur(12px)!important; opacity:.85; }
+.eloria-circle-photo .eloria-circle-subject { position:absolute; left:50%; top:50%; width:var(--circle-photo-fit,70%); height:var(--circle-photo-fit,70%); transform:translate(-50%,-50%); }
+.eloria-circle-photo .eloria-circle-subject img { object-fit:contain!important; object-position:center!important; padding:0!important; transform:none!important; filter:none!important; border-radius:0!important; }
+.eloria-circle-photo.is-floating.is-cutout { border-radius:0; background:none; overflow:visible; }
+.eloria-circle-photo.is-floating.is-cutout .eloria-circle-subject { width:100%; height:100%; }
+.eloria-circle-photo.is-original { box-shadow:inset 0 0 0 1px #e6ce9e70; }
+@media (max-width:760px) {
+  .eloria-circle-photo .eloria-circle-ambient { filter:blur(8px)!important; }
+  .eloria-intro-root video { filter:none!important; }
+}

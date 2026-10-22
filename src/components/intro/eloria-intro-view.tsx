@@ -42,7 +42,7 @@ export function EloriaIntroView({
   ) {
     return (
       <button type="button" onClick={replayIntro}
-        className="fixed start-4 bottom-4 z-50 min-h-11 rounded-full border border-[#eed3a0]/60 bg-[#212858] px-5 py-3 text-xs text-[#ffe5a3] shadow-lg">
+        className="eloria-intro-replay fixed end-4 bottom-20 z-50 min-h-11 rounded-full border border-[#eed3a0]/60 bg-[#4c3459]/95 px-5 py-3 text-xs text-[#ffe5a3] shadow-lg md:bottom-4">
         {isPersian ? "پخش ویدئوی ورود" : "Play entrance video"}
       </button>
     );

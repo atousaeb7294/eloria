@@ -13,6 +13,9 @@ import { CartHeaderButton } from "@/components/cart-header-button";
 import { CustomerAccountHeaderButton } from "@/components/customer-account-header-button";
 import { ProductImage } from "@/components/product-image";
 import { ProductCardLivePrice } from "@/components/product-card-live-price";
+import { CircularProductImage } from "@/components/circular-product-image";
+import { useIntroComplete } from "@/components/intro/use-intro-complete";
+import { ArrowDownLeft, ArrowUpLeft, DoorOpen, Grid2X2 } from "lucide-react";
 import type { HomeDesign, HomePiece } from "@/lib/home-design";
 
 const subscribeMotion = (cb: () => void) => {
@@ -63,13 +66,15 @@ export function EloriaHome({
   const [offscreen, setOffscreen] = useState(false);
   const [hidden, setHidden] = useState(false);
   const [quick, setQuick] = useState<HomePiece | null>(null);
-  const [heroFailed, setHeroFailed] = useState(false);
+  const [featuredVisible, setFeaturedVisible] = useState(false);
+  const featured = useRef<HTMLElement>(null);
+  const introComplete = useIntroComplete();
   const reduced = useSyncExternalStore(
     subscribeMotion,
     readMotion,
     serverMotion,
   );
-  const stop = paused || reduced || offscreen || hidden;
+  const stop = paused || reduced || offscreen || hidden || !introComplete;
   const stage = useRef<HTMLDivElement>(null);
   const jewel = useRef<HTMLDivElement>(null);
   const dialog = useRef<HTMLDialogElement>(null);
@@ -84,6 +89,17 @@ export function EloriaHome({
     trigger.current = element;
     setQuick(piece);
   }
+  useEffect(() => {
+    if (!featured.current) return;
+    const observer = new IntersectionObserver(entries => {
+      if (entries.some(entry => entry.isIntersecting)) {
+        setFeaturedVisible(true);
+        observer.disconnect();
+      }
+    }, { rootMargin: "250px" });
+    observer.observe(featured.current);
+    return () => observer.disconnect();
+  }, []);
   useEffect(() => {
     const element = stage.current;
     if (!element) return;
@@ -204,13 +220,16 @@ export function EloriaHome({
               )}
             </p>
             <div className="hero-actions">
-              <a className="button" href="#treasuries">
-                {fa ? "ورود به گنجینه‌ها" : "Enter the treasuries"}{" "}
-                <span>↙</span>
+              <a className="eloria-cta eloria-cta-primary" href="#treasuries">
+                <DoorOpen aria-hidden="true" className="cta-symbol" />
+                <span>{fa ? "ورود به گنجینه‌ها" : "Enter the treasuries"}</span>
+                <ArrowDownLeft aria-hidden="true" className="cta-arrow" />
               </a>
-              <a className="text-link" href="#featured">
-                {fa ? "دیدن منتخب‌ها ←" : "Explore the edit →"}
-              </a>
+              <Link className="eloria-cta eloria-cta-secondary" href={`/${locale}/products`}>
+                <Grid2X2 aria-hidden="true" className="cta-symbol" />
+                <span>{fa ? "دیدن همهٔ آثار" : "View all creations"}</span>
+                <ArrowUpLeft aria-hidden="true" className="cta-arrow" />
+              </Link>
             </div>
             <div className="signature">
               ✧{" "}
@@ -240,7 +259,7 @@ export function EloriaHome({
               <span>THE ELORIA ATELIER</span>
               <span>{hero?.name}</span>
             </div>
-            {hero && !heroFailed ? (
+            {hero ? (
               <>
                 <div className="hero-photo-wrap" ref={jewel}>
                   <div className="photo-float">
@@ -250,14 +269,13 @@ export function EloriaHome({
                         { "--hero-scale": hero.scale / 100 } as CSSProperties
                       }
                     >
-                      <Image
-                        unoptimized
-                        src={hero.cutoutUrl}
+                      <CircularProductImage
+                        src={hero.imageUrl}
+                        cutoutSrc={hero.cutoutUrl}
                         alt={hero.name}
-                        fill
                         priority
+                        floating
                         sizes="(max-width:760px) 95vw, 55vw"
-                        onError={() => setHeroFailed(true)}
                       />
                     </div>
                   </div>
@@ -375,14 +393,14 @@ export function EloriaHome({
                   <p>{fa ? t.tagline : t.english}</p>
                   <span className="portal-cta">
                     {fa ? "ورود به گنجینه" : "Enter the treasury"}{" "}
-                    <span>←</span>
+                    <span className="portal-cta-icon" aria-hidden="true"><ArrowUpLeft size={18} /></span>
                   </span>
                 </div>
               </Link>
             ))}
           </div>
         </section>
-        <section className="featured section" id="featured">
+        <section className="featured section" id="featured" ref={featured}>
           <div className="section-heading">
             <div>
               <div className="eyebrow">THE CURATED EDIT</div>
@@ -412,10 +430,10 @@ export function EloriaHome({
                     <div
                       className={`image-seat${p.cutoutUrl ? " is-cutout" : ""}`}
                     >
-                      <ProductImage
-                        src={p.cutoutUrl ?? p.imageUrl}
+                      <CircularProductImage
+                        src={p.imageUrl}
+                        cutoutSrc={p.cutoutUrl}
                         alt={p.name}
-                        fill
                         sizes="(max-width:760px) 38vw, 20vw"
                       />
                     </div>
@@ -441,6 +459,7 @@ export function EloriaHome({
                         slug={p.slug}
                         locale={locale}
                         compact
+                        enabled={introComplete && featuredVisible}
                       />
                     </div>
                   </div>

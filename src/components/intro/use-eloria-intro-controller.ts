@@ -127,14 +127,15 @@ export function useEloriaIntroController({
     const connection = (navigator as Navigator & {
       connection?: { effectiveType?: string; saveData?: boolean };
     }).connection;
-    const compact = window.matchMedia("(max-width: 767px)").matches ||
+    const compact = window.matchMedia("(max-width: 1024px)").matches ||
       connection?.saveData === true || ["slow-2g", "2g"].includes(connection?.effectiveType ?? "");
     let seen = false;
     try { seen = window.sessionStorage.getItem(INTRO_SESSION_KEY) === "1"; } catch {}
+    const skipForAnchor = Boolean(window.location.hash);
     const timer = window.setTimeout(() => {
       // Select the rendition before mounting its source; avoid a desktop download on mobile.
       setUseMobileVideos(compact);
-      if (seen) completeIntro();
+      if (seen || skipForAnchor) completeIntro();
       else setPhase("video-one");
     }, 0);
     return () => window.clearTimeout(timer);
@@ -236,6 +237,13 @@ export function useEloriaIntroController({
 
   const replayIntro = useCallback(() => {
     clearTransitionTimers();
+    // #hero intentionally skips the entrance during internal navigation. An
+    // explicit replay must also remove that CSS target before mounting video.
+    if (window.location.hash) {
+      window.history.replaceState(window.history.state, "", window.location.pathname + window.location.search);
+    }
+    document.documentElement.removeAttribute("data-eloria-skip-intro");
+    window.dispatchEvent(new Event("eloria:intro-start"));
     firstPlaybackStartedRef.current = false;
     firstPlaybackFinishedRef.current = false;
     secondPlaybackStartedRef.current = false;

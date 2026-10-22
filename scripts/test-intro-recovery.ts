@@ -7,14 +7,17 @@ import ts from "typescript";
 import React, { act } from "react";
 import { create, type ReactTestRenderer } from "react-test-renderer";
 
-async function scenario({ reduced = false, saveData = false, seen = false, rejectPlay = false, completeFlow = false } = {}) {
+async function scenario({ reduced = false, saveData = false, seen = false, rejectPlay = false, completeFlow = false, anchor = "", mobile = true } = {}) {
   const require = createRequire(import.meta.url);
   const timers = new Map<number, () => void>();
   const intervals = new Map<number, () => void>();
   let id = 0, writes = 0, plays = 0;
-  const doc = { documentElement: { style: { overflow: "" } }, body: { style: { overflow: "" } } };
+  const doc = { documentElement: { style: { overflow: "" }, removeAttribute() {} }, body: { style: { overflow: "" } } };
+  const location = { hash: anchor, pathname: "/fa", search: "" };
   const win = Object.assign(new EventTarget(), {
-    matchMedia: (q: string) => ({ matches: q.includes("reduced-motion") ? reduced : true }),
+    location,
+    history: { state: {}, replaceState() { location.hash = ""; } },
+    matchMedia: (q: string) => ({ matches: q.includes("reduced-motion") ? reduced : mobile }),
     sessionStorage: { getItem: () => seen ? "1" : null, setItem: () => { writes++; } },
     setTimeout: (fn: () => void) => { timers.set(++id, fn); return id; },
     clearTimeout: (key: number) => timers.delete(key),
@@ -48,13 +51,15 @@ async function scenario({ reduced = false, saveData = false, seen = false, rejec
   let tree!: ReactTestRenderer;
   await act(async () => { tree = create(React.createElement(Probe), { createNodeMock: () => video }); });
   await act(async () => { for (const [key, fn] of [...timers]) { timers.delete(key); fn(); } });
-  if (seen) {
+  if (seen || anchor) {
     assert.equal(state.phase, "complete");
+    assert.equal(plays, 0, "Internal links must not download/play a hidden intro");
     await act(async () => state.replayIntro());
+    assert.equal(location.hash, "", "Replay must clear the CSS skip target");
   }
   assert.equal(state.phase, "video-one");
   assert.ok(plays > 0);
-  assert.ok(state.firstVideoSrc.includes("mobile"));
+  assert.equal(state.firstVideoSrc.includes("eloria-entry-mobile"), mobile || saveData);
   if (completeFlow) {
     await act(async () => state.handleFirstVideoEnded());
     assert.equal(state.phase, "awaiting-entry");
@@ -93,6 +98,9 @@ async function main() {
   await scenario({ saveData: true });
   await scenario({ seen: true });
   await scenario({ rejectPlay: true });
+  await scenario({ anchor: "#hero" });
+  await scenario({ anchor: "#featured" });
+  await scenario({ mobile: false, completeFlow: true });
   console.log("PASS intro: autoplay with reduced-motion/save-data, saved-session replay, mobile source, autoplay recovery, stall recovery, timer and scroll cleanup");
 }
 main().catch(error => { console.error(error); process.exitCode = 1; });

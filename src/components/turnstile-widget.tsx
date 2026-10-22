@@ -1,6 +1,6 @@
 "use client";
 
-import Script from "next/script";
+import { loadTurnstileSdk } from "@/lib/turnstile-loader";
 import { Check, LoaderCircle, RefreshCw, ShieldAlert } from "lucide-react";
 import { useCallback, useEffect, useId, useRef, useState } from "react";
 
@@ -11,6 +11,8 @@ export type TurnstileState =
   | "verified"
   | "error"
   | "disabled";
+
+export type PublicTurnstileConfig = { siteKey: string; required: boolean };
 
 declare global {
   interface Window {
@@ -28,10 +30,12 @@ export function TurnstileWidget({
   onStateChange,
   locale,
   action = "checkout",
+  initialConfig,
 }: {
   onTokenChange: (token: string | null) => void;
   onStateChange?: (state: TurnstileState) => void;
   locale: "fa" | "en";
+  initialConfig?: PublicTurnstileConfig;
   action?:
     | "checkout"
     | "customer-login"
@@ -41,8 +45,8 @@ export function TurnstileWidget({
     | "support-contact"
     | "support-chat";
 }) {
-  const [siteKey, setSiteKey] = useState<string | null>(null);
-  const [required, setRequired] = useState(true);
+  const [siteKey, setSiteKey] = useState<string | null>(initialConfig?.siteKey ?? null);
+  const [required, setRequired] = useState(initialConfig?.required ?? true);
   const [scriptReady, setScriptReady] = useState(false);
   const [state, setState] = useState<TurnstileState>("loading");
   const [scriptGeneration, setScriptGeneration] = useState(0);
@@ -55,8 +59,17 @@ export function TurnstileWidget({
   }, [onStateChange]);
 
   useEffect(() => {
+    // Login receives only the public key and a boolean in the initial HTML.
+    // Switching between membership and sign-in no longer repeats a config trip.
+    if (initialConfig) {
+      if (!initialConfig.siteKey) {
+        queueMicrotask(() => updateState(initialConfig.required ? "error" : "disabled"));
+      }
+      return;
+    }
     let active = true;
     const controller = new AbortController();
+    const timeout = window.setTimeout(() => controller.abort(), 8000);
     fetch("/api/public/turnstile-config", { cache: "no-store", signal: controller.signal })
       .then(async response => {
         const body = (await response.json().catch(() => null)) as { siteKey?: unknown; required?: unknown } | null;
@@ -72,24 +85,33 @@ export function TurnstileWidget({
         if (!nextRequired && !nextSiteKey) updateState("disabled");
         else if (!nextSiteKey) updateState("error");
       })
-      .catch(error => {
-        if (!active || error instanceof DOMException && error.name === "AbortError") return;
+      .catch(() => {
+        if (!active) return;
         setSiteKey("");
         updateState("error");
         onTokenChange(null);
-      });
-    return () => { active = false; controller.abort(); };
-  }, [onTokenChange, updateState]);
+      }).finally(() => window.clearTimeout(timeout));
+    return () => { active = false; window.clearTimeout(timeout); controller.abort(); };
+  }, [initialConfig, onTokenChange, updateState]);
 
   useEffect(() => {
-    if (!siteKey || scriptReady) return;
-    if (window.turnstile) {
-      queueMicrotask(() => setScriptReady(true));
-      return;
-    }
-    const timeout = window.setTimeout(() => updateState("error"), 15_000);
+    if (state !== "verifying") return;
+    const timeout = window.setTimeout(() => {
+      onTokenChange(null);
+      updateState("error");
+    }, 30_000);
     return () => window.clearTimeout(timeout);
-  }, [scriptReady, siteKey, updateState]);
+  }, [state, onTokenChange, updateState]);
+
+  useEffect(() => {
+    if (siteKey === "" || scriptReady) return;
+    let active = true;
+    // With no initial config, the SDK and config requests can run together.
+    void loadTurnstileSdk().then(() => {
+      if (active) setScriptReady(true);
+    }).catch(() => { if (active) updateState("error"); });
+    return () => { active = false; };
+  }, [scriptGeneration, scriptReady, siteKey, updateState]);
 
   useEffect(() => {
     if (!siteKey || !scriptReady || !window.turnstile || widgetId.current) return;
@@ -106,8 +128,15 @@ export function TurnstileWidget({
         appearance: "execute",
         execution: "execute",
         retry: "never",
+        "refresh-expired": "manual",
+        "refresh-timeout": "manual",
         callback: (token: string) => { onTokenChange(token); updateState("verified"); },
-        "expired-callback": () => { onTokenChange(null); updateState("ready"); },
+        "expired-callback": () => {
+          onTokenChange(null);
+          if (widgetId.current) window.turnstile?.reset(widgetId.current);
+          updateState("ready");
+        },
+        "timeout-callback": () => { onTokenChange(null); updateState("error"); },
         "error-callback": () => { onTokenChange(null); updateState("error"); },
         "unsupported-callback": () => { onTokenChange(null); updateState("error"); },
       });
@@ -168,7 +197,6 @@ export function TurnstileWidget({
   };
 
   return <div className="mt-5 rounded-xl border border-[#d9b85f]/14 bg-black/10 p-2.5">
-    <Script key={scriptGeneration} src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" strategy="afterInteractive" onReady={() => setScriptReady(true)} onLoad={() => setScriptReady(true)} onError={() => updateState("error")} />
     <button
       type="button"
       onClick={startVerification}

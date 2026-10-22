@@ -18,5 +18,12 @@ export default async function CustomerLoginPage({ params, searchParams }: Props)
   if (auth) redirect(`/${locale}/profile`);
   const nextPath = typeof query.next === "string" && query.next.startsWith(`/${locale}/`) ? query.next : null;
   const channelAvailability = getCustomerAuthChannelAvailability();
-  return <InternalPageShell locale={locale}><CustomerLoginClient locale={locale} nextPath={nextPath} channelAvailability={channelAvailability} /></InternalPageShell>;
+  const turnstileConfig = {
+    siteKey: process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY?.trim() ?? "",
+    required: process.env.NODE_ENV === "production" || Boolean(process.env.TURNSTILE_SECRET_KEY?.trim()),
+  };
+  return <InternalPageShell locale={locale}>
+    <link rel="preconnect" href="https://challenges.cloudflare.com" crossOrigin="anonymous" />
+    <CustomerLoginClient locale={locale} nextPath={nextPath} channelAvailability={channelAvailability} turnstileConfig={turnstileConfig} />
+  </InternalPageShell>;
 }
