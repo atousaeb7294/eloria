@@ -88,6 +88,12 @@ export function ProductCatalogFilters({
     initialFilters.availability,
   );
 
+  const filterKey = JSON.stringify([
+    search.trim(), material, collection, minPrice, maxPrice, availability,
+  ]);
+  // Mount/replayed effects must not submit the filters already shown by the URL.
+  const lastSubmitted = useRef(filterKey);
+
   const submitFilters = () => {
 
     if (invalidPriceRange) {
@@ -146,6 +152,7 @@ export function ProductCatalogFilters({
       });
     }
 
+    lastSubmitted.current = filterKey;
     startTransition(() => {
       router.push(query ? `${pathname}?${query}` : pathname, {
         scroll: false,
@@ -177,18 +184,16 @@ export function ProductCatalogFilters({
     BigInt(minPrice) > BigInt(maxPrice),
   );
 
-  const mounted = useRef(false);
   useEffect(() => {
-    if (!mounted.current) {
-      mounted.current = true;
-      return;
-    }
-    if (invalidPriceRange) return;
-    const timer = window.setTimeout(submitFilters, search.trim() ? 450 : 280);
+    if (filterKey === lastSubmitted.current || invalidPriceRange) return;
+    const timer = window.setTimeout(() => {
+      // An explicit form submission may already have applied this state.
+      if (filterKey !== lastSubmitted.current) submitFilters();
+    }, search.trim() ? 450 : 280);
     return () => window.clearTimeout(timer);
     // The submitted state is the dependency; navigation happens after the debounce.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [search, material, collection, minPrice, maxPrice, availability]);
+  }, [filterKey, invalidPriceRange]);
 
   const materialChoices = [
     {

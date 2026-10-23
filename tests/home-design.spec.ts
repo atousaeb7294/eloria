@@ -1,12 +1,15 @@
 import { expect, test } from "@playwright/test";
-test("eight circular pieces, original treasury routes and quick view", async ({
+test("public circular pieces, original treasury routes and quick view", async ({
   page,
 }, info) => {
+  const expectedPieces = Number(info.config.metadata.homeProductCount ?? 8);
+  expect(expectedPieces).toBeGreaterThan(0);
+  expect(expectedPieces).toBeLessThanOrEqual(8);
   await page.goto("/fa#featured");
   await expect(
     page.locator(".eloria-home .medallion"),
-    "The catalog must have at least eight public products with images",
-  ).toHaveCount(8);
+    "The home must display all expected public products with images",
+  ).toHaveCount(expectedPieces);
   for (const key of ["gold", "silver", "weave"])
     await expect(page.locator(`.portal.${key}`)).toHaveAttribute(
       "href",
@@ -107,7 +110,7 @@ test("hero respects reduced motion; admin is protected", async ({
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto("/fa#hero");
   await expect(
-    page.locator(".hero-scale img"),
+    page.locator(".hero-scale .eloria-circle-subject img"),
     "A live product image must remain visible even before cutout preparation",
   ).toBeVisible();
   expect(

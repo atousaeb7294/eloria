@@ -22,6 +22,7 @@ test("Hero actions and the seeded catalog are connected", async ({ page }, testI
   await expect(gold).toHaveAttribute("href", "/fa/collections/gold");
   await gold.click();
   await expect(page).toHaveURL(/\/fa\/collections\/gold/);
+  await expect(page.getByRole("heading", { name: "گنجینهٔ طلا", exact: true })).toBeVisible();
   await page.goto("/fa/products");
   await expect(page).toHaveURL(/\/fa\/products/);
   await expect(page.getByRole("heading", { name: "تمام آثار الوریا" })).toBeVisible();

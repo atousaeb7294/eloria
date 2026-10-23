@@ -114,8 +114,8 @@ const webkitProjects:
   ];
 
 export default defineConfig({
-  // Requires admin-selected live data; run separately with playwright.home.config.ts.
-  testIgnore: "**/home-design.spec.ts",
+  // prisma/seed.ts creates six public products; the separate live suite expects eight.
+  metadata: { homeProductCount: 6 },
   testDir:
     "./tests",
 

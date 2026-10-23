@@ -142,6 +142,9 @@ jobs:
       - name: Test purchase loading and storefront regressions
         run: npm run test:live-purchase && npm run test:critical
 
+      - name: Test home display and catalog navigation
+        run: node --import tsx scripts/test-catalog-filter-navigation.ts && node --import tsx scripts/test-home-display-fix.ts
+
       - name: Test signed tokens
         run: npm run test:tokens
 

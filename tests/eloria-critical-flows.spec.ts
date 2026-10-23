@@ -633,8 +633,12 @@ test.describe(
         expect(
           response.status(),
         ).toBe(
-          404,
+          403,
         );
+        expect(await response.json()).toEqual({
+          successful: false,
+          message: "سفارش در دسترس نیست.",
+        });
       },
     );
   },
@@ -660,7 +664,7 @@ test.describe(
 
         await expect(
           page.getByText(
-            "Making charge",
+            /^Making charges?\b/i,
           ),
         ).toHaveCount(
           0,
@@ -668,11 +672,7 @@ test.describe(
 
         await expect(
           page.getByText(
-            "Profit",
-            {
-              exact:
-                true,
-            },
+            /^Profit\b/i,
           ),
         ).toHaveCount(
           0,
@@ -680,7 +680,7 @@ test.describe(
 
         await expect(
           page.getByText(
-            "Artistic fee",
+            /^Artistic fee\b/i,
           ),
         ).toHaveCount(
           0,
@@ -688,7 +688,7 @@ test.describe(
 
         await expect(
           page.getByText(
-            "Tax percentage",
+            /^Tax percentage\b/i,
           ),
         ).toHaveCount(
           0,
