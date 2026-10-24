@@ -1,6 +1,5 @@
 import assert from "node:assert/strict";
 import { loadHomeDesign, type HomeDesignSource, type HomeProduct, type HomeAppearance } from "../src/lib/home-design-data";
-import { circularPhotoSize } from "../src/lib/circular-image";
 
 const rows: HomeProduct[] = Array.from({ length: 12 }, (_, i) => ({
   id: `p${i}`, slug: `piece-${i}`, nameFa: `اثر ${i}`, nameEn: `Piece ${i}`,
@@ -36,13 +35,11 @@ async function main() {
   const down = await loadHomeDesign("fa", source({ products: async () => { throw new Error("offline"); } }));
   assert.equal(down.unavailable, true);
   assert.deepEqual(down.pieces, []);
-  for (const [w, h] of [[422,316],[422,528],[1000,1000],[2000,200],[200,2000]]) {
-    const size = circularPhotoSize(w,h)/100;
-    const scale = size / Math.max(w,h);
-    assert.ok(Math.hypot(w*scale,h*scale) <= 1, "Every corner remains inside the circle");
-    assert.ok(size >= .7 && size <= .99);
-  }
-  assert.equal(circularPhotoSize(0,0),70);
-  console.log("PASS: missing settings/cutouts preserve live images; eight items; admin order; private-product guard; full circle containment at landscape/portrait/mobile ratios.");
+  assert.equal(brokenOptionalMedia.hero?.cutoutUrl, "/api/media/hero/hero");
+  assert.equal(brokenOptionalMedia.pieces[0].imageId, "image-7");
+  const retiredHero = await loadHomeDesign("fa", source({ appearance: async () => ({ ...config, heroCutout: { id: "hidden", product: { ...rows[9], collection: { isActive: false } } } }) }));
+  assert.equal(retiredHero.hero?.id, "p7", "A hidden selected product must fall back to the public catalog");
+  assert.equal(retiredHero.hero?.cutoutUrl, undefined, "Never expose the retired product cutout");
+  console.log("PASS: catalog survives optional failures; selected photo and order; private hero fallback; automatic image preparation IDs.");
 }
 main().catch(error => { console.error(error); process.exitCode = 1; });

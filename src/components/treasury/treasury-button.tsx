@@ -130,7 +130,7 @@ export function TreasuryButton({
         });
       }}
       className={[
-        "group flex min-h-12 w-full items-center justify-center gap-2.5 rounded-2xl border px-5 py-3 transition duration-300 motion-reduce:transition-none",
+        "eloria-action group flex min-h-12 w-full items-center justify-center gap-2.5 rounded-2xl border px-5 py-3 transition duration-300 motion-reduce:transition-none",
         saved
           ? "border-[#d9b85f]/30 bg-[#d9b85f]/[0.07] text-[#efd48a] shadow-[inset_0_1px_0_rgba(255,255,255,.025)]"
           : "border-white/[0.08] bg-white/[0.025] text-[#d9ccb0]/72 hover:border-[#d9b85f]/22 hover:bg-[#d9b85f]/[0.035] hover:text-[#ecd187]",

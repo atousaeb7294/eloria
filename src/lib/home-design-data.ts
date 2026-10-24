@@ -3,6 +3,7 @@ export type HomePiece = {
   slug: string;
   name: string;
   imageUrl: string;
+  imageId?: string;
   cutoutUrl?: string;
   group: "gold" | "silver" | "weave";
 };
@@ -76,6 +77,7 @@ export async function loadHomeDesign(locale: string, source: HomeDesignSource): 
     return {
       id: p.id, slug: p.slug, name: locale === "fa" ? p.nameFa : (p.nameEn || p.nameFa),
       imageUrl: image.imageUrl,
+      imageId: image.id,
       cutoutUrl: prepared ? `/api/media/hero/${prepared.id}` : undefined,
       group: p.hasGold ? "gold" : p.hasSilver ? "silver" : "weave",
     };

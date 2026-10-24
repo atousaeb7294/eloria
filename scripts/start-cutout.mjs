@@ -1,7 +1,9 @@
 import { spawn } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
+import { loadProjectEnvironment } from "./project-environment.mjs";
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
+loadProjectEnvironment(root);
 // Opt-out alone is not a network boundary. Runtime always uses internal Docker.
 const child = spawn(
   "docker",

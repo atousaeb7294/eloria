@@ -228,30 +228,6 @@
 .eloria-home .hero-photo-wrap {
   position: absolute;
   inset: 30px 15% 42px 13%;
-  transform-style: preserve-3d;
-  will-change: transform;
-  transition: transform 0.45s cubic-bezier(0.2, 0.8, 0.3, 1);
-}
-.eloria-home .photo-float {
-  position: relative;
-  height: 100%;
-  border: 1px solid #d8ba7c80;
-  border-radius: 45% 45% 6px 6px;
-  overflow: hidden;
-  box-shadow: 0 28px 55px #08041166;
-  animation: float 8s ease-in-out infinite;
-  transform-origin: center 70%;
-  background: #271c26;
-}
-.eloria-home .photo-float img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: center 62%;
-  display: block;
-  transition:
-    opacity 0.25s,
-    transform 1s;
 }
 .eloria-home .photo-sheen {
   position: absolute;
@@ -827,18 +803,6 @@
   color: #bcaac2;
   margin-top: 20px;
 }
-.eloria-home .paused .photo-float {
-  animation-play-state: paused;
-}
-@keyframes float {
-  0%,
-  100% {
-    transform: translateY(0) rotate(-0.5deg);
-  }
-  50% {
-    transform: translateY(-7px) rotate(0.5deg);
-  }
-}
 @media (max-width: 1100px) {
   .eloria-home nav {
     gap: 20px;
@@ -1002,9 +966,6 @@
   }
   .eloria-home .hero-photo-wrap {
     inset: 20px 16% 34px 16%;
-  }
-  .eloria-home .photo-float {
-    border-radius: 110px 110px 4px 4px;
   }
   .eloria-home .photo-caption {
     right: 0;
@@ -1375,35 +1336,11 @@
 .eloria-home .portal:focus-visible {
   outline-offset: 5px;
 }
-.eloria-home .showcase {
-  perspective: 1400px;
-}
 .eloria-home .hero-photo-wrap {
   inset: 25px -5% 47px -5%;
   display: flex;
   align-items: center;
   justify-content: center;
-}
-.eloria-home .photo-float {
-  width: 100%;
-  height: 100%;
-  background: none;
-  border: 0;
-  border-radius: 0;
-  box-shadow: none;
-  overflow: visible;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  animation: loose-jewel 8s ease-in-out infinite;
-  filter: drop-shadow(0 30px 18px #10061677);
-}
-.eloria-home .photo-float img {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-  object-position: center;
-  transform: none !important;
 }
 .eloria-home .photo-orbit {
   inset: 13% 7% 15%;
@@ -1560,15 +1497,6 @@
   max-width: 100%;
   max-height: 100%;
 }
-@keyframes loose-jewel {
-  0%,
-  100% {
-    transform: translateY(0) rotate(-1deg);
-  }
-  50% {
-    transform: translateY(-9px) rotate(1deg);
-  }
-}
 @media (min-width: 761px) {
   .eloria-home .hero-copy h1 {
     font-family: "Eloria Nastaliq", "Eloria Vazir", serif;
@@ -1651,12 +1579,6 @@
   }
   .eloria-home .hero-photo-wrap {
     inset: 16px -1% 38px -1%;
-  }
-  .eloria-home .photo-float {
-    border: 0;
-    border-radius: 0;
-    background: none;
-    box-shadow: none;
   }
   .eloria-home .photo-caption {
     bottom: 8px;
@@ -2082,16 +2004,6 @@
 .eloria-home .home-price strong {
   font-weight: 600;
 }
-.eloria-home .hero-scale {
-  position: relative;
-  width: 100%;
-  height: 100%;
-  transform: scale(var(--hero-scale, 0.9));
-}
-.eloria-home .hero-scale img {
-  object-fit: contain !important;
-  filter: none !important;
-}
 .eloria-home .portal-image {
   position: relative;
   width: 30%;
@@ -2269,15 +2181,10 @@
   }
 }
 @media (prefers-reduced-motion: reduce) {
-  .eloria-home .hero-photo-wrap,
-  .eloria-home .photo-float {
+  .eloria-home .hero-photo-wrap {
     transform: none !important;
     animation: none !important;
   }
-}
-
-.eloria-home.paused .photo-float {
-  animation-play-state: paused;
 }
 /* Circular seat within the approved gold frame. Full image, original ratio. */
 .eloria-home .medallion .image-seat {
@@ -2359,29 +2266,35 @@
 .eloria-home .portal-cta { min-height:50px; padding:7px 15px 7px 8px; border:1px solid #9c7c4277; border-radius:18px 6px 18px 6px; background:linear-gradient(135deg,#faefd288,#d9c0a488); color:#3c2848; box-shadow:inset 0 1px 0 #fff8; }
 .eloria-home .portal-cta-icon { width:34px; height:34px; display:grid; place-items:center; border-radius:50%; background:#4c3459; color:#f2d9a2; transition:transform .2s; }
 .eloria-home .portal:hover .portal-cta-icon,.eloria-home .portal:focus-visible .portal-cta-icon { transform:rotate(-10deg); }
-.eloria-home .hero-scale { display:grid; place-items:center; }
-.eloria-home .hero-scale > .eloria-circle-photo { position:relative; inset:auto; width:min(100%,480px); height:auto; aspect-ratio:1; }
-.eloria-home .hero-scale > .eloria-circle-photo.is-cutout { width:100%; height:100%; aspect-ratio:auto; }
 .eloria-home .medallion .image-seat { width:90%; background:transparent; }
 .eloria-home .medallion .image-seat:after { inset:1px; }
 /* Home's old img rules must not shrink the new nested image display. */
-.eloria-home .medallion .image-seat .eloria-circle-ambient { object-fit:cover; padding:0; filter:blur(12px); transform:scale(1.08)!important; }
+
 .eloria-home .medallion .image-seat .eloria-circle-subject img { padding:0; }
 @media (max-width:760px) {
   .eloria-home .hero-actions { gap:9px; margin-inline:auto; }
   .eloria-home .eloria-cta { min-height:56px; padding:12px 10px; gap:8px; font-size:12px; }
   .eloria-home .cta-symbol { width:18px; height:18px; }
   .eloria-home .cta-arrow { display:none; }
-  .eloria-home .hero-scale > .eloria-circle-photo { width:min(88%,340px); }
   .eloria-home .medallion .image-seat { width:90%; }
   .eloria-home .portal-cta { padding:7px 10px; min-height:46px; font-size:11px; }
   .eloria-home .portal-cta-icon { width:28px; height:28px; }
-  .eloria-home .photo-float { filter:none; }
   .eloria-home .medallion .product-description,.eloria-home .quick-view-label { backdrop-filter:none; }
 }
 @media (max-width:370px) { .eloria-home .eloria-cta { font-size:11px; gap:5px; padding:10px 8px; } }
 @media (prefers-reduced-motion:reduce) { .eloria-home .eloria-cta,.eloria-home .portal-cta-icon { transition:none; transform:none; } }
 
-.eloria-home .hero-scale .eloria-circle-ambient { object-fit:cover!important; filter:blur(12px)!important; transform:scale(1.08)!important; }
+
 
 .eloria-home.home-loading { min-height:100svh; display:grid; place-items:center; color:#f6ecdc; }
+
+/* Shared circular seats replace rectangular preview photos and blurred copies. */
+.eloria-home .portal-image,.eloria-home .portal-image:nth-child(2) { width:31%; height:auto; aspect-ratio:1; flex:none; border-radius:50%; overflow:hidden; border:1px solid #d9bc82; box-shadow:0 6px 18px #24132c33; }
+.eloria-home .portal-preview { align-items:center; gap:3%; }
+.eloria-home .medallion .image-seat { width:94%; padding:0; }
+.eloria-home .medallion .image-seat img { opacity:1; filter:none; }
+html[lang="fa"] body .eloria-home[dir="rtl"] :is(.portal-content h3,.portal-content h3 *,.product-description h3,.product-description h3 *,.photo-caption h2) {
+  font-family:"Eloria Iran Nastaliq",serif!important; font-weight:400!important; font-style:normal!important; letter-spacing:0!important; line-height:2!important;
+}
+.eloria-home .portal-content h3 { font-size:clamp(30px,3vw,42px); overflow:visible; padding-block:4px 10px; }
+.eloria-home .product-description h3 { font-size:clamp(25px,2.2vw,32px); overflow:visible; padding-block:4px; }

@@ -36,6 +36,7 @@ export type CatalogProduct = {
   stock: number;
   isAvailable: boolean;
   image: {
+    id?: string;
     imageUrl: string;
     altFa: string | null;
     altEn: string | null;
@@ -259,7 +260,7 @@ const catalogCardSelect = {
   images: {
     orderBy: [{ isPrimary: "desc" as const }, { displayOrder: "asc" as const }],
     take: 1,
-    select: { imageUrl: true, altFa: true, altEn: true },
+    select: { id: true, imageUrl: true, altFa: true, altEn: true },
   },
 } satisfies Prisma.ProductSelect;
 
@@ -283,7 +284,7 @@ function mapCatalogProduct(product: {
   stock: number;
   status: "DRAFT" | "ACTIVE" | "OUT_OF_STOCK" | "ARCHIVED";
   collection: { slug: string };
-  images: Array<{ imageUrl: string; altFa: string | null; altEn: string | null }>;
+  images: Array<{ id?: string; imageUrl: string; altFa: string | null; altEn: string | null }>;
 }): CatalogProduct {
   product = canonicalProductStory(product);
   const image = product.images[0] ?? null;
@@ -306,7 +307,7 @@ function mapCatalogProduct(product: {
     stock: product.stock,
     isAvailable: product.status === "ACTIVE" && product.stock > 0,
     image: image
-      ? { imageUrl: image.imageUrl, altFa: image.altFa, altEn: image.altEn }
+      ? { id: image.id, imageUrl: image.imageUrl, altFa: image.altFa, altEn: image.altEn }
       : null,
     displayPriceToman: null,
   };

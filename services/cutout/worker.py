@@ -1,17 +1,19 @@
 """Private CPU alpha-mask service. Original RGB is never generated/redrawn.
 
-Run only inside the isolated Docker network; never expose its port publicly.
+Run on loopback for a native install, or in the isolated container network.
 """
 import argparse
 import hmac
 import io
+import math
+import numpy as np
 import os
 import subprocess
 import sys
 import tempfile
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
-from threading import Lock
+from threading import Lock, Thread
 
 from PIL import Image, ImageChops, ImageOps
 
@@ -20,6 +22,9 @@ MAX_BYTES = 8 * 1024 * 1024
 MODEL = "birefnet-general-lite"
 SESSION = None
 LOCK = Lock()
+PROCESS_LOCK = Lock()
+ACTIVE_PROCESS = None
+STOPPING = False
 
 
 def get_session():
@@ -49,13 +54,22 @@ def compose_cutout(original, mask):
     if not bounds:
         raise ValueError("Empty mask")
     jewel = source.crop(bounds)
-    # Resize color separately from alpha to avoid bright fringes on thin cords.
-    color = ImageOps.contain(jewel.convert("RGB"), (1240, 984), Image.Resampling.LANCZOS)
-    resized_alpha = jewel.getchannel("A").resize(color.size, Image.Resampling.LANCZOS)
-    jewel = color.convert("RGBA")
-    jewel.putalpha(resized_alpha)
-    canvas = Image.new("RGBA", (1408, 1152), (0, 0, 0, 0))
-    canvas.alpha_composite(jewel, ((1408 - jewel.width) // 2, (1152 - jewel.height) // 2))
+    # Fit the actual alpha silhouette in a circle, not its rectangular photograph.
+    # Never upscale a low-resolution source: preserve its real detail.
+    width, height = jewel.size
+    y, x = np.nonzero(np.asarray(jewel.getchannel("A")) > 2)
+    radius = float(np.hypot(x + .5 - width / 2, y + .5 - height / 2).max())
+    side = max(2, math.ceil(2 * radius / .92))
+    scale = min(1, 1280 / side)
+    if scale < 1:
+        size = (max(1, round(width * scale)), max(1, round(height * scale)))
+        color = jewel.convert("RGB").resize(size, Image.Resampling.LANCZOS)
+        alpha = jewel.getchannel("A").resize(size, Image.Resampling.LANCZOS)
+        jewel = color.convert("RGBA")
+        jewel.putalpha(alpha)
+        side = 1280
+    canvas = Image.new("RGBA", (side, side), (0, 0, 0, 0))
+    canvas.alpha_composite(jewel, ((side - jewel.width) // 2, (side - jewel.height) // 2))
     result = io.BytesIO()
     canvas.save(result, format="PNG", optimize=True)
     if result.tell() > MAX_BYTES:
@@ -104,9 +118,10 @@ class Handler(BaseHTTPRequestHandler):
     def do_GET(self):
         if not self.authorized():
             return self.reply(401)
-        return self.reply(200 if self.path == "/health" else 404, b"ready")
+        return self.reply(200 if self.path == "/health" else 404, b'{"ready":true}', "application/json")
 
     def do_POST(self):
+        global ACTIVE_PROCESS
         if not self.authorized():
             return self.reply(401)
         if self.path != "/cutout":
@@ -127,13 +142,26 @@ class Handler(BaseHTTPRequestHandler):
             with tempfile.TemporaryDirectory(prefix="eloria-cutout-") as work:
                 source_path, output_path = Path(work) / "input", Path(work) / "output.png"
                 source_path.write_bytes(raw)
-                run = subprocess.run(
-                    [sys.executable, str(Path(__file__).resolve()), "--process", str(source_path), str(output_path)],
-                    timeout=110, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=False,
-                )
-                if run.returncode == 2:
+                with PROCESS_LOCK:
+                    if STOPPING:
+                        return self.reply(503)
+                    run = subprocess.Popen(
+                        [sys.executable, str(Path(__file__).resolve()), "--process", str(source_path), str(output_path)],
+                        stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+                    )
+                    ACTIVE_PROCESS = run
+                try:
+                    returncode = run.wait(timeout=110)
+                except subprocess.TimeoutExpired:
+                    run.kill()
+                    run.wait()
+                    return self.reply(503, b"processing_timeout")
+                finally:
+                    with PROCESS_LOCK:
+                        ACTIVE_PROCESS = None
+                if returncode == 2:
                     return self.reply(422, b"image_or_mask_invalid")
-                if run.returncode or not output_path.is_file() or output_path.stat().st_size > MAX_BYTES:
+                if returncode or not output_path.is_file() or output_path.stat().st_size > MAX_BYTES:
                     return self.reply(503, b"processing_failed")
                 result = output_path.read_bytes()
             self.reply(200, result, "image/png")
@@ -154,6 +182,7 @@ if __name__ == "__main__":
     parser.add_argument("--process", nargs=2, metavar=("INPUT", "OUTPUT"))
     parser.add_argument("--bind", default="127.0.0.1")
     parser.add_argument("--port", type=int, default=8765)
+    parser.add_argument("--watch-stdin", action="store_true", help="Stop when the native supervisor closes its pipe")
     args = parser.parse_args()
     os.environ.setdefault("OMP_NUM_THREADS", "2")
     os.environ.setdefault("U2NET_HOME", str(Path.cwd() / ".cache" / "eloria-cutout"))
@@ -177,6 +206,20 @@ if __name__ == "__main__":
             raise SystemExit("ELORIA_CUTOUT_TOKEN must contain at least 32 characters.")
         model_root = Path(os.environ["U2NET_HOME"])
         if not any(p.is_file() for p in (model_root / "models" / MODEL / f"{MODEL}.onnx", model_root / f"{MODEL}.onnx")):
-            raise SystemExit("Build the isolated cutout image first.")
-        print(f"Eloria cutout ready on {args.bind}:{args.port}", flush=True)
-        ThreadingHTTPServer((args.bind, args.port), Handler).serve_forever()
+            raise SystemExit("Prepare the background-removal model with --download-model first.")
+        server = ThreadingHTTPServer((args.bind, args.port), Handler)
+        if args.watch_stdin:
+            def stop_with_parent():
+                global STOPPING
+                sys.stdin.buffer.read()
+                with PROCESS_LOCK:
+                    STOPPING = True
+                    if ACTIVE_PROCESS is not None and ACTIVE_PROCESS.poll() is None:
+                        ACTIVE_PROCESS.terminate()
+                server.shutdown()
+            Thread(target=stop_with_parent, daemon=True).start()
+        print(f"Eloria cutout ready on {args.bind}:{server.server_address[1]}", flush=True)
+        try:
+            server.serve_forever()
+        finally:
+            server.server_close()

@@ -1122,16 +1122,78 @@ body,[class~="min-h-screen"]{
 .eloria-glass-storefront :is(.eloria-glass-panel,.eloria-live-purchase,.eloria-quick-dialog) :focus-visible{outline:2px solid #79532d;outline-offset:4px}
 @supports not (backdrop-filter:blur(1px)){.eloria-glass-storefront :is(.eloria-glass-panel,.eloria-salon-purchase-card,.eloria-quick-dialog,.eloria-live-purchase){background:#ede2f3!important}}
 
-/* The surround fills the circle; the original image stays complete, at its
-   natural proportions, in the largest safe rectangle inside that circle. */
-.eloria-circle-photo { position:absolute; inset:0; display:block; width:100%; height:100%; overflow:hidden; border-radius:50%; isolation:isolate; background:radial-gradient(circle at 40% 25%,#f3e9ef,#c6b1ce); }
-.eloria-circle-photo .eloria-circle-ambient { object-fit:cover!important; padding:0!important; transform:scale(1.08)!important; filter:blur(12px)!important; opacity:.85; }
-.eloria-circle-photo .eloria-circle-subject { position:absolute; left:50%; top:50%; width:var(--circle-photo-fit,70%); height:var(--circle-photo-fit,70%); transform:translate(-50%,-50%); }
-.eloria-circle-photo .eloria-circle-subject img { object-fit:contain!important; object-position:center!important; padding:0!important; transform:none!important; filter:none!important; border-radius:0!important; }
-.eloria-circle-photo.is-floating.is-cutout { border-radius:0; background:none; overflow:visible; }
-.eloria-circle-photo.is-floating.is-cutout .eloria-circle-subject { width:100%; height:100%; }
-.eloria-circle-photo.is-original { box-shadow:inset 0 0 0 1px #e6ce9e70; }
-@media (max-width:760px) {
-  .eloria-circle-photo .eloria-circle-ambient { filter:blur(8px)!important; }
-  .eloria-intro-root video { filter:none!important; }
+/* One sharp image fills each circular seat; prepared alpha retains the whole jewel. */
+.eloria-circle-photo { position:absolute; inset:0; width:100%; height:100%; overflow:hidden; border-radius:50%; isolation:isolate; background:radial-gradient(circle at 40% 25%,#f3e9ef,#c6b1ce); }
+.eloria-circle-photo .eloria-circle-subject { position:absolute; inset:0; width:100%; height:100%; }
+.eloria-circle-photo .eloria-circle-subject img { object-fit:cover!important; object-position:center!important; padding:0!important; transform:none!important; filter:none!important; border-radius:0!important; opacity:1; }
+.eloria-circle-photo.is-cutout .eloria-circle-subject img { object-fit:contain!important; }
+.eloria-circle-photo.is-floating { border-radius:0; background:none; overflow:visible; }
+.eloria-cutout-pending { display:grid; place-content:center; gap:16px; height:100%; text-align:center; color:#ead6b1; }
+.eloria-cutout-pending small { font-size:12px; }
+
+/* Shared by the storefront and the admin preview: only the real cutout moves. */
+.eloria-floating-product,
+.eloria-floating-motion,
+.eloria-floating-scale { position:relative; width:100%; height:100%; }
+.eloria-floating-motion {
+  animation:eloria-jewel-drift 9s ease-in-out infinite;
+  transform-origin:50% 55%;
 }
+.eloria-floating-product[data-paused="true"] .eloria-floating-motion { animation-play-state:paused; }
+.eloria-floating-product:not(:has(.is-cutout)) .eloria-floating-motion { animation:none; }
+@keyframes eloria-jewel-drift {
+  0%,100% { transform:translate(0,1px) rotate(-.6deg); }
+  50% { transform:translate(2px,-4px) rotate(.6deg); }
+}
+@media (prefers-reduced-motion:reduce) {
+  .eloria-floating-motion { animation:none; transform:none; }
+}
+@media (max-width:760px) { .eloria-intro-root video { filter:none!important; } }
+
+/* Use the site's actual Nastaliq on titles and nested links at every viewport. */
+html[lang="fa"] body :is(.font-persian-title,.font-persian-title *,.font-persian-calligraphy,.font-persian-calligraphy *) {
+  font-family:"Eloria Iran Nastaliq","Vazirmatn Variable",serif!important;
+  font-weight:400!important; font-style:normal!important; letter-spacing:0!important; line-height:2!important;
+}
+@media (max-width:760px) {
+  .eloria-glass-storefront :is(.eloria-glass-panel,.eloria-salon-purchase-card) { backdrop-filter:none; }
+}
+
+/* Eloria action language: plum lacquer, fine gold border, tactile focus. */
+:root { --eloria-button-gold:#ddc391; --eloria-button-ink:#36213f; --eloria-button-radius:20px 7px 20px 7px; }
+.eloria-action,
+[data-slot="button"]:not([data-size^="icon"]):not([data-variant="link"]):not([data-variant="ghost"]):not([data-variant="destructive"]),
+.eloria-home :is(.eloria-cta,.portal-cta,.quick-view-label,.home-quick-dialog .button),
+.eloria-glass-storefront :is(.eloria-quick-button,.eloria-piece-details,.eloria-treasury-enter) {
+  position:relative; align-items:center; justify-content:center; gap:10px;
+  min-height:46px; padding:11px 20px; border:1px solid var(--eloria-button-gold)!important;
+  border-radius:var(--eloria-button-radius)!important; background:linear-gradient(135deg,#61426e,#35203f)!important;
+  --eloria-action-text:#f8eacd; color:var(--eloria-action-text)!important; text-decoration:none; font-weight:500; line-height:1.6;
+  box-shadow:inset 0 1px 0 #fff2,0 5px 14px #29153126;
+  transition:transform .18s ease,box-shadow .18s ease,background-color .18s ease;
+  cursor:pointer;
+}
+.eloria-action-primary,[data-slot="button"][data-variant="default"],
+.eloria-home .eloria-cta-secondary,.eloria-glass-storefront .eloria-quick-button {
+  background:linear-gradient(120deg,#f4e7c8,#d6b77d)!important; --eloria-action-text:var(--eloria-button-ink); color:var(--eloria-action-text)!important;
+}
+:is(.eloria-action,[data-slot="button"],.eloria-cta,.portal-cta,.quick-view-label,.eloria-quick-button,.eloria-piece-details,.eloria-treasury-enter):focus-visible {
+  outline:3px solid #f5dca4!important; outline-offset:4px;
+}
+@media (hover:hover) {
+  :is(.eloria-action,.eloria-cta,.quick-view-label,.eloria-quick-button,.eloria-piece-details,.eloria-treasury-enter):hover:not(:disabled) { transform:translateY(-2px); box-shadow:inset 0 1px 0 #fff3,0 8px 18px #29153140; }
+}
+:is(.eloria-action,.eloria-cta,.quick-view-label,.eloria-quick-button,.eloria-piece-details):active:not(:disabled) { transform:translateY(1px); }
+.eloria-action:disabled { opacity:.45; cursor:not-allowed; }
+.eloria-home .portal-cta { display:flex; justify-content:space-between; width:100%; margin-top:18px; }
+.eloria-home .portal-cta-icon { background:#e4c88c; color:#35203f; }
+.eloria-model-viewer { position:absolute; inset:0; width:100%; height:100%; display:grid; place-items:center; isolation:isolate; }
+.eloria-model-viewer canvas { display:block; width:100%; height:100%; touch-action:pan-y; }
+.eloria-model-viewer > span { font-size:13px; color:#f1e4ca; }
+.eloria-model-hint { position:absolute; bottom:8px; inset-inline:0; text-align:center; color:#f4e8d5; font-size:11px; pointer-events:none; }
+@media(prefers-reduced-motion:reduce) {
+  :is(.eloria-action,.eloria-cta,.quick-view-label,.eloria-quick-button,.eloria-piece-details,.eloria-treasury-enter) { transition:none; transform:none!important; }
+}
+
+@layer components { .eloria-action { display:inline-flex; } }
+.eloria-glass-storefront :is(.eloria-glass-panel,.eloria-live-purchase,.eloria-quick-dialog) :is(.eloria-action,.eloria-action *) { color:var(--eloria-action-text,#f8eacd)!important; }

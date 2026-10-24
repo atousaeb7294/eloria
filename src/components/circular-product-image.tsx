@@ -1,34 +1,44 @@
 "use client";
 
 import Image from "next/image";
-import { useState, type CSSProperties } from "react";
-import { circularPhotoSize } from "@/lib/circular-image";
+import { useEffect, useRef, useState } from "react";
+import { observeCutout } from "@/lib/cutout-client";
 
-type Props = { src: string; cutoutSrc?: string; alt: string; sizes: string; priority?: boolean; floating?: boolean };
+type Props = { src: string; imageId?: string; cutoutSrc?: string; alt: string; sizes: string; priority?: boolean; floating?: boolean; unoptimized?: boolean };
 
 export function CircularProductImage(props: Props) {
   return <CircularImage key={`${props.src}:${props.cutoutSrc ?? ""}`} {...props} />;
 }
 
-function CircularImage({ src, cutoutSrc, alt, sizes, priority = false, floating = false }: Props) {
-  const [cutoutFailed, setCutoutFailed] = useState(false);
+function CircularImage({ src, imageId, cutoutSrc, alt, sizes, priority = false, floating = false, unoptimized = false }: Props) {
+  const seat = useRef<HTMLDivElement>(null);
+  const [prepared, setPrepared] = useState(cutoutSrc);
+  const [failed, setFailed] = useState(false);
   const [originalFailed, setOriginalFailed] = useState(false);
-  const [fit, setFit] = useState(70);
-  const cutout = Boolean(cutoutSrc && !cutoutFailed);
+  useEffect(() => {
+    if (!imageId || prepared || !seat.current) return;
+    let unsubscribe: (() => void) | undefined;
+    const observer = new IntersectionObserver(entries => {
+      if (entries.some(entry => entry.isIntersecting)) {
+        unsubscribe ??= observeCutout(imageId, setPrepared);
+      } else { unsubscribe?.(); unsubscribe = undefined; }
+    }, { rootMargin: "150px" });
+    observer.observe(seat.current);
+    return () => { observer.disconnect(); unsubscribe?.(); };
+  }, [imageId, prepared]);
+  const cutout = Boolean(prepared && !failed);
+  const waiting = floating && !cutout;
   return (
-    <div className={`eloria-circle-photo${cutout ? " is-cutout" : " is-original"}${floating ? " is-floating" : ""}`}
-      style={{ "--circle-photo-fit": `${fit}%` } as CSSProperties}>
-      {!cutout && !originalFailed && <Image className="eloria-circle-ambient" src={src} alt="" aria-hidden="true" fill sizes={sizes} priority={priority} />}
-      <div className="eloria-circle-subject">
-        <Image
-          src={cutout ? cutoutSrc! : originalFailed ? "/images/brand/eloria-logo.webp" : src}
-          alt={originalFailed && !cutout ? `${alt} — تصویر در دسترس نیست` : alt}
-          unoptimized={cutout}
-          fill sizes={sizes} priority={priority}
-          onLoad={event => setFit(circularPhotoSize(event.currentTarget.naturalWidth, event.currentTarget.naturalHeight))}
-          onError={() => cutout ? setCutoutFailed(true) : setOriginalFailed(true)}
-        />
-      </div>
+    <div ref={seat} className={`eloria-circle-photo${cutout ? " is-cutout" : " is-original"}${floating ? " is-floating" : ""}`}>
+      {waiting ? <span className="eloria-cutout-pending" role="status">{alt}<small>نمایش بدون زمینه پس از آماده‌سازی</small></span> :
+        <div className="eloria-circle-subject">
+          <Image
+            src={cutout ? prepared! : originalFailed ? "/images/brand/eloria-logo.webp" : src}
+            alt={originalFailed && !cutout ? `${alt} — تصویر در دسترس نیست` : alt}
+            fill sizes={sizes} quality={88} preload={priority} unoptimized={unoptimized}
+            onError={() => cutout ? setFailed(true) : setOriginalFailed(true)}
+          />
+        </div>}
     </div>
   );
 }

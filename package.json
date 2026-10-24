@@ -102,7 +102,9 @@
     "cutout:start": "node scripts/start-cutout.mjs",
     "test:home-design": "node --import tsx scripts/test-home-design.ts",
     "test:home-browser": "playwright test --config playwright.home.config.ts",
-    "test:inplace-update": "node scripts/test-inplace-update.mjs"
+    "test:inplace-update": "node scripts/test-inplace-update.mjs",
+    "test:product-display": "node --import tsx scripts/test-home-display-fix.ts && node --import tsx scripts/test-home-design.ts",
+    "test:floating-update": "node scripts/test-floating-update.mjs"
   },
   "dependencies": {
     "@base-ui/react": "^1.6.0",
@@ -170,6 +172,7 @@
     "mysql2": "3.24.4"
   },
   "engines": {
-    "node": ">=22 <23"
+    "node": ">=22 <25"
   }
 }
+

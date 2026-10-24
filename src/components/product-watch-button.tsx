@@ -67,7 +67,7 @@ export function ProductWatchButton({ locale, slug }: ProductWatchButtonProps) {
     return (
       <Link
         href={`/${locale}/login?next=${encodeURIComponent(`/${locale}/products/${slug}`)}`}
-        className="mt-3 inline-flex min-h-10 items-center gap-2 rounded-full border border-[#d8bd72]/20 px-4 text-xs text-[#d9c693]/75 transition hover:border-[#d8bd72]/40 hover:text-[#efd991]"
+        className="eloria-action mt-3 inline-flex min-h-10 items-center gap-2 rounded-full border border-[#d8bd72]/20 px-4 text-xs text-[#d9c693]/75 transition hover:border-[#d8bd72]/40 hover:text-[#efd991]"
       >
         <BellRing className="size-3.5" />
         {fa ? "برای اعلان قیمت و موجودی وارد شوید" : "Sign in for price and stock alerts"}
@@ -81,7 +81,7 @@ export function ProductWatchButton({ locale, slug }: ProductWatchButtonProps) {
         type="button"
         disabled={busy || state === "error"}
         onClick={() => void toggle()}
-        className="inline-flex min-h-10 items-center gap-2 rounded-full border border-[#d8bd72]/20 bg-black/10 px-4 text-xs text-[#d9c693]/80 transition hover:border-[#d8bd72]/45 hover:bg-[#d8bd72]/[.06] hover:text-[#f2dca0] disabled:opacity-45"
+        className="eloria-action inline-flex min-h-10 items-center gap-2 rounded-full border border-[#d8bd72]/20 bg-black/10 px-4 text-xs text-[#d9c693]/80 transition hover:border-[#d8bd72]/45 hover:bg-[#d8bd72]/[.06] hover:text-[#f2dca0] disabled:opacity-45"
       >
         {busy ? <LoaderCircle className="size-3.5 animate-spin" /> : <BellRing className="size-3.5" />}
         {state === "error"

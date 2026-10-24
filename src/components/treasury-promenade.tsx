@@ -215,7 +215,7 @@ export function TreasuryPromenade({
                   </p>
                   <TreasuryLink
                     href={collectionHref}
-                    className="eloria-treasury-enter"
+                    className="eloria-action eloria-treasury-enter"
                   >
                     <span>{fa ? `ورود و خرید از ${treasury.fa}` : `Shop ${treasury.en.toLowerCase()}`}</span>
                     <span className="eloria-enter-mark" aria-hidden="true" />

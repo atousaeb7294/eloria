@@ -166,7 +166,7 @@ export function AddToCartButton({
       <button
         type="button"
         disabled
-        className="flex min-h-14 w-full cursor-not-allowed items-center justify-center gap-3 rounded-full border border-white/10 bg-white/[0.025] px-7 text-sm text-white/30"
+        className="eloria-action flex min-h-14 w-full cursor-not-allowed items-center justify-center gap-3 rounded-full border border-white/10 bg-white/[0.025] px-7 text-sm text-white/30"
       >
         <ShoppingBag className="h-5 w-5" />
 
@@ -182,7 +182,7 @@ export function AddToCartButton({
       <button
         type="button"
         onClick={addFirstItem}
-        className="group relative flex min-h-14 w-full items-center justify-center gap-3 overflow-hidden rounded-full border border-[#e4c66f]/55 bg-[linear-gradient(105deg,rgba(83,59,17,0.34),rgba(213,177,82,0.3),rgba(29,40,111,0.35))] px-7 text-sm font-medium text-[#f7e6b5] shadow-[inset_0_1px_0_rgba(255,255,255,0.12)] transition duration-500 hover:-translate-y-0.5 hover:border-[#f0d681]/85 hover:shadow-[0_0_34px_rgba(218,183,91,0.16)]"
+        className="eloria-action eloria-action-primary group relative flex min-h-14 w-full items-center justify-center gap-3 overflow-hidden rounded-full border border-[#e4c66f]/55 bg-[linear-gradient(105deg,rgba(83,59,17,0.34),rgba(213,177,82,0.3),rgba(29,40,111,0.35))] px-7 text-sm font-medium text-[#f7e6b5] shadow-[inset_0_1px_0_rgba(255,255,255,0.12)] transition duration-500 hover:-translate-y-0.5 hover:border-[#f0d681]/85 hover:shadow-[0_0_34px_rgba(218,183,91,0.16)]"
       >
         <span className="absolute inset-0 translate-x-full bg-[linear-gradient(110deg,transparent_25%,rgba(255,245,210,0.14)_50%,transparent_75%)] transition-transform duration-1000 group-hover:-translate-x-full" />
 
@@ -270,7 +270,7 @@ export function AddToCartButton({
 
         <Link
           href={`/${locale}/cart`}
-          className="group flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-full border border-[#e1c16f]/40 bg-[#d9b85f]/[0.08] px-4 text-xs text-[#f1d98e] transition hover:border-[#efd47d]/70 hover:bg-[#d9b85f]/[0.13]"
+          className="eloria-action group flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-full border border-[#e1c16f]/40 bg-[#d9b85f]/[0.08] px-4 text-xs text-[#f1d98e] transition hover:border-[#efd47d]/70 hover:bg-[#d9b85f]/[0.13]"
         >
           <ShoppingBag className="h-4 w-4 transition group-hover:scale-110" />
 

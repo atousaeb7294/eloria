@@ -75,7 +75,7 @@ export function CheckoutPageView({
 
           <Link
             href={`/${locale}/products`}
-            className="mx-auto mt-9 inline-flex min-h-12 items-center justify-center gap-3 rounded-full border border-[#d9b85f]/45 bg-[#d9b85f]/[0.09] px-7 text-sm text-[#f1d98e] transition hover:-translate-y-0.5 hover:border-[#eed37f]/80 hover:bg-[#d9b85f]/[0.14]"
+            className="eloria-action mx-auto mt-9 inline-flex min-h-12 items-center justify-center gap-3 rounded-full border border-[#d9b85f]/45 bg-[#d9b85f]/[0.09] px-7 text-sm text-[#f1d98e] transition hover:-translate-y-0.5 hover:border-[#eed37f]/80 hover:bg-[#d9b85f]/[0.14]"
           >
             {text.products}
 
@@ -688,7 +688,7 @@ export function CheckoutPageView({
                       {createdOrder.paymentUrl ? (
                         <a
                           href={createdOrder.paymentUrl}
-                          className="mt-6 flex min-h-13 w-full items-center justify-center gap-3 rounded-full border border-[#e0c16d]/45 bg-[#d9b85f]/[0.11] px-6 text-sm text-[#f6e4af]"
+                          className="eloria-action mt-6 flex min-h-13 w-full items-center justify-center gap-3 rounded-full border border-[#e0c16d]/45 bg-[#d9b85f]/[0.11] px-6 text-sm text-[#f6e4af]"
                         >
                           <WalletCards className="h-4 w-4" />
                           {locale === "fa" ? "ورود به درگاه پرداخت" : "Continue to payment"}
@@ -698,7 +698,7 @@ export function CheckoutPageView({
                           type="button"
                           disabled={submitting || !createdOrder.paymentConfigured}
                           onClick={() => void startPayment()}
-                          className="mt-6 flex min-h-13 w-full disabled:cursor-not-allowed items-center justify-center gap-3 rounded-full border border-[#e0c16d]/25 bg-[#d9b85f]/[0.05] px-6 text-sm text-[#f6e4af]/40"
+                          className="eloria-action mt-6 flex min-h-13 w-full disabled:cursor-not-allowed items-center justify-center gap-3 rounded-full border border-[#e0c16d]/25 bg-[#d9b85f]/[0.05] px-6 text-sm text-[#f6e4af]/40"
                         >
                           <WalletCards className="h-4 w-4" />
                           {submitting ? (isPersian ? "در حال اتصال…" : "Connecting…") : (isPersian ? "ورود به درگاه زیبال" : "Pay with Zibal")}
@@ -743,7 +743,7 @@ export function CheckoutPageView({
                             type="button"
                             disabled={couponApplying}
                             onClick={() => void applyCoupon()}
-                            className="inline-flex min-h-11 shrink-0 items-center gap-2 rounded-xl border border-[#d9b85f]/28 bg-[#d9b85f]/[0.08] px-3 text-[11px] text-[#edd48c] transition hover:border-[#efd17d]/55 disabled:opacity-45"
+                            className="eloria-action inline-flex min-h-11 shrink-0 items-center gap-2 rounded-xl border border-[#d9b85f]/28 bg-[#d9b85f]/[0.08] px-3 text-[11px] text-[#edd48c] transition hover:border-[#efd17d]/55 disabled:opacity-45"
                           >
                             {couponApplying ? <LoaderCircle className="h-3.5 w-3.5 animate-spin" /> : <TicketPercent className="h-3.5 w-3.5" />}
                             {couponApplying ? text.couponApplying : text.couponApply}
@@ -877,7 +877,7 @@ export function CheckoutPageView({
                         disabled={
                           checkoutBlocked
                         }
-                        className="mt-6 hidden min-h-13 w-full items-center justify-center gap-3 rounded-full border border-[#e0c16d]/55 bg-[linear-gradient(100deg,rgba(112,80,20,0.22),rgba(218,183,90,0.3),rgba(112,80,20,0.22))] px-6 text-sm font-medium text-[#f6e4af] transition hover:-translate-y-0.5 hover:border-[#f0d681]/85 hover:shadow-[0_0_30px_rgba(218,183,91,0.14)] disabled:cursor-not-allowed disabled:opacity-35 disabled:hover:translate-y-0 lg:flex"
+                        className="eloria-action eloria-action-primary mt-6 hidden min-h-13 w-full items-center justify-center gap-3 rounded-full border border-[#e0c16d]/55 bg-[linear-gradient(100deg,rgba(112,80,20,0.22),rgba(218,183,90,0.3),rgba(112,80,20,0.22))] px-6 text-sm font-medium text-[#f6e4af] transition hover:-translate-y-0.5 hover:border-[#f0d681]/85 hover:shadow-[0_0_30px_rgba(218,183,91,0.14)] disabled:cursor-not-allowed disabled:opacity-35 disabled:hover:translate-y-0 lg:flex"
                       >
                         {submitting ? (
                           <LoaderCircle className="h-4 w-4 animate-spin" />
@@ -892,7 +892,7 @@ export function CheckoutPageView({
 
                       <Link
                         href={`/${locale}/cart`}
-                        className="mt-4 hidden min-h-11 w-full items-center justify-center gap-2 rounded-full border border-white/[0.08] text-xs text-[#cfc19e]/60 transition hover:border-[#d9b85f]/25 hover:text-[#efd98e] lg:flex"
+                        className="eloria-action mt-4 hidden min-h-11 w-full items-center justify-center gap-2 rounded-full border border-white/[0.08] text-xs text-[#cfc19e]/60 transition hover:border-[#d9b85f]/25 hover:text-[#efd98e] lg:flex"
                       >
                         {isPersian ? (
                           <ArrowRight className="h-3.5 w-3.5" />
@@ -946,7 +946,7 @@ export function CheckoutPageView({
                       disabled={
                         checkoutBlocked
                       }
-                      className="flex min-h-12 shrink-0 items-center justify-center gap-2 rounded-full border border-[#e0c16d]/55 bg-[linear-gradient(100deg,rgba(112,80,20,0.22),rgba(218,183,90,0.3),rgba(112,80,20,0.22))] px-5 text-xs font-medium text-[#f6e4af] transition disabled:cursor-not-allowed disabled:opacity-35"
+                      className="eloria-action eloria-action-primary flex min-h-12 shrink-0 items-center justify-center gap-2 rounded-full border border-[#e0c16d]/55 bg-[linear-gradient(100deg,rgba(112,80,20,0.22),rgba(218,183,90,0.3),rgba(112,80,20,0.22))] px-5 text-xs font-medium text-[#f6e4af] transition disabled:cursor-not-allowed disabled:opacity-35"
                     >
                       {submitting ? (
                         <LoaderCircle className="h-4 w-4 animate-spin" />

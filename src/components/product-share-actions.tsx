@@ -57,7 +57,7 @@ export function ProductShareActions({ locale, slug, title }: ProductShareActions
       <button
         type="button"
         onClick={share}
-        className="inline-flex min-h-10 items-center gap-2 rounded-full border border-[#d9b85f]/24 bg-[#d9b85f]/[0.045] px-4 text-[11px] text-[#e7cf8a] transition hover:border-[#ead17f]/50"
+        className="eloria-action inline-flex min-h-10 items-center gap-2 rounded-full border border-[#d9b85f]/24 bg-[#d9b85f]/[0.045] px-4 text-[11px] text-[#e7cf8a] transition hover:border-[#ead17f]/50"
       >
         <Share2 className="h-3.5 w-3.5" />
         {fa ? "اشتراک‌گذاری این اثر" : "Share this piece"}
@@ -65,7 +65,7 @@ export function ProductShareActions({ locale, slug, title }: ProductShareActions
       <button
         type="button"
         onClick={copy}
-        className="inline-flex min-h-10 items-center gap-2 rounded-full border border-white/[0.08] px-4 text-[11px] text-[#cdbf9f]/68 transition hover:border-white/[0.16]"
+        className="eloria-action inline-flex min-h-10 items-center gap-2 rounded-full border border-white/[0.08] px-4 text-[11px] text-[#cdbf9f]/68 transition hover:border-white/[0.16]"
       >
         {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
         {copied ? (fa ? "لینک کپی شد" : "Link copied") : (fa ? "کپی لینک" : "Copy link")}

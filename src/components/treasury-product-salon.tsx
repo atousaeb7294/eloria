@@ -1,6 +1,5 @@
 "use client";
 
-import { ProductImage as Image } from "@/components/product-image";
 import { CircularProductImage } from "@/components/circular-product-image";
 import useEmblaCarousel from "embla-carousel-react";
 import {
@@ -216,9 +215,10 @@ export function TreasuryProductSalon({
                   >
                     {Math.abs(index - selected) <= 2 ? <CircularProductImage
                       src={picture(item)}
+                      imageId={item.image?.id}
                       alt={name(item)}
                       sizes="(max-width:640px) 70vw, 31vw"
-                      priority={index === selected}
+                      priority={index === 0}
                     /> : <div aria-hidden="true" className="absolute inset-0 bg-[#14193b]" />}
                   </ViewTransition>
                 </TreasuryLink>
@@ -315,12 +315,11 @@ export function TreasuryProductSalon({
             aria-pressed={index === selected}
             onClick={() => select(index)}
           >
-            <Image
+            <CircularProductImage
               src={picture(item)}
+              imageId={item.image?.id}
               alt=""
-              fill
               sizes="52px"
-              className="object-contain"
             />
           </button>
         ))}
@@ -329,7 +328,7 @@ export function TreasuryProductSalon({
         <div className="text-center text-xs text-[#ddcba4]">
           <button
             type="button"
-            className="min-h-11 px-5"
+            className="eloria-action min-h-11 px-5"
             disabled={loadingMore}
             onClick={() => void loadNext()}
           >

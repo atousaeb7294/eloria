@@ -7,13 +7,14 @@ import {
   useRef,
   useState,
   useSyncExternalStore,
-  type CSSProperties,
 } from "react";
 import { CartHeaderButton } from "@/components/cart-header-button";
 import { CustomerAccountHeaderButton } from "@/components/customer-account-header-button";
 import { ProductImage } from "@/components/product-image";
 import { ProductCardLivePrice } from "@/components/product-card-live-price";
 import { CircularProductImage } from "@/components/circular-product-image";
+import { TreasuryLink } from "@/components/treasury-transition";
+import { FloatingProductImage } from "@/components/floating-product-image";
 import { useIntroComplete } from "@/components/intro/use-intro-complete";
 import { ArrowDownLeft, ArrowUpLeft, DoorOpen, Grid2X2 } from "lucide-react";
 import type { HomeDesign, HomePiece } from "@/lib/home-design";
@@ -76,7 +77,6 @@ export function EloriaHome({
   );
   const stop = paused || reduced || offscreen || hidden || !introComplete;
   const stage = useRef<HTMLDivElement>(null);
-  const jewel = useRef<HTMLDivElement>(null);
   const dialog = useRef<HTMLDialogElement>(null);
   const trigger = useRef<HTMLElement | null>(null);
   const hero = design.hero;
@@ -114,9 +114,6 @@ export function EloriaHome({
       document.removeEventListener("visibilitychange", visibility);
     };
   }, []);
-  useEffect(() => {
-    if (stop && jewel.current) jewel.current.style.transform = "";
-  }, [stop]);
   useEffect(() => {
     const modal = dialog.current;
     if (!quick || !modal) return;
@@ -225,11 +222,11 @@ export function EloriaHome({
                 <span>{fa ? "ورود به گنجینه‌ها" : "Enter the treasuries"}</span>
                 <ArrowDownLeft aria-hidden="true" className="cta-arrow" />
               </a>
-              <Link className="eloria-cta eloria-cta-secondary" href={`/${locale}/products`}>
+              <TreasuryLink direction="up" className="eloria-cta eloria-cta-secondary" href={`/${locale}/products`}>
                 <Grid2X2 aria-hidden="true" className="cta-symbol" />
                 <span>{fa ? "دیدن همهٔ آثار" : "View all creations"}</span>
                 <ArrowUpLeft aria-hidden="true" className="cta-arrow" />
-              </Link>
+              </TreasuryLink>
             </div>
             <div className="signature">
               ✧{" "}
@@ -243,42 +240,24 @@ export function EloriaHome({
           <div
             className="showcase"
             ref={stage}
-            onPointerMove={(e) => {
-              if (stop || e.pointerType !== "mouse" || !jewel.current) return;
-              const bounds = e.currentTarget.getBoundingClientRect();
-              const x = (e.clientX - bounds.left) / bounds.width - 0.5;
-              const y = (e.clientY - bounds.top) / bounds.height - 0.5;
-              jewel.current.style.transform = `rotateY(${x * 8}deg) rotateX(${-y * 6}deg)`;
-            }}
-            onPointerLeave={() => {
-              if (jewel.current) jewel.current.style.transform = "";
-            }}
           >
-            <div className="photo-orbit" aria-hidden="true" />
             <div className="stage-label">
               <span>THE ELORIA ATELIER</span>
               <span>{hero?.name}</span>
             </div>
             {hero ? (
               <>
-                <div className="hero-photo-wrap" ref={jewel}>
-                  <div className="photo-float">
-                    <div
-                      className="hero-scale"
-                      style={
-                        { "--hero-scale": hero.scale / 100 } as CSSProperties
-                      }
-                    >
-                      <CircularProductImage
-                        src={hero.imageUrl}
-                        cutoutSrc={hero.cutoutUrl}
-                        alt={hero.name}
-                        priority
-                        floating
-                        sizes="(max-width:760px) 95vw, 55vw"
-                      />
-                    </div>
-                  </div>
+                <div className="hero-photo-wrap">
+                  <FloatingProductImage
+                    src={hero.imageUrl}
+                    cutoutSrc={hero.cutoutUrl}
+                    imageId={hero.imageId}
+                    alt={hero.name}
+                    scale={hero.scale}
+                    paused={stop}
+                    priority
+                    sizes="(max-width:760px) 95vw, 55vw"
+                  />
                 </div>
                 <div className="photo-caption">
                   <span>
@@ -353,7 +332,7 @@ export function EloriaHome({
           </div>
           <div className="portal-grid">
             {treasuries.map((t, i) => (
-              <Link
+              <TreasuryLink
                 className={`portal ${t.key}`}
                 key={t.key}
                 href={`/${locale}/collections/${t.key}`}
@@ -369,11 +348,12 @@ export function EloriaHome({
                       .slice(0, 3)
                       .map((p) => (
                         <div className="portal-image" key={p.id}>
-                          <ProductImage
+                          <CircularProductImage
                             src={p.imageUrl}
+                            cutoutSrc={p.cutoutUrl}
+                            imageId={p.imageId}
                             alt=""
-                            fill
-                            sizes="120px"
+                            sizes="(max-width:760px) 25vw, 140px"
                           />
                         </div>
                       ))}
@@ -396,7 +376,7 @@ export function EloriaHome({
                     <span className="portal-cta-icon" aria-hidden="true"><ArrowUpLeft size={18} /></span>
                   </span>
                 </div>
-              </Link>
+              </TreasuryLink>
             ))}
           </div>
         </section>
@@ -433,8 +413,9 @@ export function EloriaHome({
                       <CircularProductImage
                         src={p.imageUrl}
                         cutoutSrc={p.cutoutUrl}
+                        imageId={p.imageId}
                         alt={p.name}
-                        sizes="(max-width:760px) 38vw, 20vw"
+                        sizes="(max-width:760px) 42vw, (max-width:1100px) 28vw, 300px"
                       />
                     </div>
                     <span className="piece-number">

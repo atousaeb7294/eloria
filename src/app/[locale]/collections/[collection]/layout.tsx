@@ -18,6 +18,7 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { locale, collection } = await params;
   if (locale !== "fa" && locale !== "en") return {};
+  if (["gold", "silver", "weave"].includes(collection)) return {};
 
   const collections = await getActiveCatalogCollections().catch(() => []);
   const record = collections.find(item => item.slug === collection);

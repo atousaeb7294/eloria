@@ -78,7 +78,7 @@ export function CartPageView({
 
           <Link
             href={`/${locale}/products`}
-            className="mx-auto mt-9 inline-flex min-h-12 items-center justify-center gap-3 rounded-full border border-[#d9b85f]/45 bg-[#d9b85f]/[0.09] px-7 text-sm text-[#f1d98e] transition hover:-translate-y-0.5 hover:border-[#eed37f]/80 hover:bg-[#d9b85f]/[0.14]"
+            className="eloria-action mx-auto mt-9 inline-flex min-h-12 items-center justify-center gap-3 rounded-full border border-[#d9b85f]/45 bg-[#d9b85f]/[0.09] px-7 text-sm text-[#f1d98e] transition hover:-translate-y-0.5 hover:border-[#eed37f]/80 hover:bg-[#d9b85f]/[0.14]"
           >
             {text.products}
 
@@ -672,7 +672,7 @@ export function CartPageView({
                   <button
                     type="button"
                     onClick={() => saveCouponCode("ELORIA50")}
-                    className="inline-flex min-h-8 items-center rounded-full border border-[#d9b85f]/20 bg-[#d9b85f]/[0.05] px-3 text-[10px] text-[#e6cf8d] transition hover:border-[#e8cd79]/45"
+                    className="eloria-action inline-flex min-h-8 items-center rounded-full border border-[#d9b85f]/20 bg-[#d9b85f]/[0.05] px-3 text-[10px] text-[#e6cf8d] transition hover:border-[#e8cd79]/45"
                   >
                     {locale === "fa" ? "استفاده از ELORIA50" : "Use ELORIA50"}
                   </button>
@@ -687,7 +687,7 @@ export function CartPageView({
                 onClick={() => {
                   router.push(`/${locale}/checkout`);
                 }}
-                className="mt-6 flex min-h-13 w-full items-center justify-center gap-3 rounded-full border border-[#e0c16d]/55 bg-[linear-gradient(100deg,rgba(112,80,20,0.22),rgba(218,183,90,0.3),rgba(112,80,20,0.22))] px-6 text-sm font-medium text-[#f6e4af] transition hover:-translate-y-0.5 hover:border-[#f0d681]/85 hover:shadow-[0_0_30px_rgba(218,183,91,0.14)] disabled:cursor-not-allowed disabled:opacity-35 disabled:hover:translate-y-0"
+                className="eloria-action eloria-action-primary mt-6 flex min-h-13 w-full items-center justify-center gap-3 rounded-full border border-[#e0c16d]/55 bg-[linear-gradient(100deg,rgba(112,80,20,0.22),rgba(218,183,90,0.3),rgba(112,80,20,0.22))] px-6 text-sm font-medium text-[#f6e4af] transition hover:-translate-y-0.5 hover:border-[#f0d681]/85 hover:shadow-[0_0_30px_rgba(218,183,91,0.14)] disabled:cursor-not-allowed disabled:opacity-35 disabled:hover:translate-y-0"
               >
                 {loading ? (
                   <LoaderCircle className="h-4 w-4 animate-spin" />
@@ -737,7 +737,7 @@ export function CartPageView({
                   onClick={() => {
                     router.push(`/${locale}/checkout`);
                   }}
-                  className="flex min-h-12 shrink-0 items-center justify-center gap-2 rounded-full border border-[#e0c16d]/55 bg-[linear-gradient(100deg,rgba(112,80,20,0.22),rgba(218,183,90,0.3),rgba(112,80,20,0.22))] px-5 text-xs font-medium text-[#f6e4af] transition disabled:cursor-not-allowed disabled:opacity-35"
+                  className="eloria-action eloria-action-primary flex min-h-12 shrink-0 items-center justify-center gap-2 rounded-full border border-[#e0c16d]/55 bg-[linear-gradient(100deg,rgba(112,80,20,0.22),rgba(218,183,90,0.3),rgba(112,80,20,0.22))] px-5 text-xs font-medium text-[#f6e4af] transition disabled:cursor-not-allowed disabled:opacity-35"
                 >
                   {loading ? (
                     <LoaderCircle className="h-4 w-4 animate-spin" />

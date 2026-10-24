@@ -2,9 +2,11 @@
 
 import { useState, useTransition } from "react";
 import Image from "next/image";
+import { FloatingProductImage } from "@/components/floating-product-image";
 import {
   prepareHomeHeroAction,
   saveHomeAppearanceAction,
+  saveHomeHeroOnlyAction,
 } from "@/app/[locale]/admin/(protected)/appearance/actions";
 
 type Product = {
@@ -51,6 +53,7 @@ export function HomeAppearanceEditor({
     initial.featuredCutouts,
   );
   const [version, setVersion] = useState(initial.version);
+  const [previewPaused, setPreviewPaused] = useState(false);
   const [query, setQuery] = useState("");
   const [notice, setNotice] = useState("");
   const [busy, startTransition] = useTransition();
@@ -85,8 +88,19 @@ export function HomeAppearanceEditor({
     [next[index], next[other]] = [next[other], next[index]];
     setFeatured(next);
   }
+  function saveHero() {
+    startTransition(async () => {
+      try {
+        const result = await saveHomeHeroOnlyAction({ ...selection, scale, expectedVersion: version });
+        if (result.ok && result.version) {
+          setVersion(result.version);
+          setNotice("عکس بدون زمینه با حرکت آرام برای بالای هوم ذخیره شد.");
+        } else setNotice(result.error ?? "ذخیره انجام نشد.");
+      } catch { setNotice("ارتباط قطع شد؛ وضعیت ذخیره را با تازه‌کردن صفحه بررسی کنید."); }
+    });
+  }
   function save() {
-    if (!ready) return;
+    if (featured.length !== 8) return;
     startTransition(async () => {
       try {
         const prepared: FeaturedCutout[] = [];
@@ -117,16 +131,13 @@ export function HomeAppearanceEditor({
           setFeaturedCutouts([...prepared]);
         }
         const result = await saveHomeAppearanceAction({
-          ...selection,
-          cutoutId: ready.id,
-          scale,
           featuredIds: featured,
           featuredCutoutIds: prepared.map((c) => c.id),
           expectedVersion: version,
         });
         if (result.ok && result.version) {
           setVersion(result.version);
-          setNotice("ذخیره شد؛ تصویر و هشت منتخب در صفحهٔ اصلی به‌روز شدند.");
+          setNotice("هشت منتخب ذخیره شدند؛ محصول اصلی هوم حفظ شد.");
         } else setNotice(result.error ?? "ذخیره انجام نشد.");
       } catch {
         setNotice(
@@ -140,7 +151,8 @@ export function HomeAppearanceEditor({
       <h1 className="text-2xl">چیدمان هوم و دستبند شناور</h1>
       <p className="text-sm leading-8 text-white/80">
         با انتخاب محصول، عکس به‌صورت خودکار بدون زمینه آماده می‌شود. عکس اصلی
-        محصول دست‌نخورده می‌ماند. این نمایش، حرکت ملایم عکس واقعی است.
+        محصول دست‌نخورده می‌ماند. یک عکس واضح کافی است؛ پس از آماده‌شدن، خود
+        دستبند با تاب‌خوردن بسیار آرام روی هوم نمایش داده می‌شود.
       </p>
       <label className="block space-y-2">
         <span>جست‌وجوی محصولات</span>
@@ -210,26 +222,30 @@ export function HomeAppearanceEditor({
           </figure>
           <figure>
             <figcaption className="mb-2 text-sm">
-              پیش‌نمایش بدون زمینه روی هوم
+              پیش‌نمایش دستبند شناور روی هوم
             </figcaption>
             <div className="relative aspect-square overflow-hidden rounded-3xl bg-[#47334f] bg-[radial-gradient(ellipse_at_center,#a38aad40,transparent)]">
               {ready && (
-                <Image
+                <FloatingProductImage
                   unoptimized
-                  src={ready.imageUrl}
-                  alt="نسخهٔ آمادهٔ دستبند؛ اصل عکس تغییر نمی‌کند"
-                  fill
-                  className="object-contain"
-                  style={{ transform: `scale(${scale / 100})` }}
+                  src={source?.imageUrl ?? ready.imageUrl}
+                  cutoutSrc={ready.imageUrl}
+                  alt={selected?.nameFa ?? "دستبند بدون زمینه"}
+                  sizes="(max-width:640px) 100vw, 50vw"
+                  scale={scale}
+                  paused={previewPaused || busy}
                 />
               )}
             </div>
+            {ready && <button type="button" className="eloria-action mt-3" aria-pressed={previewPaused} onClick={() => setPreviewPaused(!previewPaused)}>
+              {previewPaused ? "شروع حرکت پیش‌نمایش" : "توقف حرکت پیش‌نمایش"}
+            </button>}
           </figure>
         </div>
         {source && (
           <button
             type="button"
-            className="min-h-11 rounded-xl border border-white/30 px-4"
+            className="eloria-action"
             onClick={() => prepare(selection.productId, selection.imageId)}
           >
             دوباره آماده کن
@@ -247,6 +263,7 @@ export function HomeAppearanceEditor({
             onChange={(e) => setScale(Number(e.target.value))}
           />
         </label>
+        <button type="button" disabled={!ready} onClick={saveHero} className="eloria-action eloria-action-primary">ذخیرهٔ دستبند شناور برای هوم</button>
         <h2 className="pt-4 text-xl">هشت منتخب و ترتیب نمایش</h2>
         <p className="text-sm text-white/75">
           فقط این هشت اثر روی هوم نمایش داده می‌شوند. عکس اصلی هر کدام هنگام
@@ -326,11 +343,11 @@ export function HomeAppearanceEditor({
         </label>
         <button
           type="button"
-          disabled={!ready || featured.length !== 8}
+          disabled={featured.length !== 8}
           onClick={save}
-          className="min-h-12 rounded-xl bg-[#e4c88c] px-6 py-3 text-[#30203c] disabled:opacity-40"
+          className="eloria-action eloria-action-primary"
         >
-          آماده‌سازی منتخب‌ها و ذخیرهٔ هوم
+          آماده‌سازی و ذخیرهٔ منتخب‌ها
         </button>
       </fieldset>
       <p
@@ -339,7 +356,7 @@ export function HomeAppearanceEditor({
         aria-busy={busy}
         className="min-h-12 rounded-xl bg-white/10 p-4 text-sm leading-7"
       >
-        {notice || "ابتدا محصول اصلی و هشت منتخب را انتخاب کنید."}
+        {notice || "محصول اصلی را انتخاب کنید؛ آماده‌سازی خودکار شروع می‌شود. ذخیرهٔ آن مستقل از منتخب‌هاست."}
       </p>
     </section>
   );

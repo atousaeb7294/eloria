@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { UUID_PATTERN } from "@/lib/home-design-contract";
+import { readPublicMedia } from "@/lib/public-media-cache";
 
 export const runtime = "nodejs";
 export async function GET(
@@ -9,7 +10,8 @@ export async function GET(
   const { id } = await params;
   if (!UUID_PATTERN.test(id)) return new Response(null, { status: 404 });
   try {
-    const image = await prisma.heroCutout.findFirst({
+    const image = await readPublicMedia(`hero:${id}`, async () => {
+      const asset = await prisma.heroCutout.findFirst({
       where: {
         id,
         product: {
@@ -18,6 +20,8 @@ export async function GET(
         },
       },
       select: { bytes: true },
+      });
+      return asset ? { bytes: new Uint8Array(asset.bytes), contentType: "image/png" } : null;
     });
     if (!image) return new Response(null, { status: 404 });
     return new Response(new Uint8Array(image.bytes), {

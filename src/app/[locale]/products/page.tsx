@@ -110,7 +110,8 @@ export default async function ProductsPage({
   let collections: Awaited<ReturnType<typeof getActiveCatalogCollections>> = [];
 
   try {
-    collections = await getActiveCatalogCollections();
+    // The common treasury entry needs no collection lookup before its catalog.
+    if (single(raw.collection) || single(raw.q)) collections = await getActiveCatalogCollections();
   } catch (error) {
     catalogUnavailable = true;
     console.error(
