@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { acquireCronLease, releaseCronLease } from "@/lib/cron-lease";
 import { prepareHeroCutout } from "@/lib/hero-cutout";
 import { HERO_PIPELINE_VERSION } from "@/lib/home-design-contract";
+import { builtinCutoutAvailable } from "@/lib/builtin-cutout";
 
 let working = false;
 
@@ -42,10 +43,12 @@ export async function automaticCutoutStatus(ids: string[]) {
     );
     if (asset) ready[image.id] = `/api/media/hero/${asset.id}`;
   }
-  const enabled = Boolean(
-    process.env.ELORIA_CUTOUT_URL &&
-    (process.env.ELORIA_CUTOUT_TOKEN?.length ?? 0) >= 32,
-  );
+  const enabled =
+    builtinCutoutAvailable() ||
+    Boolean(
+      process.env.ELORIA_CUTOUT_URL &&
+      (process.env.ELORIA_CUTOUT_TOKEN?.length ?? 0) >= 32,
+    );
   const missing = images.filter((image) => !ready[image.id]);
   if (enabled && missing.length && !working) {
     working = true;

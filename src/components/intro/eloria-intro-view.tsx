@@ -23,7 +23,6 @@ export function EloriaIntroView({
     handleSkipIntro,
     handleFirstVideoCanPlay,
     handleManualStart,
-    replayIntro,
     handleFirstVideoEnded,
     handleFirstVideoProgress,
     handleEnterEloria,
@@ -36,17 +35,7 @@ export function EloriaIntroView({
     retrySecondVideo,
   } = controller;
 
-  if (
-    phase ===
-    "complete"
-  ) {
-    return (
-      <button type="button" onClick={replayIntro}
-        className="eloria-intro-replay fixed end-4 bottom-20 z-50 min-h-11 rounded-full border border-[#eed3a0]/60 bg-[#4c3459]/95 px-5 py-3 text-xs text-[#ffe5a3] shadow-lg md:bottom-4">
-        {isPersian ? "پخش ویدئوی ورود" : "Play entrance video"}
-      </button>
-    );
-  }
+  if (phase === "complete") return null;
 
   if (phase === "ready-to-play") {
     return (

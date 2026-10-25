@@ -21,6 +21,7 @@ import { SiteStructuredData } from "@/components/site-structured-data";
 import { PwaRegistration } from "@/components/pwa-registration";
 import { MarketingAttributionTracker } from "@/components/marketing-attribution-tracker";
 import { CursorGlow } from "@/components/cursor-glow";
+import { NavigationAccelerator } from "@/components/navigation-accelerator";
 import { HomeNavigationReset } from "@/components/home-navigation-reset";
 import { RoyalThemeDefinitions } from "@/components/royal-theme";
 
@@ -139,11 +140,15 @@ export default async function LocaleLayout({
       dir={locale === "fa" ? "rtl" : "ltr"}
       suppressHydrationWarning
     >
+      <head>
+        {locale === "fa" && <link rel="preload" href="/fonts/IranNastaliq-Web.woff2" as="font" type="font/woff2" crossOrigin="anonymous" />}
+      </head>
       <body className="min-h-screen">
         <RoyalThemeDefinitions />
         <NextIntlClientProvider locale={locale} messages={messages}>
           <PageBackgroundProvider>
             <HomeNavigationReset />
+            <NavigationAccelerator />
             <CursorGlow />
             <SiteStructuredData />
             <PwaRegistration />

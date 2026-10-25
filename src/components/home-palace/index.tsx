@@ -1,10 +1,8 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useRef, useState, useTransition } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { TreasuryLink } from "@/components/treasury-transition";
 import { ProductImage } from "@/components/product-image";
-import { PALACE_OPENING_MS, startPalaceEntry } from "./palace-entry";
 import { CHEST_FRAMES, ENTRY_FRAMES, PREVIEW_FRAMES, FEATURED_FRAMES, SCENES, MOBILE_SCENE_QUERY, frameStyle, type ResponsiveRect } from "./palace-scene";
 import { createChestMotion, type ChestMotion } from "./palace-scene-motion";
 import { featuredProducts, productHref, readPalaceProducts, treasuryProducts, type PalaceProduct, type Treasury } from "./palace-products";
@@ -32,24 +30,15 @@ function ProductFrame({ product, frame, featured = false, fallbackHref, fallback
 }
 
 export function HomePalace() {
-  const router = useRouter();
   const root = useRef<HTMLElement>(null);
   const motion = useRef<ChestMotion | null>(null);
-  const entryTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
-  const ownNavigation = useRef(false);
-  const wasPending = useRef(false);
-  const [isPending, startTransition] = useTransition();
-  const [opened, setOpened] = useState<Treasury | null>(null);
   const [catalog, setCatalog] = useState<PalaceProduct[]>([]);
   const [previewState, setPreviewState] = useState<"loading" | "ready" | "unavailable">("loading");
   const [refreshKey, setRefreshKey] = useState(0);
   const [warmed, setWarmed] = useState<Treasury[]>([]);
 
   const reset = useCallback(() => {
-    clearTimeout(entryTimer.current);
-    entryTimer.current = undefined;
     motion.current?.reset();
-    setOpened(null);
   }, []);
 
   useEffect(() => {
@@ -60,25 +49,18 @@ export function HomePalace() {
   }, []);
 
   useEffect(() => {
-    const otherNavigation = () => { if (!ownNavigation.current) reset(); };
     const escape = (event: KeyboardEvent) => { if (event.key === "Escape") reset(); };
     window.addEventListener("pageshow", reset);
     window.addEventListener("popstate", reset);
-    window.addEventListener("eloria:navigate", otherNavigation);
+    window.addEventListener("eloria:navigate", reset);
     window.addEventListener("keydown", escape);
     return () => {
-      clearTimeout(entryTimer.current);
       window.removeEventListener("pageshow", reset);
       window.removeEventListener("popstate", reset);
-      window.removeEventListener("eloria:navigate", otherNavigation);
+      window.removeEventListener("eloria:navigate", reset);
       window.removeEventListener("keydown", escape);
     };
   }, [reset]);
-
-  useEffect(() => {
-    if (isPending) wasPending.current = true;
-    else if (wasPending.current) { wasPending.current = false; reset(); }
-  }, [isPending, reset]);
 
   const warm = useCallback((slug: Treasury) => {
     const connection = (navigator as Navigator & {
@@ -88,24 +70,6 @@ export function HomePalace() {
     motion.current?.warm();
     setWarmed(current => current.includes(slug) ? current : [...current, slug]);
   }, []);
-
-  function enter(event: { preventDefault: () => void }, slug: Treasury) {
-    clearTimeout(entryTimer.current);
-    motion.current?.reset();
-    // Native modifier/new-tab/no-JS links survive because this runs in onNavigate.
-    // Never delay navigation if motion is disabled or artwork has not loaded.
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches || !motion.current?.open(slug)) return;
-    if (root.current) startPalaceEntry(root.current, slug);
-    setOpened(slug);
-    event.preventDefault();
-    entryTimer.current = setTimeout(() => {
-      entryTimer.current = undefined;
-      ownNavigation.current = true;
-      window.dispatchEvent(new Event("eloria:navigate"));
-      ownNavigation.current = false;
-      startTransition(() => router.push(`/fa/collections/${slug}`, { transitionTypes: [] }));
-    }, PALACE_OPENING_MS);
-  }
 
   useEffect(() => {
     const element = root.current;
@@ -177,11 +141,10 @@ export function HomePalace() {
   return <section id="treasury-gold" aria-labelledby="ep-treasuries-title" ref={root}>
     <div id="eloria-home-palace" className="ep-surface" dir="rtl">
       <h2 id="ep-treasuries-title" className="ep-sr-only">گنجینه‌های الوریا</h2>
-      <div className="ep-stage" data-open={opened}>
-        <picture className="ep-scene-picture" aria-hidden="true">
+      <div className="ep-stage">
+        <picture className="ep-scene-picture">
           <source media={MOBILE_SCENE_QUERY} srcSet={SCENES.mobile.src} width={850} height={1850} />
           {/* The entire reference is served byte-for-byte, without a cover crop. */}
-          {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src={SCENES.desktop.src} width={1584} height={993} alt="" loading="lazy" decoding="async" />
         </picture>
         <canvas className="ep-chest-motion" aria-hidden="true" />
@@ -191,10 +154,10 @@ export function HomePalace() {
             const linkProps = {
               href: `/fa/collections/${slug}`, prefetch: warmed.includes(slug), showPending: false,
               onPointerEnter: () => warm(slug), onPointerDown: () => warm(slug), onFocus: () => warm(slug),
-              onNavigate: (event: { preventDefault: () => void }) => enter(event, slug),
+              onNavigate: reset,
             };
             return <section key={slug} className={`ep-bay ep-bay-${slug}`} data-treasury={slug}
-              data-open={opened === slug} aria-labelledby={`ep-title-${slug}`}>
+              aria-labelledby={`ep-title-${slug}`}>
               <h3 id={`ep-title-${slug}`} className="ep-sr-only">{name}</h3>
               <TreasuryLink {...linkProps} className="ep-chest-target" style={frameStyle(CHEST_FRAMES[slug])}
                 id={slug === "gold" ? "ep-bay-gold" : `treasury-${slug}`} data-treasury-target={slug}
@@ -218,9 +181,6 @@ export function HomePalace() {
         </section>
       </div>
       <div className="ep-scene-footer">
-        <p className="ep-entry-status" role="status" aria-live="polite">
-          {opened ? `در حال باز کردن ${destinations.find(item => item.slug === opened)?.name}…` : ""}
-        </p>
         {previewState !== "ready" && <p className="ep-catalog-status" role="status">{status}</p>}
         {previewState === "unavailable" && <button type="button" className="ep-retry"
           onClick={() => { setPreviewState("loading"); setRefreshKey(key => key + 1); }}>تلاش دوباره</button>}

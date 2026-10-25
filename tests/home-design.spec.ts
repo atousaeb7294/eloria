@@ -46,18 +46,19 @@ test("public circular pieces, original treasury routes and quick view", async ({
             circle.top >= frame.top &&
             circle.bottom <= frame.bottom,
           fit: getComputedStyle(seat.querySelector(".eloria-circle-subject img")!).objectFit,
+          cutout: Boolean(seat.querySelector(".is-cutout")),
         };
       }),
     );
   for (const check of checks) {
     expect(check.round).toBe(true);
     expect(check.contained).toBe(true);
-    expect(check.fit).toBe("contain");
+    expect(check.fit).toBe(check.cutout ? "contain" : "cover");
     expect(check.radius).toBe("50%");
   }
   for (const selector of [".hero-copy h1 em", ".story h2"]) {
     const font = await page.locator(selector).evaluate(element => getComputedStyle(element).fontFamily);
-    expect(font).toContain((page.viewportSize()?.width ?? 1440) > 760 ? "Eloria Iran Nastaliq" : "Eloria Vazir");
+    expect(font).toContain("Eloria Iran Nastaliq");
   }
   expect(
     await page.evaluate(
@@ -109,13 +110,13 @@ test("hero respects reduced motion; admin is protected", async ({
 }, info) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto("/fa#hero");
-  await expect(
-    page.locator(".hero-scale .eloria-circle-subject img"),
-    "A live product image must remain visible even before cutout preparation",
-  ).toBeVisible();
+  const floating = page.locator(".showcase .eloria-floating-product");
+  await expect(floating).toBeVisible();
+  await expect(floating.locator(".is-original img")).toHaveCount(0);
+  await expect(floating.locator(".is-cutout img, .eloria-cutout-pending")).toBeVisible();
   expect(
     await page
-      .locator(".photo-float")
+      .locator(".eloria-floating-motion")
       .evaluate((element) => getComputedStyle(element).animationName),
   ).toBe("none");
   await page.screenshot({ path: info.outputPath("home.png"), fullPage: true });

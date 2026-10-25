@@ -141,38 +141,17 @@ async function scenario({ intro = false, saveData = false, unavailable = false, 
     assert.deepEqual(thumbnails.map(node => node.props.href), products.treasuryProducts(catalogue, treasury).map(p => products.productHref(p)));
   }
   const openingTimers = () => [...timers].filter(([, timer]) => timer.ms === entry.PALACE_OPENING_MS);
-  const finishOpening = async () => {
-    const [id, timer] = openingTimers()[0]; timers.delete(id);
-    await act(async () => timer.fn());
-  };
-  await act(async () => entries()[0].props.onNavigate());
-  if (reduced || artworkUnavailable) {
-    assert.deepEqual(navigations, ["/fa/collections/gold"]);
-    assert.equal(openingTimers().length, 0, "Reduced motion and unavailable artwork both navigate immediately");
-  } else {
-    assert.deepEqual(navigations, [], "Fast prefetched routes must wait for the lid to open");
-    assert.equal(tree.root.findByProps({ className: "ep-stage" }).props["data-open"], "gold");
-    await act(async () => entries()[1].props.onNavigate());
-    assert.equal(openingTimers().length, 1, "Rapid clicks cancel the obsolete destination");
-    await finishOpening();
-    assert.deepEqual(navigations, ["/fa/collections/silver"]);
-    for (const slugIndex of [0, 1, 2]) {
-      await act(async () => entries()[slugIndex].props.onNavigate());
-      await finishOpening();
-      assert.equal(navigations.at(-1), `/fa/collections/${["gold", "silver", "weave"][slugIndex]}`);
-    }
-    await act(async () => entries()[0].props.onNavigate());
-    await act(async () => featured()[0].props.onNavigate());
-    assert.equal(openingTimers().length, 0, "A direct product click cancels a delayed treasury route");
-    assert.equal(navigations.at(-1), featured()[0].props.href);
-    for (const event of ["pageshow", "popstate", "keydown"]) {
-      await act(async () => entries()[0].props.onNavigate());
-      await act(async () => events.get(event)?.({ key: "Escape" }));
-      assert.equal(openingTimers().length, 0);
-      assert.equal(tree.root.findByProps({ className: "ep-stage" }).props["data-open"], null);
-    }
+  for (const [index, slug] of ["gold", "silver", "weave"].entries()) {
+    await act(async () => entries()[index].props.onNavigate());
+    assert.equal(navigations.at(-1), `/fa/collections/${slug}`, "Every click follows its destination immediately");
+    assert.equal(openingTimers().length, 0, "Navigation never waits for an animation");
   }
-  await act(async () => entries()[0].props.onNavigate());
+  await act(async () => featured()[0].props.onNavigate());
+  assert.equal(navigations.at(-1), featured()[0].props.href);
+  for (const event of ["pageshow", "popstate", "keydown"]) {
+    await act(async () => events.get(event)?.({ key: "Escape" }));
+    assert.equal(openingTimers().length, 0, "No stale redirect after back, escape or another link");
+  }
   await act(async () => tree.unmount());
   assert.equal(timers.size + intervals.size, 0);
   assert.ok(fetchSignal?.aborted);
@@ -236,6 +215,6 @@ async function main() {
   const css=readFileSync("src/components/home-palace/palace.css","utf8");
   assert.ok(css.includes("object-fit:cover")&&css.includes("padding:0"));
   assert.ok(css.includes("aspect-ratio:1584/993")&&css.includes("aspect-ratio:850/1850"));
-  console.log("PASS: product/photo/link identity; manual selections and order; three treasury destinations after opening; cancelled/rapid/back/product navigation; reduced motion; original images; empty/outage/retry states; prefetch and Save-Data. Database and browser are mocked.");
+  console.log("PASS: product/photo/link identity; manual selections and order; three immediate treasury destinations; rapid/back/product navigation; reduced motion; original images; empty/outage/retry states; prefetch and Save-Data. Database and browser are mocked.");
 }
 main().catch(error => { console.error(error); process.exitCode = 1; });

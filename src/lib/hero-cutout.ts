@@ -5,6 +5,7 @@ import path from "node:path";
 import sharp from "sharp";
 import { prisma } from "@/lib/prisma";
 import { acquireCronLease, releaseCronLease } from "@/lib/cron-lease";
+import { prepareBuiltinCutout } from "@/lib/builtin-cutout";
 import {
   boundedImageBody,
   HERO_PIPELINE_VERSION,
@@ -131,10 +132,6 @@ export async function prepareHeroCutout(productId: string, imageId: string) {
     return { id: cached.id, imageUrl: `/api/media/hero/${cached.id}` };
   const workerUrl = process.env.ELORIA_CUTOUT_URL;
   const token = process.env.ELORIA_CUTOUT_TOKEN;
-  if (!workerUrl || !token || token.length < 32)
-    throw new HeroPreparationError(
-      "سرویس حذف زمینه آماده نیست. راهنمای نصب بخش Cutout را اجرا کنید.",
-    );
   const lease = await acquireCronLease({
     key: "hero-cutout",
     leaseMs: 180_000,
@@ -144,24 +141,46 @@ export async function prepareHeroCutout(productId: string, imageId: string) {
       "تصویر دیگری در حال آماده‌سازی است؛ کمی بعد دوباره تلاش کنید.",
     );
   try {
-    const response = await fetch(new URL("/cutout", workerUrl), {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/octet-stream",
-      },
-      body: new Uint8Array(bytes),
-      redirect: "error",
-      signal: AbortSignal.timeout(120_000),
-      cache: "no-store",
-    });
-    if (!response.ok)
-      throw new HeroPreparationError(
-        response.status === 422
-          ? "جداسازی این عکس مطمئن نبود. عکس دیگری از محصول انتخاب کنید؛ تصویر فعلی هوم حفظ شد."
-          : "سرویس حذف زمینه پاسخ موفق نداد. تصویر فعلی هوم حفظ شد.",
-      );
-    const output = await boundedImageBody(response);
+    let output: Buffer;
+    if (workerUrl && token && token.length >= 32) {
+      const response = await fetch(new URL("/cutout", workerUrl), {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/octet-stream",
+        },
+        body: new Uint8Array(bytes),
+        redirect: "error",
+        signal: AbortSignal.timeout(120_000),
+        cache: "no-store",
+      }).catch(() => {
+        throw new HeroPreparationError(
+          "ارتباط با سرویس حذف زمینهٔ تنظیم‌شده روی سرور برقرار نشد. تصویر فعلی هوم حفظ شد.",
+        );
+      });
+      if (!response.ok)
+        throw new HeroPreparationError(
+          response.status === 422
+            ? "جداسازی این عکس مطمئن نبود. عکس دیگری از محصول انتخاب کنید؛ تصویر فعلی هوم حفظ شد."
+            : "سرویس حذف زمینه پاسخ موفق نداد. تصویر فعلی هوم حفظ شد.",
+        );
+      output = await boundedImageBody(response);
+    } else {
+      try {
+        output = await prepareBuiltinCutout(bytes);
+      } catch (error) {
+        const code = error instanceof Error ? error.message : "";
+        throw new HeroPreparationError(
+          code === "MODEL_MISSING"
+            ? "مدل حذف زمینه هنوز روی سرور آماده نیست. انتشار نسخهٔ جدید در پارس‌پک باید کامل شود؛ نصب روی ویندوز لازم نیست."
+            : code === "SERVER_MEMORY"
+              ? "حافظهٔ آزاد سرور برای حذف زمینه کافی نیست. منابع سرور را بررسی کنید یا یک PNG شفاف در عکس‌های محصول بارگذاری و انتخاب کنید. تصویر فعلی هوم حفظ شد."
+              : code === "PROCESSING_TIMEOUT"
+                ? "آماده‌سازی عکس بیش از حد طول کشید. کمی بعد دوباره تلاش کنید یا عکس کوچک‌تری انتخاب کنید. تصویر فعلی هوم حفظ شد."
+                : "جداسازی عکس انجام نشد. عکس واضح دیگری انتخاب کنید؛ اگر تکرار شد، گزارش اجرای سرور را بررسی کنید. تصویر فعلی هوم حفظ شد.",
+        );
+      }
+    }
     const prepared = sharp(output, {
       limitInputPixels: 4_000_000,
       failOn: "error",

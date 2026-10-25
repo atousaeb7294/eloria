@@ -8,19 +8,29 @@ export function NavigationAccelerator() {
 
   useEffect(() => {
     let cancelled = false;
-    const prefetched = new Set<string>();
+    const prefetched = new Map<string, number>();
 
     const prefetch = (href: string) => {
       if (
         cancelled ||
-        prefetched.has(href) ||
-        !href.startsWith("/") ||
-        href.startsWith("//") ||
-        href.startsWith("/api/") ||
-        href.startsWith("/#")
-      ) return;
+        Date.now() - (prefetched.get(href) ?? 0) < 30_000 ||
+        !/^\/(?:fa|en)\/(?:products|collections)(?:\/|\?|$)/.test(href)
+      )
+        return;
 
-      prefetched.add(href);
+      const connection = (
+        navigator as Navigator & {
+          connection?: { saveData?: boolean; effectiveType?: string };
+        }
+      ).connection;
+      if (
+        connection?.saveData ||
+        /(^|-)2g$/.test(connection?.effectiveType ?? "")
+      )
+        return;
+      if (prefetched.size >= 100)
+        prefetched.delete(prefetched.keys().next().value!);
+      prefetched.set(href, Date.now());
       router.prefetch(href);
     };
 
@@ -28,11 +38,19 @@ export function NavigationAccelerator() {
       if (!(target instanceof Element)) return null;
       const anchor = target.closest("a[href]");
       if (!(anchor instanceof HTMLAnchorElement)) return null;
-      if (anchor.target === "_blank" || anchor.hasAttribute("download")) return null;
+      if (
+        (anchor.target && anchor.target !== "_self") ||
+        anchor.hasAttribute("download")
+      )
+        return null;
 
       try {
         const url = new URL(anchor.href, window.location.origin);
-        if (url.origin !== window.location.origin || url.hash && url.pathname === window.location.pathname) return null;
+        if (
+          url.origin !== window.location.origin ||
+          (url.hash && url.pathname === window.location.pathname)
+        )
+          return null;
         return `${url.pathname}${url.search}`;
       } catch {
         return null;
@@ -44,8 +62,14 @@ export function NavigationAccelerator() {
       if (href) prefetch(href);
     };
 
-    document.addEventListener("pointerover", warmFromEvent, { passive: true, capture: true });
-    document.addEventListener("pointerdown", warmFromEvent, { passive: true, capture: true });
+    document.addEventListener("pointerover", warmFromEvent, {
+      passive: true,
+      capture: true,
+    });
+    document.addEventListener("pointerdown", warmFromEvent, {
+      passive: true,
+      capture: true,
+    });
     document.addEventListener("focusin", warmFromEvent, { capture: true });
 
     return () => {

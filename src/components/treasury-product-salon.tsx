@@ -3,7 +3,6 @@
 import { CircularProductImage } from "@/components/circular-product-image";
 import useEmblaCarousel from "embla-carousel-react";
 import {
-  ViewTransition,
   useCallback,
   useEffect,
   useRef,
@@ -200,19 +199,8 @@ export function TreasuryProductSalon({
                   direction="up"
                   href={`/${locale}/products/${encodeURIComponent(item.slug)}`}
                   className="eloria-salon-image"
-                  onClick={(event) => {
-                    if (index !== selected) {
-                      event.preventDefault();
-                      select(index);
-                    }
-                  }}
                   tabIndex={index === selected ? 0 : -1}
                 >
-                  <ViewTransition
-                    name={`eloria-product-${item.slug}`}
-                    share="eloria-product-morph"
-                    default="none"
-                  >
                     {Math.abs(index - selected) <= 2 ? <CircularProductImage
                       src={picture(item)}
                       imageId={item.image?.id}
@@ -220,7 +208,6 @@ export function TreasuryProductSalon({
                       sizes="(max-width:640px) 70vw, 31vw"
                       priority={index === 0}
                     /> : <div aria-hidden="true" className="absolute inset-0 bg-[#14193b]" />}
-                  </ViewTransition>
                 </TreasuryLink>
                 <h2 className={fa ? "font-persian-calligraphy" : "font-serif"}>
                   <TreasuryLink
@@ -270,7 +257,7 @@ export function TreasuryProductSalon({
                   href={`/${locale}/products/${encodeURIComponent(item.slug)}`}
                   tabIndex={index === selected ? 0 : -1}
                 >
-                  {fa ? "دیدن صفحهٔ اثر" : "View creation"}
+                  <span>{fa ? "دیدن صفحهٔ محصول" : "View product"}</span>
                   <svg aria-hidden="true" focusable="false" viewBox="0 0 16 16" width="16" height="16" className="inline-block shrink-0 align-middle" fill="none"><path d="M8 1.5 14.5 8 8 14.5 1.5 8Z" stroke="currentColor" strokeWidth="1.2"/><circle cx="8" cy="8" r="1.5" fill="currentColor"/></svg>
                 </TreasuryLink>
                   </div>

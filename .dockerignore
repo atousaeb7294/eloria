@@ -20,5 +20,7 @@ coverage
 .DS_Store
 
 .venv-cutout
+.cache
+services/cutout/models
 .cache/eloria-cutout
 **/__pycache__

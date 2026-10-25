@@ -137,6 +137,17 @@ const staticContentSecurityPolicy = [
 const nextConfig: NextConfig = {
   allowedDevOrigins: ["127.0.0.1", "localhost"],
   output: "standalone",
+  serverExternalPackages: ["onnxruntime-node", "sharp"],
+  outputFileTracingIncludes: {
+    "/*": [
+      "./services/cutout/*.mjs",
+      "./services/cutout/*.txt",
+      "./services/cutout/*.md",
+      "./services/cutout/models/birefnet-lite-512.onnx",
+      "./node_modules/onnxruntime-node/**/*",
+      "./node_modules/onnxruntime-common/**/*",
+    ],
+  },
 
   deploymentId:
     process.env.ELORIA_DEPLOYMENT_ID || process.env.GITHUB_SHA || undefined,

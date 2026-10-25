@@ -56,6 +56,8 @@ export function HomeAppearanceEditor({
   const [previewPaused, setPreviewPaused] = useState(false);
   const [query, setQuery] = useState("");
   const [notice, setNotice] = useState("");
+  const [noticeArea, setNoticeArea] = useState<"hero" | "featured">("hero");
+  const [preparing, setPreparing] = useState(false);
   const [busy, startTransition] = useTransition();
   const selected = products.find((p) => p.id === selection.productId);
   const source = selected?.images.find((i) => i.id === selection.imageId);
@@ -64,6 +66,8 @@ export function HomeAppearanceEditor({
   );
 
   function prepare(productId: string, imageId: string) {
+    setNoticeArea("hero");
+    setPreparing(true);
     setSelection({ productId, imageId });
     setReady(null);
     setNotice("در حال جداسازی زمینه و آماده‌سازی عکس…");
@@ -78,6 +82,8 @@ export function HomeAppearanceEditor({
         } else setNotice(result.error);
       } catch {
         setNotice("ارتباط قطع شد. دوباره تلاش کنید؛ هوم قبلی تغییر نکرده است.");
+      } finally {
+        setPreparing(false);
       }
     });
   }
@@ -89,18 +95,29 @@ export function HomeAppearanceEditor({
     setFeatured(next);
   }
   function saveHero() {
+    if (!ready) return;
+    setNoticeArea("hero");
     startTransition(async () => {
       try {
-        const result = await saveHomeHeroOnlyAction({ ...selection, scale, expectedVersion: version });
+        const result = await saveHomeHeroOnlyAction({
+          ...selection,
+          scale,
+          expectedVersion: version,
+        });
         if (result.ok && result.version) {
           setVersion(result.version);
           setNotice("عکس بدون زمینه با حرکت آرام برای بالای هوم ذخیره شد.");
         } else setNotice(result.error ?? "ذخیره انجام نشد.");
-      } catch { setNotice("ارتباط قطع شد؛ وضعیت ذخیره را با تازه‌کردن صفحه بررسی کنید."); }
+      } catch {
+        setNotice(
+          "ارتباط قطع شد؛ وضعیت ذخیره را با تازه‌کردن صفحه بررسی کنید.",
+        );
+      }
     });
   }
   function save() {
     if (featured.length !== 8) return;
+    setNoticeArea("featured");
     startTransition(async () => {
       try {
         const prepared: FeaturedCutout[] = [];
@@ -150,9 +167,10 @@ export function HomeAppearanceEditor({
     <section className="mx-auto max-w-5xl space-y-6" dir="rtl">
       <h1 className="text-2xl">چیدمان هوم و دستبند شناور</h1>
       <p className="text-sm leading-8 text-white/80">
-        با انتخاب محصول، عکس به‌صورت خودکار بدون زمینه آماده می‌شود. عکس اصلی
-        محصول دست‌نخورده می‌ماند. یک عکس واضح کافی است؛ پس از آماده‌شدن، خود
-        دستبند با تاب‌خوردن بسیار آرام روی هوم نمایش داده می‌شود.
+        ۱. محصول و عکس واضح آن را انتخاب کنید؛ حذف زمینه خودکار شروع می‌شود. ۲.
+        صبر کنید تا عکس بدون زمینه در پیش‌نمایش دیده شود و جزئیات آن را بررسی
+        کنید. ۳. «ذخیره برای هوم» را بزنید. عکس اصلی محصول حفظ می‌شود و دستبند
+        با حرکت آرام نمایش داده خواهد شد.
       </p>
       <label className="block space-y-2">
         <span>جست‌وجوی محصولات</span>
@@ -236,10 +254,24 @@ export function HomeAppearanceEditor({
                   paused={previewPaused || busy}
                 />
               )}
+              {!ready && (
+                <p className="absolute inset-0 flex items-center justify-center p-6 text-center text-sm leading-8 text-white/85">
+                  {preparing
+                    ? "در حال حذف زمینه؛ لطفاً تا نمایش پیش‌نمایش صبر کنید…"
+                    : "یک عکس انتخاب کنید یا دکمهٔ «حذف زمینه و ساخت پیش‌نمایش» را بزنید."}
+                </p>
+              )}
             </div>
-            {ready && <button type="button" className="eloria-action mt-3" aria-pressed={previewPaused} onClick={() => setPreviewPaused(!previewPaused)}>
-              {previewPaused ? "شروع حرکت پیش‌نمایش" : "توقف حرکت پیش‌نمایش"}
-            </button>}
+            {ready && (
+              <button
+                type="button"
+                className="eloria-action mt-3"
+                aria-pressed={previewPaused}
+                onClick={() => setPreviewPaused(!previewPaused)}
+              >
+                {previewPaused ? "شروع حرکت پیش‌نمایش" : "توقف حرکت پیش‌نمایش"}
+              </button>
+            )}
           </figure>
         </div>
         {source && (
@@ -248,7 +280,11 @@ export function HomeAppearanceEditor({
             className="eloria-action"
             onClick={() => prepare(selection.productId, selection.imageId)}
           >
-            دوباره آماده کن
+            {preparing
+              ? "در حال آماده‌سازی…"
+              : ready
+                ? "آماده‌سازی دوبارهٔ عکس"
+                : "حذف زمینه و ساخت پیش‌نمایش"}
           </button>
         )}
         <label className="block space-y-2">
@@ -263,7 +299,24 @@ export function HomeAppearanceEditor({
             onChange={(e) => setScale(Number(e.target.value))}
           />
         </label>
-        <button type="button" disabled={!ready} onClick={saveHero} className="eloria-action eloria-action-primary">ذخیرهٔ دستبند شناور برای هوم</button>
+        <p
+          role="status"
+          aria-live="polite"
+          aria-busy={busy && noticeArea === "hero"}
+          className="min-h-12 rounded-xl bg-white/10 p-4 text-sm leading-7"
+        >
+          {noticeArea === "hero" && notice
+            ? notice
+            : "ذخیرهٔ محصول اصلی مستقل از منتخب‌هاست. پس از آماده‌شدن پیش‌نمایش، آن را ذخیره کنید."}
+        </p>
+        <button
+          type="button"
+          disabled={!ready}
+          onClick={saveHero}
+          className="eloria-action eloria-action-primary"
+        >
+          ۳. ذخیره برای هوم
+        </button>
         <h2 className="pt-4 text-xl">هشت منتخب و ترتیب نمایش</h2>
         <p className="text-sm text-white/75">
           فقط این هشت اثر روی هوم نمایش داده می‌شوند. عکس اصلی هر کدام هنگام
@@ -353,10 +406,12 @@ export function HomeAppearanceEditor({
       <p
         role="status"
         aria-live="polite"
-        aria-busy={busy}
+        aria-busy={busy && noticeArea === "featured"}
         className="min-h-12 rounded-xl bg-white/10 p-4 text-sm leading-7"
       >
-        {notice || "محصول اصلی را انتخاب کنید؛ آماده‌سازی خودکار شروع می‌شود. ذخیرهٔ آن مستقل از منتخب‌هاست."}
+        {noticeArea === "featured" && notice
+          ? notice
+          : "هشت منتخب را انتخاب کنید؛ آماده‌سازی و ذخیرهٔ آن‌ها با دکمهٔ بالا انجام می‌شود."}
       </p>
     </section>
   );
