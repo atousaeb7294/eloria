@@ -1,6 +1,7 @@
 "use client";
 
-import { ArrowUpLeft, Search, Sparkles } from "lucide-react";
+import { Search } from "lucide-react";
+import { ArrowUpLeft, EloriaKnotIcon as Sparkles } from "@/components/eloria-icons";
 import { usePathname, useRouter } from "next/navigation";
 import { FormEvent, useMemo, useState } from "react";
 import { motion, useReducedMotion } from "motion/react";

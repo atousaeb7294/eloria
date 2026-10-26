@@ -3,7 +3,8 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 
-import { ArrowLeft, CalendarDays, Gem, RefreshCw } from "lucide-react";
+import { CalendarDays, Gem, RefreshCw } from "lucide-react";
+import { ArrowLeft } from "@/components/eloria-icons";
 import { notFound } from "next/navigation";
 import { setRequestLocale } from "next-intl/server";
 

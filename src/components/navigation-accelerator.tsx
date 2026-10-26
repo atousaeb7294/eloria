@@ -14,7 +14,7 @@ export function NavigationAccelerator() {
       if (
         cancelled ||
         Date.now() - (prefetched.get(href) ?? 0) < 30_000 ||
-        !/^\/(?:fa|en)\/(?:products|collections)(?:\/|\?|$)/.test(href)
+        !/^\/(?:fa|en)\/(?:products|collections|login|story|about|atelier|journal|contact)(?:\/|\?|$)/.test(href)
       )
         return;
 

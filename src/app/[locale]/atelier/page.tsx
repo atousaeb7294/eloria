@@ -6,7 +6,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { setRequestLocale } from "next-intl/server";
-import { BookOpenText, MapPinned, Sparkles, UserRound } from "lucide-react";
+import { BookOpenText, MapPinned, UserRound } from "lucide-react";
+import { EloriaKnotIcon as Sparkles } from "@/components/eloria-icons";
 
 import { InternalPageShell } from "@/components/internal-page-shell";
 import { ELORIA_GUARDIANS } from "@/lib/eloria-mythology";

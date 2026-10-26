@@ -1,5 +1,8 @@
 "use client";
 
+import { ArrowDown } from "@/components/eloria-icons";
+
+
 import Image from "next/image";
 import { staticBackdropLoader } from "@/lib/static-backdrop-loader";
 import { ProductImage } from "@/components/product-image";
@@ -231,7 +234,7 @@ export function TreasuryPromenade({
                   aria-label={fa ? "ادامه" : "Continue"}
                 >
                   <span>{fa ? "ادامه" : "Scroll"}</span>
-                  <span aria-hidden="true">↓</span>
+                  <ArrowDown size={18} />
                 </a>
               </article>
             </Chapter>

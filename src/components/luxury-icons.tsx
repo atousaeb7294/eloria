@@ -1,3 +1,4 @@
+import { ArrowRight } from "@/components/eloria-icons";
 import type { SVGProps } from "react";
 
 export type LuxuryIconProps =
@@ -304,37 +305,7 @@ export function EarringRuneIcon({
   );
 }
 
-export function MagicArrowIcon({
-  className,
-  ...props
-}: LuxuryIconProps) {
-  return (
-    <svg
-      viewBox="0 0 64 64"
-      fill="none"
-      className={className}
-      aria-hidden="true"
-      {...props}
-    >
-      <path
-        d="M11 34H49"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-      />
-
-      <path
-        d="M39 23L51 34L39 45"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-
-      <path
-        d="M22 12L24.5 18.5L31 21L24.5 23.5L22 30L19.5 23.5L13 21L19.5 18.5L22 12Z"
-        fill="currentColor"
-      />
-    </svg>
-  );
+/** Compatibility name for the shared engraved navigation arrow. */
+export function MagicArrowIcon(props: LuxuryIconProps) {
+  return <ArrowRight {...props} />;
 }

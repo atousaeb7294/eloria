@@ -54,6 +54,7 @@ export function HomeAppearanceEditor({
   );
   const [version, setVersion] = useState(initial.version);
   const [previewPaused, setPreviewPaused] = useState(false);
+  const [heroMode, setHeroMode] = useState<"selected" | "random">(initial.productId ? "selected" : "random");
   const [query, setQuery] = useState("");
   const [notice, setNotice] = useState("");
   const [noticeArea, setNoticeArea] = useState<"hero" | "featured">("hero");
@@ -95,18 +96,21 @@ export function HomeAppearanceEditor({
     setFeatured(next);
   }
   function saveHero() {
-    if (!ready) return;
+    if (heroMode === "selected" && !ready) return;
     setNoticeArea("hero");
     startTransition(async () => {
       try {
         const result = await saveHomeHeroOnlyAction({
           ...selection,
+          mode: heroMode,
           scale,
           expectedVersion: version,
         });
         if (result.ok && result.version) {
           setVersion(result.version);
-          setNotice("عکس بدون زمینه با حرکت آرام برای بالای هوم ذخیره شد.");
+          setNotice(heroMode === "random"
+            ? "نمایش تصادفی ذخیره شد؛ در هر بار بارگذاری هوم، یکی از آثار آماده انتخاب می‌شود."
+            : "عکس بدون زمینه با حرکت آرام برای بالای هوم ذخیره شد.");
         } else setNotice(result.error ?? "ذخیره انجام نشد.");
       } catch {
         setNotice(
@@ -165,12 +169,13 @@ export function HomeAppearanceEditor({
   }
   return (
     <section className="mx-auto max-w-5xl space-y-6" dir="rtl">
-      <h1 className="text-2xl">چیدمان هوم و دستبند شناور</h1>
+      <h1 className="text-2xl">چیدمان هوم و محصول شناور</h1>
       <p className="text-sm leading-8 text-white/80">
         ۱. محصول و عکس واضح آن را انتخاب کنید؛ حذف زمینه خودکار شروع می‌شود. ۲.
         صبر کنید تا عکس بدون زمینه در پیش‌نمایش دیده شود و جزئیات آن را بررسی
         کنید. ۳. «ذخیره برای هوم» را بزنید. عکس اصلی محصول حفظ می‌شود و دستبند
-        با حرکت آرام نمایش داده خواهد شد.
+        با حرکت آرام نمایش داده خواهد شد. می‌توانید چند اثر را آماده و حالت تصادفی را ذخیره کنید.
+        اگر حذف زمینه روی سرور در دسترس نباشد، یک عکس PNG شفاف در تصاویر محصول بارگذاری و اینجا انتخاب کنید.
       </p>
       <label className="block space-y-2">
         <span>جست‌وجوی محصولات</span>
@@ -183,7 +188,15 @@ export function HomeAppearanceEditor({
       </label>
       <fieldset disabled={busy} className="space-y-4 disabled:opacity-70">
         <label className="block space-y-2">
-          <span>محصول اصلی هوم</span>
+          <span>روش نمایش محصول</span>
+          <select className={field} aria-label="روش نمایش محصول" value={heroMode}
+            onChange={event => setHeroMode(event.target.value as "selected" | "random")}>
+            <option value="selected">همیشه محصول انتخاب‌شده</option>
+            <option value="random">تصادفی از عکس‌های بدون زمینهٔ آماده</option>
+          </select>
+        </label>
+        <label className="block space-y-2">
+            <span>انتخاب محصول و آماده‌سازی عکس</span>
           <select
             className={field}
             value={selection.productId}
@@ -240,7 +253,7 @@ export function HomeAppearanceEditor({
           </figure>
           <figure>
             <figcaption className="mb-2 text-sm">
-              پیش‌نمایش دستبند شناور روی هوم
+              پیش‌نمایش محصول شناور روی هوم
             </figcaption>
             <div className="relative aspect-square overflow-hidden rounded-3xl bg-[#47334f] bg-[radial-gradient(ellipse_at_center,#a38aad40,transparent)]">
               {ready && (
@@ -311,7 +324,7 @@ export function HomeAppearanceEditor({
         </p>
         <button
           type="button"
-          disabled={!ready}
+          disabled={heroMode === "selected" && !ready}
           onClick={saveHero}
           className="eloria-action eloria-action-primary"
         >

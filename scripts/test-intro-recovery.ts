@@ -54,8 +54,10 @@ async function scenario({ reduced = false, saveData = false, seen = false, rejec
   if (seen || anchor) {
     assert.equal(state.phase, "complete");
     assert.equal(plays, 0, "Internal links must not download/play a hidden intro");
-    await act(async () => state.replayIntro());
-    assert.equal(location.hash, "", "Replay must clear the CSS skip target");
+    assert.equal(state.replayIntro, undefined, "Completed entrance has no replay control");
+    await act(async () => tree.unmount());
+    assert.equal(timers.size + intervals.size, 0);
+    return;
   }
   assert.equal(state.phase, "video-one");
   assert.ok(plays > 0);
@@ -68,8 +70,7 @@ async function scenario({ reduced = false, saveData = false, seen = false, rejec
     await act(async () => state.handleSecondVideoPlaying());
     assert.equal(state.phase, "video-two");
     await act(async () => state.beginCinematicReveal());
-    assert.equal(state.phase, "flash-in");
-    await act(async () => { for (const [key, fn] of [...timers]) { timers.delete(key); fn(); } });
+    assert.equal(timers.size, 0, "Finishing the video must not hold an overlay for a delayed reveal");
     assert.equal(state.phase, "complete");
     assert.equal(writes, 1);
     await act(async () => tree.unmount());
@@ -101,6 +102,6 @@ async function main() {
   await scenario({ anchor: "#hero" });
   await scenario({ anchor: "#featured" });
   await scenario({ mobile: false, completeFlow: true });
-  console.log("PASS intro: autoplay with reduced-motion/save-data, saved-session replay, mobile source, autoplay recovery, stall recovery, timer and scroll cleanup");
+  console.log("PASS intro: autoplay with reduced-motion/save-data, saved-session skip without replay, mobile source, autoplay recovery, stall recovery, timer and scroll cleanup");
 }
 main().catch(error => { console.error(error); process.exitCode = 1; });

@@ -9,7 +9,8 @@ import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 
 import { useEffect, useState } from "react";
 
-import { BookOpenText, Menu, Sparkles, UserRound, X } from "lucide-react";
+import { BookOpenText, Menu, UserRound, X } from "lucide-react";
+import { EloriaKnotIcon as Sparkles } from "@/components/eloria-icons";
 
 import {
   ContactRuneIcon,

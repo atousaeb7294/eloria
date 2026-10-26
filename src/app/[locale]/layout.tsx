@@ -22,7 +22,6 @@ import { PwaRegistration } from "@/components/pwa-registration";
 import { MarketingAttributionTracker } from "@/components/marketing-attribution-tracker";
 import { CursorGlow } from "@/components/cursor-glow";
 import { NavigationAccelerator } from "@/components/navigation-accelerator";
-import { HomeNavigationReset } from "@/components/home-navigation-reset";
 import { RoyalThemeDefinitions } from "@/components/royal-theme";
 
 import { routing } from "@/i18n/routing";
@@ -135,7 +134,6 @@ export default async function LocaleLayout({
 
   return (
     <html
-      data-scroll-behavior="smooth"
       lang={locale}
       dir={locale === "fa" ? "rtl" : "ltr"}
       suppressHydrationWarning
@@ -147,7 +145,6 @@ export default async function LocaleLayout({
         <RoyalThemeDefinitions />
         <NextIntlClientProvider locale={locale} messages={messages}>
           <PageBackgroundProvider>
-            <HomeNavigationReset />
             <NavigationAccelerator />
             <CursorGlow />
             <SiteStructuredData />

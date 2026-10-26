@@ -1,21 +1,7 @@
 import { EnamadSeal } from "@/components/enamad-seal";
-import type { LucideIcon } from "lucide-react";
-import {
-  ArrowUp,
-  BookOpen,
-  CircleDot,
-  Gem,
-  Home,
-  LayoutGrid,
-  Mail,
-  PhoneCall,
-  Camera,
-  Send,
-  MessageCircle,
-  ShoppingBag,
-  ShoppingCart,
-  Sparkles,
-} from "lucide-react";
+import type { ComponentType, SVGProps } from "react";
+import { BookOpen, CircleDot, Gem, Home, LayoutGrid, Mail, PhoneCall, Camera, Send, MessageCircle, ShoppingBag, ShoppingCart } from "lucide-react";
+import { ArrowUp, EloriaKnotIcon as Sparkles } from "@/components/eloria-icons";
 import Link from "next/link";
 
 import { MeasurementPreferencesButton } from "@/components/measurement-preferences-button";
@@ -29,12 +15,12 @@ type SiteFooterProps = {
 type FooterLink = {
   label: string;
   href: string;
-  icon: LucideIcon;
+  icon: ComponentType<SVGProps<SVGSVGElement>>;
 };
 
 type FooterColumn = {
   title: string;
-  icon: LucideIcon;
+  icon: ComponentType<SVGProps<SVGSVGElement>>;
   links: FooterLink[];
 };
 

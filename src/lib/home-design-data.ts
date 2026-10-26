@@ -27,7 +27,13 @@ export type HomeAppearance = {
   heroScale: number;
   featuredProductIds: string[];
   featuredCutoutIds: string[];
-  heroCutout: { id: string; product: HomeProduct } | null;
+  heroCutout: HomePreparedHero | null;
+};
+export type HomePreparedHero = {
+  id: string;
+  sourceImageId: string;
+  sourceImageUrl: string;
+  product: HomeProduct;
 };
 export type HomeCutout = {
   id: string;
@@ -39,6 +45,7 @@ export type HomeDesignSource = {
   appearance(): Promise<HomeAppearance | null>;
   products(options: { ids?: string[]; excludeIds?: string[]; take: number }): Promise<HomeProduct[]>;
   cutouts(ids: string[]): Promise<HomeCutout[]>;
+  preparedHeroes?(): Promise<HomePreparedHero[]>;
   report(area: "appearance" | "catalog" | "cutouts"): void;
 };
 
@@ -47,7 +54,7 @@ const visible = (p: HomeProduct) =>
   p.collection.isActive && Boolean(p.images[0]?.imageUrl.trim());
 
 /** Optional display settings must never take the working catalog offline. */
-export async function loadHomeDesign(locale: string, source: HomeDesignSource): Promise<HomeDesign> {
+export async function loadHomeDesign(locale: string, source: HomeDesignSource, random = Math.random): Promise<HomeDesign> {
   let appearance: HomeAppearance | null = null;
   try { appearance = await source.appearance(); }
   catch { source.report("appearance"); }
@@ -83,9 +90,24 @@ export async function loadHomeDesign(locale: string, source: HomeDesignSource): 
     };
   };
   const pieces = products.map(piece);
-  const selected = appearance?.heroCutout;
-  const hero = selected && visible(selected.product)
-    ? { ...piece(selected.product), cutoutUrl: `/api/media/hero/${selected.id}`, scale: Math.min(100, Math.max(60, appearance!.heroScale)) }
-    : pieces[0] ? { ...pieces[0], scale: 90 } : null;
+  const currentImage = (item: HomePreparedHero) => item.product.images.find(image =>
+    image.id === item.sourceImageId && image.imageUrl === item.sourceImageUrl);
+  const current = (item: HomePreparedHero) => visible(item.product) && Boolean(currentImage(item));
+  let selected = appearance?.heroCutout;
+  if (!selected || !current(selected)) {
+    try {
+      // Pick once on the server, so hydration never swaps the photo or title.
+      const candidates = (await source.preparedHeroes?.() ?? []).filter(current);
+      const unique = [...new Map(candidates.map(item => [item.product.id, item])).values()];
+      selected = unique[Math.min(unique.length - 1, Math.max(0, Math.floor(random() * unique.length)))];
+    } catch { source.report("cutouts"); }
+  }
+  const selectedImage = selected && current(selected) ? currentImage(selected) : undefined;
+  const scale = Math.min(100, Math.max(60, appearance?.heroScale ?? 90));
+  const fallback = pieces.find(item => item.cutoutUrl) ?? pieces[0];
+  const hero = selected && selectedImage
+    ? { ...piece(selected.product), imageUrl: selectedImage.imageUrl, imageId: selectedImage.id,
+        cutoutUrl: `/api/media/hero/${selected.id}`, scale }
+    : fallback ? { ...fallback, scale } : null;
   return { pieces, hero, unavailable: false };
 }

@@ -1,3 +1,4 @@
+import { ArrowUpLeft } from "@/components/eloria-icons";
 import { eloriaSocialLinks } from "@/lib/social-links";
 import type { CSSProperties } from "react";
 import Link from "next/link";
@@ -101,7 +102,7 @@ export default async function ContactPage({ params }: ContactPageProps) {
                 {Object.entries(socials).map(([key, href]) => (
                   <a key={key} href={href} target="_blank" rel="noopener noreferrer" className="flex min-h-12 items-center justify-between rounded-xl border border-[#dfc16f]/25 px-4 py-3 text-[#f0d98d] hover:bg-white/5 focus-visible:outline-2 focus-visible:outline-offset-4">
                     <span>{({instagram: isPersian ? "اینستاگرام" : "Instagram", telegram: isPersian ? "تلگرام" : "Telegram", bale: isPersian ? "بله" : "Bale"} as Record<string,string>)[key]}</span>
-                    <span aria-hidden="true">↗</span>
+                    <ArrowUpLeft size={18} />
                   </a>
                 ))}
               </div>

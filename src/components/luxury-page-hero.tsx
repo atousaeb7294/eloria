@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { Sparkles } from "lucide-react";
+import { EloriaKnotIcon as Sparkles } from "@/components/eloria-icons";
 
 type LuxuryPageHeroProps = {
   eyebrow: string;

@@ -7,7 +7,7 @@ import {
   HeroPreparationError,
   prepareHeroCutout,
 } from "@/lib/hero-cutout";
-import { validFeaturedIds, UUID_PATTERN } from "@/lib/home-design-contract";
+import { validFeaturedIds, UUID_PATTERN, HERO_PIPELINE_VERSION } from "@/lib/home-design-contract";
 
 type PrepareResult =
   { ok: true; id: string; imageUrl: string } | { ok: false; error: string };
@@ -140,18 +140,32 @@ export async function saveHomeAppearanceAction(input: {
 /** Hero changes must not depend on preparing all eight featured products. */
 export async function saveHomeHeroOnlyAction(input: {
   productId: string; imageId: string; scale: number; expectedVersion: string | null;
+  mode?: "selected" | "random";
 }): Promise<{ ok: boolean; error?: string; version?: string }> {
   if (!(await hasValidAdminSession())) return { ok: false, error: "دوباره وارد مدیریت شوید." };
-  if (!input || !UUID_PATTERN.test(input.productId) || !UUID_PATTERN.test(input.imageId) || !Number.isInteger(input.scale) || input.scale < 60 || input.scale > 100)
+  if (!input || (input.mode !== undefined && !["selected", "random"].includes(input.mode)) ||
+      (input.mode !== "random" && (!UUID_PATTERN.test(input.productId) || !UUID_PATTERN.test(input.imageId))) ||
+      !Number.isInteger(input.scale) || input.scale < 60 || input.scale > 100)
     return { ok: false, error: "انتخاب محصول معتبر نیست." };
   try {
-    const prepared = await prepareHeroCutout(input.productId, input.imageId);
+    const prepared = input.mode === "random" ? null : await prepareHeroCutout(input.productId, input.imageId);
     const saved = await prisma.$transaction(async tx => {
       const current = await tx.storefrontAppearance.findUnique({ where: { id: "home" }, select: { updatedAt: true } });
       if ((current?.updatedAt.toISOString() ?? null) !== input.expectedVersion) throw new HeroPreparationError("تنظیمات تغییر کرده است؛ صفحه را تازه کنید.");
+      if (input.mode === "random") {
+        const candidates = await tx.heroCutout.findMany({
+          where: { pipelineVersion: HERO_PIPELINE_VERSION, product: {
+            status: { in: ["ACTIVE", "OUT_OF_STOCK"] }, collection: { isActive: true },
+          } },
+          take: 64, orderBy: { createdAt: "desc" },
+          select: { sourceImageId: true, sourceImageUrl: true, product: { select: { images: { select: { id: true, imageUrl: true } } } } },
+        });
+        if (!candidates.some(item => item.product.images.some(image => image.id === item.sourceImageId && image.imageUrl === item.sourceImageUrl)))
+          throw new HeroPreparationError("ابتدا دست‌کم یک عکس را آماده کنید؛ سپس نمایش تصادفی را ذخیره کنید.");
+      }
       return tx.storefrontAppearance.upsert({ where: { id: "home" },
-        create: { id: "home", heroCutoutId: prepared.id, heroScale: input.scale },
-        update: { heroCutoutId: prepared.id, heroScale: input.scale },
+        create: { id: "home", heroCutoutId: prepared?.id ?? null, heroScale: input.scale },
+        update: { heroCutoutId: prepared?.id ?? null, heroScale: input.scale },
         select: { updatedAt: true },
       });
     }, { isolationLevel: "Serializable" });

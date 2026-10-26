@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { setRequestLocale } from "next-intl/server";
-import { ArrowLeft, CircleDot, Ruler, ShieldCheck } from "lucide-react";
+import { CircleDot, Ruler, ShieldCheck } from "lucide-react";
+import { ArrowLeft } from "@/components/eloria-icons";
 
 import { ArticleStructuredData } from "@/components/article-structured-data";
 import { InternalPageShell } from "@/components/internal-page-shell";

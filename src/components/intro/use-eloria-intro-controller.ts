@@ -3,14 +3,12 @@
 import { mountIntroWatchdog } from "@/lib/intro-watchdog";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
-  FLASH_IN_DURATION_MS,
   INTRO_EMBEDDED_ENTRY_START_SECONDS,
   INTRO_SESSION_KEY,
   INTRO_VIDEO_ONE_MOBILE_SRC,
   INTRO_VIDEO_ONE_SRC,
   INTRO_VIDEO_TWO_MOBILE_SRC,
   INTRO_VIDEO_TWO_SRC,
-  TOTAL_TRANSITION_DURATION_MS,
   type EloriaIntroExperienceProps,
   type IntroPhase,
 } from "@/components/intro/eloria-intro-config";
@@ -108,20 +106,11 @@ export function useEloriaIntroController({
 
   const beginCinematicReveal = useCallback(() => {
     if (phase !== "video-two" || secondPlaybackFinishedRef.current) return;
-
     secondPlaybackFinishedRef.current = true;
-    clearTransitionTimers();
     setSecondVideoBuffering(false);
-    setPhase("flash-in");
-
-    heroRevealTimerRef.current = window.setTimeout(() => {
-      setPhase("hero-reveal");
-    }, FLASH_IN_DURATION_MS);
-
-    completionTimerRef.current = window.setTimeout(() => {
-      completeIntro();
-    }, TOTAL_TRANSITION_DURATION_MS);
-  }, [clearTransitionTimers, completeIntro, phase]);
+    // No bright flash or 2.2-second overlay after the video has finished.
+    completeIntro();
+  }, [completeIntro, phase]);
 
   useEffect(() => {
     const connection = (navigator as Navigator & {
@@ -234,29 +223,6 @@ export function useEloriaIntroController({
     if (phase === "ready-to-play") setPhase("video-one");
     else playFirstVideo();
   }, [phase, playFirstVideo]);
-
-  const replayIntro = useCallback(() => {
-    clearTransitionTimers();
-    // #hero intentionally skips the entrance during internal navigation. An
-    // explicit replay must also remove that CSS target before mounting video.
-    if (window.location.hash) {
-      window.history.replaceState(window.history.state, "", window.location.pathname + window.location.search);
-    }
-    document.documentElement.removeAttribute("data-eloria-skip-intro");
-    window.dispatchEvent(new Event("eloria:intro-start"));
-    firstPlaybackStartedRef.current = false;
-    firstPlaybackFinishedRef.current = false;
-    secondPlaybackStartedRef.current = false;
-    secondPlaybackFinishedRef.current = false;
-    enteringSecondVideoRef.current = false;
-    setAutoplayBlocked(false);
-    setFirstVideoError(false);
-    setSecondVideoError(false);
-    setSecondVideoReady(false);
-    setSecondVideoBuffering(false);
-    setFirstEntryHotspotVisible(false);
-    setPhase("video-one");
-  }, [clearTransitionTimers]);
 
   const handleFirstVideoEnded = useCallback(() => {
     if (phase !== "video-one" || firstPlaybackFinishedRef.current) return;
@@ -445,7 +411,6 @@ export function useEloriaIntroController({
     handleSkipIntro,
     handleFirstVideoCanPlay,
     handleManualStart,
-    replayIntro,
     handleFirstVideoEnded,
     handleFirstVideoProgress,
     handleEnterEloria,

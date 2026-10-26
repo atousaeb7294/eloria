@@ -11,16 +11,8 @@ import { notFound } from "next/navigation";
 
 import { setRequestLocale } from "next-intl/server";
 
-import {
-  Gem,
-  Hash,
-  PackageCheck,
-  Scale,
-  ScrollText,
-  ShieldCheck,
-  Sparkles,
-  Truck,
-} from "lucide-react";
+import { Gem, Hash, PackageCheck, Scale, ScrollText, ShieldCheck, Truck } from "lucide-react";
+import { EloriaKnotIcon as Sparkles } from "@/components/eloria-icons";
 
 
 import { InternalPageShell } from "@/components/internal-page-shell";

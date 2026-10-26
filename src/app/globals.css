@@ -1062,3 +1062,36 @@ html[lang="fa"] body :is(.font-persian-title,.font-persian-title *,.font-persian
 
 @layer components { .eloria-action { display:inline-flex; } }
 .eloria-glass-storefront :is(.eloria-glass-panel,.eloria-live-purchase,.eloria-quick-dialog) :is(.eloria-action,.eloria-action *) { color:var(--eloria-action-text,#f8eacd)!important; }
+
+/* Navigation must not animate a full-page scroll or cover the support button. */
+html { scroll-behavior:auto!important; scrollbar-gutter:stable; }
+.eloria-navigation-status { position:fixed; inset:0 0 auto; z-index:10000; pointer-events:none; }
+.eloria-navigation-progress { display:block; height:3px; width:100%; background:linear-gradient(90deg,#80608b,#e4c88c,#80608b); }
+.eloria-route-loading { min-height:100svh; color:#f6e8d7; background:#3b2946; }
+.eloria-route-loading p { display:grid; gap:8px; padding:35vh 24px; text-align:center; }
+html[lang="fa"] .eloria-route-loading [lang="en"],html[lang="en"] .eloria-route-loading [lang="fa"] { display:none; }
+
+/* Keep connected Persian glyphs in one shaping run and allow full ascenders. */
+html[lang="fa"] body :is(.font-persian-title,.font-persian-calligraphy,.eloria-hero-nastaliq) {
+  word-break:normal; overflow-wrap:normal; text-wrap:wrap; overflow:visible;
+  font-feature-settings:"kern" 1,"liga" 1,"calt" 1; font-variant-ligatures:normal;
+}
+@media (max-width:760px) {
+  html[lang="fa"] body :is(.font-persian-title,.font-persian-title *) {
+    font-family:"Vazirmatn Variable",Tahoma,sans-serif!important;
+    font-weight:600!important; line-height:1.8!important; letter-spacing:0!important;
+  }
+  html[lang="fa"] body :is(button,input,textarea,select,[data-slot="button"],.eloria-action,.portal-cta,.eloria-cta,.quick-view-label,.eloria-quick-button,.eloria-piece-details,.eloria-treasury-enter) {
+    letter-spacing:0!important; word-break:normal!important; overflow-wrap:normal!important;
+  }
+  :is(.eloria-action,[data-slot="button"]:not([data-size^="icon"]),.eloria-cta,.portal-cta,.quick-view-label,.eloria-quick-button,.eloria-piece-details,.eloria-treasury-enter) {
+    min-height:50px!important; height:auto!important; max-height:none!important;
+    min-width:0; max-width:100%; padding-block:12px!important;
+    font-size:14px!important; line-height:1.85!important; white-space:normal!important;
+    text-overflow:clip; overflow:visible; flex-wrap:wrap;
+  }
+  :is(.eloria-action,.eloria-cta,.portal-cta,.quick-view-label,.eloria-quick-button,.eloria-piece-details) > :not(svg) {
+    min-width:0; white-space:normal; overflow:visible; line-height:inherit;
+  }
+  :is(.eloria-action,.eloria-cta,.portal-cta,.quick-view-label) > svg { flex-shrink:0; }
+}

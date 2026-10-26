@@ -14,9 +14,9 @@ function NavigationStatus() {
   const { pending } = useLinkStatus();
   if (!pending) return null;
   return createPortal(
-    <div role="status" aria-live="polite" className="pointer-events-none fixed inset-x-4 bottom-6 z-[10000] mx-auto w-fit rounded-2xl border border-[#ead3a0]/40 bg-[#101744] px-6 py-3 text-center text-sm text-[#f8f0df] shadow-xl">
-      <span lang="fa" dir="rtl">در حال بازکردن صفحه…</span>
-      <span lang="en" className="ms-2 text-xs">Loading…</span>
+    <div role="status" aria-live="polite" className="eloria-navigation-status">
+      <span className="sr-only">{document.documentElement.lang === "fa" ? "در حال بازکردن صفحه…" : "Opening page…"}</span>
+      <span className="eloria-navigation-progress" aria-hidden="true" />
     </div>,
     document.body,
   );

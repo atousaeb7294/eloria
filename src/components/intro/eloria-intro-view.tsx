@@ -1,5 +1,8 @@
 "use client";
 
+import { ArrowUpLeft } from "@/components/eloria-icons";
+
+
 import { AnimatePresence, motion } from "motion/react";
 import { FLASH_IN_DURATION_MS, HERO_REVEAL_DURATION_MS, type EloriaIntroExperienceProps } from "@/components/intro/eloria-intro-config";
 import type { EloriaIntroController } from "@/components/intro/use-eloria-intro-controller";
@@ -460,7 +463,7 @@ export function EloriaIntroView({
             aria-label={isPersian ? "رد کردن اینترو و ورود به سایت" : "Skip intro and enter site"}
           >
             <span>{isPersian ? "رد کردن و ورود به فروشگاه" : "Skip to shop"}</span>
-            <span aria-hidden="true" className="text-[#e9cf86]/75">↗</span>
+            <ArrowUpLeft className="text-[#e9cf86]/75" size={18} />
           </button>
         )}
 

@@ -3,15 +3,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { setRequestLocale } from "next-intl/server";
-import {
-  ArrowUpLeft,
-  BookOpenText,
-  Gem,
-  HeartHandshake,
-  ScrollText,
-  ShieldCheck,
-  Sparkles,
-} from "lucide-react";
+import { BookOpenText, Gem, HeartHandshake, ScrollText, ShieldCheck } from "lucide-react";
+import { ArrowUpLeft, EloriaKnotIcon as Sparkles } from "@/components/eloria-icons";
 
 import { InternalPageShell } from "@/components/internal-page-shell";
 

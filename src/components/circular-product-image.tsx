@@ -27,18 +27,16 @@ function CircularImage({ src, imageId, cutoutSrc, alt, sizes, priority = false, 
     return () => { observer.disconnect(); unsubscribe?.(); };
   }, [imageId, prepared]);
   const cutout = Boolean(prepared && !failed);
-  const waiting = floating && !cutout;
   return (
     <div ref={seat} className={`eloria-circle-photo${cutout ? " is-cutout" : " is-original"}${floating ? " is-floating" : ""}`}>
-      {waiting ? <span className="eloria-cutout-pending" role="status">{alt}<small>نمایش بدون زمینه پس از آماده‌سازی</small></span> :
-        <div className="eloria-circle-subject">
+      <div className="eloria-circle-subject">
           <Image
             src={cutout ? prepared! : originalFailed ? "/images/brand/eloria-logo.webp" : src}
             alt={originalFailed && !cutout ? `${alt} — تصویر در دسترس نیست` : alt}
             fill sizes={sizes} quality={88} preload={priority} unoptimized={unoptimized}
             onError={() => cutout ? setFailed(true) : setOriginalFailed(true)}
           />
-        </div>}
+      </div>
     </div>
   );
 }

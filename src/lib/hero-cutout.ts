@@ -6,6 +6,7 @@ import sharp from "sharp";
 import { prisma } from "@/lib/prisma";
 import { acquireCronLease, releaseCronLease } from "@/lib/cron-lease";
 import { prepareBuiltinCutout } from "@/lib/builtin-cutout";
+import { prepareTransparentHero } from "@/lib/transparent-hero";
 import {
   boundedImageBody,
   HERO_PIPELINE_VERSION,
@@ -142,7 +143,10 @@ export async function prepareHeroCutout(productId: string, imageId: string) {
     );
   try {
     let output: Buffer;
-    if (workerUrl && token && token.length >= 32) {
+    const transparent = await prepareTransparentHero(bytes);
+    if (transparent) {
+      output = transparent;
+    } else if (workerUrl && token && token.length >= 32) {
       const response = await fetch(new URL("/cutout", workerUrl), {
         method: "POST",
         headers: {

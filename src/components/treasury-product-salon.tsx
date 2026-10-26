@@ -1,5 +1,8 @@
 "use client";
 
+import { ArrowLeft, ArrowRight } from "@/components/eloria-icons";
+
+
 import { CircularProductImage } from "@/components/circular-product-image";
 import useEmblaCarousel from "embla-carousel-react";
 import {
@@ -274,7 +277,7 @@ export function TreasuryProductSalon({
           onClick={() => select(selected - 1)}
           aria-label={fa ? "اثر قبلی" : "Previous creation"}
         >
-          {fa ? "→" : "←"}
+          {fa ? <ArrowRight size={20} /> : <ArrowLeft size={20} />}
         </button>
         <span aria-live="polite" aria-atomic="true">
           {(selected + 1).toLocaleString(fa ? "fa-IR" : "en-US")} /{" "}
@@ -286,7 +289,7 @@ export function TreasuryProductSalon({
           onClick={() => select(selected + 1)}
           aria-label={fa ? "اثر بعدی" : "Next creation"}
         >
-          {fa ? "←" : "→"}
+          {fa ? <ArrowLeft size={20} /> : <ArrowRight size={20} />}
         </button>
       </div>
       <nav

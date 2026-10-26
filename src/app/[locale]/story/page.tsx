@@ -3,7 +3,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { setRequestLocale } from "next-intl/server";
-import { ArrowUpLeft, BookOpenText, Sparkles, Stars } from "lucide-react";
+import { BookOpenText, Stars } from "lucide-react";
+import { ArrowUpLeft, EloriaKnotIcon as Sparkles } from "@/components/eloria-icons";
 
 import { InternalPageShell } from "@/components/internal-page-shell";
 import { ELORIA_GUARDIANS, ELORIA_MOTHER_LEGEND } from "@/lib/eloria-mythology";

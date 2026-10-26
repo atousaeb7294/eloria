@@ -45,7 +45,7 @@ async function main() {
   await act(async () => button("ذخیره برای هوم").props.onClick());
   assert.equal(calls.at(-1)[1].expectedVersion, "v1");
   assert.equal(calls.at(-1)[1].imageId, "i1");
-  await act(async () => tree.root.findAllByType("select")[1].props.onChange({ target: { value: "i2" } }));
+  await act(async () => tree.root.findAllByType("select")[2].props.onChange({ target: { value: "i2" } }));
   assert.equal(tree.root.findAllByType("img").length, 0, "Changing the source clears the old cutout preview");
   assert.deepEqual(calls.at(-1), ["prepare", "p1", "i2"]);
   await act(async () => complete({ ok: false, error: "حافظهٔ آزاد سرور کافی نیست" }));
@@ -56,6 +56,10 @@ async function main() {
   await act(async () => complete({ ok: true, id: "cutout-2", imageUrl: "/api/media/hero/cutout-2" }));
   await act(async () => button("ذخیره برای هوم").props.onClick());
   assert.equal(calls.at(-1)[1].expectedVersion, "v2", "Successful saves advance the concurrency version");
+  await act(async () => tree.root.findByProps({ "aria-label": "روش نمایش محصول" }).props.onChange({ target: { value: "random" } }));
+  await act(async () => button("ذخیره برای هوم").props.onClick());
+  assert.equal(calls.at(-1)[1].mode, "random");
+  assert.equal(calls.at(-1)[1].expectedVersion, "v2");
   await act(async () => tree.unmount());
   console.log("PASS: admin prepare/preview/save, automatic source changes, adjacent errors, failed-preparation gating and version updates.");
 }

@@ -4,7 +4,8 @@ import { Dialog } from "@base-ui/react/dialog";
 
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowLeft, ArrowRight, Check, Gift, Gem, Search, Sparkles, UserRound, X } from "lucide-react";
+import { Check, Gift, Gem, Search, UserRound, X } from "lucide-react";
+import { ArrowLeft, ArrowRight, EloriaKnotIcon as Sparkles } from "@/components/eloria-icons";
 import { usePathname } from "next/navigation";
 import { useMemo, useState, type ReactNode } from "react";
 

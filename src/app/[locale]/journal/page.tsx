@@ -1,7 +1,9 @@
+import { ArrowLeft } from "@/components/eloria-icons";
 import Image from "next/image";
 import Link from "next/link";
 
-import { BookOpen, CalendarDays, Sparkles } from "lucide-react";
+import { BookOpen, CalendarDays } from "lucide-react";
+import { EloriaKnotIcon as Sparkles } from "@/components/eloria-icons";
 import { notFound } from "next/navigation";
 import { setRequestLocale } from "next-intl/server";
 
@@ -184,7 +186,7 @@ export default async function JournalIndexPage({
                       <span>
                         {isPersian ? "خواندن راهنما" : "Read the guide"}
                       </span>
-                      <span aria-hidden="true">←</span>
+                      <ArrowLeft size={18} />
                     </Link>
                   </div>
                 </article>

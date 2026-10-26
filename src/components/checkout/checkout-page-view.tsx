@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { AlertTriangle, ArrowLeft, ArrowRight, CheckCircle2, Clock3, Gift, LoaderCircle, RefreshCw, ShieldCheck, ShoppingBag, TicketPercent, UserRound, WalletCards, X } from "lucide-react";
+import { AlertTriangle, CheckCircle2, Clock3, Gift, LoaderCircle, RefreshCw, ShieldCheck, ShoppingBag, TicketPercent, UserRound, WalletCards, X } from "lucide-react";
+import { ArrowLeft, ArrowRight } from "@/components/eloria-icons";
 import { PurchaseProgress } from "@/components/purchase-progress";
 import { TurnstileWidget } from "@/components/turnstile-widget";
 import { getItemKey, type CheckoutPageClientProps } from "@/components/checkout/checkout-page-model";

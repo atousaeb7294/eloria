@@ -1,5 +1,8 @@
 "use client";
 
+import { ArrowDown } from "@/components/eloria-icons";
+
+
 import Link from "next/link";
 import { motion } from "motion/react";
 
@@ -298,7 +301,7 @@ export function HeroShowcase({
         </div>
 
         <a href="#treasury-gold" className="eloria-hero-story-link">
-          {copy.collectionsAction}<span aria-hidden="true">↓</span>
+          {copy.collectionsAction}<ArrowDown size={18} />
         </a>
         {/* متن خوش‌آمد پایین Hero */}
         <motion.div

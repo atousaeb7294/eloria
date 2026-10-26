@@ -2291,3 +2291,50 @@ html[lang="fa"] body .eloria-home[dir="rtl"] :is(.portal-content h3,.portal-cont
 }
 .eloria-home .portal-content h3 { font-size:clamp(30px,3vw,42px); overflow:visible; padding-block:4px 10px; }
 .eloria-home .product-description h3 { font-size:clamp(25px,2.2vw,32px); overflow:visible; padding-block:4px; }
+
+.eloria-home .hero-title-line { display:block; }
+.eloria-home :is(.text-link,.signature,.hero-bottom a) { display:inline-flex; align-items:center; gap:8px; }
+.eloria-home .menu,.eloria-home .motion,.eloria-home .close-dialog { place-items:center; }
+.eloria-home .motion,.eloria-home .close-dialog { display:grid; }
+.eloria-home .mobile-nav a { display:flex; flex-direction:column; align-items:center; gap:4px; }
+.eloria-home .product-description > div { min-width:0; }
+html[lang="fa"] body .eloria-home[dir="rtl"] :is(h1,h2,h3,h1 *,h2 *,h3 *) {
+  word-break:normal; overflow-wrap:normal; text-wrap:wrap;
+  font-feature-settings:"kern" 1,"liga" 1,"calt" 1;
+}
+/* Touch targets grow with their label instead of clipping it into fixed heights. */
+@media (max-width:760px) {
+  .eloria-home .menu { display:grid; }
+  html[lang="fa"] body .eloria-home[dir="rtl"] :is(.hero-copy h1,.hero-copy h1 *) {
+    font-size:clamp(38px,10vw,54px); line-height:2.1!important;
+    overflow:visible; letter-spacing:0!important;
+  }
+  .eloria-home .hero-copy h1 { padding:12px 4px 20px; }
+  html[lang="fa"] body .eloria-home[dir="rtl"] :is(.section-heading h2,.section-heading h2 *,.portal-content h3,.portal-content h3 *,.product-description h3,.product-description h3 *,.photo-caption h2) {
+    font-family:"Vazirmatn Variable",Tahoma,sans-serif!important;
+    font-weight:600!important; line-height:1.85!important; letter-spacing:0!important;
+  }
+  .eloria-home :is(.section-heading h2,.portal-content h3,.photo-caption h2) { font-size:clamp(20px,5.5vw,26px); }
+  .eloria-home .product-description h3 { font-size:16px; }
+  .eloria-home .hero-actions { grid-template-columns:repeat(2,minmax(0,1fr)); align-items:stretch; gap:10px; }
+  .eloria-home :is(.eloria-cta,.portal-cta,.quick-view-label,.home-quick-dialog .button) {
+    font-size:14px!important; min-height:54px!important; height:auto!important;
+    padding:12px!important; line-height:1.85!important; white-space:normal!important;
+    word-break:normal!important; overflow-wrap:normal!important; overflow:visible;
+  }
+  .eloria-home .eloria-cta { flex-direction:column; gap:6px; }
+  .eloria-home .eloria-cta > span { min-width:0; max-width:100%; }
+  .eloria-home .portal-cta { gap:8px; }
+  .eloria-home .quick-view-label { justify-content:center; gap:6px; }
+  .eloria-home .photo-caption .text-link { font-size:13px; min-height:44px; }
+  .eloria-home .home-header { height:auto; min-height:78px; }
+  .eloria-home nav.open { flex-wrap:wrap; }
+  .eloria-home nav a { min-height:44px; display:flex; align-items:center; font-size:13px; }
+  .eloria-home .product-description { align-items:flex-start; flex-wrap:wrap; }
+  .eloria-home .medallion .circle-arrow { margin-inline-start:auto; }
+  .eloria-home :is(.portal,.medallion,.eloria-cta):active { transform:none; }
+}
+@media (max-width:350px) {
+  .eloria-home .hero-actions { grid-template-columns:1fr; }
+  .eloria-home .eloria-cta { flex-direction:row; }
+}

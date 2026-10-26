@@ -1,6 +1,6 @@
 "use client";
 
-import { Sparkles } from "lucide-react";
+import { EloriaKnotIcon as Sparkles } from "@/components/eloria-icons";
 
 export function SmartSelectionTrigger({ locale, compact = false }: { locale: "fa" | "en"; compact?: boolean }) {
   const fa = locale === "fa";
