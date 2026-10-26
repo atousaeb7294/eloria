@@ -1,0 +1,22 @@
+#!/bin/bash
+set -e
+
+# Change public package downloads only; keep the host's build procedure.
+# Do not send a mirror's private token to a different registry.
+if [ -n "${NPM_TOKEN:-}" ]; then
+  echo 'Eloria: a private npm token is configured. Ask hosting support to repair the npm mirror; no token was changed or printed.' >&2
+  exit 1
+fi
+
+export NPM_MIRROR='https://registry.npmjs.org/'
+export NPM_CONFIG_REGISTRY="$NPM_MIRROR"
+export npm_config_registry="$NPM_MIRROR"
+
+ELORIA_UPSTREAM_ASSEMBLE='/usr/libexec/s2i/assemble'
+if [ ! -x "$ELORIA_UPSTREAM_ASSEMBLE" ] || [ "$ELORIA_UPSTREAM_ASSEMBLE" -ef "$0" ]; then
+  echo 'Eloria: the standard S2I builder script is unavailable. Ask hosting support to correct the npm mirror in the build settings.' >&2
+  exit 1
+fi
+
+echo '---> Eloria npm registry fix active: https://registry.npmjs.org/'
+exec "$ELORIA_UPSTREAM_ASSEMBLE" "$@"
