@@ -2,7 +2,7 @@ import "server-only";
 import type { Prisma } from "@/generated/prisma/client";
 import { prisma } from "@/lib/prisma";
 import { loadHomeDesign } from "@/lib/home-design-data";
-import { HERO_PIPELINE_VERSION } from "@/lib/home-design-contract";
+import { HERO_PIPELINE_VERSION, UPLOADED_HERO_VERSION } from "@/lib/home-design-contract";
 export type { HomeDesign, HomePiece } from "@/lib/home-design-data";
 
 const select = {
@@ -16,7 +16,7 @@ const select = {
   },
 } satisfies Prisma.ProductSelect;
 const heroSelect = {
-  id: true, sourceImageId: true, sourceImageUrl: true,
+  id: true, pipelineVersion: true, sourceImageId: true, sourceImageUrl: true,
   product: { select: { ...select, images: { ...select.images, take: undefined } } },
 } satisfies Prisma.HeroCutoutSelect;
 
@@ -44,7 +44,7 @@ export async function getHomeDesign(locale: string) {
       select: { id: true, productId: true, sourceImageId: true, sourceImageUrl: true },
     }),
     preparedHeroes: () => prisma.heroCutout.findMany({
-      where: { pipelineVersion: HERO_PIPELINE_VERSION, product: {
+      where: { pipelineVersion: { in: [HERO_PIPELINE_VERSION, UPLOADED_HERO_VERSION] }, product: {
         status: { in: ["ACTIVE", "OUT_OF_STOCK"] }, collection: { isActive: true },
       } },
       orderBy: { createdAt: "desc" }, take: 64, select: heroSelect,

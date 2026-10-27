@@ -20,7 +20,7 @@ export function EloriaPortalIcon({ size = 24, ...props }: IconProps) {
 function arrow(rotation: number) {
   return function EloriaArrow({ size = 24, ...props }: IconProps) {
     return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false" {...props}>
-      <g transform={`rotate(${rotation} 12 12)`}><path d="M4 12h16m-5-5 5 5-5 5M4 8c3 0 5 2 5 4-3 0-5-2-5-4Zm0 8c3 0 5-2 5-4-3 0-5 2-5 4Z" /></g>
+      <g transform={`rotate(${rotation} 12 12)`}><path d="m9 5 7 7-7 7" /></g>
     </svg>;
   };
 }

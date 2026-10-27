@@ -28,6 +28,7 @@ async function main() {
   runInNewContext(code, {
     module: mod, exports: mod.exports, console,
     require: (name: string) => {
+      if (name.endsWith("/home-hero-upload")) return { normalizeUploadedHero() { throw new Error("Unused in this test"); } };
       if (name === "next/cache") return { revalidatePath() {} };
       if (name.endsWith("/admin-auth")) return { hasValidAdminSession: async () => authenticated };
       if (name.endsWith("/prisma")) return { prisma: { $transaction: async (fn: any) => fn(tx) } };

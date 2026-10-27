@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
+import { TreasuryLink as Link } from "@/components/treasury-transition";
 import { UserRound } from "lucide-react";
 
 export function CustomerAccountHeaderButton({ locale }: { locale: "fa" | "en" }) {
@@ -26,7 +26,7 @@ export function CustomerAccountHeaderButton({ locale }: { locale: "fa" | "en" })
     : locale === "fa" ? "ورود / عضویت" : "Sign in / Join";
 
   return (
-    <Link
+    <Link prefetch={true}
       href={signedIn ? `/${locale}/profile` : `/${locale}/login`}
       aria-label={label}
       title={label}

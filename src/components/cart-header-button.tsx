@@ -1,6 +1,6 @@
-﻿"use client";
+"use client";
 
-import Link from "next/link";
+import { TreasuryLink as Link } from "@/components/treasury-transition";
 import {
   useSyncExternalStore,
 } from "react";
@@ -104,7 +104,7 @@ export function CartHeaderButton({
     "compact"
   ) {
     return (
-      <Link
+      <Link prefetch={true}
         href={`/${locale}/cart`}
         aria-label={label}
         title={label}
@@ -135,7 +135,7 @@ export function CartHeaderButton({
   }
 
   return (
-    <Link
+    <Link prefetch={true}
       href={`/${locale}/cart`}
       aria-label={label}
       title={label}

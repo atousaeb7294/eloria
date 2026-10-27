@@ -14,7 +14,7 @@ const source = (overrides: Partial<HomeDesignSource> = {}): HomeDesignSource => 
 async function main() {
   const missingTable = await loadHomeDesign("fa", source({ appearance: async () => { throw new Error("missing appearance table"); } }));
   assert.equal(missingTable.pieces.length, 8);
-  assert.equal(missingTable.hero?.imageUrl, rows[0].images[0].imageUrl);
+  assert.equal(missingTable.hero, null, "Never float an opaque gallery photo");
   assert.equal(missingTable.unavailable, false);
   const config: HomeAppearance = { featuredProductIds: ["p7", "p3", "p1"], featuredCutoutIds: ["cutout"], heroScale: 200, heroCutout: { id: "hero", sourceImageId: "image-3", sourceImageUrl: "/original-3.jpg", product: rows[3] } };
   const brokenOptionalMedia = await loadHomeDesign("fa", source({ appearance: async () => config, cutouts: async () => { throw new Error("cutout unavailable"); } }));
@@ -38,8 +38,7 @@ async function main() {
   assert.equal(brokenOptionalMedia.hero?.cutoutUrl, "/api/media/hero/hero");
   assert.equal(brokenOptionalMedia.pieces[0].imageId, "image-7");
   const retiredHero = await loadHomeDesign("fa", source({ appearance: async () => ({ ...config, heroCutout: { id: "hidden", sourceImageId: "image-9", sourceImageUrl: "/original-9.jpg", product: { ...rows[9], collection: { isActive: false } } } }) }));
-  assert.equal(retiredHero.hero?.id, "p7", "A hidden selected product must fall back to the public catalog");
-  assert.equal(retiredHero.hero?.cutoutUrl, undefined, "Never expose the retired product cutout");
+  assert.equal(retiredHero.hero, null, "A hidden product can only fall back to a public transparent photo");
   const alternateProduct = { ...rows[3], images: [...rows[3].images, { id: "alternate", imageUrl: "/alternate.png" }] };
   const alternate = { id: "alternate-cutout", sourceImageId: "alternate", sourceImageUrl: "/alternate.png", product: alternateProduct };
   const fixed = await loadHomeDesign("fa", source({ appearance: async () => ({ ...config, heroCutout: alternate }) }));

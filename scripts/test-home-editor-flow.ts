@@ -16,13 +16,15 @@ async function main() {
   const actions = {
     prepareHomeHeroAction: (...args: any[]) => { calls.push(["prepare", ...args]); return new Promise(resolve => { complete = resolve; }); },
     saveHomeHeroOnlyAction: async (value: any) => { calls.push(["save", value]); return { ok: true, version: "v2" }; },
+    uploadHomeHeroAction: (form: FormData) => { calls.push(["upload", form]); return new Promise(resolve => { complete = resolve; }); },
+    removeUploadedHomeHeroAction: async (input: any) => { calls.push(["remove", input]); return { ok: true, version: "v4" }; },
     saveHomeAppearanceAction: async () => { throw new Error("Featured save should not run"); },
   };
   const code = ts.transpileModule(readFileSync("src/components/admin/home-appearance-editor.tsx", "utf8"), {
     compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022, jsx: ts.JsxEmit.ReactJSX, esModuleInterop: true },
   }).outputText;
   runInNewContext(code, {
-    module: sandboxModule, exports: sandboxModule.exports, console,
+    module: sandboxModule, exports: sandboxModule.exports, console, URL, FormData, File,
     require: (name: string) => name.endsWith("/appearance/actions") ? actions
       : name === "next/image" ? { __esModule: true, default: () => null }
         : name === "@/components/floating-product-image" ? { FloatingProductImage: (props: any) => React.createElement("img", { src: props.cutoutSrc }) }
@@ -60,6 +62,30 @@ async function main() {
   await act(async () => button("ذخیره برای هوم").props.onClick());
   assert.equal(calls.at(-1)[1].mode, "random");
   assert.equal(calls.at(-1)[1].expectedVersion, "v2");
+  await act(async () => tree.root.findByProps({ "aria-label": "روش نمایش محصول" }).props.onChange({ target: { value: "upload" } }));
+  assert.equal(button("ذخیره برای هوم").props.disabled, true);
+  const file = new File([new Uint8Array([1, 2, 3])], "mine.png", { type: "image/png" });
+  const prepareCount = calls.filter(call => call[0] === "prepare").length;
+  await act(async () => tree.root.findByProps({ "aria-label": "عکس شفاف هوم" }).props.onChange({ target: { files: [file] } }));
+  assert.equal(calls.filter(call => call[0] === "prepare").length, prepareCount, "Direct uploads must not invoke automatic cutout");
+  assert.ok(tree.root.findByType("img").props.src.startsWith("blob:"));
+  assert.equal(button("ذخیره برای هوم").props.disabled, false);
+  await act(async () => button("ذخیره برای هوم").props.onClick());
+  assert.equal(tree.root.findByType("fieldset").props.disabled, true);
+  assert.equal(calls.at(-1)[1].get("image").name, "mine.png");
+  assert.equal(calls.at(-1)[1].get("expectedVersion"), "v2");
+  await act(async () => complete({ ok: false, error: "زمینهٔ عکس شفاف نیست" }));
+  assert.ok(tree.root.findByType("img").props.src.startsWith("blob:"), "Failed upload preserves the chosen file for retry");
+  await act(async () => button("ذخیره برای هوم").props.onClick());
+  await act(async () => complete({ ok: true, id: "uploaded", imageUrl: "/api/media/hero/uploaded", version: "v3" }));
+  assert.equal(tree.root.findByType("img").props.src, "/api/media/hero/uploaded");
+  await act(async () => button("ذخیره برای هوم").props.onClick());
+  assert.equal(calls.at(-1)[1].mode, "upload");
+  assert.equal(calls.at(-1)[1].cutoutId, "uploaded");
+  assert.equal(calls.at(-1)[1].expectedVersion, "v3");
+  await act(async () => button("حذف عکس بارگذاری‌شده").props.onClick());
+  assert.equal(calls.at(-1)[0], "remove");
+  assert.equal(tree.root.findAllByType("img").length, 0);
   await act(async () => tree.unmount());
   console.log("PASS: admin prepare/preview/save, automatic source changes, adjacent errors, failed-preparation gating and version updates.");
 }

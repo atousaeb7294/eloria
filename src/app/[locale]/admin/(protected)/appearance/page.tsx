@@ -1,3 +1,4 @@
+import { UPLOADED_HERO_VERSION } from "@/lib/home-design-contract";
 import { requireAdmin } from "@/lib/admin-auth";
 import { prisma } from "@/lib/prisma";
 import { HomeAppearanceEditor } from "@/components/admin/home-appearance-editor";
@@ -40,7 +41,7 @@ export default async function AppearancePage({
         featuredCutoutIds: true,
         updatedAt: true,
         heroCutout: {
-          select: { id: true, productId: true, sourceImageId: true },
+          select: { id: true, productId: true, sourceImageId: true, pipelineVersion: true },
         },
       },
     }),
@@ -58,6 +59,7 @@ export default async function AppearancePage({
         productId: appearance?.heroCutout?.productId ?? "",
         imageId: appearance?.heroCutout?.sourceImageId ?? "",
         cutoutId: appearance?.heroCutout?.id ?? "",
+        uploaded: appearance?.heroCutout?.pipelineVersion === UPLOADED_HERO_VERSION,
         scale: appearance?.heroScale ?? 90,
         featuredIds: appearance?.featuredProductIds.length
           ? appearance.featuredProductIds

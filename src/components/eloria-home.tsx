@@ -1,7 +1,6 @@
 "use client";
 
 import Image from "next/image";
-import Link from "next/link";
 import {
   useEffect,
   useRef,
@@ -17,7 +16,7 @@ import { TreasuryLink } from "@/components/treasury-transition";
 import { FloatingProductImage } from "@/components/floating-product-image";
 import { useIntroComplete } from "@/components/intro/use-intro-complete";
 import { Menu, Pause, Play, ShoppingBag, X } from "lucide-react";
-import { ArrowDown, ArrowUpLeft, EloriaKnotIcon, EloriaJewelIcon, EloriaPortalIcon } from "@/components/eloria-icons";
+import { EloriaKnotIcon, EloriaJewelIcon, EloriaPortalIcon } from "@/components/eloria-icons";
 import { GoldRuneIcon, SilverRuneIcon, WeaveRuneIcon } from "@/components/material-rune-icons";
 import type { HomeDesign, HomePiece } from "@/lib/home-design";
 
@@ -135,8 +134,10 @@ export function EloriaHome({
     >
       <div className="palace" aria-hidden="true" />
       <div className="atmosphere" aria-hidden="true" />
-      <header className="home-header">
-        <Link href={`/${locale}`} className="brand">
+      <header className="home-header home-header-refined">
+        <div className="home-header-note">{fa ? "بافته از مهر · آراسته به طلا و نقره" : "Woven with care · Adorned in gold & silver"}</div>
+        <div className="home-header-inner">
+        <TreasuryLink href={`/${locale}`} className="brand">
           <Image
             className="brand-logo"
             src="/images/brand/eloria-logo.webp"
@@ -145,13 +146,13 @@ export function EloriaHome({
             height={76}
             priority
           />
-          <span>
+          <span className="brand-wordmark">
             ELORIA
             <small>
               {fa ? "جواهری در دل افسانه" : "A jewel within a legend"}
             </small>
           </span>
-        </Link>
+        </TreasuryLink>
         <nav
           id="home-menu"
           className={menu ? "open" : ""}
@@ -162,14 +163,11 @@ export function EloriaHome({
               {link.label}
             </a>
           ))}
-          <Link href={fa ? "/en" : "/fa"} lang={fa ? "en" : "fa"}>
-            {fa ? "EN" : "فارسی"}
-          </Link>
         </nav>
         <div className="home-account">
+          <TreasuryLink className="home-language" href={fa ? "/en" : "/fa"} lang={fa ? "en" : "fa"}>{fa ? "EN" : "فا"}</TreasuryLink>
           <CustomerAccountHeaderButton locale={locale} />
           <CartHeaderButton locale={locale} variant="compact" />
-        </div>
         <button
           type="button"
           className="menu"
@@ -178,8 +176,10 @@ export function EloriaHome({
           aria-label={fa ? "منوی سایت" : "Site menu"}
           onClick={() => setMenu(!menu)}
         >
-          <Menu aria-hidden="true" size={22} />
+          {menu ? <X aria-hidden="true" size={22} /> : <Menu aria-hidden="true" size={22} />}
         </button>
+        </div>
+        </div>
       </header>
       <main id="main-content" tabIndex={-1}>
         <section className="hero" id="hero">
@@ -219,11 +219,9 @@ export function EloriaHome({
             </p>
             <div className="hero-actions">
               <a className="eloria-cta eloria-cta-primary" href="#treasuries">
-                <EloriaPortalIcon aria-hidden="true" className="cta-symbol" />
                 <span>{fa ? "ورود به گنجینه‌ها" : "Enter the treasuries"}</span>
               </a>
-              <TreasuryLink direction="up" className="eloria-cta eloria-cta-secondary" href={`/${locale}/products`}>
-                <EloriaJewelIcon aria-hidden="true" className="cta-symbol" />
+              <TreasuryLink prefetch={true} direction="up" className="eloria-cta eloria-cta-secondary" href={`/${locale}/products`}>
                 <span>{fa ? "دیدن همهٔ آثار" : "View all creations"}</span>
               </TreasuryLink>
             </div>
@@ -268,7 +266,7 @@ export function EloriaHome({
                     className="text-link"
                     onClick={(e) => open(hero, e.currentTarget)}
                   >
-                    {fa ? "از نزدیک ببین" : "A closer look"}<ArrowUpLeft size={18} />
+                    {fa ? "از نزدیک ببین" : "A closer look"}
                   </button>
                 </div>
                 <button
@@ -310,7 +308,7 @@ export function EloriaHome({
             </span>
             <a href="#treasuries">
               {fa ? "سه گنجینه، سه جهان" : "Three treasuries, three worlds"}{" "}
-              <ArrowDown size={18} />
+
             </a>
             <small>HANDCRAFTED / ELORIA</small>
           </div>
@@ -331,7 +329,7 @@ export function EloriaHome({
           </div>
           <div className="portal-grid">
             {treasuries.map((t, i) => (
-              <TreasuryLink
+              <TreasuryLink prefetch={true}
                 className={`portal ${t.key}`}
                 key={t.key}
                 href={`/${locale}/collections/${t.key}`}
@@ -372,7 +370,7 @@ export function EloriaHome({
                   <p>{fa ? t.tagline : t.english}</p>
                   <span className="portal-cta">
                     {fa ? "ورود به گنجینه" : "Enter the treasury"}{" "}
-                    <span className="portal-cta-icon" aria-hidden="true"><ArrowUpLeft size={18} /></span>
+
                   </span>
                 </div>
               </TreasuryLink>
@@ -430,9 +428,9 @@ export function EloriaHome({
                         : `${p.group} treasury`}
                     </small>
                     <h3>
-                      <Link href={`/${locale}/products/${p.slug}`}>
+                      <TreasuryLink href={`/${locale}/products/${p.slug}`}>
                         {p.name}
-                      </Link>
+                      </TreasuryLink>
                     </h3>
                     <div className="home-price">
                       <ProductCardLivePrice
@@ -443,13 +441,13 @@ export function EloriaHome({
                       />
                     </div>
                   </div>
-                  <Link
-                    className="circle-arrow"
+                  <TreasuryLink prefetch={true}
+                    className="home-details-link"
                     href={`/${locale}/products/${p.slug}`}
                     aria-label={fa ? `جزئیات ${p.name}` : `Details: ${p.name}`}
                   >
-                    <ArrowUpLeft size={20} />
-                  </Link>
+                    {fa ? "جزئیات" : "Details"}
+                  </TreasuryLink>
                 </div>
                 <button
                   type="button"
@@ -460,7 +458,7 @@ export function EloriaHome({
                   }
                 >
                   {fa ? "نگاه سریع" : "Quick view"}
-                  <ArrowUpLeft size={18} />
+
                 </button>
               </article>
             ))}
@@ -492,9 +490,9 @@ export function EloriaHome({
               "Handwoven details, gold, silver and stone. A connection to your taste and memories."
             )}
           </p>
-          <Link className="text-link" href={`/${locale}/story`}>
-            {fa ? "داستان الوریا را بخوان" : "Read our story"}<ArrowUpLeft size={18} />
-          </Link>
+          <TreasuryLink className="text-link" href={`/${locale}/story`}>
+            {fa ? "داستان الوریا را بخوان" : "Read our story"}
+          </TreasuryLink>
         </section>
       </main>
       <div
@@ -513,10 +511,10 @@ export function EloriaHome({
           <EloriaKnotIcon size={22} />
           {fa ? "منتخب‌ها" : "The edit"}
         </a>
-        <Link href={`/${locale}/cart`}>
+        <TreasuryLink href={`/${locale}/cart`}>
           <ShoppingBag aria-hidden="true" size={22} />
           {fa ? "سبد خرید" : "Bag"}
-        </Link>
+        </TreasuryLink>
       </div>
       <dialog
         ref={dialog}
@@ -566,13 +564,13 @@ export function EloriaHome({
                   ? "جزئیات بافت و رنگ را در عکس اصلی اثر ببین."
                   : "See the details in the original photograph."}
               </p>
-              <Link
+              <TreasuryLink prefetch={true}
                 className="button"
                 href={`/${locale}/products/${quick.slug}`}
                 onNavigate={() => setQuick(null)}
               >
-                {fa ? "جزئیات و خرید" : "Details & purchase"}<ArrowUpLeft size={18} />
-              </Link>
+                {fa ? "جزئیات و خرید" : "Details & purchase"}
+              </TreasuryLink>
               <small>
                 {fa
                   ? "قیمت و موجودی نهایی هنگام خرید بررسی می‌شود."

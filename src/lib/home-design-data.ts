@@ -1,3 +1,5 @@
+import { UPLOADED_HERO_VERSION } from "./home-design-contract";
+
 export type HomePiece = {
   id: string;
   slug: string;
@@ -31,6 +33,7 @@ export type HomeAppearance = {
 };
 export type HomePreparedHero = {
   id: string;
+  pipelineVersion?: string;
   sourceImageId: string;
   sourceImageUrl: string;
   product: HomeProduct;
@@ -92,7 +95,8 @@ export async function loadHomeDesign(locale: string, source: HomeDesignSource, r
   const pieces = products.map(piece);
   const currentImage = (item: HomePreparedHero) => item.product.images.find(image =>
     image.id === item.sourceImageId && image.imageUrl === item.sourceImageUrl);
-  const current = (item: HomePreparedHero) => visible(item.product) && Boolean(currentImage(item));
+  const current = (item: HomePreparedHero) => visible(item.product) &&
+    (item.pipelineVersion === UPLOADED_HERO_VERSION || Boolean(currentImage(item)));
   let selected = appearance?.heroCutout;
   if (!selected || !current(selected)) {
     try {
@@ -104,9 +108,10 @@ export async function loadHomeDesign(locale: string, source: HomeDesignSource, r
   }
   const selectedImage = selected && current(selected) ? currentImage(selected) : undefined;
   const scale = Math.min(100, Math.max(60, appearance?.heroScale ?? 90));
-  const fallback = pieces.find(item => item.cutoutUrl) ?? pieces[0];
-  const hero = selected && selectedImage
-    ? { ...piece(selected.product), imageUrl: selectedImage.imageUrl, imageId: selectedImage.id,
+  const fallback = pieces.find(item => item.cutoutUrl);
+  const hero = selected && current(selected)
+    ? { ...piece(selected.product), imageUrl: selected.pipelineVersion === UPLOADED_HERO_VERSION ? `/api/media/hero/${selected.id}` : selectedImage!.imageUrl,
+        imageId: selected.pipelineVersion === UPLOADED_HERO_VERSION ? undefined : selectedImage?.id,
         cutoutUrl: `/api/media/hero/${selected.id}`, scale }
     : fallback ? { ...fallback, scale } : null;
   return { pieces, hero, unavailable: false };

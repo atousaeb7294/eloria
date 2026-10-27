@@ -1,12 +1,14 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useEffect, useRef, useState, useTransition } from "react";
 import Image from "next/image";
 import { FloatingProductImage } from "@/components/floating-product-image";
 import {
   prepareHomeHeroAction,
   saveHomeAppearanceAction,
   saveHomeHeroOnlyAction,
+  uploadHomeHeroAction,
+  removeUploadedHomeHeroAction,
 } from "@/app/[locale]/admin/(protected)/appearance/actions";
 
 type Product = {
@@ -21,6 +23,7 @@ type Initial = {
   productId: string;
   imageId: string;
   cutoutId: string;
+  uploaded?: boolean;
   scale: number;
   featuredIds: string[];
   version: string | null;
@@ -43,6 +46,7 @@ export function HomeAppearanceEditor({
     initial.cutoutId
       ? {
           id: initial.cutoutId,
+          uploaded: Boolean(initial.uploaded),
           imageUrl: `/api/media/hero/${initial.cutoutId}`,
         }
       : null,
@@ -54,7 +58,17 @@ export function HomeAppearanceEditor({
   );
   const [version, setVersion] = useState(initial.version);
   const [previewPaused, setPreviewPaused] = useState(false);
-  const [heroMode, setHeroMode] = useState<"selected" | "random">(initial.productId ? "selected" : "random");
+  const [heroMode, setHeroMode] = useState<"selected" | "random" | "upload">(initial.uploaded ? "upload" : initial.productId ? "selected" : "upload");
+  const [uploadFile, setUploadFile] = useState<File | null>(null);
+  const [uploadPreview, setUploadPreview] = useState("");
+  const [savedUploadId, setSavedUploadId] = useState(initial.uploaded ? initial.cutoutId : "");
+  const uploadInput = useRef<HTMLInputElement>(null);
+  useEffect(() => () => { if (uploadPreview) URL.revokeObjectURL(uploadPreview); }, [uploadPreview]);
+  function selectUpload(file: File | null) {
+    setUploadFile(file);
+    setUploadPreview(file ? URL.createObjectURL(file) : "");
+    if (!file && uploadInput.current) uploadInput.current.value = "";
+  }
   const [query, setQuery] = useState("");
   const [notice, setNotice] = useState("");
   const [noticeArea, setNoticeArea] = useState<"hero" | "featured">("hero");
@@ -76,7 +90,7 @@ export function HomeAppearanceEditor({
       try {
         const result = await prepareHomeHeroAction(productId, imageId);
         if (result.ok) {
-          setReady({ id: result.id, imageUrl: result.imageUrl });
+          setReady({ id: result.id, imageUrl: result.imageUrl, uploaded: false });
           setNotice(
             "عکس آماده است. جزئیات بند و سنگ‌ها را در پیش‌نمایش بررسی کنید و سپس ذخیره کنید.",
           );
@@ -95,19 +109,40 @@ export function HomeAppearanceEditor({
     [next[index], next[other]] = [next[other], next[index]];
     setFeatured(next);
   }
+  const previewUrl = heroMode === "upload" ? uploadPreview || (ready?.uploaded ? ready.imageUrl : "") : ready?.imageUrl;
+  const cannotSave = (heroMode === "selected" && (!ready || ready.uploaded)) ||
+    (heroMode === "upload" && (!selected || (!uploadFile && !ready?.uploaded)));
   function saveHero() {
-    if (heroMode === "selected" && !ready) return;
+    if (cannotSave) return;
     setNoticeArea("hero");
     startTransition(async () => {
       try {
+        if (heroMode === "upload" && uploadFile) {
+          const form = new FormData();
+          form.set("image", uploadFile);
+          form.set("productId", selection.productId);
+          form.set("scale", String(scale));
+          form.set("expectedVersion", version ?? "");
+          const uploaded = await uploadHomeHeroAction(form);
+          if (uploaded.ok && uploaded.id && uploaded.imageUrl && uploaded.version) {
+            setVersion(uploaded.version);
+            setReady({ id: uploaded.id, imageUrl: uploaded.imageUrl, uploaded: true });
+            setSavedUploadId(uploaded.id);
+            selectUpload(null);
+            setNotice("عکس شفاف شما ذخیره شد؛ همین عکس در هوم دسکتاپ و موبایل نمایش داده می‌شود.");
+          } else setNotice(uploaded.error ?? "بارگذاری انجام نشد؛ عکس قبلی حفظ شد.");
+          return;
+        }
         const result = await saveHomeHeroOnlyAction({
           ...selection,
           mode: heroMode,
+          cutoutId: ready?.id,
           scale,
           expectedVersion: version,
         });
         if (result.ok && result.version) {
           setVersion(result.version);
+          if (heroMode !== "upload") setSavedUploadId("");
           setNotice(heroMode === "random"
             ? "نمایش تصادفی ذخیره شد؛ در هر بار بارگذاری هوم، یکی از آثار آماده انتخاب می‌شود."
             : "عکس بدون زمینه با حرکت آرام برای بالای هوم ذخیره شد.");
@@ -171,11 +206,8 @@ export function HomeAppearanceEditor({
     <section className="mx-auto max-w-5xl space-y-6" dir="rtl">
       <h1 className="text-2xl">چیدمان هوم و محصول شناور</h1>
       <p className="text-sm leading-8 text-white/80">
-        ۱. محصول و عکس واضح آن را انتخاب کنید؛ حذف زمینه خودکار شروع می‌شود. ۲.
-        صبر کنید تا عکس بدون زمینه در پیش‌نمایش دیده شود و جزئیات آن را بررسی
-        کنید. ۳. «ذخیره برای هوم» را بزنید. عکس اصلی محصول حفظ می‌شود و دستبند
-        با حرکت آرام نمایش داده خواهد شد. می‌توانید چند اثر را آماده و حالت تصادفی را ذخیره کنید.
-        اگر حذف زمینه روی سرور در دسترس نباشد، یک عکس PNG شفاف در تصاویر محصول بارگذاری و اینجا انتخاب کنید.
+        برای نمایش عکس آمادهٔ خودتان، «بارگذاری عکس شفاف» را انتخاب کنید، محصول مربوط را مشخص کنید و عکس PNG یا WebP بدون زمینه را بدهید.
+        پیش‌نمایش را بررسی کنید و «ذخیره برای هوم» را بزنید. عکس‌های صفحهٔ محصول تغییر نمی‌کنند.
       </p>
       <label className="block space-y-2">
         <span>جست‌وجوی محصولات</span>
@@ -190,19 +222,24 @@ export function HomeAppearanceEditor({
         <label className="block space-y-2">
           <span>روش نمایش محصول</span>
           <select className={field} aria-label="روش نمایش محصول" value={heroMode}
-            onChange={event => setHeroMode(event.target.value as "selected" | "random")}>
+            onChange={event => setHeroMode(event.target.value as "selected" | "random" | "upload")}>
+            <option value="upload">بارگذاری عکس شفاف خودم برای هوم</option>
             <option value="selected">همیشه محصول انتخاب‌شده</option>
             <option value="random">تصادفی از عکس‌های بدون زمینهٔ آماده</option>
           </select>
         </label>
         <label className="block space-y-2">
-            <span>انتخاب محصول و آماده‌سازی عکس</span>
+            <span>{heroMode === "upload" ? "۱. این عکس مربوط به کدام محصول است؟" : "انتخاب محصول و آماده‌سازی عکس"}</span>
           <select
             className={field}
             value={selection.productId}
             onChange={(e) => {
               const p = products.find((p) => p.id === e.target.value);
-              if (p?.images[0]) prepare(p.id, p.images[0].id);
+              if (p?.images[0]) {
+                if (heroMode === "upload") {
+                  setSelection({ productId: p.id, imageId: p.images[0].id }); setReady(null); selectUpload(null);
+                } else prepare(p.id, p.images[0].id);
+              }
             }}
           >
             <option value="" disabled>
@@ -219,7 +256,39 @@ export function HomeAppearanceEditor({
               ))}
           </select>
         </label>
-        {selected && (
+        {heroMode === "upload" && (
+          <div className="space-y-3 rounded-2xl border border-[#d9bc82]/40 bg-white/5 p-4">
+            <label className="block space-y-3">
+              <span>۲. عکس بدون زمینه را انتخاب کنید</span>
+              <input ref={uploadInput} key={selection.productId} type="file" accept="image/png,image/webp" disabled={!selected}
+                aria-label="عکس شفاف هوم" className={field}
+                onChange={event => {
+                  const file = event.target.files?.[0] ?? null;
+                  setNoticeArea("hero");
+                  if (file && file.size > 8 * 1024 * 1024) {
+                    selectUpload(null); setNotice("حجم عکس باید حداکثر ۸ مگابایت باشد."); event.target.value = ""; return;
+                  }
+                  selectUpload(file);
+                  setNotice(file ? "پیش‌نمایش عکس شما آماده است؛ برای انتشار، ذخیره برای هوم را بزنید." : "");
+                }} />
+            </label>
+            <p className="text-sm leading-7 text-white/75">حداکثر ۸ مگابایت؛ PNG یا WebP ثابت و واقعاً شفاف. عکس با زمینهٔ سفید یا شطرنجیِ چاپ‌شده پذیرفته نمی‌شود.</p>
+            {uploadFile && <button type="button" className="eloria-action" onClick={() => selectUpload(null)}>انصراف از عکس جدید</button>}
+            {savedUploadId && <button type="button" className="eloria-action" onClick={() => {
+              setNoticeArea("hero");
+              startTransition(async () => {
+                try {
+                  const result = await removeUploadedHomeHeroAction({ id: savedUploadId, expectedVersion: version });
+                  if (result.ok && result.version) {
+                    setVersion(result.version); setSavedUploadId(""); setReady(null); selectUpload(null); setHeroMode("random");
+                    setNotice("عکس بارگذاری‌شده از نمایش هوم حذف شد؛ نمایش به عکس‌های شفاف آماده برمی‌گردد.");
+                  } else setNotice(result.error ?? "حذف از نمایش انجام نشد.");
+                } catch { setNotice("ارتباط قطع شد؛ صفحه را تازه کنید."); }
+              });
+            }}>حذف عکس بارگذاری‌شده از نمایش هوم</button>}
+          </div>
+        )}
+        {selected && heroMode !== "upload" && (
           <label className="block space-y-2">
             <span>عکس محصول برای آماده‌سازی</span>
             <select
@@ -238,12 +307,12 @@ export function HomeAppearanceEditor({
         )}
         <div className="grid gap-4 sm:grid-cols-2">
           <figure>
-            <figcaption className="mb-2 text-sm">عکس اصلی</figcaption>
-            <div className="relative aspect-square overflow-hidden rounded-3xl bg-[#e9dfef]">
-              {source && (
+            <figcaption className="mb-2 text-sm">{heroMode === "upload" ? "عکس انتخاب‌شده روی زمینهٔ شطرنجی" : "عکس اصلی"}</figcaption>
+            <div className="eloria-upload-checker relative aspect-square overflow-hidden rounded-3xl bg-[#e9dfef]">
+              {(heroMode === "upload" ? previewUrl : source?.imageUrl) && (
                 <Image
                   unoptimized
-                  src={source.imageUrl}
+                  src={(heroMode === "upload" ? previewUrl : source?.imageUrl)!}
                   alt="عکس اصلی محصول"
                   fill
                   className="object-contain p-5"
@@ -256,26 +325,26 @@ export function HomeAppearanceEditor({
               پیش‌نمایش محصول شناور روی هوم
             </figcaption>
             <div className="relative aspect-square overflow-hidden rounded-3xl bg-[#47334f] bg-[radial-gradient(ellipse_at_center,#a38aad40,transparent)]">
-              {ready && (
+              {previewUrl && (
                 <FloatingProductImage
                   unoptimized
-                  src={source?.imageUrl ?? ready.imageUrl}
-                  cutoutSrc={ready.imageUrl}
+                  src={previewUrl}
+                  cutoutSrc={previewUrl}
                   alt={selected?.nameFa ?? "دستبند بدون زمینه"}
                   sizes="(max-width:640px) 100vw, 50vw"
                   scale={scale}
                   paused={previewPaused || busy}
                 />
               )}
-              {!ready && (
+              {!previewUrl && (
                 <p className="absolute inset-0 flex items-center justify-center p-6 text-center text-sm leading-8 text-white/85">
                   {preparing
                     ? "در حال حذف زمینه؛ لطفاً تا نمایش پیش‌نمایش صبر کنید…"
-                    : "یک عکس انتخاب کنید یا دکمهٔ «حذف زمینه و ساخت پیش‌نمایش» را بزنید."}
+                    : heroMode === "upload" ? "محصول را انتخاب کنید و عکس شفاف خودتان را بارگذاری کنید." : "یک عکس انتخاب کنید یا دکمهٔ «حذف زمینه و ساخت پیش‌نمایش» را بزنید."}
                 </p>
               )}
             </div>
-            {ready && (
+            {previewUrl && (
               <button
                 type="button"
                 className="eloria-action mt-3"
@@ -287,7 +356,7 @@ export function HomeAppearanceEditor({
             )}
           </figure>
         </div>
-        {source && (
+        {source && heroMode !== "upload" && (
           <button
             type="button"
             className="eloria-action"
@@ -324,7 +393,7 @@ export function HomeAppearanceEditor({
         </p>
         <button
           type="button"
-          disabled={heroMode === "selected" && !ready}
+          disabled={cannotSave}
           onClick={saveHero}
           className="eloria-action eloria-action-primary"
         >

@@ -343,7 +343,7 @@
   }
 
   .font-persian-calligraphy {
-    font-family: "Eloria Iran Nastaliq", "Vazirmatn Variable", Tahoma, serif;
+    font-family: var(--eloria-persian-display, "Eloria Iran Nastaliq"), "Vazirmatn Variable", Tahoma, sans-serif;
 
     font-weight: 400;
     letter-spacing: 0 !important;
@@ -1005,7 +1005,7 @@ body,[class~="min-h-screen"]{
   transform-origin:50% 55%;
 }
 .eloria-floating-product[data-paused="true"] .eloria-floating-motion { animation-play-state:paused; }
-.eloria-floating-product:not(:has(.is-cutout)) .eloria-floating-motion { animation:none; }
+.eloria-floating-product:not(:has(.eloria-transparent-hero)) .eloria-floating-motion { animation:none; }
 @keyframes eloria-jewel-drift {
   0%,100% { transform:translate(0,1px) rotate(-.6deg); }
   50% { transform:translate(2px,-4px) rotate(.6deg); }
@@ -1017,7 +1017,7 @@ body,[class~="min-h-screen"]{
 
 /* Use the site's actual Nastaliq on titles and nested links at every viewport. */
 html[lang="fa"] body :is(.font-persian-title,.font-persian-title *,.font-persian-calligraphy,.font-persian-calligraphy *,.eloria-hero-nastaliq,.eloria-hero-nastaliq *) {
-  font-family:"Eloria Iran Nastaliq","Vazirmatn Variable",serif!important;
+  font-family:var(--eloria-persian-display, "Eloria Iran Nastaliq"), "Vazirmatn Variable", Tahoma, sans-serif!important;
   font-weight:400!important; font-style:normal!important; letter-spacing:0!important; line-height:2!important;
 }
 @media (max-width:760px) {
@@ -1094,4 +1094,25 @@ html[lang="fa"] body :is(.font-persian-title,.font-persian-calligraphy,.eloria-h
     min-width:0; white-space:normal; overflow:visible; line-height:inherit;
   }
   :is(.eloria-action,.eloria-cta,.portal-cta,.quick-view-label) > svg { flex-shrink:0; }
+}
+
+/* One font choice governs Persian display text on phones and tablets. */
+:root { --eloria-persian-display:"Eloria Iran Nastaliq"; }
+@media(max-width:1023px) {
+  :root { --eloria-persian-display:"Vazirmatn Variable"; }
+  html[lang="fa"] body :is(.font-persian-title,.font-persian-calligraphy,.eloria-hero-nastaliq) {
+    font-weight:600!important; line-height:1.75!important; letter-spacing:0!important;
+  }
+}
+.eloria-transparent-hero {
+  object-fit:contain!important; object-position:center!important; padding:0!important;
+  border-radius:0!important; background:transparent!important; opacity:1!important;
+  filter:drop-shadow(0 16px 18px #160b2426)!important;
+}
+.eloria-hero-image-unavailable { width:100%; height:100%; display:grid; place-items:center; color:#dbc292; }
+.eloria-hero-image-unavailable span { font:28px Georgia,serif; letter-spacing:.25em; }
+.eloria-upload-checker {
+  background-color:#e7dce8;
+  background-image:conic-gradient(#c9bacd 25%,transparent 0 50%,#c9bacd 0 75%,transparent 0);
+  background-size:24px 24px;
 }

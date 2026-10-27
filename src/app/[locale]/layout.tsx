@@ -139,7 +139,7 @@ export default async function LocaleLayout({
       suppressHydrationWarning
     >
       <head>
-        {locale === "fa" && <link rel="preload" href="/fonts/IranNastaliq-Web.woff2" as="font" type="font/woff2" crossOrigin="anonymous" />}
+        {locale === "fa" && <link rel="preload" media="(min-width: 1024px)" href="/fonts/IranNastaliq-Web.woff2" as="font" type="font/woff2" crossOrigin="anonymous" />}
       </head>
       <body className="min-h-screen">
         <RoyalThemeDefinitions />
