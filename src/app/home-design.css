@@ -2613,7 +2613,7 @@ html[lang="fa"] body .eloria-home[dir="rtl"] :is(h1,h2,h3,h1 *,h2 *,h3 *) {
 }
 /* ELORIA HOME PALETTE END */
 
-/* ELORIA GLASS REPAIR V5 START */
+/* ELORIA MAIN ARCH V6 START */
 /* Restore original card and text layout: only the existing window is replaced. */
 .eloria-home .portal-grid .portal-window {
  --arch-art:url('/images/brand/eloria-glass-reference-v5.webp');
@@ -2684,4 +2684,51 @@ html[lang="fa"] body .eloria-home[dir="rtl"] :is(h1,h2,h3,h1 *,h2 *,h3 *) {
 .eloria-home .home-quick-dialog .button {color:#fae8bd;background:linear-gradient(130deg,#6a465d,#36364e);border:1px solid #d1ac70;border-radius:10px;box-shadow:inset 0 1px 0 #fff3;}
 .eloria-home .home-quick-dialog .close-dialog {color:#fae8bd;background:#30273feF;border:1px solid #d1ac7080;border-radius:50%;}
 
-/* ELORIA GLASS REPAIR V5 END */
+
+/* One architectural frame, not an arch inside another arch. */
+@media(min-width:761px) {
+ .eloria-home .portal-grid .portal {
+  position:relative;display:block;padding:0!important;width:100%;max-width:none;
+  aspect-ratio:210 / 340;min-height:0;background:transparent!important;
+  border:0!important;border-radius:0;box-shadow:none!important;backdrop-filter:none;
+  overflow:visible;transform:none;isolation:isolate;
+ }
+ .eloria-home .portal-grid .portal::before,.eloria-home .portal-grid .portal::after {content:none;}
+ .eloria-home .portal-grid .portal-window {
+  --arch-art:url('/images/brand/eloria-main-arch-v6.webp');
+  position:absolute;inset:0;width:100%;height:100%;max-width:none;aspect-ratio:auto;margin:0;
+  overflow:hidden;perspective:1000px;
+ }
+ .eloria-home .portal-grid .portal-preview {inset:11.5% 11% 39%;border-radius:50%;}
+ .eloria-home .portal-grid .portal-window .door {
+  mask-image:radial-gradient(ellipse 39% 25% at 50% 36.5%,#000 99%,transparent 100%);
+  -webkit-mask-image:radial-gradient(ellipse 39% 25% at 50% 36.5%,#000 99%,transparent 100%);
+ }
+ .eloria-home .portal-grid .portal-content {
+  position:absolute;inset:63% 12% 4%;width:auto;min-width:0;
+  display:flex;flex-direction:column;justify-content:center;text-align:center;gap:5px;z-index:5;
+ }
+ .eloria-home .portal-grid .portal-content h3 {margin:0;padding:0;color:#f4d9a2;font-size:clamp(22px,2.5vw,36px);line-height:1.7;}
+ .eloria-home .portal-grid .portal-content p {margin:0;color:#e2d4e4;}
+ .eloria-home .portal-grid .portal-kicker {color:#e1c38c;}
+ .eloria-home .portal-grid .portal-cta {margin-top:5px;min-height:44px;padding:8px!important;justify-content:center;color:#f3d8a2;background:#443047b3!important;border:1px solid #d0ab70!important;}
+}
+/* Each half turns about its outer hinge; no sideways sliding of the glass. */
+.eloria-home .portal-grid .portal-window {perspective:1000px;}
+.eloria-home .portal-grid .portal-window .door {backface-visibility:hidden;transition:transform .5s ease;transform:rotateY(0);}
+.eloria-home .portal-grid .door-left {transform-origin:11% 50%;}
+.eloria-home .portal-grid .door-right {transform-origin:89% 50%;}
+.eloria-home .portal-grid .portal:is(:hover,:focus-visible,:active) .door-left {transform:rotateY(-82deg);opacity:1;}
+.eloria-home .portal-grid .portal:is(:hover,:focus-visible,:active) .door-right {transform:rotateY(82deg);opacity:1;}
+@media(max-width:760px) {
+ .eloria-home .portal-grid .portal {grid-template-columns:minmax(125px,43%) minmax(0,1fr);gap:12px;padding:12px!important;min-height:0;}
+ .eloria-home .portal-grid .portal-window {width:100%;height:auto;aspect-ratio:210 / 260;}
+ .eloria-home .portal-grid .portal-content {min-width:0;}
+ .eloria-home .portal-grid .portal-content h3 {overflow-wrap:normal;}
+}
+@media(max-width:370px) {
+ .eloria-home .portal-grid .portal {grid-template-columns:minmax(110px,42%) minmax(0,1fr);gap:8px;padding:10px!important;}
+ .eloria-home .portal-grid .portal-window {width:100%;height:auto;}
+}
+
+/* ELORIA MAIN ARCH V6 END */

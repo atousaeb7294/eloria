@@ -349,7 +349,7 @@ export function EloriaHome({
                   <div className="portal-preview" aria-hidden="true">
                     {design.pieces
                       .filter((p) => p.group === t.key)
-                      .slice(0, 3)
+                      .slice(0, 1)
                       .map((p) => (
                         <div className="portal-image" key={p.id}>
                           <CircularProductImage
@@ -357,7 +357,7 @@ export function EloriaHome({
                             cutoutSrc={p.cutoutUrl}
                             imageId={p.imageId}
                             alt=""
-                            sizes="(max-width:760px) 25vw, 140px"
+                            sizes="(max-width:760px) 40vw, 32vw"
                           />
                         </div>
                       ))}
