@@ -2613,76 +2613,57 @@ html[lang="fa"] body .eloria-home[dir="rtl"] :is(h1,h2,h3,h1 *,h2 *,h3 *) {
 }
 /* ELORIA HOME PALETTE END */
 
-/* ELORIA GLASS ARCHES V4 START */
-/* Scoped exclusively to treasury links and the quick-view modal. */
-.eloria-home .portal-grid .portal {
-  --tone:#e4c28a; position:relative; display:flex; flex-direction:column;
-  gap:0; padding:18px 18px 22px; border:1px solid #d5ae6b;
-  border-radius:50% 50% 5px 5px / 34% 34% 5px 5px;
-  background:linear-gradient(140deg,#564351b3,#292c40d9 65%,#352b3ed9);
-  box-shadow:inset 0 0 0 4px #201a2c,inset 0 0 0 5px #b893577d,0 12px 28px #080c1829;
-  color:#f4e8d5; transform:none; overflow:hidden; isolation:isolate;
-}
-.eloria-home .portal-grid .portal::before {
-  content:""; position:absolute; inset:9px; border:1px solid #dfbc7c70;
-  border-radius:inherit; pointer-events:none;
-}
+/* ELORIA GLASS REPAIR V5 START */
+/* Restore original card and text layout: only the existing window is replaced. */
 .eloria-home .portal-grid .portal-window {
-  position:relative; flex:none; width:100%; height:auto; aspect-ratio:1;
-  margin:0 0 14px; overflow:hidden; border-radius:50%;
-  border:1px solid #ebce92; perspective:800px; isolation:isolate;
-  background:radial-gradient(ellipse at 50% 55%,#81633e80,#1c2032 75%);
-  box-shadow:0 0 0 4px #261f32,0 0 0 5px #be965d80,inset 0 0 28px #d2ab4c24;
+ --arch-art:url('/images/brand/eloria-glass-reference-v5.webp');
+ position:relative;isolation:isolate;aspect-ratio:210 / 260;
+ height:auto;width:100%;max-width:280px;margin:0 auto 16px;
+ border:0;border-radius:0;box-shadow:none;overflow:hidden;
+ background:var(--arch-art) center / 100% 100% no-repeat;
+ perspective:none;
 }
-.eloria-home .portal-grid .portal-window::after {
- content:"";position:absolute;inset:4px;border:1px solid #e4c48b70;border-radius:50%;z-index:5;pointer-events:none;
+.eloria-home .portal-grid .portal-window::after {content:none;}
+.eloria-home .portal-grid .portal-halo {display:none;}
+.eloria-home .portal-grid .portal-preview {
+ position:absolute;inset:16% 8% 17%;border-radius:50%;overflow:hidden;
+ display:flex;align-items:center;justify-content:center;gap:0;z-index:2;
+ background:radial-gradient(ellipse at 50% 5%,#edbb7180,#5d402a90 38%,#251d30 88%);
+ box-shadow:inset 0 3px 15px #f3cd7540;opacity:1;transform:none;
 }
-.eloria-home .portal-grid .portal-preview {inset:9%;display:flex;align-items:center;justify-content:center;gap:0;opacity:1;transform:none;}
-.eloria-home .portal-grid .portal-preview .portal-image {width:100%;height:100%;aspect-ratio:1;border:0;border-radius:0;background:none;box-shadow:none;transform:none;}
+.eloria-home .portal-grid .portal-preview .portal-image {
+ width:100%;height:100%;border:0;border-radius:0;box-shadow:none;transform:none;aspect-ratio:auto;
+}
 .eloria-home .portal-grid .portal-preview .portal-image:not(:first-child) {display:none;}
-.eloria-home .portal-grid .portal-preview img {width:100%;height:100%;object-fit:contain;border:0;border-radius:0;transform:none;}
+.eloria-home .portal-grid .portal-preview img {object-fit:contain;transform:none;border:0;width:100%;height:100%;}
 .eloria-home .portal-grid .portal-window .door {
- position:absolute;top:0;bottom:0;width:calc(50% + 1px);z-index:3;
- border:0;border-radius:0;opacity:1;transform:translateX(0);
- background:linear-gradient(125deg,#c2a9b782,#655669c7 52%,#3c3c53c4);
- backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);
+ position:absolute;inset:0;width:100%;height:100%;border:0;border-radius:0;
+ background:var(--arch-art) center / 100% 100% no-repeat;z-index:3;
+ opacity:1;transform:translateX(0);backdrop-filter:none;-webkit-backdrop-filter:none;
+ mask-image:radial-gradient(ellipse 42% 33.5% at 50% 49.5%,#000 99%,transparent 100%);
+ -webkit-mask-image:radial-gradient(ellipse 42% 33.5% at 50% 49.5%,#000 99%,transparent 100%);
  transition:transform .48s ease;pointer-events:none;
 }
-.eloria-home .portal-grid .door-left {left:0;right:auto;border-right:1px solid #efcf91!important;}
-.eloria-home .portal-grid .door-right {right:0;left:auto;border-left:1px solid #efcf91!important;}
-.eloria-home .portal-grid .door::after {
- content:"";display:block;position:absolute;inset:5%;border:0;border-radius:0;
- background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 200' fill='none'%3E%3Cg stroke='%23d2ad76' stroke-width='1.2'%3E%3Cpath d='M60 190C10 150 13 86 53 20M32 151Q5 140 9 119Q35 123 32 151ZM24 119Q44 105 52 82Q24 85 24 119ZM27 87Q8 71 21 52Q40 66 27 87ZM40 52Q60 46 68 25Q43 29 40 52ZM49 29Q33 16 46 5Q59 16 49 29ZM44 174Q66 158 64 143Q43 148 44 174Z'/%3E%3Cpath opacity='.6' d='M68 190C38 161 49 126 80 104M56 150Q76 141 79 124Q59 127 56 150ZM68 121Q55 106 65 93Q80 105 68 121Z'/%3E%3C/g%3E%3C/svg%3E");
- background-size:100% 100%;background-repeat:no-repeat;opacity:.85;
-}
-.eloria-home .portal-grid .door-right::after {transform:scaleX(-1);}
-.eloria-home .portal-grid :is(.portal-glyph,.portal-index) {display:none;}
-.eloria-home .portal-grid .portal-seal-mark {
- display:grid;place-items:center;position:absolute;z-index:4;left:50%;top:50%;
- width:25%;height:25%;padding:6%;border-radius:50%;border:1px solid #e8c68a;
- color:#f1cf8e;background:linear-gradient(145deg,#716073e8,#3d344be8);
- box-shadow:0 0 0 3px #dac18b18;transform:translate(-50%,-50%);pointer-events:none;transition:opacity .22s;
-}
-.eloria-home .portal-grid .portal-seal-mark svg {width:100%;height:100%;}
-.eloria-home .portal-grid .portal-content {position:relative;text-align:center;width:100%;}
-.eloria-home .portal-grid .portal-content h3 {color:#f0d39c;}
-.eloria-home .portal-grid .portal-content :is(p,.portal-kicker) {color:#e0d0dd;}
-.eloria-home .portal-grid .portal-cta {color:#f0d49e;background:#342d4199;border-color:#c6a36888;justify-content:center;}
-.eloria-home .portal-grid .portal:is(:hover,:focus-visible,:active) .door-left {transform:translateX(-102%);opacity:1;}
-.eloria-home .portal-grid .portal:is(:hover,:focus-visible,:active) .door-right {transform:translateX(102%);opacity:1;}
-.eloria-home .portal-grid .portal:is(:hover,:focus-visible,:active) .portal-seal-mark {opacity:0;}
+.eloria-home .portal-grid .door-left {clip-path:polygon(0 0,50.2% 0,50.2% 100%,0 100%);}
+.eloria-home .portal-grid .door-right {clip-path:polygon(49.8% 0,100% 0,100% 100%,49.8% 100%);}
+.eloria-home .portal-grid .portal-window .door::before,
+.eloria-home .portal-grid .portal-window .door::after {content:none;display:none;}
+.eloria-home .portal-grid :is(.portal-seal-mark,.portal-glyph,.portal-index) {display:none;}
+.eloria-home .portal-grid .portal:is(:hover,:focus-visible,:active) .door-left {transform:translateX(-85%);opacity:1;}
+.eloria-home .portal-grid .portal:is(:hover,:focus-visible,:active) .door-right {transform:translateX(85%);opacity:1;}
 @media(max-width:760px) {
- .eloria-home .portal-grid .portal {width:100%;max-width:320px;margin-inline:auto;padding:18px 18px 20px;grid-template-columns:none;}
+ /* Keep the original three horizontal cards, descriptions and links. */
+ .eloria-home .portal-grid .portal {display:grid;grid-template-columns:105px minmax(0,1fr);align-items:center;}
+ .eloria-home .portal-grid .portal-window {width:105px;height:130px;max-width:none;margin:0;aspect-ratio:210 / 260;}
+ .eloria-home .portal-grid .portal-content {min-width:0;}
 }
-/* Touch devices get one gentle reveal, without intercepting links or delaying navigation. */
-@media(hover:none) and (prefers-reduced-motion:no-preference) {
- .eloria-home .portal-grid .door-left {animation:eloriaGlassLeft 5s ease 1s 1;}
- .eloria-home .portal-grid .door-right {animation:eloriaGlassRight 5s ease 1s 1;}
- .eloria-home .portal-grid .portal-seal-mark {animation:eloriaGlassSeal 5s ease 1s 1;}
+@media(max-width:370px) {
+ .eloria-home .portal-grid .portal {grid-template-columns:90px minmax(0,1fr);gap:15px;}
+ .eloria-home .portal-grid .portal-window {width:90px;height:112px;}
 }
-@keyframes eloriaGlassLeft {0%,100%{transform:translateX(0)}25%,75%{transform:translateX(-102%)}}
-@keyframes eloriaGlassRight {0%,100%{transform:translateX(0)}25%,75%{transform:translateX(102%)}}
-@keyframes eloriaGlassSeal {0%,100%{opacity:1}20%,80%{opacity:0}}
+@media(prefers-reduced-motion:reduce) {
+ .eloria-home .portal-grid .portal-window .door {transition:none!important;animation:none!important;}
+}
 .eloria-home dialog.home-quick-dialog {
  color:#f8eddd;background:linear-gradient(135deg,#4d344beF,#252c43f5 65%,#35283ff5);
  border:1px solid #d7b77c;border-radius:20px;
@@ -2702,63 +2683,5 @@ html[lang="fa"] body .eloria-home[dir="rtl"] :is(h1,h2,h3,h1 *,h2 *,h3 *) {
 .eloria-home .home-quick-dialog .home-price {color:#f5dda4;}
 .eloria-home .home-quick-dialog .button {color:#fae8bd;background:linear-gradient(130deg,#6a465d,#36364e);border:1px solid #d1ac70;border-radius:10px;box-shadow:inset 0 1px 0 #fff3;}
 .eloria-home .home-quick-dialog .close-dialog {color:#fae8bd;background:#30273feF;border:1px solid #d1ac7080;border-radius:50%;}
-@media(prefers-reduced-motion:reduce) {
- .eloria-home .portal-grid :is(.door,.portal-seal-mark) {animation:none!important;transition:none!important;}
-}
 
-/* Reference-shaped pointed arch: same geometry on touch and desktop. */
-.eloria-home .portal-grid .portal {
- display:block;position:relative;box-sizing:border-box;aspect-ratio:210 / 260;
- width:100%;height:auto;min-height:0;max-width:340px;margin-inline:auto;
- padding:0;border:0;border-radius:0;overflow:visible;box-shadow:none;
- background: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20210%20260%22%20fill%3D%22none%22%3E%0A%3Cdefs%3E%3ClinearGradient%20id%3D%22g%22%20x2%3D%22.7%22%20y2%3D%221%22%3E%3Cstop%20stop-color%3D%22%23f0d198%22%2F%3E%3Cstop%20offset%3D%22.4%22%20stop-color%3D%22%23a77b43%22%2F%3E%3Cstop%20offset%3D%22.7%22%20stop-color%3D%22%23f0cd86%22%2F%3E%3Cstop%20offset%3D%221%22%20stop-color%3D%22%23bb945a%22%2F%3E%3C%2FlinearGradient%3E%3ClinearGradient%20id%3D%22b%22%20x2%3D%22.8%22%20y2%3D%221%22%3E%3Cstop%20stop-color%3D%22%23765c70%22%20stop-opacity%3D%22.42%22%2F%3E%3Cstop%20offset%3D%22.5%22%20stop-color%3D%22%2326283a%22%20stop-opacity%3D%22.78%22%2F%3E%3Cstop%20offset%3D%221%22%20stop-color%3D%22%2336283c%22%20stop-opacity%3D%22.86%22%2F%3E%3C%2FlinearGradient%3E%0A%3Cg%20id%3D%22sprig%22%20stroke%3D%22%23c3a073%22%20stroke-width%3D%22.6%22%3E%3Cpath%20d%3D%22M0%200C14-4%2017-19%2014-39M8-7Q-1-11%201-18Q10-18%208-7ZM14-18Q23-22%2023-30Q14-29%2014-18ZM14-30Q6-34%2010-42Q17-38%2014-30Z%22%2F%3E%3Cpath%20d%3D%22M0%200Q18%202%2029-7M14-1Q20-11%2027-13Q28-3%2014-1ZM26-6Q36-5%2039-13Q32-16%2026-6Z%22%2F%3E%3C%2Fg%3E%3C%2Fdefs%3E%0A%3Cpath%20d%3D%22M5%20256V128C5%2067%2054%2029%20105%208C156%2029%20205%2067%20205%20128V256Z%22%20fill%3D%22url%28%23b%29%22%20stroke%3D%22url%28%23g%29%22%20stroke-width%3D%221.6%22%2F%3E%0A%3Cpath%20d%3D%22M9%20253V128C9%2070%2055%2034%20105%2013C155%2034%20201%2070%20201%20128V253Z%22%20stroke%3D%22url%28%23g%29%22%20stroke-width%3D%22.6%22%2F%3E%0A%3Cpath%20d%3D%22M14%20250V129C14%2076%2058%2039%20105%2020C152%2039%20196%2076%20196%20129V250Z%22%20stroke%3D%22url%28%23g%29%22%20stroke-width%3D%221%22%2F%3E%0A%3Cpath%20d%3D%22M17%20247V130C17%2079%2059%2043%20105%2024C151%2043%20193%2079%20193%20130V247%22%20stroke%3D%22%23e8c58a%22%20stroke-opacity%3D%22.45%22%20stroke-width%3D%22.45%22%2F%3E%0A%3Cg%20stroke%3D%22%23e8c58a%22%20stroke-width%3D%22.65%22%20fill%3D%22%233f3042%22%3E%3Cpath%20d%3D%22M105%2031C101%2025%2092%2022%2091%2016C97%2015%20101%2018%20105%2023C109%2018%20113%2015%20119%2016C118%2022%20109%2025%20105%2031Z%22%2F%3E%3Cpath%20d%3D%22M105%2025C92%2019%2095%2010%20100%209L105%203L110%209C115%2010%20118%2019%20105%2025Z%22%2F%3E%3Cpath%20d%3D%22M105%2024Q98%2015%20105%207Q112%2015%20105%2024ZM105%2026Q86%2021%2087%2013Q95%2011%20100%2020M105%2026Q124%2021%20123%2013Q115%2011%20110%2020%22%2F%3E%3Cpath%20d%3D%22M93%2029Q105%2036%20117%2029M97%2033Q105%2038%20113%2033%22%20fill%3D%22none%22%2F%3E%3C%2Fg%3E%0A%3Cuse%20href%3D%22%23sprig%22%20transform%3D%22translate%2820%20245%29%22%2F%3E%3Cuse%20href%3D%22%23sprig%22%20transform%3D%22translate%28190%20245%29%20scale%28-1%201%29%22%2F%3E%0A%3Cpath%20d%3D%22M20%20246H68M142%20246H190%22%20stroke%3D%22%23b59059%22%20stroke-width%3D%22.6%22%2F%3E%0A%3C%2Fsvg%3E") center / 100% 100% no-repeat;
-}
-.eloria-home .portal-grid .portal::before {content:none;}
-.eloria-home .portal-grid .portal-window {
- position:absolute;left:8%;top:16%;width:84%;height:auto;aspect-ratio:1;
- margin:0;border:1px solid #e2be7b;border-radius:50%;
- box-shadow:0 0 0 2px #302638,0 0 0 3px #e2be7b55;
-}
-.eloria-home .portal-grid .portal-content {position:absolute;inset:auto 10% 8%;width:80%;}
-.eloria-home .portal-grid .portal-content h3 {
- font-size:clamp(18px,2.1vw,27px);line-height:1.55;margin:0;padding:0;color:#f3d995;
-}
-.eloria-home .portal-grid .portal-content :is(.portal-kicker,p,.portal-cta) {display:none;}
-.eloria-home .portal-grid .portal-window .door {
- background:radial-gradient(ellipse at 60% 20%,#d9c3bc80,transparent 55%),linear-gradient(125deg,#a58c9bd6,#605269dd 60%,#3b354bdd);
-}
-.eloria-home .portal-grid .portal-window .door::after {opacity:.9;filter:drop-shadow(0 1px 0 #e2c39340);}
-.eloria-home .portal-grid .portal-seal-mark {width:29%;height:29%;padding:5%;background:#68536bbf;}
-.eloria-home .portal-grid .portal:is(:hover,:focus-visible,:active) .door-left {transform:rotateY(-82deg);}
-.eloria-home .portal-grid .portal:is(:hover,:focus-visible,:active) .door-right {transform:rotateY(82deg);}
-.eloria-home .portal-grid .portal:focus-visible {outline:2px solid #edcb8c;outline-offset:6px;}
-@media(max-width:760px) {
- .eloria-home .portal-grid .portal {max-width:290px;padding:0;}
- .eloria-home .portal-grid .portal-content h3 {font-size:22px;}
-}
-@keyframes eloriaGlassLeft {0%,100%{transform:rotateY(0)}25%,75%{transform:rotateY(-82deg)}}
-@keyframes eloriaGlassRight {0%,100%{transform:rotateY(0)}25%,75%{transform:rotateY(82deg)}}
-
-
-/* Warm architectural light, scoped to each treasury. No full-page overlay. */
-.eloria-home .portal-grid .portal::before {
- content:"";position:absolute;inset:9% 15% auto;height:20%;border:0;border-radius:50%;
- background:radial-gradient(ellipse at 50% 12%,#fff1c9b3 0%,#e5b76742 12%,#d8a75614 32%,transparent 66%);
- pointer-events:none;z-index:6;mix-blend-mode:screen;
-}
-.eloria-home .portal-grid .portal::after {
- content:"";position:absolute;left:5%;right:5%;bottom:0;height:2px;pointer-events:none;
- background:linear-gradient(90deg,transparent,#e4b76a99 18%,#ffe4a6cf 50%,#e4b76a99 82%,transparent);
- box-shadow:0 2px 10px #d8a6534d,0 5px 17px #d8a65324;
-}
-.eloria-home .portal-grid .portal-window {
- background:radial-gradient(ellipse at 50% 4%,#ffdf9499 0%,#a9763040 25%,transparent 55%),radial-gradient(ellipse at 50% 75%,#9a632a70,#211d2b 76%);
- box-shadow:0 0 0 2px #302638,0 0 0 3px #e2be7b66,inset 0 6px 22px #e8ba6140;
-}
-.eloria-home .portal-grid .portal-window .door::before {
- content:"";position:absolute;inset:0;pointer-events:none;
- background:linear-gradient(118deg,transparent 9%,#ffecd11f 24%,transparent 43%,#f4dfa80d 70%,transparent 80%);
-}
-.eloria-home .portal-grid .portal-seal-mark {box-shadow:0 0 0 3px #dac18b18,0 0 14px #d4a65824,inset 0 1px 5px #f3d79524;}
-
-/* ELORIA GLASS ARCHES V4 END */
+/* ELORIA GLASS REPAIR V5 END */

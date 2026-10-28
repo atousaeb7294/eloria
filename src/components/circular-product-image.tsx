@@ -33,7 +33,7 @@ function CircularImage({ src, imageId, cutoutSrc, alt, sizes, priority = false, 
           <Image
             src={cutout ? prepared! : originalFailed ? "/images/brand/eloria-logo.webp" : src}
             alt={originalFailed && !cutout ? `${alt} — تصویر در دسترس نیست` : alt}
-            fill sizes={sizes} quality={88} preload={priority} unoptimized={unoptimized}
+            fill sizes={sizes} quality={75} preload={priority} unoptimized={unoptimized}
             onError={() => cutout ? setFailed(true) : setOriginalFailed(true)}
           />
       </div>
