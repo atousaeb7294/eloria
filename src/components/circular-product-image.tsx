@@ -1,6 +1,6 @@
 "use client";
 
-import Image from "next/image";
+import { ProductImage as Image } from "@/components/product-image";
 import { useEffect, useRef, useState } from "react";
 import { observeCutout } from "@/lib/cutout-client";
 

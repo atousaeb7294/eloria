@@ -1,5 +1,5 @@
 import { productMaterialKind, productMaterialLabel } from "@/lib/product-material";
-import Image from "next/image";
+import { ProductImage as Image } from "@/components/product-image";
 import { TreasuryLink as Link } from "@/components/treasury-transition";
 
 import {
@@ -86,7 +86,7 @@ export function CatalogProductCard({
     <InteractiveTiltCard className="group rounded-[1.75rem] sm:rounded-[2rem]">
       <article
         className={[
-          "eloria-glass-panel relative overflow-hidden rounded-[1.75rem] border bg-[linear-gradient(145deg,rgba(17,22,56,0.97),rgba(8,13,40,0.99))] p-3 shadow-[0_26px_70px_rgba(0,0,0,0.38)] transition-[border-color,box-shadow] duration-500 sm:rounded-[2rem]",
+          "eloria-glass-panel eloria-catalog-card relative overflow-hidden rounded-[1.75rem] border bg-[linear-gradient(145deg,rgba(17,22,56,0.97),rgba(8,13,40,0.99))] p-3 shadow-[0_26px_70px_rgba(0,0,0,0.38)] transition-[border-color,box-shadow] duration-500 sm:rounded-[2rem]",
         isGold
           ? "border-[#d8b860]/22 hover:border-[#e8cc78]/55 hover:shadow-[0_34px_95px_rgba(0,0,0,0.5),0_0_34px_rgba(216,184,96,0.1)]"
           : "border-[#c5d2d7]/20 hover:border-[#dbe5e8]/45 hover:shadow-[0_34px_95px_rgba(0,0,0,0.5),0_0_34px_rgba(210,225,230,0.08)]",
@@ -107,7 +107,7 @@ export function CatalogProductCard({
             ? `مشاهده ${productName}`
             : `View ${productName}`
         }
-        className="relative block aspect-[4/5] overflow-hidden rounded-[1.4rem] border border-white/[0.06] bg-[#0a0f2d] sm:rounded-[1.65rem]"
+        className="eloria-catalog-photo relative block aspect-[4/5] overflow-hidden rounded-[1.4rem] border border-white/[0.06] bg-[#0a0f2d] sm:rounded-[1.65rem]"
       >
         <Image
           src={imageUrl}

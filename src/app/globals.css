@@ -1144,3 +1144,26 @@ html[lang="fa"] body :is(.font-persian-title,.font-persian-calligraphy,.eloria-h
  .eloria-glass-storefront :is(.eloria-glass-panel,.eloria-salon-purchase-card,.eloria-quick-dialog,.eloria-live-purchase){background:#33394f!important;}
 }
 /* ELORIA PALETTE END */
+
+/* ELORIA POLISH V7 START */
+/* Shared catalog frames: same footprint despite portrait/landscape source files. */
+.eloria-glass-storefront .eloria-catalog-card {height:100%;display:flex;flex-direction:column;}
+.eloria-glass-storefront .eloria-catalog-photo {aspect-ratio:1!important;flex:none;}
+.eloria-glass-storefront .eloria-catalog-photo img {object-fit:cover!important;object-position:center!important;padding:0!important;}
+.eloria-glass-storefront .eloria-catalog-card h2 {height:3.2em;line-height:1.6;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;}
+.eloria-glass-storefront .eloria-quick-dialog {
+ border:1px solid #c9a972;background:linear-gradient(135deg,#51334ceF,#252e44f5);
+ box-shadow:inset 0 0 0 5px #f4d9980a,0 24px 70px #080e2055;color:#f4eadb;
+}
+.eloria-glass-storefront .eloria-quick-content {padding:clamp(20px,3vw,36px);}
+.eloria-glass-storefront .eloria-quick-content>h2 {border-bottom:1px solid #d2b77b55;padding-bottom:16px;color:#f3d8a3;}
+@media(min-width:761px) {
+ html[lang="fa"] body .eloria-glass-storefront .eloria-quick-content h2 {
+  font-family:var(--eloria-persian-display,"Eloria Iran Nastaliq"),"Vazirmatn Variable",Tahoma,sans-serif!important;
+  font-weight:400!important;font-size:34px;line-height:1.9;
+ }
+}
+@media(max-width:760px) {
+ .eloria-glass-storefront .eloria-catalog-card {backdrop-filter:none;}
+}
+/* ELORIA POLISH V7 END */

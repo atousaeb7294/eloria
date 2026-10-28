@@ -2613,7 +2613,7 @@ html[lang="fa"] body .eloria-home[dir="rtl"] :is(h1,h2,h3,h1 *,h2 *,h3 *) {
 }
 /* ELORIA HOME PALETTE END */
 
-/* ELORIA MAIN ARCH V6 START */
+/* ELORIA POLISH V7 HOME START */
 /* Restore original card and text layout: only the existing window is replaced. */
 .eloria-home .portal-grid .portal-window {
  --arch-art:url('/images/brand/eloria-glass-reference-v5.webp');
@@ -2731,4 +2731,62 @@ html[lang="fa"] body .eloria-home[dir="rtl"] :is(h1,h2,h3,h1 *,h2 *,h3 *) {
  .eloria-home .portal-grid .portal-window {width:100%;height:auto;}
 }
 
-/* ELORIA MAIN ARCH V6 END */
+/* Distinct light, shared material. Overlay is static and does not recolor the gold frame. */
+.eloria-home .portal-grid .portal.gold {--treasury-light:238,186,94;}
+.eloria-home .portal-grid .portal.silver {--treasury-light:173,215,242;}
+.eloria-home .portal-grid .portal.weave {--treasury-light:211,139,184;}
+.eloria-home .portal-grid .portal-window::after {
+ content:"";display:block;position:absolute;inset:11% 10% 38%;border:0;border-radius:50%;z-index:4;pointer-events:none;
+ background:radial-gradient(ellipse at 50% 8%,rgba(var(--treasury-light),.36),rgba(var(--treasury-light),.10) 35%,transparent 72%);
+ mix-blend-mode:screen;
+}
+.eloria-home .portal-grid .portal-preview {background:radial-gradient(ellipse at 50% 10%,rgba(var(--treasury-light),.35),#292132 82%);}
+@media(min-width:761px) {
+ .eloria-home .portal-grid .portal {aspect-ratio:auto;min-height:0;padding:0 0 18px!important;}
+ .eloria-home .portal-grid .portal-window {position:relative;inset:auto;height:auto;aspect-ratio:210 / 340;}
+ /* Content takes real layout space; it can grow without colliding with a fixed-height panel. */
+ .eloria-home .portal-grid .portal-content {
+  position:relative;inset:auto;width:74%;margin:-58% auto 0;min-height:0;
+  display:grid;grid-template-columns:minmax(0,1fr);gap:7px;justify-items:center;
+ }
+ .eloria-home .portal-grid .portal-content h3 {font-size:clamp(24px,2.5vw,36px);line-height:1.7;margin:0;padding:0;}
+ .eloria-home .portal-grid .portal-content p {font-size:11px;line-height:1.8;margin:0;text-align:center;}
+ .eloria-home .portal-grid .portal-cta {
+  width:100%;max-width:230px;box-sizing:border-box;min-height:44px;height:auto;
+  font-size:12px;line-height:1.7;padding:9px 12px!important;margin:3px 0 0;white-space:normal;
+ }
+ .eloria-home .portal-grid .portal-kicker {font-size:9px;line-height:1.6;}
+}
+@media(max-width:760px) {.eloria-home .portal-grid .portal-window::after {inset:16% 8% 17%;}}
+.eloria-home dialog.home-quick-dialog {padding:18px;max-width:940px;border-radius:22px;}
+.eloria-home .home-quick-dialog .dialog-layout {gap:22px;grid-template-columns:minmax(0,1fr) minmax(0,1fr);align-items:center;}
+.eloria-home .home-quick-dialog .dialog-photo {min-height:0;aspect-ratio:1;position:relative;width:100%;box-shadow:inset 0 0 0 5px #dfc58c17,0 10px 24px #10142133;}
+.eloria-home .home-quick-dialog .dialog-copy {padding:24px 10px;gap:14px;min-width:0;}
+.eloria-home .home-quick-dialog .dialog-copy h2 {margin:0;padding:8px 0 14px;width:100%;border-bottom:1px solid #c9aa7055;}
+.eloria-home .home-quick-dialog .home-price {width:100%;padding:14px 16px;border:1px solid #c6a96c44;border-radius:12px;background:#d7b1740b;}
+.eloria-home .home-quick-dialog .dialog-copy :is(p,small) {margin:0;}
+.eloria-home .home-quick-dialog .dialog-copy .button {width:100%;min-height:46px;margin:0;justify-content:center;}
+@media(min-width:761px) {
+ html[lang="fa"] body .eloria-home .home-quick-dialog .dialog-copy h2 {
+  font-family:var(--eloria-persian-display,"Eloria Iran Nastaliq"),"Vazirmatn Variable",Tahoma,sans-serif!important;
+  font-weight:400!important;font-size:38px;line-height:1.9;letter-spacing:0;
+ }
+}
+@media(max-width:760px) {
+ .eloria-home dialog.home-quick-dialog {padding:16px;}
+ .eloria-home .home-quick-dialog .dialog-layout {display:flex;flex-direction:column;gap:12px;}
+ .eloria-home .home-quick-dialog .dialog-photo {max-height:40svh;}
+ .eloria-home .home-quick-dialog .dialog-copy {padding:8px 0;width:100%;gap:10px;}
+ .eloria-home .home-quick-dialog .dialog-copy h2 {font-size:23px;line-height:1.7;}
+}
+@media(min-width:761px) and (max-width:1100px) {
+ .eloria-home .portal-grid .portal-content {width:78%;margin-top:-64%;gap:3px;}
+ .eloria-home .portal-grid .portal-content h3 {font-size:23px;line-height:1.55;}
+ .eloria-home .portal-grid .portal-content p {font-size:10px;line-height:1.6;}
+ .eloria-home .portal-grid .portal-cta {font-size:11px;padding:6px 8px!important;margin-top:1px;}
+}
+
+@media(min-width:761px) {
+ html[lang="fa"] body .eloria-home[dir="rtl"] .portal-grid .portal-content h3 {line-height:1.65!important;}
+}
+/* ELORIA POLISH V7 HOME END */

@@ -1,6 +1,7 @@
 "use client";
 
 import { getImageProps } from "next/image";
+import {isLocalProductImage,productImageLoader} from "@/lib/product-image-variants";
 import { useEffect, useRef, useState } from "react";
 import { ProductImage } from "@/components/product-image";
 
@@ -39,6 +40,7 @@ export function PreparedGalleryImage({
 
       const { props } = getImageProps({
         src: item.imageUrl,
+        loader: isLocalProductImage(item.imageUrl) ? productImageLoader : undefined,
         alt: item.alt,
         fill: true,
         sizes
