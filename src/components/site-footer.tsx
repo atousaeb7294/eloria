@@ -330,7 +330,7 @@ export function SiteFooter({ locale }: SiteFooterProps) {
           <EnamadSeal />
         </div>
         <div className="flex flex-col items-center justify-between gap-4 pt-6 text-center text-xs text-[#c8b993]/52 sm:flex-row sm:text-start">
-          <p>{copy.rights}</p>
+          <div className="space-y-2"><p>{copy.rights}</p><p>{locale === "fa" ? "منبع نرخ فلزات: " : "Metal rate sources: "}<a href="https://nerkh.jahankhahan.shop/" target="_blank" rel="noopener noreferrer" className="underline underline-offset-4">{locale === "fa" ? "نرخ‌سنج" : "Nerkhsanj"}</a>{" · "}<a href="https://gold-api.com/" target="_blank" rel="noopener noreferrer" className="underline underline-offset-4">Gold-API</a></p></div>
 
           <div className="flex flex-wrap items-center justify-center gap-5 sm:justify-end">
             <MeasurementPreferencesButton locale={locale} />

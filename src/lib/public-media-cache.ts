@@ -5,6 +5,12 @@ let flight = createSingleFlight(8);
 let generation = 0;
 const MAX_BYTES = 16 * 1024 * 1024;
 let retainedBytes = 0;
+export function peekPublicMedia(id: string): Asset | null {
+  const hit = cache.get(id);
+  if (!hit) return null;
+  if (hit.until <= Date.now()) { retainedBytes -= hit.asset.bytes.byteLength; cache.delete(id); return null; }
+  return hit.asset;
+}
 export function invalidatePublicMedia() {
   generation++;
   cache.clear();

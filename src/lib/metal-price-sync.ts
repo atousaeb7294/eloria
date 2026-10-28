@@ -1,3 +1,4 @@
+import { fetchPublicMetalRates } from "@/lib/public-metal-market";
 import { silverComparableBaseline } from "@/lib/commerce-policy";
 import {
   createHash,
@@ -8,7 +9,6 @@ import type {
 } from "@/generated/prisma/client";
 
 import {
-  fetchBrsMetalRates,
   type FetchedMetalRate,
 } from "@/lib/brs-market";
 
@@ -88,7 +88,7 @@ const MAXIMUM_CONCURRENT_WRITE_ATTEMPTS =
 
 /**
  * The bundled test seed is intentionally far from a real market rate.
- * On the first trusted BRS sync we keep the absolute safety bounds but
+ * On the first trusted provider sync we keep the absolute safety bounds but
  * skip only the percentage-deviation comparison against that seed.
  */
 export function isTrustedSeedToLiveTransition({
@@ -98,7 +98,7 @@ export function isTrustedSeedToLiveTransition({
   currentSource: string | null | undefined;
   incomingSource: string | null | undefined;
 }): boolean {
-  return currentSource === "ELORIA_TEST_SEED" && incomingSource === "BRS_API";
+  return currentSource === "ELORIA_TEST_SEED" && ["BRS_API", "NERKHSANJ_API", "NERKHSANJ_GOLD_API"].includes(incomingSource ?? "");
 }
 
 /**
@@ -848,7 +848,7 @@ async function saveSingleRate(
 }
 
 /**
- * آخرین نرخ طلا و نقره را از BRS دریافت می‌کند.
+ * آخرین نرخ طلا و نقره را از منابع عمومی دریافت می‌کند.
  *
  * نرخ جاری با محافظت در برابر پاسخ قدیمی‌تر
  * به‌روزرسانی می‌شود و همه پاسخ‌ها در جدول
@@ -859,7 +859,7 @@ export async function syncMetalPrices(): Promise<
 > {
   try {
     const rates =
-      await fetchBrsMetalRates();
+      await fetchPublicMetalRates();
 
     if (
       !Array.isArray(
@@ -867,7 +867,7 @@ export async function syncMetalPrices(): Promise<
       )
     ) {
       throw new Error(
-        "ساختار نرخ‌های دریافتی از BRS معتبر نیست.",
+        "ساختار نرخ‌های دریافتی از منابع نرخ معتبر نیست.",
       );
     }
 
@@ -876,7 +876,7 @@ export async function syncMetalPrices(): Promise<
       0
     ) {
       throw new Error(
-        "هیچ نرخ معتبری از سرویس BRS دریافت نشد.",
+        "هیچ نرخ معتبری از منابع نرخ دریافت نشد.",
       );
     }
 

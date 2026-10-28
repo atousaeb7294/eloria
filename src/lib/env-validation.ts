@@ -117,18 +117,6 @@ function optionalOfficialHttpsEndpoint(
     return false;
   }
 }
-function optionalBrsEndpoint(key: string): boolean {
-  if (!value(key)) return true;
-  try {
-    const url = new URL(value(key));
-    return (
-      url.protocol === "https:" &&
-      url.hostname.toLowerCase() === "api.brsapi.ir"
-    );
-  } catch {
-    return false;
-  }
-}
 
 export function productionEnvironmentChecks(): Check[] {
   const commerceEnabled = boolFlag("ELORIA_COMMERCE_ENABLED");
@@ -236,9 +224,6 @@ export function productionEnvironmentChecks(): Check[] {
     { key: "ELORIA_SHIPPING_FLAT_TOMAN", required: commerceEnabled, valid: !commerceEnabled || isNonNegativeInteger("ELORIA_SHIPPING_FLAT_TOMAN"), message: "هزینه ارسال باید صریح و نامنفی باشد" },
     { key: "ELORIA_FREE_SHIPPING_FROM_TOMAN", required: commerceEnabled, valid: !commerceEnabled || isOptionalNonNegativeInteger("ELORIA_FREE_SHIPPING_FROM_TOMAN"), message: "آستانه ارسال رایگان باید خالی یا عدد صحیح نامنفی باشد" },
 
-    { key: "BRS_API_KEY", required: dynamicPricingEnabled, valid: !dynamicPricingEnabled || present("BRS_API_KEY", 1), message: "کلید منبع نرخ فلز" },
-    { key: "BRS_GOLD_API_URL", required: false, valid: optionalBrsEndpoint("BRS_GOLD_API_URL"), message: "Override نرخ طلا فقط HTTPS روی Api.BrsApi.ir مجاز است" },
-    { key: "BRS_COMMODITY_API_URL", required: false, valid: optionalBrsEndpoint("BRS_COMMODITY_API_URL"), message: "Override نرخ کامودیتی فقط HTTPS روی Api.BrsApi.ir مجاز است" },
 
     { key: "ELORIA_GOLD_RATE_MIN_TOMAN", required: dynamicPricingEnabled, valid: !dynamicPricingEnabled || isPositiveNumber("ELORIA_GOLD_RATE_MIN_TOMAN"), message: "کف sanity نرخ طلا" },
     { key: "ELORIA_GOLD_RATE_MAX_TOMAN", required: dynamicPricingEnabled, valid: !dynamicPricingEnabled || isPositiveNumber("ELORIA_GOLD_RATE_MAX_TOMAN"), message: "سقف sanity نرخ طلا" },

@@ -81,6 +81,10 @@ export function EloriaHome({
   const dialog = useRef<HTMLDialogElement>(null);
   const trigger = useRef<HTMLElement | null>(null);
   const hero = design.hero;
+  const [heroReady, setHeroReady] = useState(false);
+  // Let the hero and intro use the connection first; pointer/focus intent still
+  // prefetches immediately through the shared NavigationAccelerator.
+  const warmRoutes = introComplete && (!hero?.cutoutUrl || heroReady);
   const links = [
     { href: "#treasuries", label: fa ? "گنجینه‌ها" : "Treasuries" },
     { href: "#featured", label: fa ? "منتخب‌ها" : "The edit" },
@@ -152,6 +156,8 @@ export function EloriaHome({
               {fa ? "جواهری در دل افسانه" : "A jewel within a legend"}
             </small>
           </span>
+          <Image className="brand-script" src="/images/brand/eloria-script-gold-v3.webp"
+            alt="ELORIA" width={520} height={192} unoptimized />
         </TreasuryLink>
         <nav
           id="home-menu"
@@ -221,7 +227,7 @@ export function EloriaHome({
               <a className="eloria-cta eloria-cta-primary" href="#treasuries">
                 <span>{fa ? "ورود به گنجینه‌ها" : "Enter the treasuries"}</span>
               </a>
-              <TreasuryLink prefetch={true} direction="up" className="eloria-cta eloria-cta-secondary" href={`/${locale}/products`}>
+              <TreasuryLink prefetch={warmRoutes} direction="up" className="eloria-cta eloria-cta-secondary" href={`/${locale}/products`}>
                 <span>{fa ? "دیدن همهٔ آثار" : "View all creations"}</span>
               </TreasuryLink>
             </div>
@@ -253,7 +259,8 @@ export function EloriaHome({
                     scale={hero.scale}
                     paused={stop}
                     priority
-                    sizes="(max-width:760px) 95vw, 55vw"
+                    onReady={() => setHeroReady(true)}
+                    sizes="(max-width:520px) 92vw, (max-width:760px) 460px, (max-width:1440px) 48vw, 690px"
                   />
                 </div>
                 <div className="photo-caption">
@@ -329,7 +336,7 @@ export function EloriaHome({
           </div>
           <div className="portal-grid">
             {treasuries.map((t, i) => (
-              <TreasuryLink prefetch={true}
+              <TreasuryLink prefetch={warmRoutes}
                 className={`portal ${t.key}`}
                 key={t.key}
                 href={`/${locale}/collections/${t.key}`}
@@ -359,6 +366,12 @@ export function EloriaHome({
                   <div className="door door-left" />
                   <span className="portal-glyph" aria-hidden="true">
                     <t.Icon className="size-12" />
+                  </span>
+                  <span className="portal-seal-mark" aria-hidden="true">
+                    <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" strokeWidth="1">
+                      <path d="M16 3c5 0 5 7 5 8s8-1 8 5-7 5-8 5 1 8-5 8-5-7-5-8-8 1-8-5 7-5 8-5-1-8 5-8Z" />
+                      <path d="m16 6 10 10-10 10L6 16 16 6Zm0 5 5 5-5 5-5-5 5-5Z" />
+                    </svg>
                   </span>
                   <span className="portal-index">0{i + 1}</span>
                 </div>

@@ -967,25 +967,25 @@ body,[class~="min-h-screen"]{
 }
 
 /* The internal storefront shares the approved home palette. */
-.eloria-glass-storefront{--eloria-glass:rgba(237,226,243,.92);--eloria-ink:#382542;--eloria-secondary:#604c6a;background-color:#3b2946}
+.eloria-glass-storefront{--eloria-glass:linear-gradient(145deg,#593b65,#37233f);--eloria-ink:#fff0e3;--eloria-secondary:#dfcde3;background-color:#3b2946}
 .eloria-glass-storefront .eloria-glass-backdrop{background:linear-gradient(180deg,rgba(104,80,118,.12),rgba(58,36,70,.38))}
-.eloria-glass-storefront :is(.eloria-glass-panel,.eloria-salon-purchase-card,.eloria-quick-dialog,.eloria-live-purchase){background:var(--eloria-glass)!important;color:var(--eloria-ink);border-color:rgba(156,124,66,.5)!important;backdrop-filter:blur(16px);box-shadow:0 16px 44px #24132c26,inset 0 1px 0 #fff9}
+.eloria-glass-storefront :is(.eloria-glass-panel,.eloria-salon-purchase-card,.eloria-quick-dialog,.eloria-live-purchase){background:var(--eloria-glass)!important;color:var(--eloria-ink);border-color:#d0b17b99!important;backdrop-filter:blur(8px);box-shadow:0 16px 44px #24132c26,inset 0 1px 0 #ffe9ba26}
 .eloria-glass-storefront :is(.eloria-glass-panel,.eloria-salon-purchase-card,.eloria-quick-dialog,.eloria-live-purchase) :is([class*="text-[#"],[class*="text-white"]){color:var(--eloria-ink)!important}
-.eloria-glass-storefront :is(.eloria-glass-panel,.eloria-quick-dialog,.eloria-live-purchase) :is(input,select,textarea){color:var(--eloria-ink);background:#f7f1f9;border-color:#9c7c4255}
-.eloria-glass-storefront :is(.eloria-glass-panel,.eloria-quick-dialog,.eloria-live-purchase) :is(input,textarea)::placeholder{color:#6c5876}
-.eloria-glass-storefront :is(.eloria-glass-panel,.eloria-quick-dialog,.eloria-live-purchase) :is([class*="bg-[#0"],[class*="bg-[#1"],[class*="bg-black/"]){background:#e3d5eb!important}
-.eloria-glass-storefront :is(.eloria-glass-panel,.eloria-quick-dialog,.eloria-live-purchase) [class*="text-amber"]{color:#744a13}
-.eloria-glass-storefront .eloria-salon-piece h2{background:rgba(235,222,242,.97);color:var(--eloria-ink);border-color:#a78b5366;box-shadow:0 8px 22px #25132e22}
-.eloria-glass-storefront .eloria-salon-image{background:rgba(224,207,234,.86);box-shadow:0 0 0 6px #ddc48b18,0 18px 45px #25132e33}
+.eloria-glass-storefront :is(.eloria-glass-panel,.eloria-quick-dialog,.eloria-live-purchase) :is(input,select,textarea){color:var(--eloria-ink);background:#382540;border-color:#c9aa7677}
+.eloria-glass-storefront :is(.eloria-glass-panel,.eloria-quick-dialog,.eloria-live-purchase) :is(input,textarea)::placeholder{color:#d7c4dc}
+.eloria-glass-storefront :is(.eloria-glass-panel,.eloria-quick-dialog,.eloria-live-purchase) :is([class*="bg-[#0"],[class*="bg-[#1"],[class*="bg-black/"]){background:#674a73!important}
+.eloria-glass-storefront :is(.eloria-glass-panel,.eloria-quick-dialog,.eloria-live-purchase) [class*="text-amber"]{color:#f1d69f}
+.eloria-glass-storefront .eloria-salon-piece h2{background:linear-gradient(135deg,#64466f,#412b4b);color:var(--eloria-ink);border-color:#d1b37c88;box-shadow:0 8px 22px #25132e22}
+.eloria-glass-storefront .eloria-salon-image{background:radial-gradient(ellipse at 42% 30%,#896897,#563b62 78%);border-color:#d6b982;box-shadow:0 0 0 6px #ddc48b18,0 18px 45px #25132e33}
 /* CircularProductImage handles the full photograph and its edge-to-edge surround. */
 .eloria-glass-storefront .eloria-salon-price :is(p,strong,span){color:var(--eloria-ink)!important;opacity:1}
 .eloria-glass-storefront :is(.eloria-raw-gold,.eloria-raw-gold strong,.eloria-raw-gold small){color:var(--eloria-secondary);opacity:1}
-.eloria-glass-storefront :is(.eloria-quick-button,.eloria-piece-details,.eloria-dialog-close){color:var(--eloria-ink);border-color:#9c7c4277;background:#e9ddef;min-height:44px}
+.eloria-glass-storefront :is(.eloria-quick-button,.eloria-piece-details,.eloria-dialog-close){color:var(--eloria-ink);border-color:#d5b78199;background:#5d3e69;min-height:44px}
 .eloria-glass-storefront .eloria-quick-dialog::backdrop{background:rgba(49,29,61,.46);backdrop-filter:blur(7px)}
 .eloria-glass-storefront :is(.eloria-salon-instruction,.eloria-salon-controls){color:#fbf5fc;text-shadow:0 1px 5px #28172e}
 .eloria-glass-storefront .eloria-salon-piece-inner{opacity:1}
-.eloria-glass-storefront :is(.eloria-glass-panel,.eloria-live-purchase,.eloria-quick-dialog) :focus-visible{outline:2px solid #79532d;outline-offset:4px}
-@supports not (backdrop-filter:blur(1px)){.eloria-glass-storefront :is(.eloria-glass-panel,.eloria-salon-purchase-card,.eloria-quick-dialog,.eloria-live-purchase){background:#ede2f3!important}}
+.eloria-glass-storefront :is(.eloria-glass-panel,.eloria-live-purchase,.eloria-quick-dialog) :focus-visible{outline:2px solid #f0d29b;outline-offset:4px}
+@supports not (backdrop-filter:blur(1px)){.eloria-glass-storefront :is(.eloria-glass-panel,.eloria-salon-purchase-card,.eloria-quick-dialog,.eloria-live-purchase){background:#493054!important}}
 
 /* One sharp image fills each circular seat; prepared alpha retains the whole jewel. */
 .eloria-circle-photo { position:absolute; inset:0; width:100%; height:100%; overflow:hidden; border-radius:50%; isolation:isolate; background:radial-gradient(circle at 40% 25%,#f3e9ef,#c6b1ce); }
