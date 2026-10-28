@@ -2592,3 +2592,81 @@ html[lang="fa"] body .eloria-home[dir="rtl"] :is(h1,h2,h3,h1 *,h2 *,h3 *) {
   .eloria-home .home-quick-dialog .dialog-copy .button { margin-top:16px; min-height:48px; font-size:13px; line-height:1.8; }
   .eloria-home .home-quick-dialog .close-dialog { top:19px; left:19px; width:44px; height:44px; }
 }
+/* ELORIA ARCHES ONLY START */
+.eloria-home .portal,.eloria-home .portal.silver,.eloria-home .portal.weave {
+  --plum:#f5e6d5;--muted-plum:#d8c6dc;--tone:#d9bb80;
+  position:relative;isolation:isolate;border:1px solid #c7a66b;
+  background:linear-gradient(150deg,#493850e6,#20293de8 72%,#302439ed);
+  color:#f5e6d5;box-shadow:inset 0 0 0 4px #c7a66b12,0 8px 22px #15102130;
+}
+.eloria-home .portal::before {
+  content:"";position:absolute;inset:5px;border:1px solid #d6b77c80;border-radius:inherit;
+  pointer-events:none;z-index:4;background:none;opacity:1;
+}
+.eloria-home .portal-window {
+  isolation:isolate;overflow:hidden;border:1px solid #dfc28b;border-radius:50%;
+  background:radial-gradient(ellipse at 40% 25%,#77657f,#343349 85%);
+  box-shadow:inset 0 0 0 4px #f2d9a215,0 2px 12px #17132230;
+}
+.eloria-home .portal-window .door {
+  position:absolute;top:0;bottom:0;width:calc(50% + 1px);z-index:2;border:0;border-radius:0;
+  background:linear-gradient(125deg,#89718e99,#37364bc9);backdrop-filter:blur(5px);
+  opacity:1;transform:translateX(0);transition:transform .38s ease;
+}
+.eloria-home .portal-window .door-right {right:0;left:auto;border-left:1px solid #d9bc8088;}
+.eloria-home .portal-window .door-left {left:0;right:auto;border-right:1px solid #d9bc8088;}
+.eloria-home .portal-window .door::after {
+  content:"";position:absolute;inset:8%;border:0;border-radius:0;opacity:.45;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 200'%3E%3Cg fill='none' stroke='%23d4b681' stroke-width='1'%3E%3Cpath d='M15 190Q80 135 34 30M33 150Q5 120 13 100Q45 115 33 150M45 120Q82 110 79 82Q47 88 45 120M42 84Q12 65 19 45Q47 53 42 84M35 43Q58 25 49 9Q29 23 35 43'/%3E%3Cpath d='M12 194Q62 185 85 156M62 179Q65 149 87 143Q92 165 62 179'/%3E%3C/g%3E%3C/svg%3E");
+  background-size:contain;background-repeat:no-repeat;background-position:center;
+}
+.eloria-home .portal-window .door-right::after {transform:scaleX(-1);}
+.eloria-home .portal .portal-seal-mark {
+  display:grid;place-items:center;position:absolute;left:50%;top:50%;width:44px;height:44px;
+  transform:translate(-50%,-50%);z-index:4;border:1px solid #ddbf83;border-radius:50%;
+  color:#edd29b;background:#51405a88;pointer-events:none;transition:opacity .2s;
+}
+.eloria-home .portal-seal-mark svg {width:26px;height:26px;}
+.eloria-home .portal .portal-glyph,.eloria-home .portal .portal-index {visibility:hidden;}
+.eloria-home .portal .portal-content h3 {color:#f0d49b;}
+.eloria-home .portal :is(.portal-kicker,p) {color:#dfd0e0;}
+@media(hover:hover) {
+ .eloria-home .portal:hover .door-right {transform:translateX(102%);opacity:1;}
+ .eloria-home .portal:hover .door-left {transform:translateX(-102%);opacity:1;}
+ .eloria-home .portal:hover .portal-seal-mark {opacity:0;}
+}
+.eloria-home .portal:focus-visible .door-right {transform:translateX(102%);opacity:1;}
+.eloria-home .portal:focus-visible .door-left {transform:translateX(-102%);opacity:1;}
+.eloria-home .portal:focus-visible .portal-seal-mark {opacity:0;}
+@media(min-width:761px) {
+ .eloria-home .portal {border-radius:50% 50% 6px 6px / 38% 38% 6px 6px;}
+ .eloria-home .portal-window {height:auto;aspect-ratio:1;}
+}
+@media(max-width:760px) {
+ .eloria-home .portal .portal-window {border-radius:50% 50% 6px 6px / 38% 38% 6px 6px;}
+ .eloria-home .portal .portal-seal-mark {width:30px;height:30px;}
+ .eloria-home .portal-seal-mark svg {width:20px;height:20px;}
+}
+@media(prefers-reduced-motion:reduce) {
+ .eloria-home .portal-window .door,.eloria-home .portal-seal-mark {transition:none;}
+}
+/* ELORIA ARCHES ONLY END */
+/* ELORIA HOME PALETTE START */
+.eloria-home {--soft-gold:#c7a66b;}
+.eloria-home header.home-header-refined {background:linear-gradient(115deg,#35263fee,#202c42ed);border-color:#c7a66b88;}
+.eloria-home :is(.medallion,.portal,.home-quick-dialog) {--glass:linear-gradient(145deg,#494154,#2c354a);--plum:#f5eee5;--muted-plum:#d8cddd;--tone:#d5b981;}
+.eloria-home .medallion .product-photo {background:radial-gradient(ellipse at 45% 35%,#5e526d70,#2d3b5270);border-color:#c7a66b;}
+.eloria-home .medallion .image-seat {background:radial-gradient(ellipse at 40% 30%,#72657d,#42495e 80%);border-color:#c7a66b;}
+.eloria-home .medallion .product-description {background:var(--glass);border-color:#c7a66b88;}
+.eloria-home .medallion .product-description h3 {color:#f5eee5;}
+.eloria-home .medallion .product-description small {color:#d8cddd;}
+.eloria-home .medallion .piece-number {background:#2c354a;color:#e2c999;}
+.eloria-home dialog.home-quick-dialog {background:linear-gradient(145deg,#494154,#293249);color:#f5eee5;border-color:#c7a66b;}
+.eloria-home .home-quick-dialog .dialog-photo {background:radial-gradient(ellipse at 40% 25%,#70647b,#41485c 80%);border-color:#c7a66b;}
+.eloria-home .home-quick-dialog .dialog-copy :is(p,small) {color:#dfd4e1;}
+.eloria-home .home-quick-dialog .dialog-copy h2 {color:#f5eee5;}
+.eloria-home .home-quick-dialog .close-dialog {background:#293249;color:#f5eee5;border-color:#c7a66b;}
+.eloria-home .hero-actions .eloria-cta,.eloria-home .quick-view-label,.eloria-home .home-quick-dialog .dialog-copy .button {
+ background:linear-gradient(115deg,#414159,#29364c)!important;color:#f5e7cc!important;border-color:#c7a66b!important;
+}
+/* ELORIA HOME PALETTE END */

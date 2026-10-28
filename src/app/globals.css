@@ -1116,3 +1116,31 @@ html[lang="fa"] body :is(.font-persian-title,.font-persian-calligraphy,.eloria-h
   background-image:conic-gradient(#c9bacd 25%,transparent 0 50%,#c9bacd 0 75%,transparent 0);
   background-size:24px 24px;
 }
+/* ELORIA PALETTE START */
+:root {
+ --eloria-button-gold:#c7a66b;
+ --eloria-button-ink:#242238;
+ --background:#192338;--foreground:#f5eee5;
+ --card:#352e45;--card-foreground:#f5eee5;
+ --muted:#30364b;--muted-foreground:#d5ccd9;
+}
+/* Existing background image assets and their placement are deliberately retained. */
+.eloria-glass-storefront {
+ --eloria-glass:linear-gradient(145deg,#454057,#293249);
+ --eloria-ink:#f5eee5;--eloria-secondary:#d7cddd;
+ background-color:#20293b;
+}
+.eloria-glass-storefront :is(.eloria-glass-panel,.eloria-salon-purchase-card,.eloria-quick-dialog,.eloria-live-purchase) {
+ background:var(--eloria-glass)!important;border-color:#c7a66b88!important;
+}
+.eloria-glass-storefront :is(.eloria-glass-panel,.eloria-quick-dialog,.eloria-live-purchase) :is([class*="bg-[#0"],[class*="bg-[#1"],[class*="bg-black/"]) {background:#393d53!important;}
+.eloria-glass-storefront :is(.eloria-glass-panel,.eloria-quick-dialog,.eloria-live-purchase) :is(input,select,textarea) {background:#252d41;color:#f5eee5;border-color:#b69a6977;}
+.eloria-glass-storefront :is(.eloria-glass-panel,.eloria-quick-dialog,.eloria-live-purchase) :is(input,textarea)::placeholder {color:#c6bdcd;}
+.eloria-glass-storefront .eloria-salon-piece h2 {background:linear-gradient(135deg,#454057,#2d344b);color:#f5eee5;border-color:#c7a66b88;}
+.eloria-glass-storefront .eloria-salon-image {background:radial-gradient(ellipse at 40% 28%,#655b70,#3c4258 80%);border-color:#c7a66b;}
+.eloria-glass-storefront :is(.eloria-piece-details,.eloria-dialog-close) {background:#34374d;color:#f5eee5;border-color:#c7a66b88;}
+.eloria-glass-storefront :is(.eloria-glass-panel,.eloria-live-purchase,.eloria-quick-dialog) :is([data-slot="button"],.eloria-action,.eloria-quick-button) {color:var(--eloria-action-text,#f5eee5)!important;}
+@supports not (backdrop-filter:blur(1px)) {
+ .eloria-glass-storefront :is(.eloria-glass-panel,.eloria-salon-purchase-card,.eloria-quick-dialog,.eloria-live-purchase){background:#33394f!important;}
+}
+/* ELORIA PALETTE END */
