@@ -15,8 +15,9 @@ function CircularImage({ src, imageId, cutoutSrc, alt, sizes, priority = false, 
   const [prepared, setPrepared] = useState(cutoutSrc);
   const [failed, setFailed] = useState(false);
   const [originalFailed, setOriginalFailed] = useState(false);
+  const [originalLoaded, setOriginalLoaded] = useState(false);
   useEffect(() => {
-    if (!imageId || prepared || !seat.current) return;
+    if (!imageId || prepared || !originalLoaded || !seat.current) return;
     let unsubscribe: (() => void) | undefined;
     const observer = new IntersectionObserver(entries => {
       if (entries.some(entry => entry.isIntersecting)) {
@@ -25,7 +26,7 @@ function CircularImage({ src, imageId, cutoutSrc, alt, sizes, priority = false, 
     }, { rootMargin: "150px" });
     observer.observe(seat.current);
     return () => { observer.disconnect(); unsubscribe?.(); };
-  }, [imageId, prepared]);
+  }, [imageId, prepared, originalLoaded]);
   const cutout = Boolean(prepared && !failed);
   return (
     <div ref={seat} className={`eloria-circle-photo${cutout ? " is-cutout" : " is-original"}${floating ? " is-floating" : ""}`}>
@@ -34,6 +35,7 @@ function CircularImage({ src, imageId, cutoutSrc, alt, sizes, priority = false, 
             src={cutout ? prepared! : originalFailed ? "/images/brand/eloria-logo.webp" : src}
             alt={originalFailed && !cutout ? `${alt} — تصویر در دسترس نیست` : alt}
             fill sizes={sizes} quality={75} preload={priority} unoptimized={unoptimized}
+            onLoad={() => setOriginalLoaded(true)}
             onError={() => cutout ? setFailed(true) : setOriginalFailed(true)}
           />
       </div>

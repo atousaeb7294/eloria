@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 type ProductCardLivePriceProps = {
   slug: string;
@@ -37,9 +37,24 @@ export function ProductCardLivePrice({
   const [price, setPrice] = useState<string | null>(initialPriceToman);
   const [failed, setFailed] = useState(false);
   const isPersian = locale === "fa";
+  const seat = useRef<HTMLParagraphElement>(null);
+  const [visible, setVisible] = useState(false);
+  useEffect(() => {
+    const node = seat.current;
+    if (!node) return;
+    if (typeof IntersectionObserver === "undefined") {
+      const timer = window.setTimeout(() => setVisible(true), 0);
+      return () => window.clearTimeout(timer);
+    }
+    const observer = new IntersectionObserver(entries => {
+      setVisible(entries.some(entry => entry.isIntersecting));
+    }, {rootMargin:"150px"});
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, []);
 
   useEffect(() => {
-    if (previewOnly || !enabled) return;
+    if (previewOnly || !enabled || !visible) return;
     const controller = new AbortController();
 
     async function loadPrice() {
@@ -86,11 +101,11 @@ export function ProductCardLivePrice({
       window.clearInterval(intervalId);
       controller.abort();
     };
-  }, [previewOnly, slug, enabled]);
+  }, [previewOnly, slug, enabled, visible]);
 
   if (failed && !price) {
     return (
-      <p className="text-sm text-[#d8c79e]/75">
+      <p ref={seat} className="text-sm text-[#d8c79e]/75">
         {isPersian ? "قیمت در صفحه محصول" : "Price on product page"}
       </p>
     );
@@ -98,7 +113,7 @@ export function ProductCardLivePrice({
 
   if (!price) {
     return (
-      <p className="flex items-center gap-2 text-xs text-[#d8c79e]/75" aria-live="polite">
+      <p ref={seat} className="flex items-center gap-2 text-xs text-[#d8c79e]/75" aria-live="polite">
         <span className="size-2 animate-pulse rounded-full bg-[#e2c671]" />
         {isPersian ? "در حال دریافت قیمت…" : "Loading price…"}
       </p>
@@ -106,7 +121,7 @@ export function ProductCardLivePrice({
   }
 
   return (
-    <p className="flex items-baseline gap-2 text-[#f3d98c]">
+    <p ref={seat} className="flex items-baseline gap-2 text-[#f3d98c]">
       <strong className={`${compact ? "text-xs" : "text-xl"} font-semibold tracking-tight`}>
         {formatPrice(price, locale)}
       </strong>

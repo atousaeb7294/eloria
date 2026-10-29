@@ -2790,3 +2790,45 @@ html[lang="fa"] body .eloria-home[dir="rtl"] :is(h1,h2,h3,h1 *,h2 *,h3 *) {
  html[lang="fa"] body .eloria-home[dir="rtl"] .portal-grid .portal-content h3 {line-height:1.65!important;}
 }
 /* ELORIA POLISH V7 HOME END */
+
+/* ELORIA DELIVERY V8 START */
+/* The stationary aperture clips moving glass, not the entire decorative arch. */
+.eloria-home .portal-grid .portal-window {perspective:none;}
+.eloria-home .portal-grid .portal-window .portal-shutters {
+  position:absolute;inset:11.5% 11% 38.5%;z-index:3;
+  border-radius:50%;overflow:hidden;isolation:isolate;pointer-events:none;
+}
+.eloria-home .portal-grid .portal-window .portal-shutters .door {
+  position:absolute;inset:auto;left:-14.102565%;top:-23%;
+  width:128.20513%;height:200%;border:0;border-radius:0;
+  background:var(--arch-art) center/100% 100% no-repeat;
+  mask-image:none;-webkit-mask-image:none;transform:translateX(0);opacity:1;
+  transform-origin:center;backface-visibility:visible;will-change:auto;
+  transition:transform .52s cubic-bezier(.22,.7,.2,1),opacity .40s ease;
+}
+.eloria-home .portal-grid .portal-window .portal-shutters .door-left {clip-path:polygon(0 0,50.15% 0,50.15% 100%,0 100%);}
+.eloria-home .portal-grid .portal-window .portal-shutters .door-right {clip-path:polygon(49.85% 0,100% 0,100% 100%,49.85% 100%);}
+.eloria-home .portal-grid .portal:is(:hover,:focus-visible,:active) .portal-window .portal-shutters .door-left {transform:translateX(-48%);opacity:0;}
+.eloria-home .portal-grid .portal:is(:hover,:focus-visible,:active) .portal-window .portal-shutters .door-right {transform:translateX(48%);opacity:0;}
+@media(max-width:760px) {
+  .eloria-home .portal-grid .portal {
+    position:relative;isolation:isolate;
+    box-shadow:inset 0 1px 0 #efdcba1c,inset 0 -10px 25px #19142444,0 9px 22px #10132529;
+  }
+  .eloria-home .portal-grid .portal-window {
+    filter:drop-shadow(0 5px 7px #120d2070);
+    background-color:transparent;
+  }
+  .eloria-home .portal-grid .portal-window::before {
+    content:"";position:absolute;inset:10% 5% 5%;z-index:-1;border-radius:50% 50% 14% 14%;
+    background:radial-gradient(ellipse,rgba(var(--treasury-light),.17),transparent 72%);pointer-events:none;
+  }
+  .eloria-home .portal-grid .portal-window .portal-shutters {inset:16% 8% 17%;}
+  .eloria-home .portal-grid .portal-window .portal-shutters .door {
+    left:-9.52381%;top:-23.880597%;width:119.04762%;height:149.253731%;
+  }
+}
+@media(prefers-reduced-motion:reduce) {
+  .eloria-home .portal-grid .portal-window .portal-shutters .door {transition:none!important;}
+}
+/* ELORIA DELIVERY V8 END */

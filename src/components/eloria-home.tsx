@@ -362,8 +362,10 @@ export function EloriaHome({
                         </div>
                       ))}
                   </div>
-                  <div className="door door-right" />
-                  <div className="door door-left" />
+                  <div className="portal-shutters" aria-hidden="true">
+                    <div className="door door-right" />
+                    <div className="door door-left" />
+                  </div>
                   <span className="portal-glyph" aria-hidden="true">
                     <t.Icon className="size-12" />
                   </span>

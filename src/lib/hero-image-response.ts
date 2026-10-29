@@ -18,6 +18,7 @@ export async function serveHeroImage(
   id: string,
   loadPublicPhoto: () => Promise<Uint8Array | null>,
 ) {
+  const started = performance.now();
   const unavailable = (status: number) => new Response(null, {
     status, headers: { "Cache-Control": "no-store" },
   });
@@ -30,6 +31,7 @@ export async function serveHeroImage(
     return unavailable(400);
   try {
     let image = webp ? peekPublicMedia(`hero:${id}:webp86:${width}`) : null;
+    const cacheHit = Boolean(image);
     if (!image) {
       // Finish the original read before admitting an encode. Nested cache loads
       // would exhaust the shared single-flight limit when several photos load.
@@ -48,6 +50,8 @@ export async function serveHeroImage(
     if (!image) return unavailable(404);
     const etag = `"${createHash("sha256").update(image.bytes).digest("hex")}"`;
     const headers = {
+      "Server-Timing": `media;dur=${(performance.now()-started).toFixed(1)}`,
+      "X-Eloria-Media-Cache": cacheHit ? "hit" : "miss",
       "Content-Type": image.contentType,
       "Cache-Control": "public, max-age=3600",
       "ETag": etag,
