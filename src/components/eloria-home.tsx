@@ -9,7 +9,8 @@ import {
 } from "react";
 import { CartHeaderButton } from "@/components/cart-header-button";
 import { CustomerAccountHeaderButton } from "@/components/customer-account-header-button";
-import { ProductImage } from "@/components/product-image";
+import { QuickViewImage } from "@/components/quick-view-image";
+import { loadedCardPreview, warmQuickView } from "@/lib/quick-view-media";
 import { ProductCardLivePrice } from "@/components/product-card-live-price";
 import { CircularProductImage } from "@/components/circular-product-image";
 import { TreasuryLink } from "@/components/treasury-transition";
@@ -67,7 +68,7 @@ export function EloriaHome({
   const [paused, setPaused] = useState(false);
   const [offscreen, setOffscreen] = useState(false);
   const [hidden, setHidden] = useState(false);
-  const [quick, setQuick] = useState<HomePiece | null>(null);
+  const [quick, setQuick] = useState<(HomePiece & { previewSrc?: string }) | null>(null);
   const [featuredVisible, setFeaturedVisible] = useState(false);
   const featured = useRef<HTMLElement>(null);
   const introComplete = useIntroComplete();
@@ -92,7 +93,7 @@ export function EloriaHome({
   ];
   function open(piece: HomePiece, element: HTMLElement) {
     trigger.current = element;
-    setQuick(piece);
+    setQuick({ ...piece, previewSrc: loadedCardPreview(element) });
   }
   useEffect(() => {
     if (!featured.current) return;
@@ -345,7 +346,9 @@ export function EloriaHome({
                 }
               >
                 <div className="portal-window">
-                  <div className="portal-halo" />
+                  <div className="portal-recess" aria-hidden="true" />
+                  <div className="portal-halo" aria-hidden="true" />
+                  <div className="portal-frame" aria-hidden="true" />
                   <div className="portal-preview" aria-hidden="true">
                     {design.pieces
                       .filter((p) => p.group === t.key)
@@ -414,6 +417,8 @@ export function EloriaHome({
                     fa ? `نگاه سریع به ${p.name}` : `Quick view: ${p.name}`
                   }
                   onClick={(e) => open(p, e.currentTarget)}
+                  onPointerEnter={(e) => { if (e.pointerType === "mouse") warmQuickView(p.imageUrl); }}
+                  onFocus={() => warmQuickView(p.imageUrl)}
                 >
                   <div className="product-photo">
                     <span className="frame-star" aria-hidden="true">
@@ -468,6 +473,8 @@ export function EloriaHome({
                   type="button"
                   className="quick-view-label"
                   onClick={(e) => open(p, e.currentTarget)}
+                  onPointerEnter={(e) => { if (e.pointerType === "mouse") warmQuickView(p.imageUrl); }}
+                  onFocus={() => warmQuickView(p.imageUrl)}
                   aria-label={
                     fa ? `نگاه سریع به ${p.name}` : `Quick view: ${p.name}`
                   }
@@ -561,11 +568,12 @@ export function EloriaHome({
         {quick && (
           <div className="dialog-layout">
             <div className="dialog-photo">
-              <ProductImage
+              <QuickViewImage
+                key={`${quick.id}:${quick.imageUrl}`}
                 src={quick.imageUrl}
+                previewSrc={quick.previewSrc}
                 alt={quick.name}
-                fill
-                sizes="(max-width:760px) 90vw, 450px"
+                locale={locale}
               />
             </div>
             <div className="dialog-copy">
