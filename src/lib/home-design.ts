@@ -9,6 +9,11 @@ const select = {
   id: true, slug: true, nameFa: true, nameEn: true,
   hasGold: true, hasSilver: true, status: true,
   collection: { select: { isActive: true } },
+  variants: {
+    where: { isActive: true },
+    orderBy: [{ displayOrder: "asc" }, { createdAt: "asc" }],
+    select: { id: true, titleFa: true, titleEn: true, stock: true },
+  },
   images: {
     where: { imageUrl: { not: "" } }, take: 1,
     orderBy: [{ isPrimary: "desc" }, { displayOrder: "asc" }, { id: "asc" }],
@@ -42,6 +47,16 @@ export async function getHomeDesign(locale: string) {
     cutouts: ids => prisma.heroCutout.findMany({
       where: { id: { in: ids } },
       select: { id: true, productId: true, sourceImageId: true, sourceImageUrl: true },
+    }),
+    treasuryProduct: group => prisma.product.findFirst({
+      where: {
+        status: { in: ["ACTIVE", "OUT_OF_STOCK"] }, collection: { isActive: true },
+        images: { some: { imageUrl: { not: "" } } },
+        ...(group === "gold" ? { hasGold: true } : group === "silver"
+          ? { hasGold: false, hasSilver: true } : { hasGold: false, hasSilver: false }),
+      },
+      orderBy: [{ isFeatured: "desc" }, { displayOrder: "asc" }, { createdAt: "desc" }, { id: "asc" }],
+      select,
     }),
     preparedHeroes: () => prisma.heroCutout.findMany({
       where: { pipelineVersion: { in: [HERO_PIPELINE_VERSION, UPLOADED_HERO_VERSION] }, product: {

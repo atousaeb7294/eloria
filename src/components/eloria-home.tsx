@@ -12,6 +12,8 @@ import { CustomerAccountHeaderButton } from "@/components/customer-account-heade
 import { QuickViewImage } from "@/components/quick-view-image";
 import { loadedCardPreview, warmQuickView } from "@/lib/quick-view-media";
 import { ProductCardLivePrice } from "@/components/product-card-live-price";
+import { QuickPurchase } from "@/components/quick-purchase";
+import { TreasuryPortal } from "@/components/treasury-portal";
 import { CircularProductImage } from "@/components/circular-product-image";
 import { TreasuryLink } from "@/components/treasury-transition";
 import { FloatingProductImage } from "@/components/floating-product-image";
@@ -326,7 +328,7 @@ export function EloriaHome({
             <div>
               <div className="eyebrow">ENTER A TREASURY</div>
               <h2>
-                {fa ? "کدام جهان، شبیه توست؟" : "Which world feels like you?"}
+                {fa ? "کدام جهان انتخاب توست؟" : "Which world will you choose?"}
               </h2>
             </div>
             <p>
@@ -336,62 +338,9 @@ export function EloriaHome({
             </p>
           </div>
           <div className="portal-grid">
-            {treasuries.map((t, i) => (
-              <TreasuryLink prefetch={warmRoutes}
-                className={`portal ${t.key}`}
-                key={t.key}
-                href={`/${locale}/collections/${t.key}`}
-                aria-label={
-                  fa ? `ورود به گنجینهٔ ${t.fa}` : `Enter the ${t.en} treasury`
-                }
-              >
-                <div className="portal-window">
-                  <div className="portal-recess" aria-hidden="true" />
-                  <div className="portal-halo" aria-hidden="true" />
-                  <div className="portal-frame" aria-hidden="true" />
-                  <div className="portal-preview" aria-hidden="true">
-                    {design.pieces
-                      .filter((p) => p.group === t.key)
-                      .slice(0, 1)
-                      .map((p) => (
-                        <div className="portal-image" key={p.id}>
-                          <CircularProductImage
-                            src={p.imageUrl}
-                            cutoutSrc={p.cutoutUrl}
-                            imageId={p.imageId}
-                            alt=""
-                            sizes="(max-width:760px) 40vw, 32vw"
-                          />
-                        </div>
-                      ))}
-                  </div>
-                  <div className="portal-shutters" aria-hidden="true">
-                    <div className="door door-right" />
-                    <div className="door door-left" />
-                  </div>
-                  <span className="portal-glyph" aria-hidden="true">
-                    <t.Icon className="size-12" />
-                  </span>
-                  <span className="portal-seal-mark" aria-hidden="true">
-                    <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" strokeWidth="1">
-                      <path d="M16 3c5 0 5 7 5 8s8-1 8 5-7 5-8 5 1 8-5 8-5-7-5-8-8 1-8-5 7-5 8-5-1-8 5-8Z" />
-                      <path d="m16 6 10 10-10 10L6 16 16 6Zm0 5 5 5-5 5-5-5 5-5Z" />
-                    </svg>
-                  </span>
-                  <span className="portal-index">0{i + 1}</span>
-                </div>
-                <div className="portal-content">
-                  <span className="portal-kicker">
-                    {fa ? "مجموعهٔ الوریا" : "THE ELORIA COLLECTION"}
-                  </span>
-                  <h3>{fa ? `گنجینهٔ ${t.fa}` : `${t.en} treasury`}</h3>
-                  <p>{fa ? t.tagline : t.english}</p>
-                  <span className="portal-cta">
-                    {fa ? "ورود به گنجینه" : "Enter the treasury"}{" "}
-
-                  </span>
-                </div>
-              </TreasuryLink>
+            {treasuries.map(t => (
+              <TreasuryPortal key={t.key} treasury={t} locale={locale} prefetch={warmRoutes}
+                piece={(design.treasuryPieces ?? design.pieces).find(piece => piece.group === t.key)} />
             ))}
           </div>
         </section>
@@ -579,9 +528,7 @@ export function EloriaHome({
             <div className="dialog-copy">
               <div className="eyebrow">ELORIA / THE CURATED EDIT</div>
               <h2 id="home-dialog-title">{quick.name}</h2>
-              <div className="home-price">
-                <ProductCardLivePrice slug={quick.slug} locale={locale} />
-              </div>
+              <QuickPurchase key={quick.id} piece={quick} locale={locale} />
               <p>
                 {fa
                   ? "جزئیات بافت و رنگ را در عکس اصلی اثر ببین."
@@ -592,7 +539,7 @@ export function EloriaHome({
                 href={`/${locale}/products/${quick.slug}`}
                 onNavigate={() => setQuick(null)}
               >
-                {fa ? "جزئیات و خرید" : "Details & purchase"}
+                {fa ? "مشاهدهٔ جزئیات کامل" : "View full details"}
               </TreasuryLink>
               <small>
                 {fa

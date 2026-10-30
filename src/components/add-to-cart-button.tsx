@@ -31,6 +31,7 @@ type AddToCartButtonProps = {
   variantId?: string | null;
   maxQuantity: number;
   disabled?: boolean;
+  quick?: boolean;
 };
 
 function getServerCartQuantitySnapshot(): number {
@@ -43,6 +44,7 @@ export function AddToCartButton({
   variantId = null,
   maxQuantity,
   disabled = false,
+  quick = false,
 }: AddToCartButtonProps) {
   const isPersian =
     locale === "fa";
@@ -201,6 +203,8 @@ export function AddToCartButton({
             ? isPersian
               ? "به سبد خرید اضافه شد"
               : "Added to shopping bag"
+            : quick
+              ? isPersian ? "خرید سریع" : "Quick purchase"
             : isPersian
               ? "افزودن به سبد خرید"
               : "Add to shopping bag"}
@@ -210,7 +214,7 @@ export function AddToCartButton({
   }
 
   return (
-    <div className="overflow-hidden rounded-[1.6rem] border border-[#dfc16e]/35 bg-[linear-gradient(145deg,rgba(17,23,62,0.92),rgba(9,14,46,0.96))] p-3 shadow-[0_20px_55px_rgba(0,0,0,0.22)]">
+    <div className={`${quick ? "eloria-quick-cart-controls " : ""}overflow-hidden rounded-[1.6rem] border border-[#dfc16e]/35 bg-[linear-gradient(145deg,rgba(17,23,62,0.92),rgba(9,14,46,0.96))] p-3 shadow-[0_20px_55px_rgba(0,0,0,0.22)]`}>
       <div className="flex items-center justify-between gap-3">
         <div className="inline-flex shrink-0 items-center rounded-full border border-[#dfc16e]/25 bg-black/15 p-1">
           <button
@@ -274,8 +278,8 @@ export function AddToCartButton({
         >
           <ShoppingBag className="h-4 w-4 transition group-hover:scale-110" />
 
-          <span className="hidden sm:inline">
-            {isPersian
+          <span className={quick ? "" : "hidden sm:inline"}>
+            {quick ? (isPersian ? "ادامه و پرداخت" : "Continue to checkout") : isPersian
               ? "مشاهده سبد"
               : "View bag"}
           </span>

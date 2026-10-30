@@ -1,5 +1,7 @@
 "use client";
 
+import "@/app/product-gallery.css";
+
 import { PreparedGalleryImage } from "@/components/prepared-gallery-image";
 import { ProductImage as Image } from "@/components/product-image";
 import {
@@ -10,9 +12,11 @@ import {
 } from "lucide-react";
 import {
   useEffect,
+  useCallback,
   useMemo,
   useRef,
   useState,
+  type CSSProperties,
 } from "react";
 
 type ProductGalleryImage = {
@@ -49,6 +53,12 @@ export function ProductGallery({
 }: ProductGalleryProps) {
   const isPersian =
     locale === "fa";
+
+  const [ratios, setRatios] = useState<Record<string, number>>({});
+  const rememberRatio = useCallback((source: string, ratio: number) => {
+    if (!Number.isFinite(ratio) || ratio <= 0) return;
+    setRatios(previous => previous[source] === ratio ? previous : { ...previous, [source]: ratio });
+  }, []);
 
   const safeImages =
     useMemo(
@@ -294,13 +304,15 @@ export function ProductGallery({
   return (
     <>
       <div className="grid gap-3 rounded-[2rem]">
-        <div className="relative aspect-[4/5] overflow-hidden rounded-[2rem] border border-white/[0.07] bg-[#0a0f2d] shadow-[0_22px_65px_rgba(0,0,0,0.38)]">
+        <div className="eloria-product-gallery-frame relative aspect-[4/5] overflow-hidden rounded-[2rem] border border-white/[0.07] bg-[#0a0f2d] shadow-[0_22px_65px_rgba(0,0,0,0.38)]"
+          style={{ "--gallery-photo-ratio": ratios[activeImage.imageUrl] ?? 1 } as CSSProperties}>
           <PreparedGalleryImage
             images={safeImages}
             index={normalizedActiveIndex}
             locale={locale}
-            sizes="(max-width: 1024px) 100vw, 55vw"
+            sizes="(max-width: 760px) calc(100vw - 64px), (max-width: 1024px) 100vw, 55vw"
             className="object-contain p-10"
+            onAspectRatio={rememberRatio}
           />
 
 

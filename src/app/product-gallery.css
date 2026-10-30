@@ -1,0 +1,26 @@
+/* A fine gold rim leaves the photograph, rather than empty padding, dominant. */
+.eloria-product-gallery-frame {
+  border-color:#d3b67b99;
+}
+.eloria-product-gallery-frame::after {
+  content:"";
+  position:absolute;
+  inset:3px;
+  border:1px solid #e9ce953d;
+  border-radius:inherit;
+  pointer-events:none;
+}
+
+/* The product page keeps its desktop presentation. On phones the original
+   photograph defines the frame; a landscape photo must not sit in a tall box. */
+@media (max-width:760px) {
+  .eloria-product-gallery-frame {
+    aspect-ratio:var(--gallery-photo-ratio,1);
+    min-height:0;
+    border-radius:20px;
+  }
+  .eloria-product-gallery-frame img {
+    padding:6px!important;
+    object-fit:contain!important;
+  }
+}

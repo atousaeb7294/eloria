@@ -8,9 +8,11 @@ export type HomePiece = {
   imageId?: string;
   cutoutUrl?: string;
   group: "gold" | "silver" | "weave";
+  variants?: { id: string; titleFa: string; titleEn: string; stock: number }[];
 };
 export type HomeDesign = {
   pieces: HomePiece[];
+  treasuryPieces?: HomePiece[];
   hero: (HomePiece & { scale: number }) | null;
   unavailable: boolean;
 };
@@ -24,6 +26,7 @@ export type HomeProduct = {
   status: string;
   collection: { isActive: boolean };
   images: { id: string; imageUrl: string }[];
+  variants?: HomePiece["variants"];
 };
 export type HomeAppearance = {
   heroScale: number;
@@ -47,6 +50,7 @@ export type HomeCutout = {
 export type HomeDesignSource = {
   appearance(): Promise<HomeAppearance | null>;
   products(options: { ids?: string[]; excludeIds?: string[]; take: number }): Promise<HomeProduct[]>;
+  treasuryProduct?(group: HomePiece["group"]): Promise<HomeProduct | null>;
   cutouts(ids: string[]): Promise<HomeCutout[]>;
   preparedHeroes?(): Promise<HomePreparedHero[]>;
   report(area: "appearance" | "catalog" | "cutouts"): void;
@@ -90,9 +94,24 @@ export async function loadHomeDesign(locale: string, source: HomeDesignSource, r
       imageId: image.id,
       cutoutUrl: prepared ? `/api/media/hero/${prepared.id}` : undefined,
       group: p.hasGold ? "gold" : p.hasSilver ? "silver" : "weave",
+      ...(p.variants ? { variants: p.variants } : {}),
     };
   };
   const pieces = products.map(piece);
+  // Selected pieces stay unchanged. A missing category gets its own real
+  // catalog photo instead of a stock illustration or the wrong treasury.
+  const treasuryPieces = (await Promise.all((["gold", "silver", "weave"] as const).map(async group => {
+    const featured = pieces.find(item => item.group === group);
+    if (featured) return featured;
+    try {
+      const product = await source.treasuryProduct?.(group);
+      if (product && visible(product)) {
+        const result = piece(product);
+        if (result.group === group) return result;
+      }
+    } catch { source.report("catalog"); }
+    return null;
+  }))).filter((item): item is HomePiece => Boolean(item));
   const currentImage = (item: HomePreparedHero) => item.product.images.find(image =>
     image.id === item.sourceImageId && image.imageUrl === item.sourceImageUrl);
   const current = (item: HomePreparedHero) => visible(item.product) &&
@@ -114,5 +133,5 @@ export async function loadHomeDesign(locale: string, source: HomeDesignSource, r
         imageId: selected.pipelineVersion === UPLOADED_HERO_VERSION ? undefined : selectedImage?.id,
         cutoutUrl: `/api/media/hero/${selected.id}`, scale }
     : fallback ? { ...fallback, scale } : null;
-  return { pieces, hero, unavailable: false };
+  return { pieces, treasuryPieces, hero, unavailable: false };
 }

@@ -14,11 +14,15 @@ export function LivePurchaseBox({
   slug,
   variantId,
   initial = null,
+  compact = false,
+  quick = false,
 }: {
   locale: string;
   slug: string;
   variantId?: string | null;
   initial?: ProductPriceResult | null;
+  compact?: boolean;
+  quick?: boolean;
 }) {
   const fa = locale === "fa";
   const [quote, setQuote] = useState(initial);
@@ -128,11 +132,11 @@ export function LivePurchaseBox({
     quote?.product.material === "SILVER";
   return (
     <section
-      className="eloria-live-purchase"
+      className={`eloria-live-purchase${compact ? " is-compact" : ""}`}
       aria-label={fa ? "مشخصات محصول و خرید" : "Product details and purchase"}
     >
       <div className="flex items-center justify-between gap-3">
-        <h3>{fa ? "مشخصات محصول" : "Product details"}</h3>
+        <h3>{quick ? (fa ? "خرید سریع" : "Quick purchase") : (fa ? "مشخصات محصول" : "Product details")}</h3>
         <span className="text-[10px] opacity-70">
           {updated
             ? `${fa ? "بررسی قیمت در" : "Quote checked at"} ${updated}`
@@ -141,7 +145,7 @@ export function LivePurchaseBox({
               : "Checking"}
         </span>
       </div>
-      {quote?.liveRate && (
+      {!compact && quote?.liveRate && (
         <div className="eloria-raw-gold">
           <span>{quote.liveRate.material === "GOLD"
             ? fa ? "نرخ خام هر گرم طلا" : "Live raw gold rate / g"
@@ -167,7 +171,7 @@ export function LivePurchaseBox({
             {format(quote.pricing.finalPriceToman)}{" "}
             <small className="text-xs">{fa ? "تومان" : "toman"}</small>
           </p>
-          <div className="mb-4 rounded-2xl border border-[#ddc48b]/20 bg-[#ddc48b]/5 p-4 text-xs">
+          {!compact && <div className="mb-4 rounded-2xl border border-[#ddc48b]/20 bg-[#ddc48b]/5 p-4 text-xs">
             <dl className="space-y-3">
               <div className="flex justify-between gap-4">
                 <dt>{productWeightLabel(productMaterialKind(quote.product), locale)}</dt>
@@ -226,7 +230,7 @@ export function LivePurchaseBox({
                   (fa ? "؛ در قیمت نهایی لحاظ شده است." : "; included in the final price.")}
               </p>
             )}
-          </div>
+          </div>}
           {quote.variant && (
             <p className="mb-3 text-xs">
               {fa ? quote.variant.titleFa : quote.variant.titleEn}
@@ -276,6 +280,7 @@ export function LivePurchaseBox({
           variantId={quote?.variant?.id ?? variantId}
           maxQuantity={stock}
           disabled={!purchasable}
+          quick={quick}
         />
       )}
       <p className="mt-3 text-[10px] leading-6 opacity-60">
