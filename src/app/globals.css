@@ -266,7 +266,7 @@
   }
   body {
     @apply bg-background text-foreground;
-    min-width: 320px;
+    min-width: 0;
     background: var(--eloria-surface-emerald-1);
     text-rendering: optimizeLegibility;
     -webkit-font-smoothing: antialiased;
@@ -1106,7 +1106,7 @@ html[lang="fa"] body :is(.font-persian-title,.font-persian-calligraphy,.eloria-h
 }
 .eloria-transparent-hero {
   object-fit:contain!important; object-position:center!important; padding:0!important;
-  border-radius:0!important; background:transparent!important; opacity:1!important;
+  border-radius:0!important; background:transparent!important;
   filter:drop-shadow(0 16px 18px #160b2426)!important;
 }
 .eloria-hero-image-unavailable { width:100%; height:100%; display:grid; place-items:center; color:#dbc292; }
@@ -1150,7 +1150,12 @@ html[lang="fa"] body :is(.font-persian-title,.font-persian-calligraphy,.eloria-h
 .eloria-glass-storefront .eloria-catalog-card {height:100%;display:flex;flex-direction:column;}
 .eloria-glass-storefront .eloria-catalog-photo {aspect-ratio:1!important;flex:none;}
 .eloria-glass-storefront .eloria-catalog-photo img {object-fit:cover!important;object-position:center!important;padding:0!important;}
-.eloria-glass-storefront .eloria-catalog-card h2 {height:3.2em;line-height:1.6;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;}
+/* Titles must accommodate full Persian glyphs and long names. */
+.eloria-glass-storefront .eloria-catalog-card h2 {
+  height:auto;min-height:3.6em;max-height:none;line-height:1.8;
+  padding:.15em .25em .3em;overflow:visible;display:block;-webkit-line-clamp:unset;
+  white-space:normal;word-break:normal;overflow-wrap:anywhere;
+}
 .eloria-glass-storefront .eloria-quick-dialog {
  border:1px solid #c9a972;background:linear-gradient(135deg,#51334ceF,#252e44f5);
  box-shadow:inset 0 0 0 5px #f4d9980a,0 24px 70px #080e2055;color:#f4eadb;

@@ -6,6 +6,8 @@ import { runInNewContext } from "node:vm";
 import ts from "typescript";
 import React, { act } from "react";
 import { create, type ReactTestRenderer } from "react-test-renderer";
+import { renderToStaticMarkup } from "react-dom/server";
+import { EloriaIntroExperience } from "../src/components/eloria-intro-experience";
 
 async function scenario({ reduced = false, saveData = false, seen = false, rejectPlay = false, completeFlow = false, anchor = "", mobile = true } = {}) {
   const require = createRequire(import.meta.url);
@@ -93,6 +95,8 @@ async function scenario({ reduced = false, saveData = false, seen = false, rejec
 }
 
 async function main() {
+  assert.equal(renderToStaticMarkup(React.createElement(EloriaIntroExperience, { locale: "fa" })), "",
+    "Delayed JavaScript must not leave an overlay covering the shop");
   (globalThis as any).IS_REACT_ACT_ENVIRONMENT = true;
   await scenario({ completeFlow: true });
   await scenario({ reduced: true });

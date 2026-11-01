@@ -1,0 +1,11 @@
+src/components/treasury-portal.tsx
+src/components/intro/eloria-intro-view.tsx
+src/app/home-design.css
+src/app/globals.css
+scripts/test-reference-gates-v11.ts
+scripts/test-intro-recovery.ts
+scripts/verify-storefront-repair.mjs
+scripts/install-storefront-repair.ps1
+scripts/publish-storefront-repair.ps1
+docs/STOREFRONT_REPAIR_FILES.txt
+docs/STOREFRONT_REPAIR_FA.md

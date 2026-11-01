@@ -2665,13 +2665,16 @@ html[lang="fa"] body .eloria-home[dir="rtl"] :is(h1,h2,h3,h1 *,h2 *,h3 *) {
   position:relative;isolation:isolate;inset:auto;width:100%;height:auto;
   max-width:none;aspect-ratio:210 / 340;margin:0;border:0;border-radius:0;
   background:none;
-  box-shadow:none;overflow:hidden;perspective:none;
+  box-shadow:none;overflow:visible;perspective:none;
   filter:none;
 }
 /* The light is contained in the art. No exterior rectangle or black footing. */
 .eloria-home .portal-grid .portal-frame {
   position:absolute;inset:0;z-index:0;pointer-events:none;
   background:var(--arch-art) center / 100% 100% no-repeat;
+  /* Preserve the complete floral footing; feather only the final pixels. */
+  mask-image:linear-gradient(to bottom,#000 0%,#000 98.5%,transparent 100%);
+  -webkit-mask-image:linear-gradient(to bottom,#000 0%,#000 98.5%,transparent 100%);
 }
 .eloria-home .portal-grid .portal-halo {
   display:none;
@@ -2698,6 +2701,10 @@ html[lang="fa"] body .eloria-home[dir="rtl"] :is(h1,h2,h3,h1 *,h2 *,h3 *) {
   background:radial-gradient(ellipse at 50% 8%,rgba(var(--treasury-light),.38),var(--treasury-ink) 75%);
   box-shadow:inset 0 4px 16px #0d102b77;
 }
+.eloria-home .portal-grid .portal-preview::after {
+  content:"";position:absolute;inset:0;z-index:1;border-radius:inherit;
+  box-shadow:inset 0 3px 14px #130e3266;pointer-events:none;
+}
 .eloria-home .portal-grid .portal-preview .portal-image {
   width:100%;height:100%;border:0;border-radius:0;box-shadow:none;transform:none;aspect-ratio:auto;
 }
@@ -2712,28 +2719,34 @@ html[lang="fa"] body .eloria-home[dir="rtl"] :is(h1,h2,h3,h1 *,h2 *,h3 *) {
 .eloria-home .portal-grid .portal-window .portal-shutters .door {
   position:absolute;inset:auto;left:-14.102565%;top:-23%;width:128.20513%;height:200%;
   border:0;border-radius:0;background:var(--arch-art) center/100% 100% no-repeat;
-  mask-image:none;-webkit-mask-image:none;transform:translateX(0);opacity:1;
-  backdrop-filter:none;-webkit-backdrop-filter:none;transform-origin:center;backface-visibility:visible;
+  mask-image:none;-webkit-mask-image:none;transform:perspective(900px) rotateY(0deg);opacity:1;
+  backdrop-filter:none;-webkit-backdrop-filter:none;backface-visibility:hidden;
   transition:transform .52s cubic-bezier(.22,.7,.2,1),opacity .4s ease;
 }
 .eloria-home .portal-grid .portal-window .door::before,
 .eloria-home .portal-grid .portal-window .door::after {content:none;display:none;}
-.eloria-home .portal-grid .portal-window .portal-shutters .door-left {clip-path:polygon(0 0,50.15% 0,50.15% 100%,0 100%);}
-.eloria-home .portal-grid .portal-window .portal-shutters .door-right {clip-path:polygon(49.85% 0,100% 0,100% 100%,49.85% 100%);}
-.eloria-home .portal-grid .portal.is-open .portal-window .portal-shutters .door-left {transform:translateX(-48%);opacity:0;}
-.eloria-home .portal-grid .portal.is-open .portal-window .portal-shutters .door-right {transform:translateX(48%);opacity:0;}
+.eloria-home .portal-grid .portal-window .portal-shutters .door-left {clip-path:polygon(0 0,50.15% 0,50.15% 100%,0 100%);transform-origin:11% 36.5%;}
+.eloria-home .portal-grid .portal-window .portal-shutters .door-right {clip-path:polygon(49.85% 0,100% 0,100% 100%,49.85% 100%);transform-origin:89% 36.5%;}
+.eloria-home .portal-grid .portal.is-open .portal-window .portal-shutters .door-left {transform:perspective(900px) rotateY(-88deg);opacity:.15;}
+.eloria-home .portal-grid .portal.is-open .portal-window .portal-shutters .door-right {transform:perspective(900px) rotateY(88deg);opacity:.15;}
 @media(min-width:761px) {
   .eloria-home .portal-grid .portal {
-    position:relative;display:block;padding:0 0 18px!important;width:100%;max-width:none;
+    position:relative;display:grid;grid-template-columns:minmax(0,1fr);padding:0 0 12px!important;width:100%;max-width:none;
     min-height:0;aspect-ratio:auto;background:transparent!important;border:0!important;
-    border-radius:0;box-shadow:none!important;backdrop-filter:none;overflow:hidden;transform:none;isolation:isolate;
+    border-radius:0;box-shadow:none!important;backdrop-filter:none;overflow:visible;transform:none;isolation:isolate;
   }
-  .eloria-home .portal-grid .portal::before,.eloria-home .portal-grid .portal::after {content:none;}
+  .eloria-home .portal-grid .portal::before {content:none;}
+  .eloria-home .portal-grid .portal::after {
+    content:"";position:absolute;inset:auto 7% 0;height:20px;z-index:-1;
+    border-radius:50%;background:radial-gradient(ellipse,#120b2380,transparent 70%);
+    pointer-events:none;
+  }
+  .eloria-home .portal-grid .portal-window {grid-area:1/1;}
   .eloria-home .portal-grid .portal-content {
-    position:relative;inset:auto;width:74%;margin:-58% auto 0;min-height:0;min-width:0;z-index:5;
-    display:grid;grid-template-columns:minmax(0,1fr);gap:7px;justify-items:center;text-align:center;
+    position:relative;grid-area:1/1;align-self:end;inset:auto;width:auto;margin:0 13% 12%;min-height:0;min-width:0;z-index:5;
+    display:grid;grid-template-columns:minmax(0,1fr);gap:5px;justify-items:center;text-align:center;
   }
-  .eloria-home .portal-grid .portal-content h3 {font-size:clamp(24px,2.5vw,36px);line-height:1.7;margin:0;padding:0;color:#f4d9a2;}
+  .eloria-home .portal-grid .portal-content h3 {font-size:clamp(24px,2.5vw,34px);line-height:1.9;margin:0;padding:.12em .15em .22em;color:#f4d9a2;}
   .eloria-home .portal-grid .portal-content p {font-size:11px;line-height:1.8;margin:0;text-align:center;color:#e2d4e4;}
   .eloria-home .portal-grid .portal-cta {
     width:100%;max-width:230px;box-sizing:border-box;min-height:44px;height:auto;
@@ -2741,11 +2754,11 @@ html[lang="fa"] body .eloria-home[dir="rtl"] :is(h1,h2,h3,h1 *,h2 *,h3 *) {
     justify-content:center;color:#f3d8a2;background:#443047b3!important;border:1px solid #d0ab70!important;
   }
   .eloria-home .portal-grid .portal-kicker {font-size:9px;line-height:1.6;color:#e1c38c;}
-  html[lang="fa"] body .eloria-home[dir="rtl"] .portal-grid .portal-content h3 {line-height:1.65!important;}
+  html[lang="fa"] body .eloria-home[dir="rtl"] .portal-grid .portal-content h3 {line-height:1.9!important;}
 }
 @media(min-width:761px) and (max-width:1100px) {
-  .eloria-home .portal-grid .portal-content {width:78%;margin-top:-64%;gap:3px;}
-  .eloria-home .portal-grid .portal-content h3 {font-size:23px;line-height:1.55;}
+  .eloria-home .portal-grid .portal-content {width:auto;margin:0 10% 8%;gap:3px;}
+  .eloria-home .portal-grid .portal-content h3 {font-size:22px;line-height:1.9;}
   .eloria-home .portal-grid .portal-content p {font-size:10px;line-height:1.6;}
   .eloria-home .portal-grid .portal-cta {font-size:11px;padding:6px 8px!important;margin-top:1px;}
 }
@@ -2830,13 +2843,22 @@ html[lang="fa"] body .eloria-home .home-quick-dialog .eloria-live-purchase.is-co
 /* Desktop retains its existing ornate frame and text panel. The mobile doors
    use the supplied photograph itself; only their clipping edges are vectors. */
 .eloria-home .portal-grid .portal-gate-toggle {
-  position:absolute;inset:0;z-index:7;width:100%;height:100%;padding:0;
-  border:0;border-radius:0;background:transparent;box-shadow:none;cursor:pointer;
+  position:absolute;inset:11.5% 11% 38.5%;z-index:7;width:auto;height:auto;padding:0;
+  border:0;border-radius:50%;background:transparent;box-shadow:none;cursor:pointer;
+  touch-action:manipulation;-webkit-tap-highlight-color:transparent;
+}
+.eloria-home .portal-toggle-label {
+  position:absolute;bottom:7%;left:50%;transform:translateX(-50%);
+  display:block;width:max-content;max-width:90%;padding:5px 12px;
+  border:1px solid #e5c88b88;border-radius:999px;background:#251d32e8;color:#f6e5c2;
+  font-family:"Vazirmatn Variable",Tahoma,sans-serif;font-size:11px;line-height:1.9;
+  white-space:normal;text-align:center;pointer-events:none;
 }
 .eloria-home .portal-grid .portal-gate-toggle:focus-visible {
   outline:2px solid var(--treasury-metal);outline-offset:-3px;
 }
-.eloria-home .portal-grid .treasury-product-photo {object-fit:contain!important;padding:5%;}
+.eloria-home .portal-grid .treasury-product-photo {object-fit:cover!important;object-position:center;padding:0!important;border-radius:0;}
+.eloria-home .portal-grid .treasury-product-photo.is-cutout {object-fit:contain!important;padding:3%!important;}
 .eloria-home .treasury-photo-unavailable {
   display:grid;place-items:center;width:100%;height:100%;padding:10px;
   font-size:11px;line-height:1.8;text-align:center;color:var(--treasury-metal);
@@ -2846,13 +2868,13 @@ html[lang="fa"] body .eloria-home .home-quick-dialog .eloria-live-purchase.is-co
 @media(max-width:760px) {
   .eloria-home .portal-grid .portal {
     grid-template-columns:minmax(0,48%) minmax(0,1fr);gap:10px;
-    padding:12px!important;overflow:hidden;max-width:100%;min-width:0;
-    border:1px solid #b8965f99;border-radius:18px;
-    box-shadow:inset 0 0 0 3px #dfc58c08;
+    padding:12px 0!important;overflow:visible;max-width:100%;min-width:0;
+    border:0;border-radius:0;background:transparent!important;
+    box-shadow:none;backdrop-filter:none;
   }
   .eloria-home .portal-grid .portal-window {
     aspect-ratio:460/480;width:100%;height:auto;max-width:100%;min-width:0;
-    margin:0;align-self:center;overflow:hidden;filter:none;box-shadow:none;
+    margin:0;align-self:center;overflow:visible;filter:none;box-shadow:none;
   }
   .eloria-home .portal-grid .portal-window > .portal-frame,
   .eloria-home .portal-grid .portal-window > .portal-shutters,
@@ -2864,9 +2886,11 @@ html[lang="fa"] body .eloria-home .home-quick-dialog .eloria-live-purchase.is-co
     background:radial-gradient(ellipse at 50% 8%,rgba(var(--treasury-light),.24),var(--treasury-ink) 85%);
   }
   .eloria-home .reference-treasury-gate {
-    display:block;position:absolute;inset:0;z-index:3;overflow:hidden;
+    display:block;position:absolute;inset:0;z-index:3;overflow:visible;
     pointer-events:none;isolation:isolate;
   }
+  .eloria-home .portal-grid .portal-gate-toggle {inset:0;width:100%;height:100%;border-radius:45% 45% 3% 3%;}
+  .eloria-home .portal-toggle-label {bottom:5%;font-size:10px;padding:4px 8px;}
   .eloria-home .reference-gate-clips {position:absolute;width:0;height:0;overflow:hidden;}
   .eloria-home .reference-gate-pixels {
     position:absolute;inset:0;
@@ -2877,23 +2901,23 @@ html[lang="fa"] body .eloria-home .home-quick-dialog .eloria-live-purchase.is-co
   .eloria-home .reference-gate-frame {z-index:2;}
   .eloria-home .reference-gate-opening {position:absolute;inset:0;z-index:1;overflow:hidden;}
   .eloria-home .reference-gate-leaf {
-    position:absolute;inset:0;opacity:1;transform:translateX(0);
+    position:absolute;inset:0;opacity:1;transform:perspective(650px) rotateY(0deg);backface-visibility:hidden;
     transition:transform .56s cubic-bezier(.22,.7,.2,1),opacity .44s ease;
   }
-  .eloria-home .reference-gate-left {clip-path:inset(0 49.78% 0 0);}
-  .eloria-home .reference-gate-right {clip-path:inset(0 0 0 50.1%);}
+  .eloria-home .reference-gate-left {clip-path:inset(0 49.78% 0 0);transform-origin:12.6087% 50%;}
+  .eloria-home .reference-gate-right {clip-path:inset(0 0 0 50.1%);transform-origin:88.26087% 50%;}
   .eloria-home .reference-gate-left .reference-gate-pixels {
     transform:scaleX(var(--gate-left-scale));transform-origin:var(--gate-left-origin) 50%;
   }
   .eloria-home .reference-gate-right .reference-gate-pixels {
     transform:scaleX(var(--gate-right-scale));transform-origin:var(--gate-right-origin) 50%;
   }
-  .eloria-home .portal.is-open .reference-gate-left {transform:translateX(-44%);opacity:0;}
-  .eloria-home .portal.is-open .reference-gate-right {transform:translateX(44%);opacity:0;}
+  .eloria-home .portal.is-open .reference-gate-left {transform:perspective(650px) rotateY(-88deg);opacity:.12;}
+  .eloria-home .portal.is-open .reference-gate-right {transform:perspective(650px) rotateY(88deg);opacity:.12;}
   .eloria-home .portal-grid .portal-content {
-    width:auto;min-width:0;margin:0;display:grid;gap:6px;align-content:center;
+    width:auto;min-width:0;margin:0;display:grid;gap:6px;align-content:center;overflow:visible;
   }
-  .eloria-home .portal-grid .portal-content h3 {margin:0;padding:0;}
+  .eloria-home .portal-grid .portal-content h3 {margin:0;padding:.12em .15em .22em;}
   html[lang="fa"] body .eloria-home[dir="rtl"] .portal-grid .portal-content h3 {
     font-size:clamp(18px,4.7vw,24px)!important;line-height:1.8!important;
   }
@@ -2905,10 +2929,15 @@ html[lang="fa"] body .eloria-home .home-quick-dialog .eloria-live-purchase.is-co
   }
 }
 @media(max-width:370px) {
-  .eloria-home .portal-grid .portal {grid-template-columns:minmax(0,48%) minmax(0,1fr);padding:10px!important;gap:8px;}
+  .eloria-home .portal-grid .portal {grid-template-columns:minmax(0,48%) minmax(0,1fr);padding:10px 0!important;gap:8px;}
 }
 @media(prefers-reduced-motion:reduce) {
   .eloria-home .reference-gate-leaf {transition:none!important;}
 }
 
 /* ELORIA REFERENCE GATES V11 END */
+
+/* Allow the first and last strokes of Persian display lettering to extend. */
+html[lang="fa"] body .eloria-home[dir="rtl"] :is(.hero-copy h1,.section-heading h2,.story h2) {
+  padding-inline:.3em;max-width:100%;overflow:visible;
+}

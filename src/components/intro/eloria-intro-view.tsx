@@ -38,7 +38,8 @@ export function EloriaIntroView({
     retrySecondVideo,
   } = controller;
 
-  if (phase === "complete") return null;
+  // Do not cover server-rendered content while waiting for JavaScript.
+  if (phase === "complete" || phase === "checking") return null;
 
   if (phase === "ready-to-play") {
     return (
@@ -187,7 +188,7 @@ export function EloriaIntroView({
                 ? "opacity-100"
                 : "pointer-events-none opacity-0",
             ].join(" ")}
-            src={phase === "checking" ? undefined : firstVideoSrc}
+            src={firstVideoSrc}
             preload="auto"
             autoPlay={phase === "video-one"}
             muted
@@ -218,7 +219,7 @@ export function EloriaIntroView({
                 ? "opacity-100"
                 : "pointer-events-none opacity-0",
             ].join(" ")}
-            src={phase === "checking" ? undefined : secondVideoSrc}
+            src={secondVideoSrc}
             preload="metadata"
             playsInline
             disablePictureInPicture
@@ -455,7 +456,7 @@ export function EloriaIntroView({
           }}
         />
 
-        {!transitionActive && phase !== "checking" && (
+        {!transitionActive && (
           <button
             type="button"
             onClick={handleSkipIntro}
@@ -491,7 +492,7 @@ export function EloriaIntroView({
         )}
 
         {/* نشانگر مرحله Intro */}
-        {!transitionActive && phase !== "checking" && (
+        {!transitionActive && (
           <div
             className="absolute start-[max(1rem,env(safe-area-inset-left))] top-[max(1rem,env(safe-area-inset-top))] z-[130] flex items-center gap-3 rounded-full border border-[#e7ca78]/22 bg-black/25 px-3.5 py-2 backdrop-blur-xl sm:start-8 sm:top-8"
             aria-label={
@@ -523,20 +524,6 @@ export function EloriaIntroView({
                 />
               ))}
             </span>
-          </div>
-        )}
-
-        {/* بارگذاری اولیه */}
-        {phase ===
-          "checking" && (
-          <div className="absolute inset-0 z-[140] grid place-items-center bg-black">
-            <div className="flex flex-col items-center gap-4">
-              <span className="size-10 animate-spin rounded-full border border-[#e6c975]/20 border-t-[#f4dc96]" />
-
-              <span className="font-eloria-brand text-[10px] text-[#e8ce87]/70">
-                ELORIA
-              </span>
-            </div>
           </div>
         )}
 

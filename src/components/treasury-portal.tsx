@@ -20,22 +20,35 @@ function TreasuryPhoto({ piece, locale, active }: { piece?: HomePiece; locale: s
   </span>;
   return <Image src={source} alt={piece!.name} fill sizes="(max-width:760px) 40vw, 26vw"
     loader={localMediaLoader(source)} loading={active ? "eager" : "lazy"}
-    fetchPriority={active ? "high" : "auto"} className="treasury-product-photo"
+    fetchPriority={active ? "high" : "auto"} decoding="async"
+    className={`treasury-product-photo${cutout ? " is-cutout" : ""}`}
     onError={() => cutout ? setCutoutFailed(true) : setFailed(true)} />;
 }
 
 export function TreasuryPortal({ treasury, piece, locale, prefetch }: {
   treasury: Treasury; piece?: HomePiece; locale: "fa" | "en"; prefetch: boolean;
 }) {
-  const [open, setOpen] = useState(false);
+  // A mouse hover previews temporarily; a tap/click is an explicit choice.
+  const [hovered, setHovered] = useState(false);
+  const [expanded, setExpanded] = useState<boolean | null>(null);
+  const open = expanded ?? hovered;
   const id = `treasury-${useId().replace(/[^a-zA-Z0-9_-]/g, "")}`;
   const fa = locale === "fa";
   const name = fa ? treasury.fa : treasury.en;
   return <article className={`portal ${treasury.key}${open ? " is-open" : ""}`}
-    onPointerEnter={event => { if (event.pointerType === "mouse") setOpen(true); }}
-    onPointerLeave={event => { if (event.pointerType === "mouse") setOpen(false); }}
-    onBlur={event => { if (!event.currentTarget.contains(event.relatedTarget)) setOpen(false); }}
-    onKeyDown={event => { if (event.key === "Escape") setOpen(false); }}>
+    onPointerEnter={event => {
+      if (event.pointerType === "mouse") {
+        setHovered(true);
+        setExpanded(value => value === false ? null : value);
+      }
+    }}
+    onPointerLeave={event => {
+      if (event.pointerType === "mouse") {
+        setHovered(false);
+        setExpanded(value => value === false ? null : value);
+      }
+    }}
+    onKeyDown={event => { if (event.key === "Escape") { setHovered(false); setExpanded(false); } }}>
     <div className="portal-window">
       <div className="portal-frame" aria-hidden="true" />
       <div className="portal-preview" id={`${id}-photo`} aria-hidden={!open}>
@@ -49,7 +62,11 @@ export function TreasuryPortal({ treasury, piece, locale, prefetch }: {
       <ReferenceTreasuryGate treasury={treasury.key} />
       <button type="button" className="portal-gate-toggle" aria-expanded={open} aria-controls={`${id}-photo`}
         aria-label={fa ? `${open ? "بستن" : "باز کردن"} دروازهٔ ${name} و پیش‌نمایش اثر` : `${open ? "Close" : "Open"} ${name} gate and product preview`}
-        onClick={() => setOpen(value => !value)} />
+        onClick={() => setExpanded(value => value === true ? false : true)}>
+        <span className="portal-toggle-label" aria-hidden="true">
+          {fa ? (open ? "بستن دریچه" : "باز کردن دریچه") : (open ? "Close window" : "Open window")}
+        </span>
+      </button>
     </div>
     <div className="portal-content">
       <span className="portal-kicker">{fa ? "مجموعهٔ الوریا" : "THE ELORIA COLLECTION"}</span>
