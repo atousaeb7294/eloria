@@ -46,7 +46,7 @@ export function ProductVariantSelector({
 
   return (
     <section className="mt-5" aria-labelledby="product-variant-title">
-      <div className="mb-3 flex items-center justify-between gap-3">
+      <div className="mb-3 flex flex-wrap items-center justify-between gap-x-3 gap-y-2 leading-6">
         <div className="flex items-center gap-2">
           <Layers3 className={isGold ? "h-4 w-4 text-[#e2c56f]" : "h-4 w-4 text-[#dce6e9]"} />
           <h2 id="product-variant-title" className="text-xs font-medium text-[#eadfc8]">
@@ -86,7 +86,7 @@ export function ProductVariantSelector({
             >
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
-                  <strong className="block truncate text-xs font-medium text-[#f0e4ce]">
+                  <strong className="block whitespace-normal break-words text-xs font-medium leading-6 text-[#f0e4ce]">
                     {isPersian ? variant.titleFa : variant.titleEn}
                   </strong>
 

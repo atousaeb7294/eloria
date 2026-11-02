@@ -603,7 +603,7 @@ export function HomeHeaderController({ locale }: HomeHeaderControllerProps) {
                             {item.label}
                           </span>
 
-                          <span className="mt-1.5 block truncate text-[10px] text-white/48 transition duration-300 group-hover:text-white/48">
+                          <span className="mt-1.5 block whitespace-normal text-[10px] leading-5 text-white/48 transition duration-300 group-hover:text-white/48">
                             {item.description}
                           </span>
                         </span>

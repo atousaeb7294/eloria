@@ -11,6 +11,8 @@ import {
 
 import {
   useCallback,
+  useEffect,
+  useRef,
   useState,
   useSyncExternalStore,
 } from "react";
@@ -50,10 +52,7 @@ export function AddToCartButton({
     locale === "fa";
 
   const safeMaximum =
-    Math.max(
-      Math.trunc(maxQuantity),
-      0,
-    );
+    Number.isFinite(maxQuantity) ? Math.max(Math.trunc(maxQuantity), 0) : 0;
 
   const getQuantitySnapshot =
     useCallback(
@@ -79,6 +78,10 @@ export function AddToCartButton({
     recentlyAdded,
     setRecentlyAdded,
   ] = useState(false);
+  const addedTimer = useRef<number | null>(null);
+  useEffect(() => () => {
+    if (addedTimer.current !== null) clearTimeout(addedTimer.current);
+  }, []);
 
   const isUnavailable =
     disabled ||
@@ -104,7 +107,8 @@ export function AddToCartButton({
 
     setRecentlyAdded(true);
 
-    window.setTimeout(() => {
+    if (addedTimer.current !== null) clearTimeout(addedTimer.current);
+    addedTimer.current = window.setTimeout(() => {
       setRecentlyAdded(false);
     }, 1800);
   };
@@ -214,9 +218,9 @@ export function AddToCartButton({
   }
 
   return (
-    <div className={`${quick ? "eloria-quick-cart-controls " : ""}overflow-hidden rounded-[1.6rem] border border-[#dfc16e]/35 bg-[linear-gradient(145deg,rgba(17,23,62,0.92),rgba(9,14,46,0.96))] p-3 shadow-[0_20px_55px_rgba(0,0,0,0.22)]`}>
-      <div className="flex items-center justify-between gap-3">
-        <div className="inline-flex shrink-0 items-center rounded-full border border-[#dfc16e]/25 bg-black/15 p-1">
+    <div className={`eloria-cart-controls ${quick ? "eloria-quick-cart-controls " : ""}rounded-[1.6rem] border border-[#dfc16e]/35 bg-[linear-gradient(145deg,rgba(17,23,62,0.92),rgba(9,14,46,0.96))] p-3 shadow-[0_20px_55px_rgba(0,0,0,0.22)]`}>
+      <div className="eloria-cart-layout">
+        <div className="eloria-cart-quantity inline-flex shrink-0 items-center rounded-full border border-[#dfc16e]/25 bg-black/15 p-1" role="group" aria-label={isPersian ? "تعداد در سبد خرید" : "Quantity in your bag"}>
           <button
             type="button"
             onClick={decreaseQuantity}
@@ -230,7 +234,7 @@ export function AddToCartButton({
             <Minus className="h-4 w-4" />
           </button>
 
-          <span className="min-w-12 text-center text-sm font-medium text-[#f7e4af]">
+          <span className="min-w-10 text-center text-sm font-medium text-[#f7e4af]" role="status" aria-live="polite" aria-atomic="true">
             {formattedQuantity}
           </span>
 
@@ -254,14 +258,14 @@ export function AddToCartButton({
           </button>
         </div>
 
-        <div className="min-w-0 flex-1">
+        <div className="eloria-cart-summary">
           <p className="text-xs text-[#f2dfaa]">
             {isPersian
               ? "در سبد خرید"
               : "In your shopping bag"}
           </p>
 
-          <p className="mt-1 text-[10px] text-[#c9bb98]/50">
+          <p className="eloria-cart-stock mt-1 text-xs text-[#d8c9a9]">
             {isPersian
               ? `حداکثر موجودی: ${safeMaximum.toLocaleString(
                   "fa-IR",
@@ -274,11 +278,11 @@ export function AddToCartButton({
 
         <Link
           href={`/${locale}/cart`}
-          className="eloria-action group flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-full border border-[#e1c16f]/40 bg-[#d9b85f]/[0.08] px-4 text-xs text-[#f1d98e] transition hover:border-[#efd47d]/70 hover:bg-[#d9b85f]/[0.13]"
+          className="eloria-cart-checkout eloria-action group flex min-h-11 items-center justify-center gap-2 rounded-full border border-[#e1c16f]/40 bg-[#d9b85f]/[0.08] px-4 text-xs text-[#f1d98e] transition hover:border-[#efd47d]/70 hover:bg-[#d9b85f]/[0.13]"
         >
           <ShoppingBag className="h-4 w-4 transition group-hover:scale-110" />
 
-          <span className={quick ? "" : "hidden sm:inline"}>
+          <span>
             {quick ? (isPersian ? "ادامه و پرداخت" : "Continue to checkout") : isPersian
               ? "مشاهده سبد"
               : "View bag"}

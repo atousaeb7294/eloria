@@ -3,7 +3,9 @@ import type { MetadataRoute } from "next";
 import { prisma } from "@/lib/prisma";
 import { siteBaseUrl } from "@/lib/site-url";
 
-export const revalidate = 3600;
+// Build environments may have no database. Generate against the runtime
+// database so an empty build-time fallback cannot remain the public sitemap.
+export const dynamic = "force-dynamic";
 
 const LOCALES = ["fa", "en"] as const;
 
@@ -48,8 +50,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     }
   }
 
-  try {
-    const [products, articles] = await Promise.all([
+  // A temporary journal failure must not remove valid product URLs, and vice versa.
+  const [productResult, articleResult] = await Promise.allSettled([
       prisma.product.findMany({
         where: {
           status: {
@@ -77,7 +79,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
           updatedAt: true,
         },
       }),
-    ]);
+  ]);
+  const products = productResult.status === "fulfilled" ? productResult.value : [];
+  const articles = articleResult.status === "fulfilled" ? articleResult.value : [];
+  if (productResult.status === "rejected") console.warn("[Eloria Sitemap] Product URLs temporarily unavailable.");
+  if (articleResult.status === "rejected") console.warn("[Eloria Sitemap] Journal URLs temporarily unavailable.");
 
     for (const locale of LOCALES) {
       for (const product of products) {
@@ -104,12 +110,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         });
       }
     }
-  } catch (error) {
-    console.error(
-      "[Eloria Sitemap] Dynamic entries unavailable; serving static sitemap.",
-      error,
-    );
-  }
 
   return Array.from(new Map(entries.map(entry => [entry.url, entry])).values());
 }

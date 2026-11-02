@@ -55,14 +55,21 @@ export function ProductCardLivePrice({
 
   useEffect(() => {
     if (previewOnly || !enabled || !visible) return;
-    const controller = new AbortController();
+    let controller: AbortController | null = null;
+    let disposed = false;
+    let busy = false;
 
     async function loadPrice() {
+      if (disposed || busy || document.visibilityState === "hidden") return;
+      busy = true;
+      const request = new AbortController();
+      controller = request;
+      const timeout = window.setTimeout(() => request.abort(), 12000);
       try {
         const response = await fetch(
           `/api/products/${encodeURIComponent(slug)}/price?display=1`,
           {
-            signal: controller.signal,
+            signal: request.signal,
             cache: "no-store",
           },
         );
@@ -74,18 +81,20 @@ export function ProductCardLivePrice({
         const payload = (await response.json()) as PriceResponse;
         const finalPrice = payload.pricing?.finalPriceToman;
 
-        if (!payload.successful || !finalPrice) {
+        if (!payload.successful || !finalPrice || !/^\d+$/.test(finalPrice)) {
           throw new Error("Price unavailable");
         }
 
-        setPrice(finalPrice);
-        setFailed(false);
-      } catch (error) {
-        if (error instanceof DOMException && error.name === "AbortError") {
-          return;
+        if (!disposed) {
+          setPrice(finalPrice);
+          setFailed(false);
         }
-
-        setFailed(true);
+      } catch {
+        // Timeouts should leave a useful fallback, not an endless loading label.
+        if (!disposed) setFailed(true);
+      } finally {
+        window.clearTimeout(timeout);
+        busy = false;
       }
     }
 
@@ -96,10 +105,16 @@ export function ProductCardLivePrice({
         void loadPrice();
       }
     }, 60_000);
+    const resume = () => void loadPrice();
+    window.addEventListener("online", resume);
+    document.addEventListener("visibilitychange", resume);
 
     return () => {
+      disposed = true;
       window.clearInterval(intervalId);
-      controller.abort();
+      controller?.abort();
+      window.removeEventListener("online", resume);
+      document.removeEventListener("visibilitychange", resume);
     };
   }, [previewOnly, slug, enabled, visible]);
 

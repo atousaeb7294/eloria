@@ -245,9 +245,9 @@ export function CheckoutPageView({
               onSubmit={
                 handleSubmit
               }
-              className="mt-12 grid items-start gap-8 lg:grid-cols-[minmax(0,1fr)_400px]"
+              className="mt-12 grid min-w-0 grid-cols-1 items-start gap-8 lg:grid-cols-[minmax(0,1fr)_400px]"
             >
-              <div className="space-y-6">
+              <div className="min-w-0 space-y-6">
                 <div className="rounded-[2rem]">
                   <section className="relative rounded-[2rem] border border-[#d9b85f]/20 bg-[linear-gradient(145deg,rgba(17,22,57,0.94),rgba(10,14,42,0.97))] p-5 shadow-[0_24px_80px_rgba(0,0,0,0.24)] sm:p-7">
                   <div className="flex items-start gap-4">
@@ -280,7 +280,7 @@ export function CheckoutPageView({
                     </p>
                   </div>
 
-                  <div className="mt-7 grid gap-5 sm:grid-cols-2">
+                  <div className="mt-7 grid min-w-0 grid-cols-1 gap-5 sm:grid-cols-2">
                     <label className="block">
                       <span className="mb-2 block text-xs text-[#d7c9a7]/65">
                         {
@@ -555,12 +555,12 @@ export function CheckoutPageView({
                                 item,
                               )
                             }
-                            className="group flex items-start justify-between gap-5 rounded-xl px-2 py-4 transition duration-300 first:pt-0 last:pb-0 hover:bg-[#d9b85f]/[0.035]"
+                            className="group flex flex-col items-start justify-between gap-3 rounded-xl sm:flex-row sm:gap-5 px-2 py-4 transition duration-300 first:pt-0 last:pb-0 hover:bg-[#d9b85f]/[0.035]"
                           >
                             <div className="min-w-0">
                               <Link
                                 href={`/${locale}/products/${item.slug}`}
-                                className="text-sm text-[#eee0bd] transition group-hover:text-[#f2d678] hover:text-[#f2d678]"
+                                className="block text-sm leading-7 text-[#eee0bd] transition group-hover:text-[#f2d678] hover:text-[#f2d678]"
                               >
                                 {
                                   productName
@@ -609,7 +609,7 @@ export function CheckoutPageView({
                 </div>
               </div>
 
-              <aside className="lg:sticky lg:top-28">
+              <aside className="min-w-0 lg:sticky lg:top-28">
                 <div className="rounded-[2rem]">
                   <div className="relative rounded-[2rem] border border-[#d9b85f]/25 bg-[linear-gradient(150deg,rgba(20,26,62,0.98),rgba(10,14,42,0.995))] p-6 shadow-[0_30px_100px_rgba(0,0,0,0.34)]">
                   {createdOrder ? (
@@ -625,7 +625,7 @@ export function CheckoutPageView({
                       </h2>
 
                       <div className="mt-6 space-y-4 border-y border-white/[0.07] py-6">
-                        <div className="flex items-center justify-between gap-4 text-sm">
+                        <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 text-sm">
                           <span className="text-[#c9bb9a]/55">
                             {
                               text.orderNumber
@@ -642,7 +642,7 @@ export function CheckoutPageView({
                           </span>
                         </div>
 
-                        <div className="flex items-end justify-between gap-4">
+                        <div className="flex flex-wrap items-end justify-between gap-x-4 gap-y-2">
                           <span className="text-sm text-[#c9bb9a]/55">
                             {
                               text.verifiedAmount
@@ -729,7 +729,7 @@ export function CheckoutPageView({
                           </div>
                         </div>
 
-                        <div className="mt-4 flex gap-2">
+                        <div className="mt-4 flex flex-col gap-2 min-[480px]:flex-row">
                           <input
                             dir="ltr"
                             value={couponCode}
@@ -774,7 +774,7 @@ export function CheckoutPageView({
                       </div>
 
                       <div className="mt-7 space-y-4 border-y border-white/[0.07] py-6">
-                        <div className="flex items-center justify-between gap-4 text-sm">
+                        <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 text-sm">
                           <span className="text-[#c9bb9a]/60">
                             {
                               text.quantity
@@ -789,12 +789,12 @@ export function CheckoutPageView({
                           </span>
                         </div>
 
-                        <div className="flex items-center justify-between gap-4 text-sm">
+                        <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 text-sm">
                           <span className="text-[#c9bb9a]/60">{text.subtotal}</span>
                           <span className="text-[#eee1c7]">{formatPrice(quote.summary.subtotalToman)} {text.toman}</span>
                         </div>
 
-                        <div className="flex items-center justify-between gap-4 text-sm">
+                        <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 text-sm">
                           <span className="text-[#c9bb9a]/60">{text.shipping}</span>
                           <span className="text-[#eee1c7]">
                             {quote.summary.shippingToman === "0"
@@ -804,13 +804,13 @@ export function CheckoutPageView({
                         </div>
 
                         {couponPreview ? (
-                          <div className="flex items-center justify-between gap-4 text-sm">
+                          <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 text-sm">
                             <span className="text-emerald-100/65">{text.discount}</span>
                             <span className="text-emerald-100">− {formatPrice(couponPreview.discountToman)} {text.toman}</span>
                           </div>
                         ) : null}
 
-                        <div className="flex items-end justify-between gap-4 border-t border-white/[0.07] pt-4">
+                        <div className="flex flex-wrap items-end justify-between gap-x-4 gap-y-2 border-t border-white/[0.07] pt-4">
                           <span className="text-sm text-[#c9bb9a]/60">{text.payable}</span>
                           <div className="text-end">
                             <span className="text-xl font-semibold text-[#f0d477]">
@@ -821,7 +821,7 @@ export function CheckoutPageView({
                         </div>
                       </div>
 
-                      <div className="mt-5 flex items-center justify-between gap-3 text-[10px] text-[#c9bb9a]/45">
+                      <div className="mt-5 flex flex-wrap items-center justify-between gap-x-3 gap-y-2 text-[10px] text-[#c9bb9a]/45">
                         <span>
                           {
                             text.lastChecked
@@ -913,7 +913,7 @@ export function CheckoutPageView({
 
               {!createdOrder && (
                 <div className="fixed inset-x-0 bottom-0 z-[80] border-t border-[#d9b85f]/22 bg-[linear-gradient(180deg,rgba(10,15,46,0.96),rgba(8,12,38,0.99))] px-4 pb-[calc(0.75rem+env(safe-area-inset-bottom))] pt-3 shadow-[0_-20px_60px_rgba(0,0,0,0.42)] backdrop-blur-2xl lg:hidden">
-                  <div className="mx-auto flex max-w-xl items-center gap-3">
+                  <div className="mx-auto grid max-w-xl grid-cols-[48px_minmax(0,1fr)] items-center gap-3 min-[480px]:flex">
                     <Link
                       href={`/${locale}/cart`}
                       aria-label={text.cart}
@@ -931,11 +931,12 @@ export function CheckoutPageView({
                         {text.payable}
                       </p>
 
-                      <p className="mt-0.5 truncate text-base font-semibold text-[#f0d477]">
+                      <p className="mt-0.5 whitespace-normal text-base font-semibold leading-7 text-[#f0d477]">
+                        <bdi className="inline-block whitespace-nowrap">
                         {formatPrice(
                           couponPreview?.payableToman ?? quote.summary
                             .payableToman,
-                        )}{" "}
+                        )}</bdi>{" "}
                         <span className="text-[10px] font-normal text-[#c9bb9a]/55">
                           {text.toman}
                         </span>
@@ -947,7 +948,7 @@ export function CheckoutPageView({
                       disabled={
                         checkoutBlocked
                       }
-                      className="eloria-action eloria-action-primary flex min-h-12 shrink-0 items-center justify-center gap-2 rounded-full border border-[#e0c16d]/55 bg-[linear-gradient(100deg,rgba(112,80,20,0.22),rgba(218,183,90,0.3),rgba(112,80,20,0.22))] px-5 text-xs font-medium text-[#f6e4af] transition disabled:cursor-not-allowed disabled:opacity-35"
+                      className="eloria-action eloria-action-primary col-span-2 flex min-h-12 shrink-0 items-center justify-center gap-2 rounded-full border border-[#e0c16d]/55 bg-[linear-gradient(100deg,rgba(112,80,20,0.22),rgba(218,183,90,0.3),rgba(112,80,20,0.22))] px-5 text-xs font-medium text-[#f6e4af] transition disabled:cursor-not-allowed disabled:opacity-35"
                     >
                       {submitting ? (
                         <LoaderCircle className="h-4 w-4 animate-spin" />

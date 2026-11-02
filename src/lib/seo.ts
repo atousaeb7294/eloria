@@ -41,6 +41,7 @@ export function localizedPageMetadata(input: {
 }): Metadata {
   const normalizedPath = normalizePath(input.path);
   const canonical = `/${input.locale}${normalizedPath}`;
+  const image = input.image || "/images/hero/eloria-hero.webp";
 
   return {
     title: input.title,
@@ -61,17 +62,13 @@ export function localizedPageMetadata(input: {
       title: input.title,
       description: input.description,
       url: canonical,
-      ...(input.image
-        ? {
-            images: [{ url: input.image, alt: input.title }],
-          }
-        : {}),
+      images: [{ url: image, alt: input.title }],
     },
     twitter: {
       card: "summary_large_image",
       title: input.title,
       description: input.description,
-      ...(input.image ? { images: [input.image] } : {}),
+      images: [image],
     },
     ...(input.noIndex
       ? {

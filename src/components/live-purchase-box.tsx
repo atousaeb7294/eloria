@@ -135,7 +135,7 @@ export function LivePurchaseBox({
       className={`eloria-live-purchase${compact ? " is-compact" : ""}`}
       aria-label={fa ? "مشخصات محصول و خرید" : "Product details and purchase"}
     >
-      <div className="flex items-center justify-between gap-3">
+      <div className="eloria-purchase-heading">
         <h3>{quick ? (fa ? "خرید سریع" : "Quick purchase") : (fa ? "مشخصات محصول" : "Product details")}</h3>
         <span className="text-[10px] opacity-70">
           {updated
@@ -167,7 +167,7 @@ export function LivePurchaseBox({
           <p className="mt-4 text-xs opacity-75">
             {fa ? "قیمت محصول" : "Product price"}
           </p>
-          <p className="mb-4 mt-2 text-2xl text-[#f1d99c]" aria-live="polite">
+          <p className="eloria-purchase-price mb-4 mt-2 text-2xl text-[#f1d99c]" aria-live="polite">
             {format(quote.pricing.finalPriceToman)}{" "}
             <small className="text-xs">{fa ? "تومان" : "toman"}</small>
           </p>

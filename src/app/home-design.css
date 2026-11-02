@@ -1301,15 +1301,8 @@
   font-style: normal;
   font-display: swap;
 }
-@font-face {
-  font-family: "Eloria Vazir";
-  src: url("/images/home-design/vazirmatn.woff2") format("woff2");
-  font-weight: 100 900;
-  font-style: normal;
-  font-display: swap;
-}
 .eloria-home {
-  font-family: "Eloria Vazir", Tahoma, sans-serif;
+  font-family: "Vazirmatn Variable", Tahoma, sans-serif;
 }
 .eloria-home .brand-logo {
   height: 76px;
@@ -1327,7 +1320,7 @@
   mix-blend-mode: screen;
 }
 .eloria-home .brand small {
-  font-family: "Eloria Vazir", Tahoma, sans-serif;
+  font-family: "Vazirmatn Variable", Tahoma, sans-serif;
 }
 .eloria-home .portal {
   text-decoration: none;
@@ -1658,7 +1651,7 @@
     padding-top: 66px;
   }
   .eloria-home .hero-copy h1 {
-    font-family: "Eloria Vazir", Tahoma, sans-serif;
+    font-family: "Vazirmatn Variable", Tahoma, sans-serif;
   }
   .eloria-home .footer-logo {
     width: 52px;
@@ -1800,7 +1793,7 @@
   align-items: baseline;
   flex-wrap: wrap;
   gap: 6px;
-  font-family: "Eloria Vazir", Tahoma, sans-serif;
+  font-family: "Vazirmatn Variable", Tahoma, sans-serif;
   font-size: 13px;
   line-height: 1.9;
   margin: 0;
@@ -1987,7 +1980,7 @@
 .eloria-home .home-price :is(p, strong, span) {
   color: var(--plum);
   opacity: 1;
-  font-family: "Eloria Vazir", Tahoma, sans-serif;
+  font-family: "Vazirmatn Variable", Tahoma, sans-serif;
   font-size: 13px;
   line-height: 1.9;
   letter-spacing: 0;
@@ -2941,3 +2934,28 @@ html[lang="fa"] body .eloria-home .home-quick-dialog .eloria-live-purchase.is-co
 html[lang="fa"] body .eloria-home[dir="rtl"] :is(.hero-copy h1,.section-heading h2,.story h2) {
   padding-inline:.3em;max-width:100%;overflow:visible;
 }
+
+/* Final storefront pass: clear RTL purchase text, uncompressed cart controls. */
+.eloria-home .home-quick-dialog .eloria-live-purchase :is(p,small,span,button,a,label,select) {
+  font-family:"Vazirmatn Variable",Vazirmatn,Tahoma,sans-serif;
+  letter-spacing:normal; word-spacing:normal; word-break:normal; overflow-wrap:normal;
+}
+.eloria-home .home-quick-dialog .eloria-cart-summary p { font-size:13px; line-height:1.9; margin:0; }
+.eloria-home .home-quick-dialog .eloria-cart-summary .eloria-cart-stock { font-size:12px; margin-top:4px; }
+.eloria-home .home-quick-dialog .eloria-purchase-price { font-size:clamp(20px,2vw,26px); line-height:1.8; margin:8px 0 16px; }
+.eloria-home .home-quick-dialog .eloria-purchase-price small { font-size:12px; }
+.eloria-home .home-quick-dialog .eloria-live-purchase > p:last-child { margin-top:12px; line-height:1.9; font-size:11px; }
+.eloria-home .portal-grid .portal-mobile-toggle { display:none; }
+@media (max-width:760px) {
+  /* The artwork itself is the touch target. No separate open/close pill. */
+  .eloria-home .portal-toggle-label { display:none; }
+  .eloria-home .portal-grid .portal-mobile-toggle { display:flex; touch-action:manipulation; cursor:pointer; }
+  .eloria-home .portal-grid .portal:not(.is-open) .portal-entry { display:none; }
+  .eloria-home .portal-grid .portal.is-open .portal-entry {
+    min-height:44px; background:transparent!important; border-color:transparent!important;
+    text-decoration:underline; text-underline-offset:5px; margin:0;
+  }
+}
+
+.eloria-home .home-quick-loading { min-height:160px; display:grid; align-content:center; width:100%; font-size:13px; line-height:1.9; }
+html[lang="fa"] .home-quick-loading [lang="en"],html[lang="en"] .home-quick-loading [lang="fa"] { display:none; }

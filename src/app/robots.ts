@@ -17,7 +17,9 @@ export default function robots():
     rules: [
       {
         userAgent: "*",
-        allow: "/",
+        // Product and hero media are public and appear in product JSON-LD.
+        // Keep transactional APIs blocked while allowing their image URLs.
+        allow: ["/", "/api/media/products/", "/api/media/hero/"],
         disallow: [
           "/api/",
           "/fa/admin/",

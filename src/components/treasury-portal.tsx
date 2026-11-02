@@ -35,7 +35,14 @@ export function TreasuryPortal({ treasury, piece, locale, prefetch }: {
   const id = `treasury-${useId().replace(/[^a-zA-Z0-9_-]/g, "")}`;
   const fa = locale === "fa";
   const name = fa ? treasury.fa : treasury.en;
+  const toggle = () => setExpanded(value => value === true ? false : true);
+  const toggleLabel = fa ? `${open ? "بستن" : "باز کردن"} دروازهٔ ${name} و پیش‌نمایش اثر` : `${open ? "Close" : "Open"} ${name} gate and product preview`;
   return <article className={`portal ${treasury.key}${open ? " is-open" : ""}`}
+    onClick={event => {
+      // A click is emitted only after a tap, never while scrolling the page.
+      if (window.matchMedia("(max-width: 760px)").matches &&
+          !(event.target as Element).closest("a, button")) toggle();
+    }}
     onPointerEnter={event => {
       if (event.pointerType === "mouse") {
         setHovered(true);
@@ -61,8 +68,8 @@ export function TreasuryPortal({ treasury, piece, locale, prefetch }: {
       </div>
       <ReferenceTreasuryGate treasury={treasury.key} />
       <button type="button" className="portal-gate-toggle" aria-expanded={open} aria-controls={`${id}-photo`}
-        aria-label={fa ? `${open ? "بستن" : "باز کردن"} دروازهٔ ${name} و پیش‌نمایش اثر` : `${open ? "Close" : "Open"} ${name} gate and product preview`}
-        onClick={() => setExpanded(value => value === true ? false : true)}>
+        aria-label={toggleLabel}
+        onClick={toggle}>
         <span className="portal-toggle-label" aria-hidden="true">
           {fa ? (open ? "بستن دریچه" : "باز کردن دریچه") : (open ? "Close window" : "Open window")}
         </span>
@@ -72,7 +79,11 @@ export function TreasuryPortal({ treasury, piece, locale, prefetch }: {
       <span className="portal-kicker">{fa ? "مجموعهٔ الوریا" : "THE ELORIA COLLECTION"}</span>
       <h3>{fa ? `گنجینهٔ ${name}` : `${name} treasury`}</h3>
       <p>{fa ? treasury.tagline : treasury.english}</p>
-      <TreasuryLink prefetch={prefetch} className="portal-cta" href={`/${locale}/collections/${treasury.key}`}
+      <button type="button" className="portal-cta portal-mobile-toggle" onClick={toggle}
+        aria-expanded={open} aria-controls={`${id}-photo`} aria-label={toggleLabel}>
+        {fa ? `گنجینهٔ ${name}` : `${name} treasury`}
+      </button>
+      <TreasuryLink prefetch={prefetch && open} className="portal-cta portal-entry" href={`/${locale}/collections/${treasury.key}`}
         aria-label={fa ? `ورود به گنجینهٔ ${name}` : `Enter the ${name} treasury`}>
         {fa ? "ورود به گنجینه" : "Enter the treasury"}
       </TreasuryLink>

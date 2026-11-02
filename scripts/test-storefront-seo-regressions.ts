@@ -3,6 +3,8 @@ import React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { calculateShipping } from "../src/lib/shipping";
 import { ProductStructuredData } from "../src/components/product-detail/product-structured-data";
+import { localizedPageMetadata } from "../src/lib/seo";
+import robots from "../src/app/robots";
 
 async function main() {
   Object.assign(process.env, {
@@ -46,6 +48,18 @@ async function main() {
   assert.ok(entries.filter(entry => entry.url.includes("/collections/")).every(entry => /\/collections\/(gold|silver|weave)$/.test(entry.url)));
   const productEntry = entries.find(entry => entry.url.includes("/fa/products/"));
   assert.equal(productEntry?.alternates?.languages?.en, `https://eloria.test/en/products/${encodeURIComponent("اثر / یک")}`);
+  prisma.contentArticle.findMany = (async () => { throw new Error("journal unavailable"); }) as typeof prisma.contentArticle.findMany;
+  assert((await sitemap()).some(entry => entry.url.includes("/fa/products/")), "Journal failure must preserve product indexing");
+  prisma.product.findMany = (async () => { throw new Error("catalog unavailable"); }) as typeof prisma.product.findMany;
+  prisma.contentArticle.findMany = (async () => [{ slug: "article", updatedAt: stamp }]) as unknown as typeof prisma.contentArticle.findMany;
+  assert((await sitemap()).some(entry => entry.url.endsWith("/fa/journal/article")), "Catalog failure must preserve journal indexing");
+  const rules = robots().rules;
+  assert(Array.isArray(rules));
+  assert(Array.isArray(rules[0].allow) && rules[0].allow.includes("/api/media/products/") && rules[0].allow.includes("/api/media/hero/"));
+  assert(Array.isArray(rules[0].disallow) && rules[0].disallow.includes("/api/"));
+  const metadata = localizedPageMetadata({locale:"fa",path:"/about",title:"الوریا",description:"هنر دست"});
+  assert.deepEqual(metadata.openGraph?.images,[{url:"/images/hero/eloria-hero.webp",alt:"الوریا"}]);
+  assert.deepEqual(metadata.twitter?.images,["/images/hero/eloria-hero.webp"]);
   await prisma.$disconnect();
   console.log("PASS: actual shipping fee in IRR, safe JSON-LD, canonical sitemap routes, encoded slugs, deduplication and language alternates (mock catalog)");
 }

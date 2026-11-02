@@ -49,14 +49,15 @@ async function main() {
 
   (globalThis as typeof globalThis & { IS_REACT_ACT_ENVIRONMENT: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
   const originals = new Map(["window", "self"].map(key => [key, Object.getOwnPropertyDescriptor(globalThis, key)]));
-  const browser = { setTimeout, clearTimeout, location: { href: "https://example.invalid/fa" } };
+  const browser = { setTimeout, clearTimeout, location: { href: "https://example.invalid/fa" }, matchMedia: () => ({ matches: true }) };
   for (const key of originals.keys()) Object.defineProperty(globalThis, key, { configurable: true, value: browser });
   let view: ReactTestRenderer | undefined;
   const treasury = { key: "silver" as const, fa: "نقره", en: "Silver", tagline: "روشن، آرام، همراه هر روز", english: "Quiet brilliance" };
   const piece = { id: "live", slug: "live-product", name: "اثر واقعی", group: "silver" as const, imageUrl: "/api/media/products/12345678-1234-4234-8234-123456789abc", cutoutUrl: "/api/media/hero/12345678-1234-4234-8234-123456789abc" };
   try {
     await act(async () => { view = create(createElement(TreasuryPortal, { treasury, piece, locale: "fa", prefetch: false })); });
-    const toggle = () => view!.root.findByType("button");
+    const toggle = () => view!.root.findByProps({ className: "portal-gate-toggle" });
+    const mobileToggle = () => view!.root.findByProps({ className: "portal-cta portal-mobile-toggle" });
     const card = () => view!.root.findByType("article");
     assert.equal(toggle().props["aria-expanded"], false);
     await act(async () => card().props.onPointerEnter({ pointerType: "touch" }));
@@ -68,6 +69,12 @@ async function main() {
     assert.equal(toggle().props["aria-expanded"], true, "Lifting a finger must not close the gate");
     await act(async () => toggle().props.onClick());
     assert.equal(toggle().props["aria-expanded"], false, "The next tap closes the gate");
+    await act(async () => mobileToggle().props.onClick());
+    assert.equal(toggle().props["aria-expanded"], true, "The existing treasury-name control opens the same gate");
+    await act(async () => card().props.onClick({ target: { closest: () => null } }));
+    assert.equal(toggle().props["aria-expanded"], false, "Tapping the treasury text area toggles the gate");
+    await act(async () => card().props.onClick({ target: { closest: () => ({ tagName: "A" }) } }));
+    assert.equal(toggle().props["aria-expanded"], false, "The entry link keeps its own navigation action");
     await act(async () => card().props.onPointerEnter({ pointerType: "mouse" }));
     assert.equal(toggle().props["aria-expanded"], true);
     await act(async () => toggle().props.onClick());

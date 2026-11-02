@@ -324,8 +324,8 @@ export function CartPageView({
                           : "border-amber-300/25",
                       ].join(" ")}
                     >
-                    <div className="grid grid-cols-[96px_minmax(0,1fr)] gap-4 sm:grid-cols-[150px_minmax(0,1fr)] sm:gap-5">
-                      <div className="relative aspect-square overflow-hidden rounded-[1.5rem] border border-white/[0.07] bg-[#0c1130]">
+                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-[150px_minmax(0,1fr)] sm:gap-5">
+                      <div className="relative mx-auto aspect-square w-40 max-w-full overflow-hidden rounded-[1.5rem] border border-white/[0.07] bg-[#0c1130] sm:mx-0 sm:w-full">
                         {item.image ? (
                           <Image
                             src={
@@ -346,7 +346,7 @@ export function CartPageView({
                                 item.image.url,
                               )
                             }
-                            sizes="(min-width: 640px) 150px, 96px"
+                            sizes="(min-width: 640px) 150px, 160px"
                             className="object-cover"
                           />
                         ) : (
@@ -358,10 +358,10 @@ export function CartPageView({
 
                       <div className="flex min-w-0 flex-col">
                         <div className="flex items-start justify-between gap-4">
-                          <div>
+                          <div className="min-w-0 flex-1">
                             <Link
                               href={`/${locale}/products/${item.slug}`}
-                              className="text-base font-medium leading-7 text-[#f3e3be] transition hover:text-[#f7d981] sm:text-lg"
+                              className="block whitespace-normal text-base font-medium leading-8 text-[#f3e3be] transition hover:text-[#f7d981] sm:text-lg"
                             >
                               {
                                 productName
@@ -407,7 +407,7 @@ export function CartPageView({
                                   item.variantId,
                               })
                             }
-                            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-red-200/15 text-red-100/45 transition hover:border-red-200/35 hover:bg-red-200/[0.07] hover:text-red-100"
+                            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-red-200/15 text-red-100/45 transition hover:border-red-200/35 hover:bg-red-200/[0.07] hover:text-red-100"
                           >
                             <Trash2 className="h-4 w-4" />
                           </button>
@@ -423,7 +423,7 @@ export function CartPageView({
                           </div>
                         )}
 
-                        <div className="mt-4 grid grid-cols-2 gap-4 border-t border-white/[0.07] pt-4 sm:mt-5 sm:grid-cols-3 sm:pt-5">
+                        <div className="mt-4 grid grid-cols-[repeat(auto-fit,minmax(min(100%,150px),1fr))] gap-4 border-t border-white/[0.07] pt-4 sm:mt-5 sm:pt-5">
                           <div>
                             <p className="text-[10px] text-[#c8b992]/45">
                               {
@@ -454,6 +454,7 @@ export function CartPageView({
                             <div className="mt-2 inline-flex items-center rounded-full border border-[#d8b860]/20 bg-black/10 p-1">
                               <button
                                 type="button"
+                                aria-label={isPersian ? "کاهش تعداد" : "Decrease quantity"}
                                 onClick={() =>
                                   changeQuantity(
                                     item,
@@ -461,7 +462,7 @@ export function CartPageView({
                                       1,
                                   )
                                 }
-                                className="flex h-7 w-7 items-center justify-center rounded-full text-[#d7c79f]/65 transition hover:bg-white/[0.06] hover:text-[#f4dfaa]"
+                                className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-[#d7c79f]/65 transition hover:bg-white/[0.06] hover:text-[#f4dfaa]"
                               >
                                 <Minus className="h-3.5 w-3.5" />
                               </button>
@@ -474,6 +475,7 @@ export function CartPageView({
 
                               <button
                                 type="button"
+                                aria-label={isPersian ? "افزایش تعداد" : "Increase quantity"}
                                 disabled={
                                   item.quantity >=
                                     99 ||
@@ -487,14 +489,14 @@ export function CartPageView({
                                       1,
                                   )
                                 }
-                                className="flex h-7 w-7 items-center justify-center rounded-full text-[#d7c79f]/65 transition hover:bg-white/[0.06] hover:text-[#f4dfaa] disabled:cursor-not-allowed disabled:opacity-25"
+                                className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-[#d7c79f]/65 transition hover:bg-white/[0.06] hover:text-[#f4dfaa] disabled:cursor-not-allowed disabled:opacity-25"
                               >
                                 <Plus className="h-3.5 w-3.5" />
                               </button>
                             </div>
                           </div>
 
-                          <div className="col-span-2 sm:col-span-1">
+                          <div>
                             <p className="text-[10px] text-[#c8b992]/45">
                               {
                                 text.lineTotal
@@ -583,7 +585,7 @@ export function CartPageView({
               </h2>
 
               <div className="mt-7 space-y-4 border-y border-white/[0.07] py-6">
-                <div className="flex items-center justify-between gap-4 text-sm">
+                <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 text-sm">
                   <span className="text-[#c9bb9a]/60">
                     {
                       text.itemCount
@@ -598,7 +600,7 @@ export function CartPageView({
                   </span>
                 </div>
 
-                <div className="flex items-end justify-between gap-4">
+                <div className="flex flex-wrap items-end justify-between gap-x-4 gap-y-2">
                   <span className="text-sm text-[#c9bb9a]/60">
                     {
                       (isPersian ? "مبلغ با ارسال" : "Total with delivery")
@@ -719,7 +721,7 @@ export function CartPageView({
                     {isPersian ? "مبلغ با ارسال" : "Total with delivery"}
                   </p>
 
-                  <p className="mt-0.5 truncate text-base font-semibold text-[#f0d477]">
+                  <p className="mt-0.5 whitespace-normal break-words text-base font-semibold leading-7 text-[#f0d477]">
                     {formatPrice(
                       quote.summary
                         .payableToman,

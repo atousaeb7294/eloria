@@ -702,7 +702,8 @@ html[lang="fa"] input[type="password"] {
 }
 
 html[lang="fa"] :where(p, li, label, button, a, h1, h2, h3, h4, h5, h6) {
-  overflow-wrap: anywhere;
+  overflow-wrap: break-word;
+  word-break: normal;
 }
 
 /* Keep Persian body and controls readable; display titles use the same
@@ -1154,7 +1155,7 @@ html[lang="fa"] body :is(.font-persian-title,.font-persian-calligraphy,.eloria-h
 .eloria-glass-storefront .eloria-catalog-card h2 {
   height:auto;min-height:3.6em;max-height:none;line-height:1.8;
   padding:.15em .25em .3em;overflow:visible;display:block;-webkit-line-clamp:unset;
-  white-space:normal;word-break:normal;overflow-wrap:anywhere;
+  white-space:normal;word-break:normal;overflow-wrap:break-word;
 }
 .eloria-glass-storefront .eloria-quick-dialog {
  border:1px solid #c9a972;background:linear-gradient(135deg,#51334ceF,#252e44f5);
@@ -1172,3 +1173,26 @@ html[lang="fa"] body :is(.font-persian-title,.font-persian-calligraphy,.eloria-h
  .eloria-glass-storefront .eloria-catalog-card {backdrop-filter:none;}
 }
 /* ELORIA POLISH V7 END */
+
+/* Purchase controls use their available card width, not the page breakpoint. */
+.eloria-cart-controls { width:100%; min-width:0; container-type:inline-size; }
+.eloria-cart-layout {
+  display:grid; grid-template-columns:minmax(0,1fr) auto;
+  grid-template-areas:"summary quantity" "checkout checkout";
+  align-items:center; gap:12px;
+}
+.eloria-cart-quantity { grid-area:quantity; }
+.eloria-cart-quantity button { min-width:44px; min-height:44px; flex:none; touch-action:manipulation; }
+.eloria-cart-summary { grid-area:summary; min-width:0; text-align:start; }
+.eloria-cart-summary p { margin:0; font-size:13px; line-height:1.9; word-break:normal; overflow-wrap:normal; }
+.eloria-cart-summary .eloria-cart-stock { margin-top:4px; font-size:12px; opacity:1; }
+.eloria-cart-checkout { grid-area:checkout; width:100%; min-width:0; min-height:48px; padding:10px 14px; }
+.eloria-cart-checkout svg { flex-shrink:0; }
+.eloria-purchase-heading { display:flex; flex-wrap:wrap; align-items:baseline; justify-content:space-between; gap:6px 12px; }
+.eloria-purchase-heading h3 { min-width:0; }
+.eloria-purchase-heading > span { line-height:1.8; }
+@container (max-width:250px) {
+  .eloria-cart-layout { grid-template-columns:minmax(0,1fr); grid-template-areas:"summary" "quantity" "checkout"; }
+  .eloria-cart-quantity { justify-self:center; }
+  .eloria-cart-summary { text-align:center; }
+}

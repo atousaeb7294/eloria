@@ -40,9 +40,8 @@ const treasuryPreview = read("src/app/api/treasury/preview/route.ts");
 
 check(
   "Home mounts the managed design with cleanup and native section anchors",
-  homeRootPage.includes("<HomeContent") &&
-    homeRootPage.includes("<EloriaHome") &&
-    homeRootPage.includes("await getHomeDesign(locale)") &&
+  homeRootPage.includes("<EloriaHome") &&
+    homeRootPage.includes("await getHomeDesign(resolvedLocale)") &&
     ["treasuries", "featured", "story"].every(
       id => homeView.includes(`id="${id}"`) &&
         homeView.includes(`href: "#${id}"`),
@@ -210,7 +209,7 @@ check(
 // before rendering the shared footer. Do not require main to live in page.tsx.
 const homeMainMatch = homeView.match(/<main\b[^>]*>/i);
 const homeMainTag = homeMainMatch?.[0] ?? "";
-const homeRenderIndex = homeRootPage.indexOf("<HomeContent");
+const homeRenderIndex = homeRootPage.indexOf("<EloriaHome");
 const homeFooterIndex = homeRootPage.indexOf("<SiteFooter");
 check(
   "Home has a focusable dedicated main landmark",

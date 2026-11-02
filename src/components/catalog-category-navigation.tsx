@@ -62,7 +62,7 @@ export function CatalogCategoryNavigation({
             href={href}
             aria-current={active ? "page" : undefined}
             className={[
-              "group flex min-h-14 items-center justify-center gap-2 rounded-2xl border px-3 text-xs transition duration-300 sm:text-sm",
+              "group flex min-h-14 min-w-0 items-center justify-center gap-1.5 rounded-2xl border px-2 py-2 text-xs transition duration-300 sm:gap-2 sm:px-3 sm:text-sm",
               active
                 ? "border-[#e5c874]/55 bg-[#d9b85f]/[0.11] text-[#f4df9f] shadow-[0_12px_35px_rgba(0,0,0,0.24),0_0_20px_rgba(217,184,95,0.07)]"
                 : "border-white/[0.08] bg-[#0c1130]/55 text-[#cbbd9d]/75 hover:border-[#d9b85f]/32 hover:text-[#ead8aa]",
@@ -79,8 +79,8 @@ export function CatalogCategoryNavigation({
               <Icon className="h-[18px] w-[18px]" />
             </span>
 
-            <span className="min-w-0 truncate">{label}</span>
-            <span className="text-[10px] text-white/45">
+            <span className="min-w-0 flex-1 whitespace-normal leading-6">{label}</span>
+            <span className="shrink-0 text-[10px] text-white/45">
               {productCount?.toLocaleString(isPersian ? "fa-IR" : "en-US")}
             </span>
           </Link>

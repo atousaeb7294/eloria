@@ -1,5 +1,5 @@
 import { PALACE_OPENING_MS } from "./palace-entry";
-import { LIDS, hingeDepth, lidVertex, openingAngle, projectWorld, type Lid, type Point } from "./palace-hinge";
+import { LIDS, hingeDepth, lidVertex, openingAngle, projectWorld, type Point } from "./palace-hinge";
 import { MOBILE_SCENE_QUERY, SCENES, type SceneMode } from "./palace-scene";
 import type { Treasury } from "./palace-products";
 

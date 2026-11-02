@@ -112,7 +112,7 @@ export function SpecificationItem({
           {label}
         </span>
 
-        <strong className="mt-1 block truncate text-sm font-medium text-[#e8ddc8]">
+        <strong className="mt-1 block whitespace-normal break-words text-sm font-medium leading-7 text-[#e8ddc8]">
           {value}
         </strong>
       </span>

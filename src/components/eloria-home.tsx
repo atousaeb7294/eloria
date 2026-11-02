@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import dynamic from "next/dynamic";
 import {
   useEffect,
   useRef,
@@ -12,7 +13,6 @@ import { CustomerAccountHeaderButton } from "@/components/customer-account-heade
 import { QuickViewImage } from "@/components/quick-view-image";
 import { loadedCardPreview, warmQuickView } from "@/lib/quick-view-media";
 import { ProductCardLivePrice } from "@/components/product-card-live-price";
-import { QuickPurchase } from "@/components/quick-purchase";
 import { TreasuryPortal } from "@/components/treasury-portal";
 import { CircularProductImage } from "@/components/circular-product-image";
 import { TreasuryLink } from "@/components/treasury-transition";
@@ -22,6 +22,12 @@ import { Menu, Pause, Play, ShoppingBag, X } from "lucide-react";
 import { EloriaKnotIcon, EloriaJewelIcon, EloriaPortalIcon } from "@/components/eloria-icons";
 import { GoldRuneIcon, SilverRuneIcon, WeaveRuneIcon } from "@/components/material-rune-icons";
 import type { HomeDesign, HomePiece } from "@/lib/home-design";
+
+const QuickPurchase = dynamic(() => import("@/components/quick-purchase").then(module => module.QuickPurchase), {
+  loading: () => <div className="home-quick-loading" role="status" aria-busy="true">
+    <span lang="fa">در حال آماده‌سازی خرید…</span><span lang="en">Preparing purchase…</span>
+  </div>,
+});
 
 const subscribeMotion = (cb: () => void) => {
   const q = window.matchMedia("(prefers-reduced-motion: reduce)");

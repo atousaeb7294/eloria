@@ -100,7 +100,7 @@ export function PurchaseProgress({
 
                 <span
                   className={[
-                    "mt-2 truncate px-1 text-[10px] sm:text-[11px]",
+                    "mt-2 whitespace-normal px-1 text-center text-[10px] leading-5 sm:text-[11px]",
                     isActive
                       ? "text-[#f0dc9d]"
                       : isComplete
