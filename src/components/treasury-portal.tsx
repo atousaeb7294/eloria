@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useId, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import { TreasuryLink } from "@/components/treasury-transition";
 import { ReferenceTreasuryGate } from "@/components/reference-treasury-gate";
 import { localMediaLoader } from "@/lib/local-media-loader";
@@ -31,13 +31,32 @@ export function TreasuryPortal({ treasury, piece, locale, prefetch }: {
   // A mouse hover previews temporarily; a tap/click is an explicit choice.
   const [hovered, setHovered] = useState(false);
   const [expanded, setExpanded] = useState<boolean | null>(null);
-  const open = expanded ?? hovered;
+  const card = useRef<HTMLElement>(null);
+  const [inView, setInView] = useState(false);
+  useEffect(() => {
+    const target = card.current;
+    if (!target || typeof IntersectionObserver === "undefined") return;
+    const mobile = window.matchMedia("(max-width: 760px) and (hover: none)");
+    const observer = new IntersectionObserver(([entry]) => {
+      setInView(entry.isIntersecting);
+      if (!entry.isIntersecting) setExpanded(null);
+    }, { rootMargin: "-30% 0px -30% 0px" });
+    const sync = () => {
+      observer.disconnect();
+      setInView(false);
+      if (mobile.matches) observer.observe(target);
+    };
+    sync();
+    mobile.addEventListener("change", sync);
+    return () => { observer.disconnect(); mobile.removeEventListener("change", sync); };
+  }, []);
+  const open = expanded ?? (hovered || inView);
   const id = `treasury-${useId().replace(/[^a-zA-Z0-9_-]/g, "")}`;
   const fa = locale === "fa";
   const name = fa ? treasury.fa : treasury.en;
-  const toggle = () => setExpanded(value => value === true ? false : true);
+  const toggle = () => setExpanded(value => !(value ?? inView));
   const toggleLabel = fa ? `${open ? "بستن" : "باز کردن"} دروازهٔ ${name} و پیش‌نمایش اثر` : `${open ? "Close" : "Open"} ${name} gate and product preview`;
-  return <article className={`portal ${treasury.key}${open ? " is-open" : ""}`}
+  return <article ref={card} className={`portal ${treasury.key}${open ? " is-open" : ""}`}
     onClick={event => {
       // A click is emitted only after a tap, never while scrolling the page.
       if (window.matchMedia("(max-width: 760px)").matches &&

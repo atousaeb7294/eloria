@@ -92,6 +92,7 @@ function normalizePageSize(value: number | undefined): number {
 
 function getCatalogCacheKey(filters: PricedCatalogFilters): string {
   return JSON.stringify({
+    productIds: filters.productIds,
     search: filters.search?.trim() ?? "",
     collectionSlug: filters.collectionSlug?.trim().toLowerCase() ?? "",
     material: filters.material ?? "",

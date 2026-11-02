@@ -1,11 +1,10 @@
-export type ProductAudience = "WOMEN" | "MEN";
+export type ProductAudience = "WOMEN" | "MEN" | "UNISEX";
 
 /** Explicit admin metadata; never infer the audience from a name, metal or image. */
 export function productAudience(specifications: unknown): ProductAudience {
-  return specifications !== null && typeof specifications === "object" &&
-    !Array.isArray(specifications) &&
-    (specifications as Record<string, unknown>).eloriaAudience === "MEN"
-    ? "MEN" : "WOMEN";
+  if (!specifications || typeof specifications !== "object" || Array.isArray(specifications)) return "WOMEN";
+  const audience = (specifications as Record<string, unknown>).eloriaAudience;
+  return audience === "MEN" || audience === "UNISEX" ? audience : "WOMEN";
 }
 
 export function withProductAudience(specifications: unknown, audience: ProductAudience) {

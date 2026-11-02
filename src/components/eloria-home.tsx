@@ -57,7 +57,7 @@ const treasuries = [
   {
     key: "weave",
     Icon: WeaveRuneIcon,
-    fa: "بافت",
+    fa: "بافت و اکسسوری",
     en: "Weave",
     tagline: "رنگ و گره، با امضای دست",
     english: "Color and knots, made by hand",
@@ -77,8 +77,6 @@ export function EloriaHome({
   const [offscreen, setOffscreen] = useState(false);
   const [hidden, setHidden] = useState(false);
   const [quick, setQuick] = useState<(HomePiece & { previewSrc?: string }) | null>(null);
-  const [featuredVisible, setFeaturedVisible] = useState(false);
-  const featured = useRef<HTMLElement>(null);
   const introComplete = useIntroComplete();
   const reduced = useSyncExternalStore(
     subscribeMotion,
@@ -103,17 +101,6 @@ export function EloriaHome({
     trigger.current = element;
     setQuick({ ...piece, previewSrc: loadedCardPreview(element) });
   }
-  useEffect(() => {
-    if (!featured.current) return;
-    const observer = new IntersectionObserver(entries => {
-      if (entries.some(entry => entry.isIntersecting)) {
-        setFeaturedVisible(true);
-        observer.disconnect();
-      }
-    }, { rootMargin: "250px" });
-    observer.observe(featured.current);
-    return () => observer.disconnect();
-  }, []);
   useEffect(() => {
     const element = stage.current;
     if (!element) return;
@@ -350,7 +337,7 @@ export function EloriaHome({
             ))}
           </div>
         </section>
-        <section className="featured section" id="featured" ref={featured}>
+        <section className="featured section" id="featured">
           <div className="section-heading">
             <div>
               <div className="eyebrow">THE CURATED EDIT</div>
@@ -386,6 +373,7 @@ export function EloriaHome({
                         src={p.imageUrl}
                         cutoutSrc={p.cutoutUrl}
                         imageId={p.imageId}
+                        priority={i < 2}
                         alt={p.name}
                         sizes="(max-width:760px) 42vw, (max-width:1100px) 28vw, 300px"
                       />
@@ -412,7 +400,7 @@ export function EloriaHome({
                         slug={p.slug}
                         locale={locale}
                         compact
-                        enabled={introComplete && featuredVisible}
+                        initialPriceToman={p.displayPriceToman}
                       />
                     </div>
                   </div>

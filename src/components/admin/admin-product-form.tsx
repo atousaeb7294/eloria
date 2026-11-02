@@ -22,7 +22,7 @@ import {
 export type AdminProductFormValue = {
   weightUnits?: import("@/lib/weight-units").WeightUnits;
   id?: string;
-  audience?: "WOMEN" | "MEN";
+  audience?: "WOMEN" | "MEN" | "UNISEX";
   collectionId: string;
   slug: string;
   sku: string;
@@ -238,6 +238,7 @@ export function AdminProductForm({
             <select name="audience" defaultValue={value.audience ?? "WOMEN"} className={inputClassName}>
               <option value="WOMEN">بانوان</option>
               <option value="MEN">آقایان</option>
+              <option value="UNISEX">بانوان و آقایان</option>
             </select>
           </Field>
           <Field label="نوع اثر *" hint="این گزینه فقط نوع محصول را برای فیلتر تمام آثار مشخص می‌کند؛ گنجینه‌ها بر اساس فلز و مخاطب ساخته می‌شوند.">

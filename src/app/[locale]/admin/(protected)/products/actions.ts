@@ -60,7 +60,7 @@ export async function reassignCanonicalProductLegendsAction(
     { attempts: 2, delayMilliseconds: 200 },
   );
 
-  if (products.filter(p => productAudience(p.specifications) === "WOMEN").length > ELORIA_MYTH_LIBRARY.length || products.filter(p => productAudience(p.specifications) === "MEN").length > ELORIA_MEN_MYTH_LIBRARY.length) {
+  if (products.filter(p => productAudience(p.specifications) !== "MEN").length > ELORIA_MYTH_LIBRARY.length || products.filter(p => productAudience(p.specifications) === "MEN").length > ELORIA_MEN_MYTH_LIBRARY.length) {
     redirect(`/${locale}/admin/products?legends=too-many`);
   }
 
@@ -484,7 +484,7 @@ function parseProductInput(
 
   return {
     locale,
-    audience: readEnum(formData, "audience", ["WOMEN", "MEN"] as const, "WOMEN"),
+    audience: readEnum(formData, "audience", ["WOMEN", "MEN", "UNISEX"] as const, "WOMEN"),
     collectionId:
       readText(
         formData,

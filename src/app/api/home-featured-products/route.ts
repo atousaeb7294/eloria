@@ -1,3 +1,4 @@
+import { productAudience } from "@/lib/product-audience";
 import { NextResponse } from "next/server";
 
 import { withDatabaseStatementTimeout } from "@/lib/prisma";
@@ -18,7 +19,7 @@ type HomeFeaturedItem = {
   material?: "GOLD" | "SILVER";
   hasGold?: boolean;
   hasSilver?: boolean;
-  audience?: "WOMEN" | "MEN";
+  audience?: "WOMEN" | "MEN" | "UNISEX";
   stock?: number;
   previewPriceToman?: string;
   previewOnly?: boolean;
@@ -271,7 +272,7 @@ export async function GET(request: Request) {
       material: product.material,
       hasGold: product.hasGold,
       hasSilver: product.hasSilver,
-      audience: product.specifications !== null && typeof product.specifications === "object" && !Array.isArray(product.specifications) && (product.specifications as Record<string, unknown>).eloriaAudience === "MEN" ? "MEN" : "WOMEN",
+      audience: productAudience(product.specifications),
       stock: product.stock,
       badge: editorialBadge({
         locale,
@@ -330,7 +331,7 @@ export async function GET(request: Request) {
             material: product.material,
             hasGold,
             hasSilver,
-            audience: specifications.eloriaAudience === "MEN" ? "MEN" : "WOMEN",
+            audience: productAudience(specifications),
             stock: product.stock,
             badge: locale === "fa" ? "اثر الوریا" : "Eloria creation",
           };

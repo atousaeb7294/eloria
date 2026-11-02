@@ -8,6 +8,7 @@ export type CatalogMaterial = "GOLD" | "SILVER";
 export type CatalogAvailability = "ALL" | "AVAILABLE" | "OUT_OF_STOCK";
 
 export type ProductCatalogFilters = {
+  productIds?: string[];
   search?: string;
   collectionSlug?: string;
   material?: CatalogMaterial;
@@ -219,10 +220,11 @@ async function buildCatalogWhere(filters: ProductCatalogFilters) {
   }
 
   const where: Prisma.ProductWhereInput = {
+    ...(filters.productIds ? { id: { in: filters.productIds } } : {}),
     status: { in: ["ACTIVE", "OUT_OF_STOCK"] },
     collection: { isActive: true },
     ...(selectedCollection?.slug === "men"
-      ? { specifications: { path: ["eloriaAudience"], equals: "MEN" } }
+      ? { OR: ["MEN", "UNISEX"].map(value => ({ specifications: { path: ["eloriaAudience"], equals: value } })) }
       : selectedCollection ? { collectionId: selectedCollection.id } : {}),
     ...(filters.weaveOnly
       ? { hasGold: false, hasSilver: false }

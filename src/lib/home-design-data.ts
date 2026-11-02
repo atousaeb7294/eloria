@@ -6,6 +6,7 @@ export type HomePiece = {
   name: string;
   imageUrl: string;
   imageId?: string;
+  displayPriceToman?: string | null;
   cutoutUrl?: string;
   group: "gold" | "silver" | "weave";
   variants?: { id: string; titleFa: string; titleEn: string; stock: number }[];
