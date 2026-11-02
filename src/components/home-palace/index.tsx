@@ -11,7 +11,7 @@ import "./palace.css";
 const destinations = [
   { slug: "gold", name: "گنجینهٔ طلا", story: "نقشی از آفتاب، برای ماندن" },
   { slug: "silver", name: "گنجینهٔ نقره", story: "روایتی آرام از روشنایی" },
-  { slug: "weave", name: "گنجینهٔ بافت", story: "گره‌به‌گره، بافته از مهر" },
+  { slug: "weave", name: "گنجینهٔ بافت و اکسسوری", story: "گره‌به‌گره، بافته از مهر" },
 ] as const;
 
 function ProductFrame({ product, frame, featured = false, fallbackHref, fallbackName }: {

@@ -474,7 +474,7 @@ function parseProductInput(
   const hasGold = formData.get("hasGold") === "on";
   const hasSilver = formData.get("hasSilver") === "on";
   if (!hasGold && !hasSilver && pricingMode !== "MANUAL") {
-    throw new AdminProductActionError("برای گنجینهٔ بافت بدون فلز، قیمت‌گذاری ثابت را انتخاب کنید.");
+    throw new AdminProductActionError("برای گنجینهٔ بافت و اکسسوری بدون فلز، قیمت‌گذاری ثابت را انتخاب کنید.");
   }
   const goldComponentWeight = readWeight(formData, "goldComponentWeight", material === "GOLD" ? readWeight(formData, "metalWeight", null) : null);
   const silverComponentWeight = readWeight(formData, "silverComponentWeight", material === "SILVER" ? readWeight(formData, "metalWeight", null) : null);

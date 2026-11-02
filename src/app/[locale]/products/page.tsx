@@ -170,7 +170,7 @@ export default async function ProductsPage({
       : undefined;
   const treasuryTitle = weaveOnly
     ? isPersian
-      ? "گنجینهٔ بافت"
+      ? "گنجینهٔ بافت و اکسسوری"
       : "Woven Treasury"
     : mensCollection
       ? isPersian

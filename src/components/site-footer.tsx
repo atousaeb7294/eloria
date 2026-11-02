@@ -170,7 +170,7 @@ export function SiteFooter({ locale }: SiteFooterProps) {
           icon: CircleDot,
         },
         {
-          label: locale === "fa" ? "گنجینهٔ بافت" : "Woven Treasury",
+          label: locale === "fa" ? "گنجینهٔ بافت و اکسسوری" : "Woven Treasury",
           href: `/${locale}/collections/weave`,
           icon: Sparkles,
         },

@@ -2947,11 +2947,11 @@ html[lang="fa"] body .eloria-home[dir="rtl"] :is(.hero-copy h1,.section-heading 
 .eloria-home .home-quick-dialog .eloria-live-purchase > p:last-child { margin-top:12px; line-height:1.9; font-size:11px; }
 .eloria-home .portal-grid .portal-mobile-toggle { display:none; }
 @media (max-width:760px) {
-  /* The artwork itself is the touch target. No separate open/close pill. */
+  /* Mobile users enter a treasury in one tap; the preview remains visual only. */
   .eloria-home .portal-toggle-label { display:none; }
-  .eloria-home .portal-grid .portal-mobile-toggle { display:flex; touch-action:manipulation; cursor:pointer; }
-  .eloria-home .portal-grid .portal:not(.is-open) .portal-entry { display:none; }
-  .eloria-home .portal-grid .portal.is-open .portal-entry {
+  .eloria-home .portal-grid .portal-mobile-toggle { display:none; }
+  .eloria-home .portal-grid .portal-entry {
+    display:flex;
     min-height:44px; background:transparent!important; border-color:transparent!important;
     text-decoration:underline; text-underline-offset:5px; margin:0;
   }

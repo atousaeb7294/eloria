@@ -345,7 +345,7 @@ export function EloriaHome({
           </div>
           <div className="portal-grid">
             {treasuries.map(t => (
-              <TreasuryPortal key={t.key} treasury={t} locale={locale} prefetch={warmRoutes}
+              <TreasuryPortal key={t.key} treasury={t} locale={locale} prefetch={false}
                 piece={(design.treasuryPieces ?? design.pieces).find(piece => piece.group === t.key)} />
             ))}
           </div>

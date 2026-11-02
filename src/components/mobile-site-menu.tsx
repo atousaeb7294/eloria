@@ -195,7 +195,7 @@ export function MobileSiteMenu() {
       icon: SilverRuneIcon,
     },
     {
-      label: isPersian ? "گنجینهٔ بافت" : "Woven Treasury",
+      label: isPersian ? "گنجینهٔ بافت و اکسسوری" : "Woven Treasury",
       slug: "weave",
       href: `/${locale}/collections/weave`,
       icon: WorldRuneIcon,

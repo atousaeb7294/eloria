@@ -176,7 +176,7 @@ export function SiteHeader({ locale }: SiteHeaderProps) {
       icon: SilverRuneIcon,
     },
     {
-      label: isPersian ? "گنجینهٔ بافت" : "Woven Treasury",
+      label: isPersian ? "گنجینهٔ بافت و اکسسوری" : "Woven Treasury",
       slug: "weave",
       href: `/${resolvedLocale}/collections/weave`,
       icon: WorldRuneIcon,

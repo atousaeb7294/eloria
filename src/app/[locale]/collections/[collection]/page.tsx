@@ -12,7 +12,7 @@ type Props = {
 const TREASURIES = {
   gold: { fa: "گنجینهٔ طلا | الوریا", en: "Gold Treasury | Eloria", faDescription: "همهٔ آثار طلای الوریا و آثار ترکیبی دارای طلا.", enDescription: "Every Eloria creation made with gold, including mixed-metal pieces." },
   silver: { fa: "گنجینهٔ نقره | الوریا", en: "Silver Treasury | Eloria", faDescription: "همهٔ آثار نقرهٔ الوریا و آثار ترکیبی دارای نقره.", enDescription: "Every Eloria creation made with silver, including mixed-metal pieces." },
-  weave: { fa: "گنجینهٔ بافت | الوریا", en: "Woven Treasury | Eloria", faDescription: "آثار بافت‌محور الوریا، بدون طلا و نقره.", enDescription: "Eloria’s woven creations without gold or silver." },
+  weave: { fa: "گنجینهٔ بافت و اکسسوری | الوریا", en: "Woven Treasury | Eloria", faDescription: "آثار بافت‌محور الوریا، بدون طلا و نقره.", enDescription: "Eloria’s woven creations without gold or silver." },
 } as const;
 
 export async function generateMetadata({ params, searchParams }: Props): Promise<Metadata> {

@@ -35,7 +35,7 @@ export function CatalogCategoryNavigation({
       productCount: collections.reduce((sum, item) => sum + item.productCount, 0),
       Icon: AllProductsRuneIcon,
     },
-    { slug: "weave", label: isPersian ? "گنجینهٔ بافت" : "Woven Treasury", productCount: null, Icon: AllProductsRuneIcon },
+    { slug: "weave", label: isPersian ? "گنجینهٔ بافت و اکسسوری" : "Woven Treasury", productCount: null, Icon: AllProductsRuneIcon },
     ...collections.filter(c => c.slug !== "men").map(collection => ({
       slug: collection.slug,
       label: isPersian ? collection.nameFa : collection.nameEn,
