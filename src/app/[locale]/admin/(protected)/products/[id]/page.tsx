@@ -1,3 +1,4 @@
+import { canonicalProductStory } from "@/lib/canonical-product-story";
 import { savedWeightUnits } from "@/lib/weight-units";
 import { productAudience } from "@/lib/product-audience";
 import Link from "next/link";
@@ -159,6 +160,7 @@ export default async function EditAdminProductPage({
 
   const query = await searchParams;
 
+  const story = canonicalProductStory(product);
   const value: AdminProductFormValue = {
     id: product.id,
     collectionId: product.collectionId,
@@ -170,8 +172,8 @@ export default async function EditAdminProductPage({
     nameEn: product.nameEn,
     descriptionFa: product.descriptionFa ?? "",
     descriptionEn: product.descriptionEn ?? "",
-    legendFa: product.legendFa ?? "",
-    legendEn: product.legendEn ?? "",
+    legendFa: story.legendFa ?? "",
+    legendEn: story.legendEn ?? "",
     characterImageUrl: product.characterImageUrl ?? "",
     worldSceneImageUrl: product.worldSceneImageUrl ?? "",
     material: product.material,

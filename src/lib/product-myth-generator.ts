@@ -57,13 +57,13 @@ function toProductMyth(
   }
 
   const productNameFa = input.nameFa.trim();
-  const productNameEn = (input.nameEn ?? input.nameFa).trim();
+  const productNameEn = input.nameEn?.trim() || productNameFa;
   return {
     mythKey: character.key,
     mythNameFa: character.nameFa,
     mythNameEn: character.nameEn,
-    legendFa: character.legendFa,
-    legendEn: character.legendEn,
+    legendFa: character.legendFa.replace("{piece}", () => productNameFa),
+    legendEn: character.legendEn.replace("{piece}", () => productNameEn),
     worldProfile: {
       characterNameFa: character.nameFa,
       characterNameEn: character.nameEn,

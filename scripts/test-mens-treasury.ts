@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { ELORIA_PRODUCT_LEGENDS, ELORIA_MEN_PRODUCT_LEGENDS } from "../src/lib/eloria-product-legend-source";
 import { ELORIA_MYTH_LIBRARY, ELORIA_MEN_MYTH_LIBRARY, generateUnusedProductMyth, getProductMythByKey, generateProductMyth } from "../src/lib/product-myth-generator";
 import { ELORIA_GUARDIANS } from "../src/lib/eloria-mythology";
 import { productAudience, withProductAudience } from "../src/lib/product-audience";
@@ -38,3 +39,19 @@ assert.ok(ELORIA_MEN_MYTH_LIBRARY.some(m => m.mythNameFa === "اردوان" && m
 assert.ok(ELORIA_MEN_MYTH_LIBRARY.some(m => m.mythNameFa === "داریوش"));
 assert.deepEqual(generateProductMyth({ nameFa: "اثر" }), generateProductMyth({ nameFa: "اثر", audience: "WOMEN" }));
 console.log("PASS: 39 unique legends, strict audience isolation, pool exhaustion, renamed guardians and preservation of authored text/specifications.");
+
+for (const character of [...ELORIA_PRODUCT_LEGENDS, ...ELORIA_MEN_PRODUCT_LEGENDS]) {
+  const product = {
+    ...character, nameFa: "زیور آزمون", nameEn: "Test Jewel", material: "SILVER",
+    mythKey: character.key, mythNameFa: character.nameFa, mythNameEn: character.nameEn,
+    specifications: { eloriaAudience: character.gender ?? "WOMEN" },
+    legendFa: character.legacyLegendFa, legendEn: character.legacyLegendEn,
+  };
+  const guardian = ELORIA_GUARDIANS.find(entry => entry.id === character.guardianId)!;
+  const story = canonicalProductStory(product);
+  for (const [text, item, keeper] of [[story.legendFa, product.nameFa, guardian.nameFa], [story.legendEn, product.nameEn, guardian.nameEn]]) {
+    assert.ok(text.includes(item) && text.includes(keeper), character.key);
+    assert.ok(!text.includes("{piece}"));
+  }
+  assert.equal(canonicalProductStory({ ...product, legendEn: "Handwritten." }).legendEn, "Handwritten.");
+}

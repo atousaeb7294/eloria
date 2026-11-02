@@ -25,38 +25,67 @@ function TreasuryPhoto({ piece, locale, active }: { piece?: HomePiece; locale: s
     onError={() => cutout ? setCutoutFailed(true) : setFailed(true)} />;
 }
 
-export function TreasuryPortal({ treasury, piece, locale, prefetch }: {
+// One owner for the whole row: the viewport midpoint can belong to only one gate.
+export function useMobileTreasury() {
+  const grid = useRef<HTMLDivElement>(null);
+  // undefined delegates interaction to desktop hover and keyboard controls.
+  const [active, setActive] = useState<GateTreasury | null | undefined>(undefined);
+  useEffect(() => {
+    const row = grid.current;
+    if (!row) return;
+    const media = window.matchMedia("(max-width: 760px)");
+    const cards = Array.from(row.querySelectorAll<HTMLElement>("[data-treasury]"));
+    let frame = 0;
+    const update = () => {
+      frame = 0;
+      const middle = window.innerHeight / 2;
+      const card = cards.find(element => {
+        const { top, bottom } = element.getBoundingClientRect();
+        return top <= middle && middle < bottom;
+      });
+      setActive(card ? card.dataset.treasury as GateTreasury : null);
+    };
+    const schedule = () => {
+      if (!frame) frame = window.requestAnimationFrame(update);
+    };
+    const detach = () => {
+      window.removeEventListener("scroll", schedule);
+      window.removeEventListener("resize", schedule);
+      window.cancelAnimationFrame(frame);
+      frame = 0;
+    };
+    const sync = () => {
+      detach();
+      if (!media.matches) { setActive(undefined); return; }
+      update();
+      window.addEventListener("scroll", schedule, { passive: true });
+      window.addEventListener("resize", schedule);
+    };
+    sync();
+    media.addEventListener("change", sync);
+    return () => { detach(); media.removeEventListener("change", sync); };
+  }, []);
+  return { grid, active, setActive };
+}
+
+export function TreasuryPortal({ treasury, piece, locale, prefetch, mobileActive, onMobileChange }: {
   treasury: Treasury; piece?: HomePiece; locale: "fa" | "en"; prefetch: boolean;
+  mobileActive?: GateTreasury | null; onMobileChange?: (value: GateTreasury | null) => void;
 }) {
   // A mouse hover previews temporarily; a tap/click is an explicit choice.
   const [hovered, setHovered] = useState(false);
   const [expanded, setExpanded] = useState<boolean | null>(null);
-  const card = useRef<HTMLElement>(null);
-  const [inView, setInView] = useState(false);
-  useEffect(() => {
-    const target = card.current;
-    if (!target || typeof IntersectionObserver === "undefined") return;
-    const mobile = window.matchMedia("(max-width: 760px) and (hover: none)");
-    const observer = new IntersectionObserver(([entry]) => {
-      setInView(entry.isIntersecting);
-      if (!entry.isIntersecting) setExpanded(null);
-    }, { rootMargin: "-30% 0px -30% 0px" });
-    const sync = () => {
-      observer.disconnect();
-      setInView(false);
-      if (mobile.matches) observer.observe(target);
-    };
-    sync();
-    mobile.addEventListener("change", sync);
-    return () => { observer.disconnect(); mobile.removeEventListener("change", sync); };
-  }, []);
-  const open = expanded ?? (hovered || inView);
+  const mobile = mobileActive !== undefined;
+  const open = mobile ? mobileActive === treasury.key : expanded ?? hovered;
   const id = `treasury-${useId().replace(/[^a-zA-Z0-9_-]/g, "")}`;
   const fa = locale === "fa";
   const name = fa ? treasury.fa : treasury.en;
-  const toggle = () => setExpanded(value => !(value ?? inView));
+  const toggle = () => {
+    if (mobile) onMobileChange?.(open ? null : treasury.key);
+    else setExpanded(value => value !== true);
+  };
   const toggleLabel = fa ? `${open ? "بستن" : "باز کردن"} دروازهٔ ${name} و پیش‌نمایش اثر` : `${open ? "Close" : "Open"} ${name} gate and product preview`;
-  return <article ref={card} className={`portal ${treasury.key}${open ? " is-open" : ""}`}
+  return <article data-treasury={treasury.key} className={`portal ${treasury.key}${open ? " is-open" : ""}`}
     onClick={event => {
       // A click is emitted only after a tap, never while scrolling the page.
       if (window.matchMedia("(max-width: 760px)").matches &&
@@ -74,7 +103,7 @@ export function TreasuryPortal({ treasury, piece, locale, prefetch }: {
         setExpanded(value => value === false ? null : value);
       }
     }}
-    onKeyDown={event => { if (event.key === "Escape") { setHovered(false); setExpanded(false); } }}>
+    onKeyDown={event => { if (event.key === "Escape") { if (mobile) onMobileChange?.(null); setHovered(false); setExpanded(false); } }}>
     <div className="portal-window">
       <div className="portal-frame" aria-hidden="true" />
       <div className="portal-preview" id={`${id}-photo`} aria-hidden={!open}>

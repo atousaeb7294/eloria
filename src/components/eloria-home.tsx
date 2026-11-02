@@ -13,7 +13,7 @@ import { CustomerAccountHeaderButton } from "@/components/customer-account-heade
 import { QuickViewImage } from "@/components/quick-view-image";
 import { loadedCardPreview, warmQuickView } from "@/lib/quick-view-media";
 import { ProductCardLivePrice } from "@/components/product-card-live-price";
-import { TreasuryPortal } from "@/components/treasury-portal";
+import { TreasuryPortal, useMobileTreasury } from "@/components/treasury-portal";
 import { CircularProductImage } from "@/components/circular-product-image";
 import { TreasuryLink } from "@/components/treasury-transition";
 import { FloatingProductImage } from "@/components/floating-product-image";
@@ -72,6 +72,7 @@ export function EloriaHome({
   design: HomeDesign;
 }) {
   const fa = locale === "fa";
+  const mobileTreasury = useMobileTreasury();
   const [menu, setMenu] = useState(false);
   const [paused, setPaused] = useState(false);
   const [offscreen, setOffscreen] = useState(false);
@@ -330,9 +331,10 @@ export function EloriaHome({
                 : "Choose a treasury. Its pieces await you."}
             </p>
           </div>
-          <div className="portal-grid">
+          <div className="portal-grid" ref={mobileTreasury.grid}>
             {treasuries.map(t => (
               <TreasuryPortal key={t.key} treasury={t} locale={locale} prefetch={false}
+                mobileActive={mobileTreasury.active} onMobileChange={mobileTreasury.setActive}
                 piece={(design.treasuryPieces ?? design.pieces).find(piece => piece.group === t.key)} />
             ))}
           </div>

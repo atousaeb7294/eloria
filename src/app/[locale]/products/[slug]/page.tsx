@@ -328,7 +328,7 @@ export async function generateMetadata({
         ? product.descriptionFa
         : product.descriptionEn
       )?.trim() ||
-      (locale === "fa" ? product.legendFa : product.legendEn)?.trim() ||
+      (locale === "fa" ? canonicalStoryMetadata.legendFa : canonicalStoryMetadata.legendEn)?.trim() ||
       (locale === "fa"
         ? `مشاهده مشخصات، روایت اختصاصی و قیمت به‌روز ${productName} ${materialName} در گالری الوریا.`
         : `Discover the details, individual story and current price of ${productName} ${materialName} at Eloria.`);
