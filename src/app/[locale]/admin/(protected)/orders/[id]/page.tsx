@@ -1,3 +1,4 @@
+import { storedShippingMethod } from "@/lib/shipping";
 import Link from "next/link";
 
 import {
@@ -128,6 +129,8 @@ export default async function AdminOrderDetailPage({
   if (!order) {
     notFound();
   }
+  const shippingMethod = storedShippingMethod(order.pricingSnapshot);
+
 
   const query = await searchParams;
   const one = (value: string | string[] | undefined) =>
@@ -226,7 +229,8 @@ export default async function AdminOrderDetailPage({
           </div>
           <div className="mt-4 space-y-2 text-sm leading-7 text-[#b8aa8e]">
             <div className="flex justify-between gap-3"><span>جمع اقلام</span><span>{formatAdminMoney(order.subtotalToman)}</span></div>
-            <div className="flex justify-between gap-3"><span>ارسال</span><span>{formatAdminMoney(order.shippingToman)}</span></div>
+            <div className="flex justify-between gap-3"><span>روش ارسال</span><span>{shippingMethod === "TIPAX" ? "تیپاکس · پس‌کرایه با گیرنده" : shippingMethod === "POST" ? "پست عادی" : "در سفارش ثبت نشده"}</span></div>
+            <div className="flex justify-between gap-3"><span>کرایه در مبلغ سفارش</span><span>{formatAdminMoney(order.shippingToman)}</span></div>
             <div className="flex justify-between gap-3"><span>تخفیف</span><span>{formatAdminMoney(order.discountToman)}</span></div>
             <div className="flex justify-between gap-3 border-t border-[#d0b359]/12 pt-2 font-semibold text-[#efd27b]"><span>قابل پرداخت</span><span>{formatAdminMoney(order.payableToman)}</span></div>
           </div>

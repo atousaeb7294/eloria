@@ -13,6 +13,7 @@ import { hasTrustedOrigin, requestIp } from "@/lib/security/request";
 import { JsonRequestBodyError, readJsonBody } from "@/lib/security/json-body";
 import { verifyTurnstileToken } from "@/lib/security/turnstile";
 import { isZibalConfigured } from "@/lib/payment/zibal";
+import { parseShippingMethod } from "@/lib/shipping";
 import { getCustomerFromRequest } from "@/lib/customer-auth";
 import { prisma } from "@/lib/prisma";
 import { isCommerceEnabled } from "@/lib/runtime-features";
@@ -37,6 +38,7 @@ type IncomingCheckoutBody = {
   customer?: unknown;
   items?: unknown;
   turnstileToken?: unknown;
+  shippingMethod?: unknown;
   couponCode?: unknown;
   orderNotes?: unknown;
   marketingAttribution?: unknown;
@@ -234,9 +236,11 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    const shippingMethod = parseShippingMethod(body.shippingMethod);
     const normalizedCustomer = normalizeCustomerInput(body.customer);
 
     if (
+      !shippingMethod ||
       typeof body.idempotencyKey !== "string" ||
       typeof body.locale !== "string" ||
       !normalizedCustomer ||
@@ -425,6 +429,7 @@ export async function POST(request: NextRequest) {
 
       locale: body.locale,
 
+      shippingMethod,
       customer: canonicalCustomer,
 
       items: normalizedItems as CheckoutOrderItemInput[],

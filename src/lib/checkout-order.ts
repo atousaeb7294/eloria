@@ -25,7 +25,7 @@ import {
 } from "@/lib/prisma";
 
 import { syncProductInventory } from "@/lib/inventory";
-import { calculateShipping } from "@/lib/shipping";
+import { calculateShipping, storedShippingMethod, type ShippingMethod } from "@/lib/shipping";
 import {
   hasMatchingCheckoutIdempotencyOwner,
 } from "@/lib/checkout-idempotency";
@@ -201,6 +201,7 @@ export type CreateCheckoutOrderInput = {
   items:
     CheckoutOrderItemInput[];
 
+  shippingMethod?: ShippingMethod;
   couponCode?: string | null;
 
   orderNotes?: string | null;
@@ -1047,11 +1048,18 @@ function ensureIdempotencyKeyOwnership(
   );
 }
 
+function checkShippingRetry(snapshot: unknown, requested: ShippingMethod) {
+  if ((storedShippingMethod(snapshot) ?? "POST") !== requested) {
+    throw new CheckoutOrderError("IDEMPOTENCY_KEY_CONFLICT", "روش ارسال این سفارش تغییر کرده است. دوباره تلاش کنید.", 409);
+  }
+}
+
 async function findExistingOrder(
   idempotencyKey:
     string,
   customerMobile:
     string,
+  shippingMethod: ShippingMethod,
 ): Promise<CheckoutOrderResult | null> {
   
   const existingOrder =
@@ -1107,6 +1115,7 @@ async function findExistingOrder(
     customerMobile,
   );
 
+  checkShippingRetry(existingOrder.pricingSnapshot, shippingMethod);
   return serializeOrder(
     existingOrder,
     true,
@@ -1116,6 +1125,7 @@ async function findExistingOrder(
 async function waitForExistingOrder(
   idempotencyKey: string,
   customerMobile: string,
+  shippingMethod: ShippingMethod,
 ): Promise<CheckoutOrderResult | null> {
   for (
     let attempt = 1;
@@ -1126,6 +1136,7 @@ async function waitForExistingOrder(
       await findExistingOrder(
         idempotencyKey,
         customerMobile,
+        shippingMethod,
       );
 
     if (existingOrder) {
@@ -1150,6 +1161,7 @@ export async function createCheckoutOrder({
   locale,
   customer,
   items,
+  shippingMethod = "POST",
   couponCode = null,
   orderNotes = null,
   marketingAttribution = null,
@@ -1205,6 +1217,7 @@ export async function createCheckoutOrder({
     await findExistingOrder(
       normalizedIdempotencyKey,
       normalizedCustomer.mobile,
+      shippingMethod,
     );
 
   if (
@@ -1287,7 +1300,7 @@ export async function createCheckoutOrder({
   }
 
   // ELORIA_V3_SERVER_SHIPPING
-  const shippingQuote = calculateShipping(subtotalToman);
+  const shippingQuote = calculateShipping(subtotalToman, shippingMethod);
   const payableToman = subtotalToman + BigInt(shippingQuote.shippingToman) - discountToman;
 
   const quoteExpirationTimes =
@@ -1364,6 +1377,7 @@ export async function createCheckoutOrder({
       discountToman:
         discountToman.toString(),
 
+      shippingMethod,
       couponCode: normalizedCouponCode,
 
       payableToman:
@@ -1508,6 +1522,7 @@ export async function createCheckoutOrder({
                 normalizedCustomer.mobile,
               );
 
+              checkShippingRetry(orderAlreadyCreated.pricingSnapshot, shippingMethod);
               return {
                 reused:
                   true,
@@ -2173,6 +2188,7 @@ export async function createCheckoutOrder({
             await waitForExistingOrder(
               normalizedIdempotencyKey,
               normalizedCustomer.mobile,
+              shippingMethod,
             );
 
           if (concurrentOrder) {
@@ -2207,6 +2223,7 @@ export async function createCheckoutOrder({
           await waitForExistingOrder(
             normalizedIdempotencyKey,
             normalizedCustomer.mobile,
+            shippingMethod,
           );
 
         if (

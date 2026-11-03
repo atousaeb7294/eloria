@@ -603,7 +603,7 @@ export function CartPageView({
                 <div className="flex flex-wrap items-end justify-between gap-x-4 gap-y-2">
                   <span className="text-sm text-[#c9bb9a]/60">
                     {
-                      (isPersian ? "مبلغ با ارسال" : "Total with delivery")
+                      (isPersian ? "مبلغ با پست عادی" : "Total with regular post")
                     }
                   </span>
 
@@ -718,7 +718,7 @@ export function CartPageView({
               <div className="mx-auto flex max-w-xl items-center gap-3">
                 <div className="min-w-0 flex-1">
                   <p className="text-[10px] text-[#c9bb9a]/55">
-                    {isPersian ? "مبلغ با ارسال" : "Total with delivery"}
+                    {isPersian ? "مبلغ با پست عادی" : "Total with regular post"}
                   </p>
 
                   <p className="mt-0.5 whitespace-normal break-words text-base font-semibold leading-7 text-[#f0d477]">

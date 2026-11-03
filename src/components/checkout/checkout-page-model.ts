@@ -693,8 +693,9 @@ export function didQuotePriceChange(
 
 export function getCartFingerprint(
   items: CartItem[],
+  method: "POST" | "TIPAX" = "POST",
 ): string {
-  return items
+  const cart = items
     .map((item) => ({
       slug:
         item.slug,
@@ -715,6 +716,7 @@ export function getCartFingerprint(
         `${getItemKey(item)}:${item.quantity}`,
     )
     .join("|");
+  return method === "TIPAX" ? cart + "|shipping:TIPAX" : cart;
 }
 
 export function generateIdempotencyKey(): string {
@@ -723,9 +725,10 @@ export function generateIdempotencyKey(): string {
 
 export function getOrCreateIdempotencyKey(
   items: CartItem[],
+  method: "POST" | "TIPAX" = "POST",
 ): string {
   const fingerprint =
-    getCartFingerprint(items);
+    getCartFingerprint(items, method);
 
   try {
     const stored =

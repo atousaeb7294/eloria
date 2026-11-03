@@ -1,5 +1,6 @@
 "use client";
 
+import { type ShippingMethod } from "@/lib/shipping";
 import { type FormEvent, useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import { CART_LIVE_PRICE_EVENT, type CartLivePriceEventDetail } from "@/components/cart-live-price-refresh";
 import { CheckoutCustomerError, normalizeCheckoutCustomer, normalizeCheckoutMobile, type CheckoutCustomerInput } from "@/lib/checkout-customer";
@@ -35,9 +36,10 @@ export function useCheckoutPageController({
       [cartSnapshot],
     );
 
+  const [shippingMethod, setShippingMethod] = useState<ShippingMethod>("POST");
   const cartFingerprint = useMemo(
-    () => getCartFingerprint(storedItems),
-    [storedItems],
+    () => getCartFingerprint(storedItems, shippingMethod),
+    [storedItems, shippingMethod],
   );
 
   const [
@@ -351,7 +353,7 @@ export function useCheckoutPageController({
 
                 body:
                   JSON.stringify({
-                    items,
+                    items, shippingMethod,
                   }),
               },
             );
@@ -438,6 +440,7 @@ export function useCheckoutPageController({
       },
       [
         showPriceNotice,
+        shippingMethod,
         text.genericError,
       ],
     );
@@ -526,9 +529,7 @@ export function useCheckoutPageController({
 
   useEffect(() => {
     const fingerprint =
-      getCartFingerprint(
-        storedItems,
-      );
+      cartFingerprint;
 
     if (
       idempotencyRef.current &&
@@ -542,7 +543,7 @@ export function useCheckoutPageController({
       setCreatedOrder(null);
     }
   }, [
-    storedItems,
+    cartFingerprint,
   ]);
 
   useEffect(() => {
@@ -575,9 +576,7 @@ export function useCheckoutPageController({
   const getIdempotencyKey =
     useCallback(() => {
       const fingerprint =
-        getCartFingerprint(
-          storedItems,
-        );
+        cartFingerprint;
 
       if (
         idempotencyRef.current
@@ -590,7 +589,7 @@ export function useCheckoutPageController({
 
       const key =
         getOrCreateIdempotencyKey(
-          storedItems,
+          storedItems, shippingMethod,
         );
 
       idempotencyRef.current =
@@ -601,7 +600,7 @@ export function useCheckoutPageController({
 
       return key;
     }, [
-      storedItems,
+      storedItems, shippingMethod, cartFingerprint,
     ]);
 
 
@@ -631,7 +630,7 @@ export function useCheckoutPageController({
         method: "POST",
         headers: { "Content-Type": "application/json", Accept: "application/json" },
         cache: "no-store",
-        body: JSON.stringify({ code, customerMobile: mobile, items: storedItems }),
+        body: JSON.stringify({ code, shippingMethod, customerMobile: mobile, items: storedItems }),
       });
       const data = await response.json().catch(() => null) as (CouponPreviewResponse & { message?: string }) | null;
       if (!response.ok || !data?.successful) {
@@ -660,7 +659,7 @@ export function useCheckoutPageController({
     } finally {
       setCouponApplying(false);
     }
-  }, [couponCode, form.mobile, isPersian, storedItems, text.couponMobileFirst]);
+  }, [shippingMethod, couponCode, form.mobile, isPersian, storedItems, text.couponMobileFirst]);
 
   const useFirstPurchaseGift = useCallback(() => {
     setCouponCode("ELORIA50");
@@ -822,6 +821,7 @@ export function useCheckoutPageController({
                   customer:
                     normalizedCustomer,
 
+                  shippingMethod,
                   turnstileToken,
 
                   couponCode: couponCode.trim() || null,
@@ -948,6 +948,7 @@ export function useCheckoutPageController({
     );
 
   return {
+    shippingMethod, setShippingMethod,
     isPersian,
     text,
     storedItems,

@@ -8,7 +8,7 @@ import {
 import { JsonRequestBodyError, readJsonBody } from "@/lib/security/json-body";
 import { consumeRateLimit } from "@/lib/security/rate-limit";
 
-import { calculateShipping } from "@/lib/shipping";
+import { calculateShipping, parseShippingMethod } from "@/lib/shipping";
 
 import { hasTrustedOrigin, requestIp } from "@/lib/security/request";
 
@@ -402,6 +402,10 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    const shippingMethod = parseShippingMethod("shippingMethod" in body ? body.shippingMethod : undefined);
+    if (!shippingMethod) {
+      return NextResponse.json({ successful: false, message: "روش ارسال معتبر نیست." }, { status: 400, headers: noStoreHeaders() });
+    }
     if (body.items.length > 50) {
       return NextResponse.json(
         {
@@ -483,7 +487,7 @@ export async function POST(request: NextRequest) {
     }, BigInt(0));
 
     // ELORIA_V3_SERVER_SHIPPING
-    const shippingQuote = calculateShipping(subtotalToman);
+    const shippingQuote = calculateShipping(subtotalToman, shippingMethod);
     const payableToman = subtotalToman + BigInt(shippingQuote.shippingToman);
 
     const totalQuantity = quotedItems.reduce(

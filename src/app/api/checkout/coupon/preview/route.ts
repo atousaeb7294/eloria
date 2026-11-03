@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { normalizeCheckoutMobile, CheckoutCustomerError } from "@/lib/checkout-customer";
 import { normalizeCouponCode, previewCoupon, CouponValidationError } from "@/lib/coupons";
 import { getProductLivePrice, ProductPricingError } from "@/lib/product-pricing";
-import { calculateShipping } from "@/lib/shipping";
+import { calculateShipping, parseShippingMethod } from "@/lib/shipping";
 import { JsonRequestBodyError, readJsonBody } from "@/lib/security/json-body";
 import { consumeRateLimit } from "@/lib/security/rate-limit";
 import { hasTrustedOrigin, requestIp } from "@/lib/security/request";
@@ -69,6 +69,10 @@ export async function POST(request: NextRequest) {
     }
 
     const body = raw as Record<string, unknown>;
+    const shippingMethod = parseShippingMethod(body.shippingMethod);
+    if (!shippingMethod) {
+      return NextResponse.json({ successful: false, message: "روش ارسال معتبر نیست." }, { status: 400, headers: headers() });
+    }
     const code = normalizeCouponCode(body.code);
     if (!code) {
       return NextResponse.json({ successful: false, message: "کد تخفیف را وارد کنید." }, { status: 400, headers: headers() });
@@ -106,7 +110,7 @@ export async function POST(request: NextRequest) {
     }
 
     const application = await previewCoupon({ code, subtotalToman, customerMobile: mobile });
-    const shipping = calculateShipping(subtotalToman);
+    const shipping = calculateShipping(subtotalToman, shippingMethod);
     const payableToman = subtotalToman + BigInt(shipping.shippingToman) - application.discountToman;
 
     return NextResponse.json(

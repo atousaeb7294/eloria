@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { calculateShipping } from "../src/lib/shipping";
+import { calculateShipping, parseShippingMethod, storedShippingMethod } from "../src/lib/shipping";
 process.env.ELORIA_SHIPPING_FLAT_TOMAN="0";
 process.env.ELORIA_FREE_SHIPPING_FROM_TOMAN="1";
 for (const subtotal of ["1","1000000","5000000","999999999999"]) {
@@ -8,3 +8,11 @@ for (const subtotal of ["1","1000000","5000000","999999999999"]) {
 assert.equal(calculateShipping("0").shippingToman,"0");
 assert.throws(()=>calculateShipping("-1"));
 console.log("PASS fixed delivery per nonempty order regardless of retired env settings");
+
+assert.deepEqual(calculateShipping("2000000", "TIPAX"), {shippingToman:"0",freeShippingApplied:false});
+assert.equal(parseShippingMethod(undefined), "POST");
+assert.equal(parseShippingMethod("TIPAX"), "TIPAX");
+assert.equal(parseShippingMethod("FREE"), null);
+assert.equal(parseShippingMethod(null), null);
+assert.equal(storedShippingMethod({ shippingToman: "0" }), null);
+assert.equal(storedShippingMethod({ shippingMethod: "TIPAX" }), "TIPAX");

@@ -1,5 +1,7 @@
 "use client";
 
+import { calculateShipping } from "@/lib/shipping";
+import { DELIVERY_TOMAN } from "@/lib/commerce-policy";
 import Link from "next/link";
 import { AlertTriangle, CheckCircle2, Clock3, Gift, LoaderCircle, RefreshCw, ShieldCheck, ShoppingBag, TicketPercent, UserRound, WalletCards, X } from "lucide-react";
 import { ArrowLeft, ArrowRight } from "@/components/eloria-icons";
@@ -14,6 +16,7 @@ export function CheckoutPageView({
   controller,
 }: CheckoutPageClientProps & { controller: CheckoutPageController }) {
   const {
+    shippingMethod, setShippingMethod,
     isPersian,
     text,
     storedItems,
@@ -46,6 +49,11 @@ export function CheckoutPageView({
     checkoutBlocked,
   } = controller;
 
+  const subtotal = couponPreview?.subtotalToman ?? quote?.summary.subtotalToman ?? "0";
+  const shipping = calculateShipping(subtotal, shippingMethod);
+  const total = BigInt(subtotal) + BigInt(shipping.shippingToman) - BigInt(couponPreview?.discountToman ?? "0");
+  const payable = (total > 0n ? total : 0n).toString();
+  const collectLabel = isPersian ? "پس‌کرایه؛ پرداخت به تیپاکس هنگام تحویل" : "Freight payable to Tipax on delivery";
   if (
     !quoteLoading &&
     isEmpty
@@ -499,6 +507,24 @@ export function CheckoutPageView({
                       />
                     </label>
 
+                    <fieldset className="space-y-3 sm:col-span-2" disabled={submitting || couponApplying || Boolean(createdOrder)} aria-describedby="shipping-note">
+                      <legend className="mb-2 text-sm text-[#f1e2bd]">{isPersian ? "روش ارسال" : "Delivery method"}</legend>
+                      {(["POST", "TIPAX"] as const).map(method => (
+                        <label key={method} className="flex cursor-pointer items-center gap-3 rounded-xl border border-[#d9b85f]/25 p-3 text-sm text-[#eee1c7]">
+                          <input type="radio" name="shippingMethod" value={method} checked={shippingMethod === method}
+                            onChange={() => setShippingMethod(method)} />
+                          {method === "POST"
+                            ? (isPersian ? "پست عادی" : "Regular post") + " · " + formatPrice(DELIVERY_TOMAN.toString()) + " " + text.toman
+                            : (isPersian ? "تیپاکس" : "Tipax") + " · " + collectLabel}
+                        </label>
+                      ))}
+                      <p id="shipping-note" className="text-xs leading-7 text-[#d7c9a7]">
+                        {isPersian
+                          ? "در روش تیپاکس، کرایه به مبلغ سفارش اضافه نمی‌شود. تیپاکس مبلغ را تعیین می‌کند و گیرنده هنگام تحویل می‌پردازد. برای طلا و اشیای ارزشمند، پیش از انتخاب با گالری هماهنگ کنید تا پذیرش مرسوله و پوشش خسارت برای ارزش آن تأیید شود. انتخاب پست عادی یا تیپاکس به‌تنهایی تضمین بیمه نیست."
+                          : "Tipax sets the freight charge and collects it from the recipient on delivery. It is excluded from your online payment. For gold or valuables, contact the gallery before choosing a carrier to confirm acceptance and cover for the item's value. Neither selection guarantees insurance."}
+                      </p>
+                    </fieldset>
+
                     <label className="block sm:col-span-2">
                       <span className="mb-2 block text-xs text-[#d7c9a7]/65">{text.orderNotes}</span>
                       <textarea
@@ -797,9 +823,9 @@ export function CheckoutPageView({
                         <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 text-sm">
                           <span className="text-[#c9bb9a]/60">{text.shipping}</span>
                           <span className="text-[#eee1c7]">
-                            {quote.summary.shippingToman === "0"
-                              ? text.freeShipping
-                              : `${formatPrice(quote.summary.shippingToman)} ${text.toman}`}
+                            {shippingMethod === "TIPAX"
+                              ? collectLabel
+                              : `${formatPrice(shipping.shippingToman)} ${text.toman}`}
                           </span>
                         </div>
 
@@ -814,7 +840,7 @@ export function CheckoutPageView({
                           <span className="text-sm text-[#c9bb9a]/60">{text.payable}</span>
                           <div className="text-end">
                             <span className="text-xl font-semibold text-[#f0d477]">
-                              {formatPrice(couponPreview?.payableToman ?? quote.summary.payableToman)}
+                              {formatPrice(payable)}
                             </span>
                             <span className="ms-2 text-[10px] text-[#c9bb9a]/50">{text.toman}</span>
                           </div>
@@ -934,8 +960,7 @@ export function CheckoutPageView({
                       <p className="mt-0.5 whitespace-normal text-base font-semibold leading-7 text-[#f0d477]">
                         <bdi className="inline-block whitespace-nowrap">
                         {formatPrice(
-                          couponPreview?.payableToman ?? quote.summary
-                            .payableToman,
+                          payable,
                         )}</bdi>{" "}
                         <span className="text-[10px] font-normal text-[#c9bb9a]/55">
                           {text.toman}
