@@ -208,7 +208,7 @@ export function TreasuryProductSalon({
                       src={picture(item)}
                       imageId={item.image?.id}
                       alt={name(item)}
-                      sizes="(max-width:640px) 70vw, 31vw"
+                      sizes="(max-width:640px) calc(65vw - 20px), 31vw"
                       priority={index === 0}
                     /> : <div aria-hidden="true" className="absolute inset-0 bg-[#14193b]" />}
                 </TreasuryLink>

@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { productMaterialKind, productMaterialLabel, productWeightLabel } from "@/lib/product-material";
 import { formatWeightSoot } from "@/lib/weight-units";
 import { LivePurchaseBox } from "@/components/live-purchase-box";
@@ -577,94 +578,6 @@ export default async function ProductPage({
     (isPersian ? generatedLegend.mythNameFa : generatedLegend.mythNameEn);
   const worldProfile = generatedLegend.worldProfile;
 
-  let relatedProducts: Awaited<
-    ReturnType<typeof getPricedProductsCatalog>
-  >["products"] = [];
-  if (result) {
-    try {
-      const relatedCatalog = await getPricedProductsCatalog({
-        material: materialKind === "WEAVE" || materialKind === "MIXED" ? undefined : result.product.material,
-        weaveOnly: materialKind === "WEAVE",
-        availability: "AVAILABLE",
-        page: 1,
-        pageSize: 32,
-      });
-
-      const candidates = relatedCatalog.products.filter(
-        (item) => item.slug !== result.product.slug && item.displayPriceToman,
-      );
-      const candidateSlugs = candidates.map((item) => item.slug);
-      const recentSince = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
-
-      const [viewRows, saleRows] = candidateSlugs.length
-        ? await Promise.all([
-            prisma.siteMeasurementEvent.groupBy({
-              by: ["productSlug"],
-              where: {
-                eventType: "view_item",
-                occurredAt: { gte: recentSince },
-                productSlug: { in: candidateSlugs },
-              },
-              _count: { _all: true },
-            }),
-            prisma.orderItem.groupBy({
-              by: ["productSlug"],
-              where: {
-                productSlug: { in: candidateSlugs },
-                createdAt: { gte: recentSince },
-                order: {
-                  status: {
-                    in: ["PAID", "PROCESSING", "SHIPPED", "COMPLETED"],
-                  },
-                },
-              },
-              _sum: { quantity: true },
-            }),
-          ])
-        : [[], []];
-
-      const views = new Map(
-        viewRows
-          .filter((row) => row.productSlug)
-          .map((row) => [row.productSlug as string, row._count._all]),
-      );
-      const sales = new Map(
-        saleRows.map((row) => [row.productSlug, row._sum.quantity ?? 0]),
-      );
-      const currentPrice = BigInt(result.pricing.finalPriceToman);
-
-      relatedProducts = candidates
-        .map((item) => {
-          const itemPrice = BigInt(item.displayPriceToman ?? "0");
-          const distance =
-            currentPrice > 0n
-              ? Number(
-                  ((itemPrice > currentPrice
-                    ? itemPrice - currentPrice
-                    : currentPrice - itemPrice) *
-                    10_000n) /
-                    currentPrice,
-                ) / 100
-              : 100;
-          const priceScore = Math.max(0, 28 - Math.min(28, distance * 0.35));
-          const collectionScore =
-            item.collectionSlug === collectionSlug ? 32 : 0;
-          const behaviorScore =
-            Math.min(views.get(item.slug) ?? 0, 50) * 0.35 +
-            Math.min(sales.get(item.slug) ?? 0, 12) * 3.5;
-          return { item, score: collectionScore + priceScore + behaviorScore };
-        })
-        .sort((a, b) => b.score - a.score)
-        .slice(0, 4)
-        .map((entry) => entry.item);
-    } catch (error) {
-      console.warn(
-        `[Eloria Recommendations] Smart related products unavailable for ${productRecord.slug}.`,
-        error,
-      );
-    }
-  }
-
   return (
     <InternalPageShell locale={locale}>
       {result ? (
@@ -974,51 +887,11 @@ export default async function ProductPage({
           </div>
         </div>
 
-        {relatedProducts.length > 0 ? (
-          <section
-            className="mt-10"
-            aria-labelledby="eloria-related-products-title"
-          >
-            <div className="mb-5 flex items-end justify-between gap-4">
-              <div>
-                <span className="text-[10px] uppercase tracking-[0.2em] text-[#d2b96e]/55">
-                  Eloria Curated For You
-                </span>
-                <h2
-                  id="eloria-related-products-title"
-                  className={
-                    isPersian
-                      ? "font-persian-title mt-2 text-xl text-[#f1e2be]"
-                      : "mt-2 text-xl font-semibold text-[#f1e2be]"
-                  }
-                >
-                  {isPersian ? "اگر این اثر را پسندیدید" : "You may also love"}
-                </h2>
-                <p className="mt-2 text-xs leading-6 text-[#cbbd9d]/58">
-                  {isPersian
-                    ? "انتخاب‌هایی نزدیک به جنس، گنجینه و بازهٔ قیمت این اثر، با اولویت آثار آمادهٔ سفارش."
-                    : "A smart selection close to this piece by material and collection, with live pricing and availability."}
-                </p>
-              </div>
-              <Link
-                href={`/${locale}/products`}
-                className="hidden rounded-full border border-[#d9b85f]/25 px-4 py-2 text-[11px] text-[#e4cd8a] transition hover:border-[#e7ce79]/55 sm:inline-flex"
-              >
-                {isPersian ? "همه آثار" : "All creations"}
-              </Link>
-            </div>
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-              {relatedProducts.map((product) => (
-                <CatalogProductCard
-                  key={product.id}
-                  product={product}
-                  locale={locale}
-                  showCollection={false}
-                />
-              ))}
-            </div>
-          </section>
-        ) : null}
+        {result && (
+          <Suspense fallback={null}>
+            <RelatedProducts locale={locale} result={result} materialKind={materialKind} collectionSlug={collectionSlug} />
+          </Suspense>
+        )}
 
         <article className="eloria-glass-panel relative mt-8 overflow-hidden rounded-[2.2rem] border border-[#d9b85f]/22 bg-[linear-gradient(135deg,rgba(19,24,62,0.94),rgba(8,13,40,0.98))] px-5 py-7 shadow-[0_28px_80px_rgba(0,0,0,0.34)] backdrop-blur-xl sm:px-8 sm:py-8">
           <div
@@ -1173,5 +1046,147 @@ export default async function ProductPage({
       </section>
       <BuyerReviews productId={productRecord.id} slug={productRecord.slug} />
     </InternalPageShell>
+  );
+}
+
+
+async function RelatedProducts({ locale, result, materialKind, collectionSlug }: {
+  locale: "fa" | "en";
+  result: Awaited<ReturnType<typeof getProductDisplayPrice>>;
+  materialKind: ReturnType<typeof productMaterialKind>;
+  collectionSlug: string;
+}) {
+  const isPersian = locale === "fa";
+  let relatedProducts: Awaited<
+    ReturnType<typeof getPricedProductsCatalog>
+  >["products"] = [];
+  try {
+    const relatedCatalog = await getPricedProductsCatalog({
+      material: materialKind === "WEAVE" || materialKind === "MIXED" ? undefined : result.product.material,
+      weaveOnly: materialKind === "WEAVE",
+      availability: "AVAILABLE",
+      page: 1,
+      pageSize: 32,
+    });
+
+    const candidates = relatedCatalog.products.filter(
+      (item) => item.slug !== result.product.slug && item.displayPriceToman,
+    );
+    const candidateSlugs = candidates.map((item) => item.slug);
+    const recentSince = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+
+    const [viewRows, saleRows] = candidateSlugs.length
+      ? await Promise.all([
+          prisma.siteMeasurementEvent.groupBy({
+            by: ["productSlug"],
+            where: {
+              eventType: "view_item",
+              occurredAt: { gte: recentSince },
+              productSlug: { in: candidateSlugs },
+            },
+            _count: { _all: true },
+          }),
+          prisma.orderItem.groupBy({
+            by: ["productSlug"],
+            where: {
+              productSlug: { in: candidateSlugs },
+              createdAt: { gte: recentSince },
+              order: {
+                status: {
+                  in: ["PAID", "PROCESSING", "SHIPPED", "COMPLETED"],
+                },
+              },
+            },
+            _sum: { quantity: true },
+          }),
+        ])
+      : [[], []];
+
+    const views = new Map(
+      viewRows
+        .filter((row) => row.productSlug)
+        .map((row) => [row.productSlug as string, row._count._all]),
+    );
+    const sales = new Map(
+      saleRows.map((row) => [row.productSlug, row._sum.quantity ?? 0]),
+    );
+    const currentPrice = BigInt(result.pricing.finalPriceToman);
+
+    relatedProducts = candidates
+      .map((item) => {
+        const itemPrice = BigInt(item.displayPriceToman ?? "0");
+        const distance =
+          currentPrice > 0n
+            ? Number(
+                ((itemPrice > currentPrice
+                  ? itemPrice - currentPrice
+                  : currentPrice - itemPrice) *
+                  10_000n) /
+                  currentPrice,
+              ) / 100
+            : 100;
+        const priceScore = Math.max(0, 28 - Math.min(28, distance * 0.35));
+        const collectionScore =
+          item.collectionSlug === collectionSlug ? 32 : 0;
+        const behaviorScore =
+          Math.min(views.get(item.slug) ?? 0, 50) * 0.35 +
+          Math.min(sales.get(item.slug) ?? 0, 12) * 3.5;
+        return { item, score: collectionScore + priceScore + behaviorScore };
+      })
+      .sort((a, b) => b.score - a.score)
+      .slice(0, 4)
+      .map((entry) => entry.item);
+  } catch (error) {
+    console.warn(
+      `[Eloria Recommendations] Smart related products unavailable for ${result.product.slug}.`,
+      error,
+    );
+  }
+
+  if (!relatedProducts.length) return null;
+  return (
+    <section
+      className="mt-10"
+      aria-labelledby="eloria-related-products-title"
+    >
+      <div className="mb-5 flex items-end justify-between gap-4">
+        <div>
+          <span className="text-[10px] uppercase tracking-[0.2em] text-[#d2b96e]/55">
+            Eloria Curated For You
+          </span>
+          <h2
+            id="eloria-related-products-title"
+            className={
+              isPersian
+                ? "font-persian-title mt-2 text-xl text-[#f1e2be]"
+                : "mt-2 text-xl font-semibold text-[#f1e2be]"
+            }
+          >
+            {isPersian ? "اگر این اثر را پسندیدید" : "You may also love"}
+          </h2>
+          <p className="mt-2 text-xs leading-6 text-[#cbbd9d]/58">
+            {isPersian
+              ? "انتخاب‌هایی نزدیک به جنس، گنجینه و بازهٔ قیمت این اثر، با اولویت آثار آمادهٔ سفارش."
+              : "A smart selection close to this piece by material and collection, with live pricing and availability."}
+          </p>
+        </div>
+        <Link
+          href={`/${locale}/products`}
+          className="hidden rounded-full border border-[#d9b85f]/25 px-4 py-2 text-[11px] text-[#e4cd8a] transition hover:border-[#e7ce79]/55 sm:inline-flex"
+        >
+          {isPersian ? "همه آثار" : "All creations"}
+        </Link>
+      </div>
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        {relatedProducts.map((product) => (
+          <CatalogProductCard
+            key={product.id}
+            product={product}
+            locale={locale}
+            showCollection={false}
+          />
+        ))}
+      </div>
+    </section>
   );
 }

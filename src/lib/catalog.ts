@@ -525,16 +525,18 @@ export async function getCatalogPricingPage(
   const { page: requestedPage, pageSize } = normalizePagination(filters);
   const requestedSkip = (requestedPage - 1) * pageSize;
 
-  const [total, requestedProducts] = await Promise.all([
-    withDatabaseRetry(() => prisma.product.count({ where })),
-    withDatabaseRetry(() => prisma.product.findMany({
+  const productsPending = withDatabaseRetry(() => prisma.product.findMany({
       where,
       orderBy: [{ displayOrder: "asc" }, { createdAt: "desc" }],
       skip: requestedSkip,
       take: pageSize,
       select: catalogPricingSelect,
-    })),
-  ]);
+    }));
+  // A bounded ID list fits on one page, so its returned rows give the exact count.
+  const countPending = requestedPage === 1 && filters.productIds && filters.productIds.length <= pageSize
+    ? productsPending.then(rows => rows.length)
+    : withDatabaseRetry(() => prisma.product.count({ where }));
+  const [total, requestedProducts] = await Promise.all([countPending, productsPending]);
 
   const pageCount = Math.max(1, Math.ceil(total / pageSize));
   const page = Math.min(requestedPage, pageCount);
