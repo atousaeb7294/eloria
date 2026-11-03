@@ -520,8 +520,8 @@ export function CheckoutPageView({
                       ))}
                       <p id="shipping-note" className="text-xs leading-7 text-[#d7c9a7]">
                         {isPersian
-                          ? "در روش تیپاکس، کرایه به مبلغ سفارش اضافه نمی‌شود. تیپاکس مبلغ را تعیین می‌کند و گیرنده هنگام تحویل می‌پردازد. برای طلا و اشیای ارزشمند، پیش از انتخاب با گالری هماهنگ کنید تا پذیرش مرسوله و پوشش خسارت برای ارزش آن تأیید شود. انتخاب پست عادی یا تیپاکس به‌تنهایی تضمین بیمه نیست."
-                          : "Tipax sets the freight charge and collects it from the recipient on delivery. It is excluded from your online payment. For gold or valuables, contact the gallery before choosing a carrier to confirm acceptance and cover for the item's value. Neither selection guarantees insurance."}
+                          ? "در روش تیپاکس، کرایه به مبلغ سفارش اضافه نمی‌شود. تیپاکس مبلغ را تعیین می‌کند و گیرنده هنگام تحویل می‌پردازد. با تیپاکس، سفارش شما سریع‌تر به دستتان می‌رسد و در طول مسیر بیمه است."
+                          : "Tipax sets the freight charge and collects it from the recipient on delivery. It is excluded from your online payment. With Tipax, your order arrives faster and is insured in transit."}
                       </p>
                     </fieldset>
 
