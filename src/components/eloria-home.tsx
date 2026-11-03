@@ -138,23 +138,19 @@ export function EloriaHome({
       <header className="home-header home-header-refined">
         <div className="home-header-note">{fa ? "بافته از مهر · آراسته به طلا و نقره" : "Woven with care · Adorned in gold & silver"}</div>
         <div className="home-header-inner">
-        <TreasuryLink href={`/${locale}`} className="brand">
-          <Image
-            className="brand-logo"
-            src="/images/brand/eloria-logo.webp"
-            alt={fa ? "لوگوی الوریا" : "Eloria"}
-            width={76}
-            height={76}
-            priority
-          />
-          <span className="brand-wordmark">
-            ELORIA
-            <small>
-              {fa ? "جواهری در دل افسانه" : "A jewel within a legend"}
-            </small>
+        <TreasuryLink href={`/${locale}#hero`} className="brand atelier-signature"
+          aria-label={fa ? "الوریا، صفحهٔ اصلی" : "Eloria home"}>
+          <span className="atelier-seal" aria-hidden="true">
+            <Image className="brand-logo" src="/images/brand/eloria-logo.webp"
+              width={76} height={76} alt="" priority />
           </span>
-          <Image className="brand-script" src="/images/brand/eloria-script-gold-v3.webp"
-            alt="ELORIA" width={520} height={192} unoptimized />
+          <span className="atelier-inscription">
+            <Image className="brand-script" src="/images/brand/eloria-script-gold-v3.webp"
+              width={520} height={192} alt="" unoptimized />
+            <span className="atelier-byline" dir={fa ? "rtl" : "ltr"}>
+              {fa ? "کارگاه جواهرات دست‌ساز" : "Handcrafted jewellery"}
+            </span>
+          </span>
         </TreasuryLink>
         <nav
           id="home-menu"

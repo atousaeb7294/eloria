@@ -2968,3 +2968,38 @@ html[lang="fa"] body .eloria-home[dir="rtl"] :is(.hero-copy h1,.section-heading 
 
 .eloria-home .home-quick-loading { min-height:160px; display:grid; align-content:center; width:100%; font-size:13px; line-height:1.9; }
 html[lang="fa"] .home-quick-loading [lang="en"],html[lang="en"] .home-quick-loading [lang="fa"] { display:none; }
+
+/* The house mark reads like the maker's seal on the edge of a jewellery box. */
+.eloria-home .home-header-refined .atelier-signature {
+  display:inline-flex; flex-flow:row nowrap; gap:clamp(6px,1vw,14px);
+  letter-spacing:normal; align-items:center; min-width:0; border-radius:12px;
+}
+.eloria-home .atelier-seal {
+  position:relative; display:grid; place-items:center; flex:none;
+  width:clamp(38px,5.1vw,66px); aspect-ratio:1; border-radius:50%;
+  border:1px solid #ac8955; box-shadow:inset 0 0 0 3px #211e30,inset 0 0 0 4px #d5b87c55;
+  background:radial-gradient(ellipse at 35% 24%,#5b4752,#292637 65%,#191b2b);
+}
+.eloria-home .atelier-seal::after {
+  content:""; width:5px; height:5px; position:absolute; top:-3px; left:calc(50% - 2.5px);
+  transform:rotate(45deg); background:#efcf91; box-shadow:0 0 6px #e9c88755;
+}
+.eloria-home .home-header-refined .atelier-seal .brand-logo {
+  width:82%; height:82%; object-fit:contain; margin:0; animation:none;
+}
+.eloria-home .atelier-inscription { display:grid; justify-items:center; gap:3px; min-width:0; }
+.eloria-home .home-header-refined .atelier-inscription .brand-script {
+  display:block; width:clamp(68px,9vw,128px); max-width:100%; height:auto;
+}
+.eloria-home .atelier-byline {
+  display:flex; align-items:center; gap:5px; color:#e7d2ac;
+  font:500 clamp(9px,.8vw,11px)/1.65 Tahoma,sans-serif; white-space:nowrap;
+}
+.eloria-home .atelier-byline::before,.eloria-home .atelier-byline::after {
+  content:""; width:clamp(3px,.65vw,10px); height:1px; background:#bba079;
+}
+@media(max-width:420px) {
+  .eloria-home .home-header-refined .atelier-signature {gap:4px;}
+  .eloria-home .atelier-seal {width:32px;}
+  .eloria-home .atelier-byline::before,.eloria-home .atelier-byline::after {display:none;}
+}

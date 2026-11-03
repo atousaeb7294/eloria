@@ -18,14 +18,19 @@ export default async function HomePage({
   const { locale } = await params;
   setRequestLocale(locale);
   const resolvedLocale = locale === "en" ? "en" : "fa";
-  const nonce = (await headers()).get("x-nonce") ?? undefined;
+  const requestHeaders = await headers();
+  const nonce = requestHeaders.get("x-nonce") ?? undefined;
+  // A document request can stream the first-visit film. On a client navigation,
+  // wait for the destination before replacing the treasury already on screen.
+  const documentVisit = requestHeaders.get("sec-fetch-dest") === "document";
+  const home = documentVisit
+    ? <Suspense fallback={null}><HomeContent locale={resolvedLocale} /></Suspense>
+    : await HomeContent({ locale: resolvedLocale });
   return (
     <>
       <script nonce={nonce} dangerouslySetInnerHTML={{ __html: `try{document.documentElement.toggleAttribute("data-intro-seen",!!location.hash||sessionStorage.getItem(${JSON.stringify(INTRO_SESSION_KEY)})==="1")}catch{}` }} />
       <EloriaIntroExperience locale={resolvedLocale} />
-      <Suspense fallback={null}>
-        <HomeContent locale={resolvedLocale} />
-      </Suspense>
+      {home}
     </>
   );
 }
