@@ -16,6 +16,14 @@ async function main() {
   assert.equal(missingTable.pieces.length, 8);
   assert.equal(missingTable.hero, null, "Never float an opaque gallery photo");
   assert.equal(missingTable.unavailable, false);
+  let finishPrices!: (prices: Map<string, string>) => void;
+  const initial = await loadHomeDesign("fa", source({
+    prices: () => new Promise(resolve => { finishPrices = resolve; }),
+    preparedHeroes: async () => { finishPrices(new Map([["p0", "1700000"]])); return []; },
+  }));
+  assert.equal(initial.pieces[0].displayPriceToman, "1700000");
+  const missingPrices = await loadHomeDesign("fa", source({ prices: async () => { throw new Error("offline"); } }));
+  assert.equal(missingPrices.pieces.length, 8);
   const config: HomeAppearance = { featuredProductIds: ["p7", "p3", "p1"], featuredCutoutIds: ["cutout"], heroScale: 200, heroCutout: { id: "hero", sourceImageId: "image-3", sourceImageUrl: "/original-3.jpg", product: rows[3] } };
   const brokenOptionalMedia = await loadHomeDesign("fa", source({ appearance: async () => config, cutouts: async () => { throw new Error("cutout unavailable"); } }));
   assert.deepEqual(brokenOptionalMedia.pieces.slice(0, 3).map(p => p.id), ["p7", "p3", "p1"]);

@@ -2734,6 +2734,16 @@ html[lang="fa"] body .eloria-home[dir="rtl"] :is(h1,h2,h3,h1 *,h2 *,h3 *) {
     border-radius:50%;background:radial-gradient(ellipse,#120b2380,transparent 70%);
     pointer-events:none;
   }
+  .eloria-home .portal-grid .portal.is-open .portal-window::after {
+    background:radial-gradient(ellipse at 50% 3%,rgba(var(--treasury-light),.25),transparent 52%);
+  }
+  /* Use the Persian text face for the long title so its ascenders stay within its own row. */
+  html[lang="fa"] body .eloria-home[dir="rtl"] .portal-grid .weave .portal-content h3 {
+    font-family:"Vazirmatn Variable",Tahoma,sans-serif!important;
+    font-size:clamp(16px,1.65vw,25px);
+    text-wrap:balance;
+    margin-block-start:.3em;
+  }
   .eloria-home .portal-grid .portal-window {grid-area:1/1;}
   .eloria-home .portal-grid .portal-content {
     position:relative;grid-area:1/1;align-self:end;inset:auto;width:auto;margin:0 13% 12%;min-height:0;min-width:0;z-index:5;

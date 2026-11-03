@@ -38,8 +38,16 @@ export function EloriaIntroView({
     retrySecondVideo,
   } = controller;
 
-  // Do not cover server-rendered content while waiting for JavaScript.
-  if (phase === "complete" || phase === "checking") return null;
+  if (phase === "complete") return null;
+  if (phase === "checking") {
+    return (
+      <div className="eloria-intro-root eloria-intro-pending">
+        <a href="#hero" className="absolute end-6 top-6 rounded-full bg-black/70 px-4 py-2 text-sm text-white" onClick={handleSkipIntro}>
+          {isPersian ? "ورود بدون ویدئو" : "Enter without video"}
+        </a>
+      </div>
+    );
+  }
 
   if (phase === "ready-to-play") {
     return (

@@ -432,6 +432,13 @@
  * لینک‌های خانه که مستقیماً به #hero می‌روند، باید Intro را پیش از Hydration
  * نیز کنار بزنند تا هیچ لایه‌ای کلیک‌های Hero یا هدر را مسدود نکند.
  */
+/* Cover the home document on first paint while the session check runs. */
+.eloria-intro-pending { display:none; }
+@media (scripting: enabled) {
+  html:not([data-intro-seen]):not(:has(:target)) .eloria-intro-pending {
+    display:block; position:fixed; inset:0; z-index:100; background:#000;
+  }
+}
 html[data-eloria-skip-intro="true"] .eloria-intro-root,
 html:has(#hero:target) .eloria-intro-root {
   display: none !important;

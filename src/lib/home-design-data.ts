@@ -53,8 +53,9 @@ export type HomeDesignSource = {
   products(options: { ids?: string[]; excludeIds?: string[]; take: number }): Promise<HomeProduct[]>;
   treasuryProduct?(group: HomePiece["group"]): Promise<HomeProduct | null>;
   cutouts(ids: string[]): Promise<HomeCutout[]>;
+  prices?(ids: string[]): Promise<Map<string, string | null | undefined>>;
   preparedHeroes?(): Promise<HomePreparedHero[]>;
-  report(area: "appearance" | "catalog" | "cutouts"): void;
+  report(area: "appearance" | "catalog" | "cutouts" | "prices"): void;
 };
 
 const visible = (p: HomeProduct) =>
@@ -81,6 +82,12 @@ export async function loadHomeDesign(locale: string, source: HomeDesignSource, r
     source.report("catalog");
     return { pieces: [], hero: null, unavailable: true };
   }
+  const pricesPending = products.length && source.prices
+    ? source.prices(products.map(product => product.id)).catch(() => {
+        source.report("prices");
+        return undefined;
+      })
+    : undefined;
   let cutouts: HomeCutout[] = [];
   if (appearance?.featuredCutoutIds.length) {
     try { cutouts = await source.cutouts(appearance.featuredCutoutIds.slice(0, 8)); }
@@ -101,7 +108,7 @@ export async function loadHomeDesign(locale: string, source: HomeDesignSource, r
   const pieces = products.map(piece);
   // Selected pieces stay unchanged. A missing category gets its own real
   // catalog photo instead of a stock illustration or the wrong treasury.
-  const treasuryPieces = (await Promise.all((["gold", "silver", "weave"] as const).map(async group => {
+  const treasuryPending = Promise.all((["gold", "silver", "weave"] as const).map(async group => {
     const featured = pieces.find(item => item.group === group);
     if (featured) return featured;
     try {
@@ -112,7 +119,7 @@ export async function loadHomeDesign(locale: string, source: HomeDesignSource, r
       }
     } catch { source.report("catalog"); }
     return null;
-  }))).filter((item): item is HomePiece => Boolean(item));
+  }));
   const currentImage = (item: HomePreparedHero) => item.product.images.find(image =>
     image.id === item.sourceImageId && image.imageUrl === item.sourceImageUrl);
   const current = (item: HomePreparedHero) => visible(item.product) &&
@@ -134,5 +141,8 @@ export async function loadHomeDesign(locale: string, source: HomeDesignSource, r
         imageId: selected.pipelineVersion === UPLOADED_HERO_VERSION ? undefined : selectedImage?.id,
         cutoutUrl: `/api/media/hero/${selected.id}`, scale }
     : fallback ? { ...fallback, scale } : null;
+  const [prices, treasuryRows] = await Promise.all([pricesPending, treasuryPending]);
+  if (prices) for (const item of pieces) item.displayPriceToman = prices.get(item.id);
+  const treasuryPieces = treasuryRows.filter((item): item is HomePiece => Boolean(item));
   return { pieces, treasuryPieces, hero, unavailable: false };
 }

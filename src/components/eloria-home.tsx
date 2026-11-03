@@ -375,7 +375,7 @@ export function EloriaHome({
                         src={p.imageUrl}
                         cutoutSrc={p.cutoutUrl}
                         imageId={p.imageId}
-                        priority={i < 2}
+                        priority={!hero && i < 2}
                         alt={p.name}
                         sizes="(max-width:760px) 42vw, (max-width:1100px) 28vw, 300px"
                       />
@@ -449,12 +449,10 @@ export function EloriaHome({
           <p>
             {fa ? (
               <>
-                بافت دست‌ساز، طلا، نقره و سنگ؛
-                <br />
-                جزئیاتی که به سلیقه و خاطرهٔ تو پیوند می‌خورند.
+                در الوریا، هیچ دو اثری یک سرنوشت ندارند؛ زیرا هر آفرینش، افسانه‌ای است که تنها یک‌بار در جهان روایت می‌شود.
               </>
             ) : (
-              "Handwoven details, gold, silver and stone. A connection to your taste and memories."
+              "In Eloria, no two pieces share a destiny. Each creation is a legend told only once in the world."
             )}
           </p>
           <TreasuryLink className="text-link" href={`/${locale}/story`}>

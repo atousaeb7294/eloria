@@ -95,8 +95,9 @@ async function scenario({ reduced = false, saveData = false, seen = false, rejec
 }
 
 async function main() {
-  assert.equal(renderToStaticMarkup(React.createElement(EloriaIntroExperience, { locale: "fa" })), "",
-    "Delayed JavaScript must not leave an overlay covering the shop");
+  const firstPaint = renderToStaticMarkup(React.createElement(EloriaIntroExperience, { locale: "fa" }));
+  assert.match(firstPaint, /eloria-intro-pending/);
+  assert.match(firstPaint, /href="#hero"/, "Visitors can enter before hydration");
   (globalThis as any).IS_REACT_ACT_ENVIRONMENT = true;
   await scenario({ completeFlow: true });
   await scenario({ reduced: true });

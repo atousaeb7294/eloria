@@ -27,7 +27,7 @@ const heroSelect = {
 } satisfies Prisma.HeroCutoutSelect;
 
 export async function getHomeDesign(locale: string) {
-  const design = await loadHomeDesign(locale, {
+  return loadHomeDesign(locale, {
     appearance: () => prisma.storefrontAppearance.findUnique({
       where: { id: "home" },
       select: {
@@ -65,16 +65,10 @@ export async function getHomeDesign(locale: string) {
       } },
       orderBy: { createdAt: "desc" }, take: 64, select: heroSelect,
     }),
+    prices: async productIds => {
+      const { products } = await getPricedProductsCatalog({ productIds, pageSize: productIds.length });
+      return new Map(products.map(product => [product.id, product.displayPriceToman]));
+    },
     report: area => console.warn(`[Eloria Home] ${area} unavailable; optional media does not hide catalog photos.`),
   });
-  if (!design.pieces.length) return design;
-  try {
-    const productIds = design.pieces.map(piece => piece.id);
-    const { products } = await getPricedProductsCatalog({ productIds, pageSize: productIds.length });
-    const prices = new Map(products.map(product => [product.id, product.displayPriceToman]));
-    for (const piece of design.pieces) piece.displayPriceToman = prices.get(piece.id);
-  } catch {
-    console.warn("[Eloria Home] Initial prices unavailable.");
-  }
-  return design;
 }
