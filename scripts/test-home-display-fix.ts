@@ -16,10 +16,12 @@ async function main() {
   assert.equal(missingTable.pieces.length, 8);
   assert.equal(missingTable.hero, null, "Never float an opaque gallery photo");
   assert.equal(missingTable.unavailable, false);
+  let notifyPrices!: () => void;
+  const pricesStarted = new Promise<void>(resolve => { notifyPrices = resolve; });
   let finishPrices!: (prices: Map<string, string>) => void;
   const initial = await loadHomeDesign("fa", source({
-    prices: () => new Promise(resolve => { finishPrices = resolve; }),
-    preparedHeroes: async () => { finishPrices(new Map([["p0", "1700000"]])); return []; },
+    prices: () => new Promise(resolve => { finishPrices = resolve; notifyPrices(); }),
+    preparedHeroes: async () => { await pricesStarted; finishPrices(new Map([["p0", "1700000"]])); return []; },
   }));
   assert.equal(initial.pieces[0].displayPriceToman, "1700000");
   const missingPrices = await loadHomeDesign("fa", source({ prices: async () => { throw new Error("offline"); } }));

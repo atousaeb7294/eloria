@@ -68,6 +68,28 @@ export async function loadHomeDesign(locale: string, source: HomeDesignSource, r
   try { appearance = await source.appearance(); }
   catch { source.report("appearance"); }
   const ids = [...new Set(appearance?.featuredProductIds ?? [])].slice(0, 8);
+  const cutoutsPending = appearance?.featuredCutoutIds.length
+    ? source.cutouts(appearance.featuredCutoutIds.slice(0, 8)).catch(() => {
+        source.report("cutouts");
+        return [];
+      })
+    : Promise.resolve<HomeCutout[]>([]);
+  const currentImage = (item: HomePreparedHero) => item.product.images.find(image =>
+    image.id === item.sourceImageId && image.imageUrl === item.sourceImageUrl);
+  const current = (item: HomePreparedHero) => visible(item.product) &&
+    (item.pipelineVersion === UPLOADED_HERO_VERSION || Boolean(currentImage(item)));
+  const heroPending = (async () => {
+    let selected = appearance?.heroCutout;
+    if (!selected || !current(selected)) {
+      try {
+        // Pick once on the server, so hydration never swaps the photo or title.
+        const candidates = (await source.preparedHeroes?.() ?? []).filter(current);
+        const unique = [...new Map(candidates.map(item => [item.product.id, item])).values()];
+        selected = unique[Math.min(unique.length - 1, Math.max(0, Math.floor(random() * unique.length)))];
+      } catch { source.report("cutouts"); }
+    }
+    return selected;
+  })();
   let products: HomeProduct[];
   try {
     products = (await source.products({ ids: ids.length ? ids : undefined, take: 8 })).filter(visible);
@@ -88,11 +110,7 @@ export async function loadHomeDesign(locale: string, source: HomeDesignSource, r
         return undefined;
       })
     : undefined;
-  let cutouts: HomeCutout[] = [];
-  if (appearance?.featuredCutoutIds.length) {
-    try { cutouts = await source.cutouts(appearance.featuredCutoutIds.slice(0, 8)); }
-    catch { source.report("cutouts"); }
-  }
+  const cutouts = await cutoutsPending;
   const piece = (p: HomeProduct): HomePiece => {
     const image = p.images[0];
     const prepared = cutouts.find(c => c.productId === p.id && c.sourceImageId === image.id && c.sourceImageUrl === image.imageUrl);
@@ -120,19 +138,7 @@ export async function loadHomeDesign(locale: string, source: HomeDesignSource, r
     } catch { source.report("catalog"); }
     return null;
   }));
-  const currentImage = (item: HomePreparedHero) => item.product.images.find(image =>
-    image.id === item.sourceImageId && image.imageUrl === item.sourceImageUrl);
-  const current = (item: HomePreparedHero) => visible(item.product) &&
-    (item.pipelineVersion === UPLOADED_HERO_VERSION || Boolean(currentImage(item)));
-  let selected = appearance?.heroCutout;
-  if (!selected || !current(selected)) {
-    try {
-      // Pick once on the server, so hydration never swaps the photo or title.
-      const candidates = (await source.preparedHeroes?.() ?? []).filter(current);
-      const unique = [...new Map(candidates.map(item => [item.product.id, item])).values()];
-      selected = unique[Math.min(unique.length - 1, Math.max(0, Math.floor(random() * unique.length)))];
-    } catch { source.report("cutouts"); }
-  }
+  const selected = await heroPending;
   const selectedImage = selected && current(selected) ? currentImage(selected) : undefined;
   const scale = Math.min(100, Math.max(60, appearance?.heroScale ?? 90));
   const fallback = pieces.find(item => item.cutoutUrl);
