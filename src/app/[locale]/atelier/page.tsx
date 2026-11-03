@@ -217,7 +217,7 @@ export default async function AtelierPage({
                       <div className="absolute inset-0 bg-gradient-to-t from-[#0a0e27] via-transparent to-transparent" />
                     </div>
                     <div className="p-5 sm:p-6">
-                      <p className="text-[10px] text-[#d8bb70]/58">{fa ? product.mythNameFa || myth.mythNameFa : product.mythNameEn || myth.mythNameEn}</p>
+                      <p className="text-[10px] text-[#d8bb70]/58">{fa ? myth.legendTitleFa : myth.legendTitleEn}</p>
                       <h3 className="mt-2 text-xl text-[#f1e0b9]">{fa ? product.nameFa : product.nameEn}</h3>
                       <p className="mt-4 text-sm leading-8 text-[#d0c09f]/68">{(fa ? product.legendFa : product.legendEn)?.trim() || (fa ? myth.legendFa : myth.legendEn)}</p>
                       <div className="mt-5 grid gap-2 text-[11px] text-[#c8b995]/58 sm:grid-cols-2">

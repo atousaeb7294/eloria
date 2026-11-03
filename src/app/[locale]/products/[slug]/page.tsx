@@ -1059,9 +1059,7 @@ export default async function ProductPage({
                     : "text-xl font-semibold",
                 ].join(" ")}
               >
-                {isPersian
-                  ? `افسانهٔ ${legendName}`
-                  : `The Legend of ${legendName}`}
+                {isPersian ? generatedLegend.legendTitleFa : generatedLegend.legendTitleEn}
               </h2>
 
               <div className="relative mt-4 overflow-hidden rounded-2xl border border-[#d9b85f]/25 bg-[linear-gradient(145deg,rgba(217,184,95,0.08),rgba(0,0,0,0.18))] px-5 py-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">

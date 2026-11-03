@@ -37,6 +37,8 @@ export type ProductWorldProfile = {
 };
 
 export type ProductMythOutput = {
+  legendTitleFa: string;
+  legendTitleEn: string;
   mythKey: string;
   mythNameFa: string;
   mythNameEn: string;
@@ -59,6 +61,8 @@ function toProductMyth(
   const productNameFa = input.nameFa.trim();
   const productNameEn = input.nameEn?.trim() || productNameFa;
   return {
+    legendTitleFa: character.legendTitleFa,
+    legendTitleEn: character.legendTitleEn,
     mythKey: character.key,
     mythNameFa: character.nameFa,
     mythNameEn: character.nameEn,
