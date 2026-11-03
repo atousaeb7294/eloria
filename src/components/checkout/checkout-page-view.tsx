@@ -507,16 +507,26 @@ export function CheckoutPageView({
                       />
                     </label>
 
-                    <fieldset className="space-y-3 sm:col-span-2" disabled={submitting || couponApplying || Boolean(createdOrder)} aria-describedby="shipping-note">
+                    <fieldset className="space-y-3 sm:col-span-2" disabled={submitting || couponApplying || Boolean(createdOrder)}>
                       <legend className="mb-2 text-sm text-[#f1e2bd]">{isPersian ? "روش ارسال" : "Delivery method"}</legend>
                       {(["POST", "TIPAX"] as const).map(method => (
-                        <label key={method} className="flex cursor-pointer items-center gap-3 rounded-xl border border-[#d9b85f]/25 p-3 text-sm text-[#eee1c7]">
-                          <input type="radio" name="shippingMethod" value={method} checked={shippingMethod === method}
-                            onChange={() => setShippingMethod(method)} />
-                          {method === "POST"
-                            ? (isPersian ? "پست عادی" : "Regular post") + " · " + formatPrice(DELIVERY_TOMAN.toString()) + " " + text.toman
-                            : (isPersian ? "تیپاکس" : "Tipax") + " · " + collectLabel}
-                        </label>
+                        <div key={method}>
+                          <label className="flex cursor-pointer items-center gap-3 rounded-xl border border-[#d9b85f]/25 p-3 text-sm text-[#eee1c7]">
+                            <input type="radio" name="shippingMethod" value={method} checked={shippingMethod === method}
+                              aria-describedby={method === "POST" ? "regular-post-note" : "shipping-note"}
+                              onChange={() => setShippingMethod(method)} />
+                            {method === "POST"
+                              ? (isPersian ? "پست عادی" : "Regular post") + " · " + formatPrice(DELIVERY_TOMAN.toString()) + " " + text.toman
+                              : (isPersian ? "تیپاکس" : "Tipax") + " · " + collectLabel}
+                          </label>
+                          {method === "POST" && (
+                            <p id="regular-post-note" className="mt-2 text-xs leading-7 text-[#d7c9a7]">
+                              {isPersian
+                                ? "ارسال با پست عادی بدون بیمهٔ اختصاصی است. در صورت انتخاب این روش، پست مسئولیتی در قبال آسیب‌دیدگی یا مفقود شدن مرسوله در مسیر ارسال نمی‌پذیرد."
+                                : "Regular post does not include dedicated insurance. If you choose this method, the postal service accepts no responsibility for damage to or loss of the parcel in transit."}
+                            </p>
+                          )}
+                        </div>
                       ))}
                       <p id="shipping-note" className="text-xs leading-7 text-[#d7c9a7]">
                         {isPersian
@@ -744,61 +754,6 @@ export function CheckoutPageView({
                         }
                       </h2>
 
-                      <div className="mt-6 rounded-2xl border border-[#d9b85f]/20 bg-[#d9b85f]/[0.045] p-4">
-                        <div className="flex items-start gap-3">
-                          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-[#d9b85f]/22 bg-black/10 text-[#e4c977]">
-                            <Gift className="h-4.5 w-4.5" />
-                          </span>
-                          <div className="min-w-0 flex-1">
-                            <h3 className="text-sm font-medium text-[#f0ddb0]">{text.couponTitle}</h3>
-                            <p className="mt-1 text-[10px] leading-5 text-[#cbbd9d]/58">{text.couponDescription}</p>
-                          </div>
-                        </div>
-
-                        <div className="mt-4 flex flex-col gap-2 min-[480px]:flex-row">
-                          <input
-                            dir="ltr"
-                            value={couponCode}
-                            onChange={(event) => {
-                              setCouponCode(event.target.value.toUpperCase().slice(0, 40));
-                            }}
-                            placeholder={text.couponPlaceholder}
-                            aria-label={text.couponLabel}
-                            className="min-h-11 min-w-0 flex-1 rounded-xl border border-white/[0.09] bg-black/15 px-3 text-left text-xs uppercase tracking-[0.08em] text-[#f4e4bd] outline-none placeholder:text-[#c8b996]/30 focus:border-[#e5c873]/55"
-                          />
-                          <button
-                            type="button"
-                            disabled={couponApplying}
-                            onClick={() => void applyCoupon()}
-                            className="eloria-action inline-flex min-h-11 shrink-0 items-center gap-2 rounded-xl border border-[#d9b85f]/28 bg-[#d9b85f]/[0.08] px-3 text-[11px] text-[#edd48c] transition hover:border-[#efd17d]/55 disabled:opacity-45"
-                          >
-                            {couponApplying ? <LoaderCircle className="h-3.5 w-3.5 animate-spin" /> : <TicketPercent className="h-3.5 w-3.5" />}
-                            {couponApplying ? text.couponApplying : text.couponApply}
-                          </button>
-                        </div>
-
-                        <button
-                          type="button"
-                          disabled={couponApplying}
-                          onClick={useFirstPurchaseGift}
-                          className="mt-2 inline-flex items-center gap-2 text-[10px] text-[#e4cd89]/75 underline decoration-[#e4cd89]/25 underline-offset-4 transition hover:text-[#f4dfa1] disabled:opacity-45"
-                        >
-                          <Gift className="h-3.5 w-3.5" />
-                          {text.couponUseGift}
-                        </button>
-
-                        {couponMessage ? (
-                          <p className={[
-                            "mt-3 rounded-xl border px-3 py-2 text-[10px] leading-5",
-                            couponPreview
-                              ? "border-emerald-200/15 bg-emerald-950/20 text-emerald-100/72"
-                              : "border-amber-200/15 bg-amber-950/15 text-amber-100/68",
-                          ].join(" ")}>
-                            {couponMessage}
-                          </p>
-                        ) : null}
-                      </div>
-
                       <div className="mt-7 space-y-4 border-y border-white/[0.07] py-6">
                         <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 text-sm">
                           <span className="text-[#c9bb9a]/60">
@@ -864,24 +819,6 @@ export function CheckoutPageView({
                         </span>
                       </div>
 
-                      <div className="mt-5 space-y-3">
-                        <div className="flex items-start gap-3 rounded-xl border border-[#d9b85f]/12 bg-[#d9b85f]/[0.03] px-3 py-3 text-[10px] leading-6 text-[#cfc19e]/55">
-                          <ShieldCheck className="mt-1 h-3.5 w-3.5 shrink-0 text-[#d9be6b]/65" />
-
-                          {
-                            text.secureNotice
-                          }
-                        </div>
-
-                        <div className="flex items-start gap-3 rounded-xl border border-[#d9b85f]/12 bg-[#d9b85f]/[0.03] px-3 py-3 text-[10px] leading-6 text-[#cfc19e]/55">
-                          <Clock3 className="mt-1 h-3.5 w-3.5 shrink-0 text-[#d9be6b]/65" />
-
-                          {
-                            text.reservationNotice
-                          }
-                        </div>
-                      </div>
-
                       <TurnstileWidget
                         locale={locale}
                         onTokenChange={setTurnstileToken}
@@ -919,7 +856,7 @@ export function CheckoutPageView({
 
                       <Link
                         href={`/${locale}/cart`}
-                        className="eloria-action mt-4 hidden min-h-11 w-full items-center justify-center gap-2 rounded-full border border-white/[0.08] text-xs text-[#cfc19e]/60 transition hover:border-[#d9b85f]/25 hover:text-[#efd98e] lg:flex"
+                        className="eloria-action mt-4 flex min-h-11 w-full items-center justify-center gap-2 rounded-full border border-white/[0.08] text-xs text-[#cfc19e]/60 transition hover:border-[#d9b85f]/25 hover:text-[#efd98e]"
                       >
                         {isPersian ? (
                           <ArrowRight className="h-3.5 w-3.5" />
@@ -931,6 +868,79 @@ export function CheckoutPageView({
                           text.cart
                         }
                       </Link>
+
+                      <div className="mt-6 rounded-2xl border border-[#d9b85f]/20 bg-[#d9b85f]/[0.045] p-4">
+                        <div className="flex items-start gap-3">
+                          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-[#d9b85f]/22 bg-black/10 text-[#e4c977]">
+                            <Gift className="h-4.5 w-4.5" />
+                          </span>
+                          <div className="min-w-0 flex-1">
+                            <h3 className="text-sm font-medium text-[#f0ddb0]">{text.couponTitle}</h3>
+                            <p className="mt-1 text-[10px] leading-5 text-[#cbbd9d]/58">{text.couponDescription}</p>
+                          </div>
+                        </div>
+
+                        <div className="mt-4 flex flex-col gap-2 min-[480px]:flex-row">
+                          <input
+                            dir="ltr"
+                            value={couponCode}
+                            onChange={(event) => {
+                              setCouponCode(event.target.value.toUpperCase().slice(0, 40));
+                            }}
+                            placeholder={text.couponPlaceholder}
+                            aria-label={text.couponLabel}
+                            className="min-h-11 min-w-0 flex-1 rounded-xl border border-white/[0.09] bg-black/15 px-3 text-left text-xs uppercase tracking-[0.08em] text-[#f4e4bd] outline-none placeholder:text-[#c8b996]/30 focus:border-[#e5c873]/55"
+                          />
+                          <button
+                            type="button"
+                            disabled={couponApplying}
+                            onClick={() => void applyCoupon()}
+                            className="eloria-action inline-flex min-h-11 shrink-0 items-center gap-2 rounded-xl border border-[#d9b85f]/28 bg-[#d9b85f]/[0.08] px-3 text-[11px] text-[#edd48c] transition hover:border-[#efd17d]/55 disabled:opacity-45"
+                          >
+                            {couponApplying ? <LoaderCircle className="h-3.5 w-3.5 animate-spin" /> : <TicketPercent className="h-3.5 w-3.5" />}
+                            {couponApplying ? text.couponApplying : text.couponApply}
+                          </button>
+                        </div>
+
+                        <button
+                          type="button"
+                          disabled={couponApplying}
+                          onClick={useFirstPurchaseGift}
+                          className="mt-2 inline-flex items-center gap-2 text-[10px] text-[#e4cd89]/75 underline decoration-[#e4cd89]/25 underline-offset-4 transition hover:text-[#f4dfa1] disabled:opacity-45"
+                        >
+                          <Gift className="h-3.5 w-3.5" />
+                          {text.couponUseGift}
+                        </button>
+
+                        {couponMessage ? (
+                          <p className={[
+                            "mt-3 rounded-xl border px-3 py-2 text-[10px] leading-5",
+                            couponPreview
+                              ? "border-emerald-200/15 bg-emerald-950/20 text-emerald-100/72"
+                              : "border-amber-200/15 bg-amber-950/15 text-amber-100/68",
+                          ].join(" ")}>
+                            {couponMessage}
+                          </p>
+                        ) : null}
+                      </div>
+
+                      <div className="mt-5 space-y-3">
+                        <div className="flex items-start gap-3 rounded-xl border border-[#d9b85f]/12 bg-[#d9b85f]/[0.03] px-3 py-3 text-[10px] leading-6 text-[#cfc19e]/55">
+                          <ShieldCheck className="mt-1 h-3.5 w-3.5 shrink-0 text-[#d9be6b]/65" />
+
+                          {
+                            text.secureNotice
+                          }
+                        </div>
+
+                        <div className="flex items-start gap-3 rounded-xl border border-[#d9b85f]/12 bg-[#d9b85f]/[0.03] px-3 py-3 text-[10px] leading-6 text-[#cfc19e]/55">
+                          <Clock3 className="mt-1 h-3.5 w-3.5 shrink-0 text-[#d9be6b]/65" />
+
+                          {
+                            text.reservationNotice
+                          }
+                        </div>
+                      </div>
                     </>
                   )}
                   </div>
