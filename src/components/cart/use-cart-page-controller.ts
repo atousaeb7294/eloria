@@ -95,19 +95,7 @@ export function useCartPageController({
       ReturnType<typeof setTimeout> | null
     >(null);
 
-  const [couponCode, setCouponCode] = useState("");
   const [orderNotes, setOrderNotes] = useState("");
-
-  useEffect(() => {
-    let stored = "";
-    try {
-      stored = window.sessionStorage.getItem("eloria_coupon_code") ?? "";
-    } catch {
-      // Storage may be unavailable in private browsing.
-    }
-    const timer = window.setTimeout(() => setCouponCode(stored), 0);
-    return () => window.clearTimeout(timer);
-  }, []);
 
   useEffect(() => {
     let stored = "";
@@ -123,21 +111,6 @@ export function useCartPageController({
       if (normalized.trim()) window.sessionStorage.setItem("eloria_order_notes", normalized);
       else window.sessionStorage.removeItem("eloria_order_notes");
     } catch {}
-  }, []);
-
-  const saveCouponCode = useCallback((value: string) => {
-    const normalized = value
-      .trim()
-      .toUpperCase()
-      .replace(/[^A-Z0-9_-]/g, "")
-      .slice(0, 40);
-    setCouponCode(normalized);
-    try {
-      if (normalized) window.sessionStorage.setItem("eloria_coupon_code", normalized);
-      else window.sessionStorage.removeItem("eloria_coupon_code");
-    } catch {
-      // The value remains available in component state.
-    }
   }, []);
 
   const text =
@@ -231,9 +204,6 @@ export function useCartPageController({
 
           dismiss:
             "بستن اعلان",
-          coupon: "هدیه خرید اول · ۵۰ هزار تومان",
-          couponPlaceholder: "ELORIA50",
-          couponHelp: "کد ELORIA50 برای هر شماره موبایل فقط یک‌بار و فقط در خرید اول قابل استفاده است؛ تأیید نهایی در Checkout توسط سرور انجام می‌شود.",
           orderNotes: "توضیحات و شخصی‌سازی سفارش",
           orderNotesPlaceholder: "مثلاً: اندازه مچ دست ۱۶ سانتی‌متر است یا توضیح دلخواه درباره سفارش را اینجا بنویسید…",
           orderNotesHelp: "این توضیح همراه سفارش شما ذخیره می‌شود و در مرحله تکمیل سفارش نیز قابل ویرایش است.",
@@ -346,9 +316,6 @@ export function useCartPageController({
 
           dismiss:
             "Dismiss notification",
-          coupon: "First purchase · 50,000 Toman gift",
-          couponPlaceholder: "ELORIA50",
-          couponHelp: "ELORIA50 can be used once per mobile number and only on the first purchase; the server verifies eligibility at checkout.",
           orderNotes: "Order notes & personalisation",
           orderNotesPlaceholder: "For example: wrist size is 16 cm, or add any request for this order…",
           orderNotesHelp: "This note stays with your order and can still be edited at checkout.",
@@ -1016,8 +983,6 @@ export function useCartPageController({
     shouldShowLiveStatus,
     checkoutBlocked,
     priceNoticeDescription,
-    couponCode,
-    saveCouponCode,
     orderNotes,
     saveOrderNotes,
   };
