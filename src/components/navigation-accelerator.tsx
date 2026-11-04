@@ -58,6 +58,10 @@ export function NavigationAccelerator() {
     };
 
     const warmFromEvent = (event: Event) => {
+      // Touch-generated hover, focus and pointerdown occur at the tap itself.
+      // Let the real navigation use the connection instead of racing a prefetch.
+      if (event instanceof PointerEvent && event.pointerType !== "mouse") return;
+      if (event.type === "focusin" && !window.matchMedia("(hover: hover)").matches) return;
       const href = extractInternalHref(event.target);
       if (href) prefetch(href);
     };

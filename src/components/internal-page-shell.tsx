@@ -228,7 +228,7 @@ export function InternalPageShell({
     >
       <SectionBackground
         sectionKey="internal-page-shell"
-        priority
+        priority={!/^\/(products|collections)(?:\/|$)/.test(removeLocaleFromPath(pathname))}
         tone={
           profile.tone
         }

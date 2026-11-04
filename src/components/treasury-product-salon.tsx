@@ -307,7 +307,6 @@ export function TreasuryProductSalon({
           >
             <CircularProductImage
               src={picture(item)}
-              imageId={item.image?.id}
               alt=""
               sizes="52px"
             />

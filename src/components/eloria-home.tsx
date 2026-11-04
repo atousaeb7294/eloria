@@ -402,7 +402,7 @@ export function EloriaHome({
                       />
                     </div>
                   </div>
-                  <TreasuryLink prefetch={true}
+                  <TreasuryLink prefetch={false}
                     className="home-details-link"
                     href={`/${locale}/products/${p.slug}`}
                     aria-label={fa ? `جزئیات ${p.name}` : `Details: ${p.name}`}

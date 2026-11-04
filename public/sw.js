@@ -8,6 +8,7 @@ const STORED_AT = "x-eloria-cache-time";
 let writes = Promise.resolve();
 
 function cacheablePath(url) {
+  if (url.pathname.startsWith("/_next/static/") && /^\?dpl=[\w.-]+$/.test(url.search)) return true;
   return !url.search && /^(\/_next\/static\/|\/images\/|\/fonts\/|\/icons\/)/.test(url.pathname);
 }
 async function storeAsset(request, response) {
@@ -57,6 +58,13 @@ self.addEventListener("fetch", event => {
   }
   if (!cacheablePath(url)) return;
   event.respondWith((async () => {
+    // Next serves content-addressed chunks with immutable caching. Reuse those
+    // on subsequent routes even when the network is slow but still connected.
+    if (url.pathname.startsWith("/_next/static/") && request.cache !== "reload" && request.cache !== "no-store") {
+      const cached = await caches.open(CACHE_NAME).then(cache => cache.match(request)).catch(() => null);
+      if (cached && /\bimmutable\b/i.test(cached.headers.get("cache-control") || "") &&
+          Date.now() - Number(cached.headers.get(STORED_AT) || 0) <= MAX_AGE_MS) return cached;
+    }
     try {
       const response = await fetch(request);
       const copy = response.clone();

@@ -484,7 +484,7 @@ export default async function ProductPage({
     : materialKind === "MIXED"
       ? `/${locale}/products`
       : collection?.slug
-    ? `/${locale}/collections/${collection.slug}/${materialSlug}`
+    ? `/${locale}/products?material=${materialSlug}&collection=${encodeURIComponent(collection.slug)}`
     : `/${locale}/products`;
 
   const fallbackImage =

@@ -1,8 +1,9 @@
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { runInNewContext } from 'node:vm';
+let immutableResponse=false, fetchCount=0;
 const events={}; const saved=new Map(); let networkFails=false, privateResponse=false;
-function networkResponse(){ const r=new Response('asset',{headers:{'content-length':'5','cache-control':privateResponse?'private, no-store':'public'}});Object.defineProperty(r,'type',{value:'basic'});Object.defineProperty(r,'clone',{value:networkResponse});return r; }
+function networkResponse(){ const r=new Response('asset',{headers:{'content-length':'5','cache-control':privateResponse?'private, no-store':immutableResponse?'public, immutable':'public'}});Object.defineProperty(r,'type',{value:'basic'});Object.defineProperty(r,'clone',{value:networkResponse});return r; }
 const cachesByName=new Map([['eloria-shell-v2-brand-media',new Map()],['another-app',new Map()]]);
 const key=req=>typeof req==='string'?req:req.url;
 const cache={
@@ -15,7 +16,7 @@ const cache={
 runInNewContext(readFileSync('public/sw.js','utf8'),{
   self:{location:{origin:'https://shop.test'},addEventListener:(name,fn)=>events[name]=fn,skipWaiting(){},clients:{claim:async()=>{}}},
   caches:{open:async()=>cache,keys:async()=>Array.from(cachesByName.keys()),delete:async name=>cachesByName.delete(name),match:async req=>cache.match(req)},
-  fetch:async()=>{if(networkFails)throw Error('offline');return networkResponse();},
+  fetch:async()=>{fetchCount++;if(networkFails)throw Error('offline');return networkResponse();},
   URL,Headers,Response,Date,console,
 });
 async function lifecycle(name){let task;events[name]({waitUntil:p=>task=p});await task;}
@@ -29,6 +30,12 @@ async function request(path,mode='cors') {
 for(const path of ['/api/products/x/price','/api/media/products/x','/videos/intro.mp4','/login','/cart','/images/x.webp?token=private'])assert.equal(await request(path),undefined);
 await request('/fa/products/x','navigate'); assert.equal(saved.size,1,'Online documents never cached');
 await request('/images/valid.webp'); assert.ok(saved.has('https://shop.test/images/valid.webp'));
+immutableResponse=true;
+await request('/_next/static/chunks/a12b3c.js');
+const afterFirst = fetchCount;
+assert.equal(await (await request('/_next/static/chunks/a12b3c.js')).text(), 'asset');
+assert.equal(fetchCount, afterFirst, 'Immutable chunks are reused across navigations');
+immutableResponse=false;
 privateResponse=true; await request('/images/private.webp'); assert.ok(!saved.has('https://shop.test/images/private.webp')); privateResponse=false;
 for(let i=0;i<70;i++)await request(`/images/${i}.webp`); assert.ok(saved.size<=65,'Cache entry cap plus offline document');
 networkFails=true; assert.equal(await (await request('/fa/checkout','navigate')).text(),'offline');

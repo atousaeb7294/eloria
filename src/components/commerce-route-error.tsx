@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouteChunkRecovery } from "@/lib/use-route-chunk-recovery";
 import Link from "next/link";
 
 import {
@@ -30,6 +31,7 @@ export function CommerceRouteError({
   reset,
   section,
 }: CommerceRouteErrorProps) {
+  const retry = useRouteChunkRecovery(error, reset, section === "products");
   const pathname =
     usePathname();
 
@@ -120,7 +122,7 @@ export function CommerceRouteError({
           <div className="mx-auto mt-8 grid max-w-lg gap-3 sm:grid-cols-2">
             <button
               type="button"
-              onClick={reset}
+              onClick={retry}
               className="flex min-h-12 items-center justify-center gap-2 rounded-full border border-[#d9b85f]/45 bg-[#d9b85f]/[0.09] px-5 text-sm text-[#f1d98e] transition hover:-translate-y-0.5 hover:border-[#efd27c]/75 hover:bg-[#d9b85f]/[0.13]"
             >
               <RefreshCw className="h-4 w-4" />

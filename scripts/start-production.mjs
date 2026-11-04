@@ -16,9 +16,14 @@ if (standalone && existsSync(standaloneServer)) {
   const staticTarget = resolve(standaloneRoot, ".next", "static");
   const publicTarget = resolve(standaloneRoot, "public");
 
-  if (!existsSync(staticTarget)) {
+  const staticSource = resolve(process.cwd(), ".next", "static");
+  if (staticSource !== staticTarget && existsSync(staticSource)) {
     mkdirSync(dirname(staticTarget), { recursive: true });
-    cpSync(resolve(process.cwd(), ".next", "static"), staticTarget, { recursive: true });
+    cpSync(staticSource, staticTarget, { recursive: true });
+  }
+
+  if (publicTarget !== resolve(process.cwd(), "public") && existsSync(resolve(process.cwd(), "public/sw.js")) && existsSync(publicTarget)) {
+    cpSync(resolve(process.cwd(), "public/sw.js"), resolve(publicTarget, "sw.js"));
   }
 
   if (!existsSync(publicTarget)) {

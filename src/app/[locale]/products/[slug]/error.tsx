@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouteChunkRecovery } from "@/lib/use-route-chunk-recovery";
 import Link from "next/link";
 
 import {
@@ -30,6 +31,7 @@ export default function ProductError({
   error,
   reset,
 }: ProductErrorProps) {
+  const retry = useRouteChunkRecovery(error, reset, true);
   const params = useParams<{
     locale?: string;
   }>();
@@ -65,7 +67,7 @@ export default function ProductError({
           <div className="mt-7 flex flex-col justify-center gap-3 sm:flex-row">
             <button
               type="button"
-              onClick={reset}
+              onClick={retry}
               className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full border border-[#e2c56f]/50 bg-[#d9b85f]/[0.09] px-6 text-sm text-[#f1dc9d] transition hover:border-[#f0d681]/80 hover:bg-[#d9b85f]/[0.14]"
             >
               <RefreshCw className="h-4 w-4" />
