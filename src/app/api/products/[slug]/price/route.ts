@@ -33,7 +33,7 @@ export async function GET(request: NextRequest, context: { params: Promise<{ slu
     return NextResponse.json({ successful: true, ...result, requestId }, { headers: headers() });
   } catch (error) {
     if (error instanceof ProductPricingError) {
-      return NextResponse.json({ successful: false, code: error.code, message: error.message, requestId }, { status: error.status, headers: headers() });
+      return NextResponse.json({ successful: false, code: error.code, message: error.message, unavailableRateMaterial: error.unavailableRateMaterial, requestId }, { status: error.status, headers: headers() });
     }
     console.error("[Eloria Quote] unavailable", { requestId, durationMs: Math.round(performance.now() - started), errorType: error instanceof Error ? error.name : "Unknown", code: error && typeof error === "object" && "code" in error ? String(error.code).slice(0,32) : undefined });
     return NextResponse.json({ successful: false, code: "QUOTE_UNAVAILABLE", message: "بررسی قیمت موقتاً در دسترس نیست. دوباره تلاش کنید.", requestId }, { status: 503, headers: { ...headers(), "Retry-After": "3" } });

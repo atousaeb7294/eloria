@@ -117,6 +117,8 @@ async function loadProductPageRecord(slug: string) {
       material: true,
       hasGold: true,
       hasSilver: true,
+      goldComponentWeight: true,
+      silverComponentWeight: true,
       specifications: true,
       status: true,
       stock: true,
@@ -507,8 +509,15 @@ export default async function ProductPage({
           },
         ];
 
+  // The physical composition is also available when a market quote cannot be loaded.
+  const componentWeight = productRecord.pricingMode === "DYNAMIC" && productRecord.hasGold && productRecord.hasSilver
+    && productRecord.goldComponentWeight && productRecord.silverComponentWeight
+    ? productRecord.goldComponentWeight.plus(productRecord.silverComponentWeight)
+    : null;
   const weight =
     result?.variant?.weightGrams ??
+    result?.product.weightGrams ??
+    componentWeight?.toString() ??
     selectedVariant?.metalWeight?.toString() ??
     productRecord.metalWeight?.toString() ??
     null;

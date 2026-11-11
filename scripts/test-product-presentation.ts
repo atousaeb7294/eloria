@@ -48,10 +48,11 @@ async function main() {
       staleAfterMinutes: 15, closedMarketPricingEnabled: false, closedMarketMaxAgeMinutes: 0,
       closedMarketSafetyMarginPercent: "0",
     })) as unknown as typeof originalPolicy;
+    let staleMaterial: string | null = null;
     prisma.metalPrice.findUnique = (async ({ where }: { where: { material: string } }) => ({
       pricePerGram: where.material === "GOLD" ? "10000000" : "100000",
       referencePurity: where.material === "GOLD" ? 750 : 999,
-      sourceTimeUnix: BigInt(Math.floor(Date.now() / 1000)), lastSuccessAt: new Date(),
+      sourceTimeUnix: BigInt(Math.floor(Date.now() / 1000) - (where.material === staleMaterial ? 86400 : 0)), lastSuccessAt: new Date(),
       rawPayload: { pricingBasis: "ELORIA_SILVER_10_31_V2" },
     })) as unknown as typeof originalRate;
     for (const material of ["GOLD", "SILVER"]) {
@@ -60,6 +61,17 @@ async function main() {
       assert.equal(mixed.product.weightGrams, "5.250");
       assert.equal(mixed.pricing.finalPriceToman, "23895000");
       assert.equal(mixed.pricing.breakdown?.components?.length, 2);
+      assert.equal(mixed.product.isPurchasable, true);
+      for (const expired of ["GOLD", "SILVER"]) {
+        staleMaterial = expired;
+        const displayed = await getProductLivePrice({ slug: fixture.slug, allowStaleRate: true });
+        assert.equal(displayed.product.isPurchasable, false);
+        assert.equal(displayed.product.unavailableRateMaterial, expired);
+        assert.equal(displayed.pricing.finalPriceToman, mixed.pricing.finalPriceToman);
+        await assert.rejects(getProductLivePrice({ slug: fixture.slug }), (error: unknown) =>
+          error instanceof ProductPricingError && error.code === "METAL_PRICE_STALE" && error.unavailableRateMaterial === expired);
+      }
+      staleMaterial = null;
       fixture.metalWeight = "2"; // Older records may retain only the primary weight.
     }
   } finally {

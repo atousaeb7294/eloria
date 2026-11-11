@@ -72,7 +72,7 @@ export function EloriaHome({
   design: HomeDesign;
 }) {
   const fa = locale === "fa";
-  const mobileTreasury = useMobileTreasury();
+  const { grid, active, setActive } = useMobileTreasury();
   const [menu, setMenu] = useState(false);
   const [paused, setPaused] = useState(false);
   const [offscreen, setOffscreen] = useState(false);
@@ -327,10 +327,10 @@ export function EloriaHome({
                 : "Choose a treasury. Its pieces await you."}
             </p>
           </div>
-          <div className="portal-grid" ref={mobileTreasury.grid}>
+          <div className="portal-grid" ref={grid}>
             {treasuries.map(t => (
               <TreasuryPortal key={t.key} treasury={t} locale={locale} prefetch={false}
-                mobileActive={mobileTreasury.active} onMobileChange={mobileTreasury.setActive}
+                mobileActive={active} onMobileChange={setActive}
                 piece={(design.treasuryPieces ?? design.pieces).find(piece => piece.group === t.key)} />
             ))}
           </div>

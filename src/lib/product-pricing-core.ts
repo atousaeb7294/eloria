@@ -43,12 +43,16 @@ export class ProductPricingError extends Error {
   readonly status:
     number;
 
+  readonly unavailableRateMaterial?: MaterialType;
+
   constructor(
     code: ProductPricingErrorCode,
     message: string,
     status = 400,
+    unavailableRateMaterial?: MaterialType,
   ) {
-    super(message);
+    super(unavailableRateMaterial ? `نرخ ${unavailableRateMaterial === "GOLD" ? "طلا" : "نقره"}: ${message}` : message);
+    this.unavailableRateMaterial = unavailableRateMaterial;
 
     this.name =
       "ProductPricingError";
@@ -137,6 +141,8 @@ export type ProductPriceResult = {
 
     isPurchasable:
       boolean;
+
+    unavailableRateMaterial?: MaterialType | null;
 
     primaryImage: {
       url: string;
@@ -820,6 +826,7 @@ export async function getProductLivePrice({
       ),
 
       503,
+      product.material,
     );
   }
 
@@ -852,6 +859,8 @@ export async function getProductLivePrice({
   const taxPercent =
     product.taxPercent ??
     policy.defaultTaxPercent;
+
+  let unavailableRateMaterial: MaterialType | null = saleDecision.isUsableForSale ? null : product.material;
 
   const calculation =
     product.hasGold && product.hasSilver
@@ -888,8 +897,11 @@ export async function getProductLivePrice({
             closedMarketMaxAgeMinutes: secondaryReference.policy.closedMarketMaxAgeMinutes,
             closedMarketSafetyMarginPercent: secondaryReference.policy.closedMarketSafetyMarginPercent.toString(),
           });
-          if (!secondaryDecision.isUsableForSale && !allowStaleRate) {
-            throw new ProductPricingError("METAL_PRICE_STALE", getUnavailableRateMessage(secondaryDecision.reason, secondaryFreshness.reason), 503);
+          if (!secondaryDecision.isUsableForSale) {
+            unavailableRateMaterial ??= secondaryMaterial;
+            if (!allowStaleRate) {
+              throw new ProductPricingError("METAL_PRICE_STALE", getUnavailableRateMessage(secondaryDecision.reason, secondaryFreshness.reason), 503, secondaryMaterial);
+            }
           }
           const secondaryRate = secondaryDecision.effectivePricePerGramToman ?? secondaryReference.metalPrice.pricePerGram.toString();
           const rates: Record<MaterialType, { price: string; purity: number }> = {
@@ -964,8 +976,11 @@ export async function getProductLivePrice({
         });
 
   return {
-    product:
-      productOutput,
+    product: {
+      ...productOutput,
+      isPurchasable: isPurchasable && unavailableRateMaterial === null,
+      unavailableRateMaterial,
+    },
 
     variant:
       variantOutput,

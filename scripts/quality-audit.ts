@@ -41,7 +41,7 @@ const treasuryPreview = read("src/app/api/treasury/preview/route.ts");
 check(
   "Home mounts the managed design with cleanup and native section anchors",
   homeRootPage.includes("<EloriaHome") &&
-    homeRootPage.includes("await getHomeDesign(resolvedLocale)") &&
+    /await\s+getHomeDesign\(\s*[\w$]+\s*\)/.test(homeRootPage) &&
     ["treasuries", "featured", "story"].every(
       id => homeView.includes(`id="${id}"`) &&
         homeView.includes(`href: "#${id}"`),

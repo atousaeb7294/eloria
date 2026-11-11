@@ -27,6 +27,7 @@ export function LivePurchaseBox({
   const fa = locale === "fa";
   const [quote, setQuote] = useState(initial);
   const [error, setError] = useState(false);
+  const [failedRate, setFailedRate] = useState<"GOLD" | "SILVER" | null>(null);
   const [checked, setChecked] = useState(false);
   const [updated, setUpdated] = useState("");
   const [refreshing, setRefreshing] = useState(false);
@@ -48,6 +49,7 @@ export function LivePurchaseBox({
       controller = activeController;
       const timeout = window.setTimeout(() => activeController.abort(), 12000);
       const requestedAt = performance.now();
+      let rejectedMaterial: "GOLD" | "SILVER" | null = null;
       try {
         const query = variantId
           ? `?variantId=${encodeURIComponent(variantId)}`
@@ -58,7 +60,9 @@ export function LivePurchaseBox({
         );
         const result = (await response.json()) as ProductPriceResult & {
           successful?: boolean;
+          unavailableRateMaterial?: "GOLD" | "SILVER";
         };
+        rejectedMaterial = result.unavailableRateMaterial ?? null;
         if (!response.ok || !result.successful || !result.product || !result.pricing || !result.quote)
           throw new Error("quote unavailable");
         const expiresIn = Date.parse(result.quote.expiresAt) - Date.parse(result.quote.generatedAt)
@@ -66,6 +70,7 @@ export function LivePurchaseBox({
         if (!Number.isFinite(expiresIn) || expiresIn <= 0) throw new Error("quote expired");
         if (!disposed) {
           setQuote(result);
+          setFailedRate(null);
           setError(false);
           setChecked(true);
           validUntil.current = performance.now() + Math.min(expiresIn, 120000);
@@ -77,6 +82,7 @@ export function LivePurchaseBox({
         }
       } catch {
         if (!disposed) {
+          setFailedRate(rejectedMaterial);
           setError(true);
           setChecked(false);
           setFailure(!navigator.onLine ? "offline" : activeController.signal.aborted ? "timeout" : "unavailable");
@@ -122,6 +128,7 @@ export function LivePurchaseBox({
     quote.product.slug === slug &&
     (!variantId || quote.variant?.id === variantId) &&
     (!quote.liveRate || quote.liveRate.isUsableForSale);
+  const blockedRate = error ? failedRate : quote?.product.unavailableRateMaterial;
   const weight =
     quote?.variant?.weightGrams ?? b?.weightGrams ?? quote?.product.weightGrams;
   const hasGold =
@@ -216,8 +223,8 @@ export function LivePurchaseBox({
                     : `The final price includes the value of gold${hasSilver ? " and silver" : ""}, gold making charges, the seller’s profit and the value of handcraft.`
                   : hasSilver
                     ? fa
-                      ? "قیمت نهایی این اثر شامل ارزش نقره، اجرت ساخت و سود نقره، و ارزش هنر دست است."
-                      : "The final price includes silver, silver making charges, the seller’s profit and the value of handcraft."
+                      ? "قیمت نهایی این اثر شامل ارزش نقره، ارزش هنر دست و بسته‌بندی است."
+                      : "The final price includes the silver value, handcraft fee and packaging."
                     : fa
                       ? "قیمت نهایی این اثر بر پایهٔ مواد به‌کاررفته و ارزش هنر دست تعیین می‌شود."
                       : "The final price reflects the materials and the value of handcraft."}
@@ -238,7 +245,11 @@ export function LivePurchaseBox({
           )}
         </>
       ) : null}
-      {error && (
+      {blockedRate && <p role="status" className="mb-4 text-xs leading-7 text-amber-100">
+        {fa ? `نرخ فروش ${blockedRate === "GOLD" ? "طلا" : "نقره"} معتبر نیست. خرید پس از به‌روزرسانی نرخ فعال می‌شود.`
+          : `The ${blockedRate === "GOLD" ? "gold" : "silver"} rate is unavailable for sale. Purchase resumes when the rate is valid.`}
+      </p>}
+      {error && !blockedRate && (
         <p role="status" className="mb-4 text-xs leading-7 text-amber-100">
           {fa
             ? "قیمت تازه دریافت نشد. خرید پس از بررسی دوبارهٔ نرخ فعال می‌شود."

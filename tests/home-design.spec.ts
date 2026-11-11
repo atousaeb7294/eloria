@@ -10,8 +10,12 @@ test("public circular pieces, original treasury routes and quick view", async ({
     page.locator(".eloria-home .medallion"),
     "The home must display all expected public products with images",
   ).toHaveCount(expectedPieces);
+  for (const id of ["treasuries", "featured", "story"]) {
+    await expect(page.locator(`#${id}`)).toHaveCount(1);
+    await expect(page.locator(`a[href="#${id}"]`).first()).toBeAttached();
+  }
   for (const key of ["gold", "silver", "weave"])
-    await expect(page.locator(`.portal.${key}`)).toHaveAttribute(
+    await expect(page.locator(`.portal.${key} .portal-entry`)).toHaveAttribute(
       "href",
       `/fa/collections/${key}`,
     );
