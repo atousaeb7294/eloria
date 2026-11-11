@@ -1,3 +1,4 @@
+import { getAdminPreviewRates } from "@/lib/metal-prices";
 import Link from "next/link";
 
 import {
@@ -119,6 +120,7 @@ export default async function NewAdminProductPage({
         </div>
       ) : (
         <AdminProductForm
+          rates={await getAdminPreviewRates().catch(() => [])}
           locale={locale}
           collections={collections}
           value={initialValue}

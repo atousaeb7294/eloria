@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { weightToGrams, gramsToSoot, readWeightGrams, savedWeightUnits, weightUnitsFromForm, formatStoredWeight, formatWeightSoot } from '../src/lib/weight-units.ts';
+import { combinedWeightGrams, weightToGrams, gramsToSoot, readWeightGrams, savedWeightUnits, weightUnitsFromForm, formatStoredWeight, formatWeightSoot } from '../src/lib/weight-units.ts';
 assert.equal(weightToGrams('625', 'soot'), '0.625');
 assert.equal(weightToGrams('۶۲۵', 'soot'), '0.625');
 assert.equal(weightToGrams('٦٢٥', 'soot'), '0.625');
@@ -45,3 +45,8 @@ assert.ok(formatStoredWeight('0.625','soot','fa').includes('۶۲۵ سوت'));
 console.log('PASS: saved unit metadata and exact customer-facing weight display.');
 assert.equal(formatWeightSoot('0.625', 'fa'), '۶۲۵ سوت');
 assert.equal(formatWeightSoot('1.250', 'en'), '1,250 soot');
+
+assert.equal(combinedWeightGrams(readWeightGrams(form, 'goldComponentWeight'), readWeightGrams(form, 'silverComponentWeight')), '1.875');
+assert.equal(combinedWeightGrams('0.001', '0.002'), '0.003');
+assert.equal(combinedWeightGrams('1.250', null), null);
+assert.throws(() => combinedWeightGrams('9999999.999', '0.001'));

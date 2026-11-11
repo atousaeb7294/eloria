@@ -24,6 +24,12 @@ export function gramsToSoot(grams: string): string {
   return normalized === null ? "" : BigInt(normalized.replace(".", "")).toString();
 }
 
+export function combinedWeightGrams(gold: string | null, silver: string | null): string | null {
+  if (!gold || !silver) return null;
+  const totalSoot = BigInt(gramsToSoot(gold)) + BigInt(gramsToSoot(silver));
+  return weightToGrams(totalSoot.toString(), "soot");
+}
+
 export function readWeightGrams(form: FormData, key: string, fallback: string | null = null): string | null {
   const raw = form.get(key);
   const unit = form.get(`${key}Unit`) ?? "gram";

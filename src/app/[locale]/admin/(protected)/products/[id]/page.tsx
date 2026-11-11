@@ -1,6 +1,7 @@
 import { canonicalProductStory } from "@/lib/canonical-product-story";
 import { savedWeightUnits } from "@/lib/weight-units";
 import { productAudience } from "@/lib/product-audience";
+import { getAdminPreviewRates } from "@/lib/metal-prices";
 import Link from "next/link";
 
 import { ArrowRight, ExternalLink, History } from "lucide-react";
@@ -243,6 +244,7 @@ export default async function EditAdminProductPage({
       ) : null}
 
       <AdminProductForm
+          rates={await getAdminPreviewRates().catch(() => [])}
         key={`${product.id}:${product.updatedAt.toISOString()}`}
         locale={safeLocale}
         collections={collections}

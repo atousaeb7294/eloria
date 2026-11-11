@@ -411,6 +411,10 @@ export async function getMetalPriceSnapshot() {
 
             staleAfterMinutes,
 
+            previewRoundingStep: policy?.roundingStep.toString() ?? null,
+            validPricingBasis: price.material !== "SILVER" ||
+              (price.rawPayload as { pricingBasis?: string } | null)?.pricingBasis === "ELORIA_SILVER_10_31_V2",
+
             hasPricingPolicy:
               Boolean(
                 policy,
@@ -456,4 +460,12 @@ export async function getMetalPriceSnapshot() {
         },
       ),
   };
+}
+export async function getAdminPreviewRates() {
+  const snapshot = await getMetalPriceSnapshot();
+  return snapshot.prices.flatMap(rate =>
+    rate.validPricingBasis && rate.isUsableForSale && rate.effectivePricePerGramToman && rate.previewRoundingStep
+      ? [{ material: rate.material, price: rate.effectivePricePerGramToman,
+          referencePurity: rate.referencePurity, roundingStep: rate.previewRoundingStep }]
+      : []);
 }

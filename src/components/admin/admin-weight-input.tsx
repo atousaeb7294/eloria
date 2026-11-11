@@ -4,6 +4,7 @@ import { useId, useState } from "react";
 import { gramsToSoot, weightToGrams, type WeightUnit } from "@/lib/weight-units";
 
 type WeightInputProps = {
+  onGramsChange?: (grams: string | null) => void;
   initialUnit?: WeightUnit; name: string; defaultValue: string; label: string; className: string; required?: boolean;
 };
 
@@ -11,7 +12,7 @@ export function AdminWeightInput(props: WeightInputProps) {
   return <WeightInputFields key={`${props.name}:${props.defaultValue}:${props.initialUnit ?? "soot"}`} {...props} />;
 }
 
-function WeightInputFields({ name, defaultValue, label, className, initialUnit = "soot", required = false }: WeightInputProps) {
+function WeightInputFields({ onGramsChange, name, defaultValue, label, className, initialUnit = "soot", required = false }: WeightInputProps) {
   const id = useId();
   const [unit, setUnit] = useState<WeightUnit>(initialUnit);
   const [value, setValue] = useState(() => initialUnit === "soot" ? gramsToSoot(defaultValue) : defaultValue);
@@ -31,7 +32,10 @@ function WeightInputFields({ name, defaultValue, label, className, initialUnit =
     <div className="grid grid-cols-[minmax(0,1fr)_6rem] gap-2">
       <input id={id} className={className} dir="ltr" inputMode={unit === "soot" ? "numeric" : "decimal"}
         name={name} value={value} required={required} aria-describedby={`${id}-hint`}
-        onChange={event => { setValue(event.target.value); setError(""); }} />
+        onChange={event => { const raw = event.target.value;
+          setValue(raw);
+          try { onGramsChange?.(weightToGrams(raw, unit)); setError(""); }
+          catch (cause) { onGramsChange?.(null); setError((cause as Error).message); } }} />
       <input type="hidden" name={`${name}Unit`} value={unit} />
       <select className={className} aria-label={`واحد ${label}`} value={unit}
         onChange={event => changeUnit(event.target.value as WeightUnit)}>

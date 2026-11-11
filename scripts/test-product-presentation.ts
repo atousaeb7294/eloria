@@ -39,6 +39,29 @@ async function main() {
     fixture.pricingMode = "DYNAMIC";
     await assert.rejects(getProductLivePrice({ slug: "weave" }), (error: unknown) =>
       error instanceof ProductPricingError && error.code === "INVALID_PRODUCT_COMPOSITION");
+    Object.assign(fixture, {
+      hasGold: true, hasSilver: true, goldComponentWeight: "2", silverComponentWeight: "3.25",
+      purityFineness: 750, metalWeight: null, artisticFee: "500000",
+    });
+    prisma.pricingPolicy.findFirst = (async () => ({
+      defaultProfitPercent: "0", defaultTaxPercent: "0", roundingStep: 1, quoteTtlSeconds: 120,
+      staleAfterMinutes: 15, closedMarketPricingEnabled: false, closedMarketMaxAgeMinutes: 0,
+      closedMarketSafetyMarginPercent: "0",
+    })) as unknown as typeof originalPolicy;
+    prisma.metalPrice.findUnique = (async ({ where }: { where: { material: string } }) => ({
+      pricePerGram: where.material === "GOLD" ? "10000000" : "100000",
+      referencePurity: where.material === "GOLD" ? 750 : 999,
+      sourceTimeUnix: BigInt(Math.floor(Date.now() / 1000)), lastSuccessAt: new Date(),
+      rawPayload: { pricingBasis: "ELORIA_SILVER_10_31_V2" },
+    })) as unknown as typeof originalRate;
+    for (const material of ["GOLD", "SILVER"]) {
+      fixture.material = material;
+      const mixed = await getProductLivePrice({ slug: fixture.slug });
+      assert.equal(mixed.product.weightGrams, "5.250");
+      assert.equal(mixed.pricing.finalPriceToman, "23895000");
+      assert.equal(mixed.pricing.breakdown?.components?.length, 2);
+      fixture.metalWeight = "2"; // Older records may retain only the primary weight.
+    }
   } finally {
     prisma.product.findFirst = originalProduct;
     prisma.pricingPolicy.findFirst = originalPolicy;

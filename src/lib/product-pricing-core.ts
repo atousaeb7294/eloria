@@ -1,3 +1,4 @@
+import { combinedWeightGrams } from "@/lib/weight-units";
 import { PACKAGING_TOMAN } from "@/lib/commerce-policy";
 import {
   calculateEloriaCompositeJewelryPrice,
@@ -493,8 +494,9 @@ export async function getProductLivePrice({
   const now = new Date();
 
   const productWeight =
-    variant?.metalWeight ??
-    product.metalWeight;
+    product.pricingMode === "DYNAMIC" && product.hasGold && product.hasSilver && product.goldComponentWeight && product.silverComponentWeight
+      ? combinedWeightGrams(product.goldComponentWeight.toString(), product.silverComponentWeight.toString())
+      : variant?.metalWeight ?? product.metalWeight;
 
   const productPurityFineness =
     variant?.purityFineness ??
@@ -590,10 +592,7 @@ export async function getProductLivePrice({
             product.purityFineness,
 
           weightGrams:
-            (
-              variant.metalWeight ??
-              product.metalWeight
-            )?.toString() ??
+            productWeight?.toString() ??
             null,
 
           stock:

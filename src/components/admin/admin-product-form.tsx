@@ -1,4 +1,8 @@
 "use client";
+import { normalizeDigits } from "@/lib/normalize-numeric-input";
+import { combinedWeightGrams } from "@/lib/weight-units";
+import { calculateEloriaCompositeJewelryPrice, type MaterialType } from "@/lib/pricing-engine";
+import type { getAdminPreviewRates } from "@/lib/metal-prices";
 import { ProductImage } from "@/components/product-image";
 import { AdminWeightInput } from "@/components/admin/admin-weight-input";
 
@@ -134,9 +138,11 @@ function FormSection({
 
 export function AdminProductForm({
   locale,
+  rates,
   collections,
   value,
 }: {
+  rates: Awaited<ReturnType<typeof getAdminPreviewRates>>;
   locale: "fa" | "en";
   collections: CollectionOption[];
   value: AdminProductFormValue;
@@ -146,6 +152,8 @@ export function AdminProductForm({
   const [hasGold, setHasGold] = useState(value.hasGold);
   const [hasSilver, setHasSilver] = useState(value.hasSilver);
   const [pricingMode, setPricingMode] = useState(value.pricingMode);
+  const [artisticFee, setArtisticFee] = useState(value.artisticFee);
+  const [purity, setPurity] = useState(value.purityFineness);
   const weaveOnly = !hasGold && !hasSilver;
   const action: (
     state: AdminProductActionState,
@@ -272,8 +280,8 @@ export function AdminProductForm({
               onChange={(event) => setSelectedMaterial(event.target.value as "GOLD" | "SILVER")}
               name="material"
             >
-              <option value="GOLD">طلا</option>
-              <option value="SILVER">نقره</option>
+              <option value="GOLD" disabled={!hasGold}>طلا</option>
+              <option value="SILVER" disabled={!hasSilver}>نقره</option>
             </select>
           </Field>
 
@@ -287,13 +295,11 @@ export function AdminProductForm({
             </button>
             <div className="mt-4 grid gap-3 sm:grid-cols-2">
               <label className="flex items-center gap-3 rounded-xl border border-[#d9b85f]/20 p-3 text-sm text-[#e8d39a]">
-                <input name="hasGold" type="checkbox" checked={hasGold} onChange={(event) => { setHasGold(event.target.checked); if (!hasSilver && event.target.checked) setSelectedMaterial("GOLD"); }} className="size-4 accent-[#d8ba62]" /> دارای طلا
+                <input name="hasGold" type="checkbox" checked={hasGold} onChange={(event) => { setHasGold(event.target.checked); if (!hasSilver && event.target.checked) setSelectedMaterial("GOLD"); else if (hasSilver && !event.target.checked) setSelectedMaterial("SILVER"); }} className="size-4 accent-[#d8ba62]" /> دارای طلا
               </label>
               <label className="flex items-center gap-3 rounded-xl border border-[#d8e2e5]/16 p-3 text-sm text-[#dfe8ea]">
-                <input name="hasSilver" type="checkbox" checked={hasSilver} onChange={(event) => { setHasSilver(event.target.checked); if (!hasGold && event.target.checked) setSelectedMaterial("SILVER"); }} className="size-4 accent-[#c9d5d9]" /> دارای نقره
+                <input name="hasSilver" type="checkbox" checked={hasSilver} onChange={(event) => { setHasSilver(event.target.checked); if (!hasGold && event.target.checked) setSelectedMaterial("SILVER"); else if (hasGold && !event.target.checked) setSelectedMaterial("GOLD"); }} className="size-4 accent-[#c9d5d9]" /> دارای نقره
               </label>
-              {hasGold && hasSilver ? <AdminWeightInput label="وزن طلای به‌کاررفته" className={inputClassName} defaultValue={value.goldComponentWeight} name="goldComponentWeight" initialUnit={value.weightUnits?.goldComponentWeight} required={hasGold && hasSilver} /> : null}
-              {hasGold && hasSilver ? <AdminWeightInput label="وزن نقرهٔ به‌کاررفته" className={inputClassName} defaultValue={value.silverComponentWeight} name="silverComponentWeight" initialUnit={value.weightUnits?.silverComponentWeight} required={hasGold && hasSilver} /> : null}
             </div>
           </div>
 
@@ -418,8 +424,10 @@ export function AdminProductForm({
             />
           </Field>
 
-          <AdminWeightInput label={!hasGold && !hasSilver ? "وزن محصول" : hasGold && hasSilver ? "وزن مجموع فلزات (مبنای نمایش)" : selectedMaterial === "SILVER" ? "وزن نقره (مبنای قیمت و نمایش)" : "وزن طلا (مبنای قیمت و نمایش)"} className={inputClassName}
-            defaultValue={value.metalWeight} name="metalWeight" initialUnit={value.weightUnits?.metalWeight} />
+          {hasGold && hasSilver ? <MixedMetalPricing value={value} rates={rates} material={selectedMaterial}
+            purity={purity} artisticFee={artisticFee} dynamic={pricingMode === "DYNAMIC"} /> :
+          <AdminWeightInput label={weaveOnly ? "وزن محصول" : selectedMaterial === "SILVER" ? "وزن نقره (مبنای قیمت و نمایش)" : "وزن طلا (مبنای قیمت و نمایش)"} className={inputClassName}
+            defaultValue={value.metalWeight} name="metalWeight" initialUnit={value.weightUnits?.metalWeight} />}
 
           {!weaveOnly && selectedMaterial === "GOLD" ? <>
           <Field label="عنوان عیار">
@@ -434,7 +442,7 @@ export function AdminProductForm({
           <Field label="خلوص عددی">
             <input
               className={inputClassName}
-              defaultValue={value.purityFineness}
+              value={purity} onChange={event => setPurity(event.target.value)}
               inputMode="numeric"
               max="1000"
               min="1"
@@ -446,10 +454,10 @@ export function AdminProductForm({
           </> : <><input type="hidden" name="purity" value="925" /><input type="hidden" name="purityFineness" value="925" /></>}
 
           <Field label="نوع اجرت">
-            <input type="hidden" name="makingChargeType" value={selectedMaterial === "GOLD" ? "PERCENT" : "NONE"} />
+            <input type="hidden" name="makingChargeType" value={hasGold ? "PERCENT" : "NONE"} />
             <select
               className={inputClassName}
-              value={selectedMaterial === "GOLD" ? "PERCENT" : "NONE"}
+              value={hasGold ? "PERCENT" : "NONE"}
               disabled
             >
               <option value="NONE">بدون اجرت</option>
@@ -483,7 +491,7 @@ export function AdminProductForm({
           <Field label="درصد اجرت">
             <input
               className={inputClassName}
-              value={selectedMaterial === "GOLD" ? "8" : "0"}
+              value={hasGold ? "8" : "0"}
               readOnly
               inputMode="decimal"
               name="makingChargePercent"
@@ -493,7 +501,7 @@ export function AdminProductForm({
           <Field label="هزینه هنری">
             <input
               className={inputClassName}
-              defaultValue={value.artisticFee}
+              value={artisticFee} onChange={event => setArtisticFee(event.target.value)}
               inputMode="decimal"
               name="artisticFee"
             />
@@ -502,7 +510,7 @@ export function AdminProductForm({
           <Field label="درصد سود">
             <input
               className={inputClassName}
-              value={selectedMaterial === "GOLD" ? "7" : "0"}
+              value={hasGold ? "7" : "0"}
               readOnly
               inputMode="decimal"
               name="profitPercent"
@@ -581,4 +589,52 @@ export function AdminProductForm({
       </div>
     </form>
   );
+}
+
+function MixedMetalPricing({ value, rates, material, purity, artisticFee, dynamic }: {
+  value: AdminProductFormValue;
+  rates: Awaited<ReturnType<typeof getAdminPreviewRates>>;
+  material: MaterialType;
+  purity: string;
+  artisticFee: string;
+  dynamic: boolean;
+}) {
+  const [gold, setGold] = useState<string | null>(value.goldComponentWeight);
+  const [silver, setSilver] = useState<string | null>(value.silverComponentWeight);
+  let total = null;
+  let price = null;
+  let message = "";
+  try {
+    total = combinedWeightGrams(gold, silver);
+    if (dynamic && gold && silver && Number(gold) > 0 && Number(silver) > 0) {
+      const g = rates.find(rate => rate.material === "GOLD");
+      const s = rates.find(rate => rate.material === "SILVER");
+      if (g && s) {
+        price = calculateEloriaCompositeJewelryPrice({
+          primaryMaterial: material,
+          metals: [
+            { material: "GOLD", weightGrams: gold, productPurity: material === "GOLD" ? Number(purity) : 750,
+              referencePricePerGramToman: g.price, referencePurity: g.referencePurity },
+            { material: "SILVER", weightGrams: silver, productPurity: s.referencePurity,
+              referencePricePerGramToman: s.price, referencePurity: s.referencePurity },
+          ],
+          artisticFeeToman: normalizeDigits(artisticFee) || "0",
+          roundingStepToman: (material === "GOLD" ? g : s).roundingStep,
+        });
+      } else message = "برای پیش‌نمایش قیمت، نرخ فروش معتبر هر دو فلز لازم است.";
+    }
+  } catch (error) { message = (error as Error).message; }
+  const toman = (amount: string) => BigInt(amount).toLocaleString("fa-IR") + " تومان";
+  return <div className="col-span-full grid gap-4 rounded-xl border border-[#cfb45f]/20 p-4 sm:grid-cols-2">
+    <AdminWeightInput name="goldComponentWeight" label="وزن طلای به‌کاررفته" className={inputClassName}
+      defaultValue={value.goldComponentWeight} initialUnit={value.weightUnits?.goldComponentWeight} onGramsChange={setGold} required />
+    <AdminWeightInput name="silverComponentWeight" label="وزن نقرهٔ به‌کاررفته" className={inputClassName}
+      defaultValue={value.silverComponentWeight} initialUnit={value.weightUnits?.silverComponentWeight} onGramsChange={setSilver} required />
+    <div className="col-span-full space-y-2 text-sm text-[#ead79f]" aria-live="polite">
+      <p>وزن مجموع فلزات: {total ? Number(total).toLocaleString("fa-IR") + " گرم" : "هر دو وزن را وارد کنید."}</p>
+      {price?.components?.map(part => <p key={part.material}>ارزش {part.material === "GOLD" ? "طلا" : "نقره"}: {toman(part.metalValueToman)}</p>)}
+      {price && <p>پیش‌نمایش قیمت نهایی با نرخ زمان باز شدن فرم: {toman(price.finalPriceToman)}</p>}
+      {message && <p>{message}</p>}
+    </div>
+  </div>;
 }

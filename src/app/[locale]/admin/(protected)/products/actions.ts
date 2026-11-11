@@ -1,5 +1,6 @@
 "use server";
-import { readWeightGrams, weightUnitsFromForm, type WeightUnits } from "@/lib/weight-units";
+import { normalizeDigits } from "@/lib/normalize-numeric-input";
+import { combinedWeightGrams, readWeightGrams, weightUnitsFromForm, type WeightUnits } from "@/lib/weight-units";
 import { withProductMediaLock } from "@/lib/product-media-mutations";
 import { after } from "next/server";
 import { repairSeoBatch } from "@/lib/seo-autopilot";
@@ -228,39 +229,6 @@ function readProductImageUrl(formData: FormData, key: string): string | null {
   return imageUrl;
 }
 
-function normalizeDigits(
-  value: string,
-): string {
-  const persianDigits =
-    "۰۱۲۳۴۵۶۷۸۹";
-
-  const arabicDigits =
-    "٠١٢٣٤٥٦٧٨٩";
-
-  return value
-    .replace(
-      /[۰-۹]/g,
-      (digit) =>
-        String(
-          persianDigits.indexOf(
-            digit,
-          ),
-        ),
-    )
-    .replace(
-      /[٠-٩]/g,
-      (digit) =>
-        String(
-          arabicDigits.indexOf(
-            digit,
-          ),
-        ),
-    )
-    .replace(/[٬,\s]/g, "")
-    .replace("٫", ".");
-}
-
-
 function readWeight(form: FormData, key: string, fallback: string | null = null): string | null {
   try { return readWeightGrams(form, key, fallback); }
   catch (error) { throw new AdminProductActionError((error as Error).message); }
@@ -476,8 +444,14 @@ function parseProductInput(
   if (!hasGold && !hasSilver && pricingMode !== "MANUAL") {
     throw new AdminProductActionError("برای گنجینهٔ بافت و اکسسوری بدون فلز، قیمت‌گذاری ثابت را انتخاب کنید.");
   }
-  const goldComponentWeight = readWeight(formData, "goldComponentWeight", material === "GOLD" ? readWeight(formData, "metalWeight", null) : null);
-  const silverComponentWeight = readWeight(formData, "silverComponentWeight", material === "SILVER" ? readWeight(formData, "metalWeight", null) : null);
+  const mixed = hasGold && hasSilver;
+  let metalWeight = mixed ? null : readWeight(formData, "metalWeight");
+  const goldComponentWeight = mixed ? readWeight(formData, "goldComponentWeight") : hasGold ? metalWeight : null;
+  const silverComponentWeight = mixed ? readWeight(formData, "silverComponentWeight") : hasSilver ? metalWeight : null;
+  if (mixed) {
+    try { metalWeight = combinedWeightGrams(goldComponentWeight, silverComponentWeight); }
+    catch (error) { throw new AdminProductActionError((error as Error).message); }
+  }
   if (hasGold && hasSilver && (!goldComponentWeight || !silverComponentWeight || Number(goldComponentWeight) <= 0 || Number(silverComponentWeight) <= 0)) {
     throw new AdminProductActionError("برای اثر ترکیبی، وزن طلا و وزن نقره را جداگانه و بیشتر از صفر وارد کنید.");
   }
@@ -553,12 +527,7 @@ function parseProductInput(
         "compareAtPrice",
         null,
       ),
-    metalWeight:
-      readWeight(
-        formData,
-        "metalWeight",
-        null,
-      ),
+    metalWeight,
     purity:
       readText(
         formData,
