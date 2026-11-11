@@ -548,6 +548,11 @@ for (const file of sourceFiles) {
     [];
 
   for (const tag of blankTags) {
+    // The official seal uses the origin referrer. Modern target=_blank links
+    // implicitly isolate window.opener unless rel=opener is explicitly set.
+    if (file === "src/components/enamad-seal.tsx" &&
+        /href="https:\/\/trustseal\.enamad\.ir\/\?id=\d+&Code=[A-Za-z0-9]+"/.test(tag) &&
+        tag.includes('referrerPolicy="origin"') && !/\srel=/.test(tag)) continue;
     if (
       !/rel\s*=\s*["'][^"']*\bnoopener\b[^"']*["']/i.test(tag) ||
       !/rel\s*=\s*["'][^"']*\bnoreferrer\b[^"']*["']/i.test(tag)
@@ -582,7 +587,7 @@ check(
 );
 
 check(
-  "Blank-target links declare noopener and noreferrer",
+  "Blank-target links follow the external link and official seal policies",
   unsafeBlankTargets.length === 0,
   unsafeBlankTargets.join(", "),
 );

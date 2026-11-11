@@ -438,16 +438,23 @@ function parseProductInput(
       "OUT_OF_STOCK";
   }
 
-  const material = readEnum(formData, "material", ["GOLD", "SILVER"] as const, "GOLD");
   const hasGold = formData.get("hasGold") === "on";
   const hasSilver = formData.get("hasSilver") === "on";
+  const material = hasGold ? "GOLD" : hasSilver ? "SILVER" : "GOLD";
   if (!hasGold && !hasSilver && pricingMode !== "MANUAL") {
     throw new AdminProductActionError("برای گنجینهٔ بافت و اکسسوری بدون فلز، قیمت‌گذاری ثابت را انتخاب کنید.");
   }
   const mixed = hasGold && hasSilver;
-  let metalWeight = mixed ? null : readWeight(formData, "metalWeight");
+  const singleKey = hasGold ? "goldComponentWeight" : "silverComponentWeight";
+  const singleInput = !mixed && (hasGold || hasSilver) && formData.has(singleKey) ? singleKey : "metalWeight";
+  let metalWeight = mixed ? null : readWeight(formData, singleInput);
+  const weightUnits = weightUnitsFromForm(formData);
+  if (!mixed) weightUnits.metalWeight = weightUnits[singleInput];
   const goldComponentWeight = mixed ? readWeight(formData, "goldComponentWeight") : hasGold ? metalWeight : null;
   const silverComponentWeight = mixed ? readWeight(formData, "silverComponentWeight") : hasSilver ? metalWeight : null;
+  if (!mixed && pricingMode === "DYNAMIC" && Number(metalWeight) <= 0) {
+    throw new AdminProductActionError("وزن فلز انتخاب‌شده باید بیشتر از صفر باشد.");
+  }
   if (mixed) {
     try { metalWeight = combinedWeightGrams(goldComponentWeight, silverComponentWeight); }
     catch (error) { throw new AdminProductActionError((error as Error).message); }
@@ -511,7 +518,7 @@ function parseProductInput(
         "legendEn",
         5_000,
       ),
-    weightUnits: weightUnitsFromForm(formData),
+    weightUnits,
     characterImageUrl: readProductImageUrl(formData, "characterImageUrl"),
     worldSceneImageUrl: readProductImageUrl(formData, "worldSceneImageUrl"),
     material,

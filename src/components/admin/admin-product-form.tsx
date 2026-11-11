@@ -1,7 +1,7 @@
 "use client";
 import { normalizeDigits } from "@/lib/normalize-numeric-input";
 import { combinedWeightGrams } from "@/lib/weight-units";
-import { calculateEloriaCompositeJewelryPrice, type MaterialType } from "@/lib/pricing-engine";
+import { calculateEloriaCompositeJewelryPrice, calculateEloriaJewelryPrice } from "@/lib/pricing-engine";
 import type { getAdminPreviewRates } from "@/lib/metal-prices";
 import { ProductImage } from "@/components/product-image";
 import { AdminWeightInput } from "@/components/admin/admin-weight-input";
@@ -148,12 +148,11 @@ export function AdminProductForm({
   value: AdminProductFormValue;
 }) {
   const [previewImage, setPreviewImage] = useState(value.primaryImageUrl);
-  const [selectedMaterial, setSelectedMaterial] = useState(value.material);
   const [hasGold, setHasGold] = useState(value.hasGold);
   const [hasSilver, setHasSilver] = useState(value.hasSilver);
   const [pricingMode, setPricingMode] = useState(value.pricingMode);
   const [artisticFee, setArtisticFee] = useState(value.artisticFee);
-  const [purity, setPurity] = useState(value.purityFineness);
+  const [purity, setPurity] = useState(value.material === "SILVER" ? "750" : value.purityFineness);
   const weaveOnly = !hasGold && !hasSilver;
   const action: (
     state: AdminProductActionState,
@@ -272,37 +271,6 @@ export function AdminProductForm({
             </select>
           </Field>
 
-          <Field label="فلز مبنای قیمت‌گذاری" hint={weaveOnly ? "برای بافت بدون فلز کاربرد ندارد و در سایت نمایش داده نمی‌شود." : undefined}>
-            <select
-              className={inputClassName}
-              disabled={weaveOnly}
-              value={selectedMaterial}
-              onChange={(event) => setSelectedMaterial(event.target.value as "GOLD" | "SILVER")}
-              name="material"
-            >
-              <option value="GOLD" disabled={!hasGold}>طلا</option>
-              <option value="SILVER" disabled={!hasSilver}>نقره</option>
-            </select>
-          </Field>
-
-          <div className="md:col-span-2 rounded-2xl border border-[#cfb45f]/18 bg-[#0f1435]/65 p-4">
-            <p className="text-sm text-[#ead79f]">ترکیب فلز و عضویت در گنجینه‌ها</p>
-            <p className="mt-1 text-xs leading-6 text-[#9f9278]">برای اثر ترکیبی، هر دو گزینه و وزن جداگانهٔ هر فلز را وارد کنید. اثر در هر دو گنجینه نمایش داده می‌شود؛ هنر دست و بسته‌بندی یک‌بار حساب می‌شوند. برای بافت بدون فلز، هر دو گزینه را بردارید و قیمت ثابت بگذارید.</p>
-            <button type="button" aria-pressed={weaveOnly}
-              className="mt-3 rounded-xl border border-[#cfb45f]/40 px-4 py-3 text-sm text-[#ead79f]"
-              onClick={() => { setHasGold(false); setHasSilver(false); setPricingMode("MANUAL"); }}>
-              {weaveOnly ? "✓ بافت بدون طلا و نقره انتخاب شده" : "انتخاب بافت بدون طلا و نقره"}
-            </button>
-            <div className="mt-4 grid gap-3 sm:grid-cols-2">
-              <label className="flex items-center gap-3 rounded-xl border border-[#d9b85f]/20 p-3 text-sm text-[#e8d39a]">
-                <input name="hasGold" type="checkbox" checked={hasGold} onChange={(event) => { setHasGold(event.target.checked); if (!hasSilver && event.target.checked) setSelectedMaterial("GOLD"); else if (hasSilver && !event.target.checked) setSelectedMaterial("SILVER"); }} className="size-4 accent-[#d8ba62]" /> دارای طلا
-              </label>
-              <label className="flex items-center gap-3 rounded-xl border border-[#d8e2e5]/16 p-3 text-sm text-[#dfe8ea]">
-                <input name="hasSilver" type="checkbox" checked={hasSilver} onChange={(event) => { setHasSilver(event.target.checked); if (!hasGold && event.target.checked) setSelectedMaterial("SILVER"); else if (hasGold && !event.target.checked) setSelectedMaterial("GOLD"); }} className="size-4 accent-[#c9d5d9]" /> دارای نقره
-              </label>
-            </div>
-          </div>
-
           <Field label="آدرس تصویر اصلی" hint="این عکس در قاب صفحهٔ خانه هم نمایش داده می‌شود. قاب با برش مرکزی پر می‌شود؛ فایل اصلی محصول تغییر نمی‌کند.">
             <input
               className={inputClassName}
@@ -394,6 +362,16 @@ export function AdminProductForm({
         description="طلا: ارزش طلا + اجرت ۸٪ + سود ۷٪ اصل طلا + کار هنری؛ مالیات فروش صفر است. نقره: اونس دلاری ÷ ۱۰٫۳۱ × دلار × وزن + کار هنری. بسته‌بندی هر قطعه ۷۰٬۰۰۰؛ پست عادی هر سفارش ۱۷۰٬۰۰۰ تومان؛ تیپاکس پس‌کرایه با گیرنده. در بازار بسته، آخرین نرخ ثبت‌شده بدون افزایش استفاده می‌شود."
       >
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+          <fieldset className="col-span-full flex flex-wrap gap-5 text-sm text-[#ead79f]">
+            <legend className="mb-3">فلزهای به‌کاررفته در محصول</legend>
+            <label><input type="checkbox" name="hasGold" checked={hasGold}
+              onChange={event => setHasGold(event.target.checked)} /> دارای طلا</label>
+            <label><input type="checkbox" name="hasSilver" checked={hasSilver}
+              onChange={event => setHasSilver(event.target.checked)} /> دارای نقره</label>
+            {weaveOnly && <span>بافت بدون فلز · قیمت‌گذاری دستی</span>}
+          </fieldset>
+          <MetalPricingFields value={value} rates={rates} hasGold={hasGold} hasSilver={hasSilver}
+            purity={purity} artisticFee={artisticFee} dynamic={pricingMode === "DYNAMIC"} />
           <Field label="روش قیمت‌گذاری">
             <select
               className={inputClassName}
@@ -424,16 +402,14 @@ export function AdminProductForm({
             />
           </Field>
 
-          {hasGold && hasSilver ? <MixedMetalPricing value={value} rates={rates} material={selectedMaterial}
-            purity={purity} artisticFee={artisticFee} dynamic={pricingMode === "DYNAMIC"} /> :
-          <AdminWeightInput label={weaveOnly ? "وزن محصول" : selectedMaterial === "SILVER" ? "وزن نقره (مبنای قیمت و نمایش)" : "وزن طلا (مبنای قیمت و نمایش)"} className={inputClassName}
+          {weaveOnly && <AdminWeightInput label="وزن محصول" className={inputClassName}
             defaultValue={value.metalWeight} name="metalWeight" initialUnit={value.weightUnits?.metalWeight} />}
 
-          {!weaveOnly && selectedMaterial === "GOLD" ? <>
+          {hasGold ? <>
           <Field label="عنوان عیار">
             <input
               className={inputClassName}
-              defaultValue={value.purity}
+              defaultValue={value.material === "SILVER" ? "18K" : value.purity}
               name="purity"
               placeholder="18K"
             />
@@ -591,48 +567,69 @@ export function AdminProductForm({
   );
 }
 
-function MixedMetalPricing({ value, rates, material, purity, artisticFee, dynamic }: {
+function MetalPricingFields({ value, rates, hasGold, hasSilver, purity, artisticFee, dynamic }: {
   value: AdminProductFormValue;
   rates: Awaited<ReturnType<typeof getAdminPreviewRates>>;
-  material: MaterialType;
+  hasGold: boolean;
+  hasSilver: boolean;
   purity: string;
   artisticFee: string;
   dynamic: boolean;
 }) {
-  const [gold, setGold] = useState<string | null>(value.goldComponentWeight);
-  const [silver, setSilver] = useState<string | null>(value.silverComponentWeight);
+  const wasGoldOnly = value.hasGold && !value.hasSilver;
+  const wasSilverOnly = value.hasSilver && !value.hasGold;
+  const initialGold = wasGoldOnly ? value.metalWeight : value.goldComponentWeight;
+  const initialSilver = wasSilverOnly ? value.metalWeight : value.silverComponentWeight;
+  const [gold, setGold] = useState<string | null>(initialGold);
+  const [silver, setSilver] = useState<string | null>(initialSilver);
+  const components = [
+    { material: "GOLD" as const, label: "طلا", selected: hasGold, weight: gold, initial: initialGold,
+      unit: wasGoldOnly ? value.weightUnits?.metalWeight : value.weightUnits?.goldComponentWeight,
+      name: "goldComponentWeight", onChange: setGold },
+    { material: "SILVER" as const, label: "نقره", selected: hasSilver, weight: silver, initial: initialSilver,
+      unit: wasSilverOnly ? value.weightUnits?.metalWeight : value.weightUnits?.silverComponentWeight,
+      name: "silverComponentWeight", onChange: setSilver },
+  ];
+  const selected = components.filter(part => part.selected);
   let total = null;
   let price = null;
   let message = "";
   try {
-    total = combinedWeightGrams(gold, silver);
-    if (dynamic && gold && silver && Number(gold) > 0 && Number(silver) > 0) {
-      const g = rates.find(rate => rate.material === "GOLD");
-      const s = rates.find(rate => rate.material === "SILVER");
-      if (g && s) {
-        price = calculateEloriaCompositeJewelryPrice({
-          primaryMaterial: material,
-          metals: [
-            { material: "GOLD", weightGrams: gold, productPurity: material === "GOLD" ? Number(purity) : 750,
-              referencePricePerGramToman: g.price, referencePurity: g.referencePurity },
-            { material: "SILVER", weightGrams: silver, productPurity: s.referencePurity,
-              referencePricePerGramToman: s.price, referencePurity: s.referencePurity },
-          ],
-          artisticFeeToman: normalizeDigits(artisticFee) || "0",
-          roundingStepToman: (material === "GOLD" ? g : s).roundingStep,
-        });
-      } else message = "برای پیش‌نمایش قیمت، نرخ فروش معتبر هر دو فلز لازم است.";
+    total = hasGold && hasSilver ? combinedWeightGrams(gold, silver) : selected[0]?.weight;
+    if (dynamic && selected.length && selected.every(part => Number(part.weight) > 0)) {
+      const metals = selected.map(part => {
+        const rate = rates.find(rate => rate.material === part.material);
+        if (!rate) throw new Error(`نرخ فروش معتبر ${part.label} در دسترس نیست.`);
+        return { material: part.material, weightGrams: part.weight!, referencePurity: rate.referencePurity,
+          productPurity: part.material === "GOLD" ? Number(purity) : rate.referencePurity,
+          referencePricePerGramToman: rate.price, roundingStepToman: rate.roundingStep };
+      });
+      const artisticFeeToman = normalizeDigits(artisticFee) || "0";
+      price = metals.length === 2
+        ? calculateEloriaCompositeJewelryPrice({ primaryMaterial: metals[0].material, metals, artisticFeeToman,
+            roundingStepToman: metals[0].roundingStepToman })
+        : calculateEloriaJewelryPrice({ ...metals[0], artisticFeeToman, makingChargeType: "NONE",
+            profitPercent: "0", taxPercent: "0", taxMetalValue: false });
     }
   } catch (error) { message = (error as Error).message; }
   const toman = (amount: string) => BigInt(amount).toLocaleString("fa-IR") + " تومان";
-  return <div className="col-span-full grid gap-4 rounded-xl border border-[#cfb45f]/20 p-4 sm:grid-cols-2">
-    <AdminWeightInput name="goldComponentWeight" label="وزن طلای به‌کاررفته" className={inputClassName}
-      defaultValue={value.goldComponentWeight} initialUnit={value.weightUnits?.goldComponentWeight} onGramsChange={setGold} required />
-    <AdminWeightInput name="silverComponentWeight" label="وزن نقرهٔ به‌کاررفته" className={inputClassName}
-      defaultValue={value.silverComponentWeight} initialUnit={value.weightUnits?.silverComponentWeight} onGramsChange={setSilver} required />
-    <div className="col-span-full space-y-2 text-sm text-[#ead79f]" aria-live="polite">
-      <p>وزن مجموع فلزات: {total ? Number(total).toLocaleString("fa-IR") + " گرم" : "هر دو وزن را وارد کنید."}</p>
-      {price?.components?.map(part => <p key={part.material}>ارزش {part.material === "GOLD" ? "طلا" : "نقره"}: {toman(part.metalValueToman)}</p>)}
+  return <div hidden={!selected.length} className="col-span-full">
+    <div className="grid gap-4 sm:grid-cols-2">
+      {components.map(part => {
+        const rate = rates.find(rate => rate.material === part.material);
+        const metalValue = price?.components?.find(c => c.material === part.material)?.metalValueToman
+          ?? (selected.length === 1 ? price?.metalValueToman : undefined);
+        return <fieldset key={part.material} hidden={!part.selected} disabled={!part.selected}
+          className="space-y-2 rounded-xl border border-[#cfb45f]/20 p-4 text-sm text-[#ead79f]">
+          <AdminWeightInput name={part.name} label={`وزن ${part.label}`} className={inputClassName}
+            defaultValue={part.initial} initialUnit={part.unit} onGramsChange={part.onChange} required={dynamic || selected.length === 2} />
+          {dynamic && <p>نرخ هر گرم {part.label}: {rate ? toman(rate.price) : "در دسترس نیست"}</p>}
+          {metalValue && <p>ارزش {part.label}: {toman(metalValue)}</p>}
+        </fieldset>;
+      })}
+    </div>
+    <div className="mt-3 space-y-2 text-sm text-[#ead79f]" aria-live="polite">
+      <p>وزن مجموع فلزات: {total ? Number(total).toLocaleString("fa-IR") + " گرم" : "وزن فلزهای انتخاب‌شده را وارد کنید."}</p>
       {price && <p>پیش‌نمایش قیمت نهایی با نرخ زمان باز شدن فرم: {toman(price.finalPriceToman)}</p>}
       {message && <p>{message}</p>}
     </div>
