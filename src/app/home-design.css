@@ -2963,57 +2963,63 @@ html[lang="fa"] .home-quick-loading [lang="en"],html[lang="en"] .home-quick-load
   --gold: #e4c38a;
   --plum: #fff3de;
   --muted-plum: #e1d9e4;
-  --glass: linear-gradient(135deg, #49364d, #2a3c52);
-  background-color: #26364b;
+  --glass: linear-gradient(120deg, #65267c66, #2446a34d);
+  background-color: #321641;
 }
 .eloria-home .atmosphere {
   background:
-    radial-gradient(ellipse at 25% 30%, #c49c6121, transparent 60%),
-    linear-gradient(135deg, #263f5933, #51354c38 60%, #202a4466);
+    radial-gradient(ellipse at 25% 30%, #932fa638, transparent 60%),
+    linear-gradient(115deg, #72248040, #491e7040 55%, #2348b340);
 }
 .eloria-home .home-header-refined {
-  background: linear-gradient(110deg, #49334beF, #26384ff0);
-  border-color: #e4c38a80;
+  background: linear-gradient(110deg, #60227899, #2444a180);
+  border-color: #e4c38a40;
 }
 .eloria-home :is(.hero-copy, .section-heading, .story) {
-  border-radius: 24px;
-  background: linear-gradient(135deg, #302a3dd9, #243449db);
-  border: 1px solid #e4c38a30;
-  padding: clamp(20px, 3vw, 36px);
-  box-shadow: 0 16px 48px #17203526;
+  border-radius: 14px;
+  background: linear-gradient(120deg, #5420674d, #203f9133);
+  border: 0;
+  padding: 10px 14px;
+  box-shadow: none;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
 }
 .eloria-home :is(.hero-copy, .section-heading, .story) p { color: #eee5ee; opacity: 1; line-height: 2; }
 .eloria-home :is(.hero-copy, .section-heading, .story) .eyebrow { color: #e4c38a; opacity: 1; }
 .eloria-home :is(.hero-copy h1, .section-heading h2, .story h2) { color: #fff3de; }
 .eloria-home .hero-copy h1 em { color: #ffe0a1; }
 .eloria-home .medallion .product-description {
-  background: linear-gradient(135deg, #43334c, #2b3d53);
-  border-color: #e4c38a66;
+  background: linear-gradient(120deg, #61227866, #2445a04d);
+  border-color: #e4c38a26;
   color: #fff3de;
-  box-shadow: inset 0 1px 0 #f8deb51a;
+  box-shadow: none;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
 }
 .eloria-home .medallion .product-description :is(h3, small, .home-price) { color: #fff3de; opacity: 1; }
 .eloria-home .medallion .product-description small { color: #e1d9e4; font-size: 12px; }
 .eloria-home .product-open { display: block; color: inherit; text-decoration: none; }
 .eloria-home .home-details-link { min-height: 44px; padding: 10px 12px; }
 .eloria-home .quick-view-label {
-  background: linear-gradient(120deg, #45364d, #2d4056);
+  background: linear-gradient(120deg, #65277d66, #2446a355);
   color: #ffe1a6;
-  border-color: #e4c38a80;
+  border-color: #e4c38a40;
   min-height: 44px;
   font-size: 13px;
 }
-.eloria-home dialog.home-quick-dialog { background: linear-gradient(135deg, #43334c, #26384d); color: #fff3de; }
+.eloria-home dialog.home-quick-dialog { background: linear-gradient(120deg, #441558db, #1e347bdd); color: #fff3de; }
 .eloria-home :is(a, button):focus-visible { outline: 2px solid #ffe1a6; outline-offset: 4px; }
 @media (max-width: 760px) {
   .eloria-home { padding-bottom: 12px; }
-  .eloria-home :is(.hero-copy, .section-heading, .story) { padding: 20px 16px; border-radius: 20px; }
+  .eloria-home :is(.hero-copy, .section-heading, .story) { padding: 8px 10px; border-radius: 12px; }
   .eloria-home .hero-copy p { font-size: 15px; }
   .eloria-home .section-heading p, .eloria-home .story p { font-size: 14px; }
   .eloria-home .portal-grid .portal-content {
-    padding: 14px 10px;
-    background: linear-gradient(135deg, #43334ceF, #283b50ef);
-    border: 1px solid #e4c38a50;
+    padding: 8px 10px;
+    background: linear-gradient(120deg, #60227855, #2444a140);
+    border: 0;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
     border-radius: 18px;
   }
   .eloria-home .portal-grid .portal-content p { font-size: 12px; color: #e1d9e4; }
@@ -3025,4 +3031,33 @@ html[lang="fa"] .home-quick-loading [lang="en"],html[lang="en"] .home-quick-load
   .eloria-home .medallion .product-description small { font-size: 11px; }
   .eloria-home .home-price { font-size: 14px; line-height: 1.8; }
   .eloria-home .home-quick-dialog { max-height: 90dvh; width: calc(100% - 24px); overflow-y: auto; }
+}
+
+/* Keep reading glass close to the text instead of boxing whole sections. */
+.eloria-home .hero-copy { align-self: center; }
+.eloria-home :is(.section-heading, .story) {
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  padding: 0;
+}
+.eloria-home :is(.section-heading, .story) :is(h2, p) {
+  width: fit-content;
+  max-width: 100%;
+  padding: 4px 10px;
+  border-radius: 10px;
+  background: linear-gradient(120deg, #5420674d, #203f9133);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+.eloria-home .story :is(h2, p) { margin-inline: auto; }
+.eloria-home .section { padding-block: 44px 24px; }
+.eloria-home .section-heading { margin-bottom: 20px; gap: 12px; }
+.eloria-home .story { margin-block: 36px; }
+@media (max-width: 760px) {
+  .eloria-home .section { padding-block: 28px 16px; }
+  .eloria-home .section-heading { margin-bottom: 16px; }
+  .eloria-home .story { margin-block: 24px; }
 }
