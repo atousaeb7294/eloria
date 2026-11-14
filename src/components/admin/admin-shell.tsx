@@ -87,7 +87,7 @@ export function AdminShell({
   const basePath = `/${locale}/admin`;
 
   return (
-    <main dir="rtl" className="min-h-screen bg-[#060a25] text-[#f6e8c6]">
+    <main dir="rtl" className="eloria-admin-shell min-h-screen bg-[#060a25] text-[#f6e8c6]">
       <div className="pointer-events-none fixed inset-0 bg-[radial-gradient(circle_at_80%_0%,rgba(194,157,58,0.09),transparent_32%),radial-gradient(circle_at_10%_75%,rgba(25,39,132,0.18),transparent_34%)]" />
 
       <div className="relative mx-auto flex min-h-screen w-full max-w-[1800px]">

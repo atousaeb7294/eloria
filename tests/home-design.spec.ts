@@ -73,6 +73,14 @@ test("public circular pieces, original treasury routes and quick view", async ({
     path: info.outputPath("featured.png"),
     fullPage: true,
   });
+  await expect(page.locator(".medallion .product-open").first()).toHaveAttribute("href", /\/fa\/products\//);
+  const dock = page.getByRole("navigation", { name: "دسترسی سریع فروشگاه" });
+  if ((page.viewportSize()?.width ?? 1280) <= 760) {
+    await expect(dock).toBeVisible();
+    await expect(dock.getByRole("link", { name: "سبد خرید", exact: true })).toHaveAttribute("href", "/fa/cart");
+  } else {
+    await expect(dock).toBeHidden();
+  }
   const trigger = page.locator(".quick-view-label").first();
   await trigger.click();
   await expect(page.locator(".home-quick-dialog")).toBeVisible();

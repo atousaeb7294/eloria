@@ -735,9 +735,6 @@
   letter-spacing: 6px;
   color: #dcc391;
 }
-.eloria-home .mobile-nav {
-  display: none;
-}
 .eloria-home dialog {
   border: 1px solid #c9aa7155;
   border-radius: 8px;
@@ -1183,32 +1180,6 @@
   }
   .eloria-home .wordmark {
     font-size: 20px;
-  }
-  .eloria-home .mobile-nav {
-    display: flex;
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    z-index: 20;
-    background: #26172ded;
-    backdrop-filter: blur(16px);
-    border-top: 1px solid #d1b57855;
-    padding: 9px 5% max(10px, env(safe-area-inset-bottom));
-    justify-content: space-between;
-  }
-  .eloria-home .mobile-nav a {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 5px;
-    font-size: 9px;
-    color: #d8c5d6;
-    min-width: 54px;
-  }
-  .eloria-home .mobile-nav span {
-    font-size: 20px;
-    color: #e0c18b;
   }
   .eloria-home .dialog-layout {
     display: block;
@@ -1884,16 +1855,6 @@
     padding: 9px 10px;
     font-size: 11px;
   }
-  .eloria-home .mobile-nav {
-    background: rgba(235, 225, 242, 0.96);
-    border-color: #a98b58;
-  }
-  .eloria-home .mobile-nav a {
-    color: var(--plum);
-  }
-  .eloria-home .mobile-nav span {
-    color: #796039;
-  }
   .eloria-home .offline-price-note {
     font-size: 9px;
     padding: 20px 6% 0;
@@ -2159,12 +2120,6 @@
   .eloria-home .home-price p > span {
     font-size: 10px;
   }
-  .eloria-home .mobile-nav a {
-    min-height: 48px;
-  }
-  .eloria-home .mobile-nav {
-    z-index: 70;
-  }
   .eloria-home .section-heading h2 {
     line-height: 1.8;
   }
@@ -2289,7 +2244,6 @@ html[lang="fa"] body .eloria-home[dir="rtl"] :is(.portal-content h3,.portal-cont
 .eloria-home :is(.text-link,.signature,.hero-bottom a) { display:inline-flex; align-items:center; gap:8px; }
 .eloria-home .menu,.eloria-home .motion,.eloria-home .close-dialog { place-items:center; }
 .eloria-home .motion,.eloria-home .close-dialog { display:grid; }
-.eloria-home .mobile-nav a { display:flex; flex-direction:column; align-items:center; gap:4px; }
 .eloria-home .product-description > div { min-width:0; }
 html[lang="fa"] body .eloria-home[dir="rtl"] :is(h1,h2,h3,h1 *,h2 *,h3 *) {
   word-break:normal; overflow-wrap:normal; text-wrap:wrap;
@@ -3001,4 +2955,74 @@ html[lang="fa"] .home-quick-loading [lang="en"],html[lang="en"] .home-quick-load
   .eloria-home .home-header-refined .atelier-signature {gap:4px;}
   .eloria-home .atelier-seal {width:32px;}
   .eloria-home .atelier-byline::before,.eloria-home .atelier-byline::after {display:none;}
+}
+
+/* Reference palette and protected reading areas on the photographic home. */
+.eloria-home {
+  --ink: #fff3de;
+  --gold: #e4c38a;
+  --plum: #fff3de;
+  --muted-plum: #e1d9e4;
+  --glass: linear-gradient(135deg, #49364d, #2a3c52);
+  background-color: #26364b;
+}
+.eloria-home .atmosphere {
+  background:
+    radial-gradient(ellipse at 25% 30%, #c49c6121, transparent 60%),
+    linear-gradient(135deg, #263f5933, #51354c38 60%, #202a4466);
+}
+.eloria-home .home-header-refined {
+  background: linear-gradient(110deg, #49334beF, #26384ff0);
+  border-color: #e4c38a80;
+}
+.eloria-home :is(.hero-copy, .section-heading, .story) {
+  border-radius: 24px;
+  background: linear-gradient(135deg, #302a3dd9, #243449db);
+  border: 1px solid #e4c38a30;
+  padding: clamp(20px, 3vw, 36px);
+  box-shadow: 0 16px 48px #17203526;
+}
+.eloria-home :is(.hero-copy, .section-heading, .story) p { color: #eee5ee; opacity: 1; line-height: 2; }
+.eloria-home :is(.hero-copy, .section-heading, .story) .eyebrow { color: #e4c38a; opacity: 1; }
+.eloria-home :is(.hero-copy h1, .section-heading h2, .story h2) { color: #fff3de; }
+.eloria-home .hero-copy h1 em { color: #ffe0a1; }
+.eloria-home .medallion .product-description {
+  background: linear-gradient(135deg, #43334c, #2b3d53);
+  border-color: #e4c38a66;
+  color: #fff3de;
+  box-shadow: inset 0 1px 0 #f8deb51a;
+}
+.eloria-home .medallion .product-description :is(h3, small, .home-price) { color: #fff3de; opacity: 1; }
+.eloria-home .medallion .product-description small { color: #e1d9e4; font-size: 12px; }
+.eloria-home .product-open { display: block; color: inherit; text-decoration: none; }
+.eloria-home .home-details-link { min-height: 44px; padding: 10px 12px; }
+.eloria-home .quick-view-label {
+  background: linear-gradient(120deg, #45364d, #2d4056);
+  color: #ffe1a6;
+  border-color: #e4c38a80;
+  min-height: 44px;
+  font-size: 13px;
+}
+.eloria-home dialog.home-quick-dialog { background: linear-gradient(135deg, #43334c, #26384d); color: #fff3de; }
+.eloria-home :is(a, button):focus-visible { outline: 2px solid #ffe1a6; outline-offset: 4px; }
+@media (max-width: 760px) {
+  .eloria-home { padding-bottom: 12px; }
+  .eloria-home :is(.hero-copy, .section-heading, .story) { padding: 20px 16px; border-radius: 20px; }
+  .eloria-home .hero-copy p { font-size: 15px; }
+  .eloria-home .section-heading p, .eloria-home .story p { font-size: 14px; }
+  .eloria-home .portal-grid .portal-content {
+    padding: 14px 10px;
+    background: linear-gradient(135deg, #43334ceF, #283b50ef);
+    border: 1px solid #e4c38a50;
+    border-radius: 18px;
+  }
+  .eloria-home .portal-grid .portal-content p { font-size: 12px; color: #e1d9e4; }
+  .eloria-home .portal-grid .portal-mobile-toggle { display: none; }
+  .eloria-home .portal-grid .portal-entry { display: flex; min-height: 48px; }
+  .eloria-home .selected-grid { gap: 24px 12px; }
+  .eloria-home .medallion .product-description { padding: 12px 10px; }
+  .eloria-home .medallion .product-description h3 { font-size: 17px; }
+  .eloria-home .medallion .product-description small { font-size: 11px; }
+  .eloria-home .home-price { font-size: 14px; line-height: 1.8; }
+  .eloria-home .home-quick-dialog { max-height: 90dvh; width: calc(100% - 24px); overflow-y: auto; }
 }

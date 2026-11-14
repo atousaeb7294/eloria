@@ -18,8 +18,8 @@ import { CircularProductImage } from "@/components/circular-product-image";
 import { TreasuryLink } from "@/components/treasury-transition";
 import { FloatingProductImage } from "@/components/floating-product-image";
 import { useIntroComplete } from "@/components/intro/use-intro-complete";
-import { Menu, Pause, Play, ShoppingBag, X } from "lucide-react";
-import { EloriaKnotIcon, EloriaJewelIcon, EloriaPortalIcon } from "@/components/eloria-icons";
+import { Menu, Pause, Play, X } from "lucide-react";
+import { EloriaKnotIcon, EloriaJewelIcon } from "@/components/eloria-icons";
 import { GoldRuneIcon, SilverRuneIcon, WeaveRuneIcon } from "@/components/material-rune-icons";
 import type { HomeDesign, HomePiece } from "@/lib/home-design";
 
@@ -350,15 +350,10 @@ export function EloriaHome({
           <div className="selected-grid">
             {design.pieces.slice(0, 8).map((p, i) => (
               <article className="product-card medallion" key={p.id}>
-                <button
-                  type="button"
+                <TreasuryLink
                   className="product-open"
-                  aria-label={
-                    fa ? `نگاه سریع به ${p.name}` : `Quick view: ${p.name}`
-                  }
-                  onClick={(e) => open(p, e.currentTarget)}
-                  onPointerEnter={(e) => { if (e.pointerType === "mouse") warmQuickView(p.imageUrl); }}
-                  onFocus={() => warmQuickView(p.imageUrl)}
+                  href={`/${locale}/products/${p.slug}`}
+                  aria-label={fa ? `مشاهدهٔ ${p.name}` : `View ${p.name}`}
                 >
                   <div className="product-photo">
                     <span className="frame-star" aria-hidden="true">
@@ -376,11 +371,9 @@ export function EloriaHome({
                         sizes="(max-width:760px) 42vw, (max-width:1100px) 28vw, 300px"
                       />
                     </div>
-                    <span className="piece-number">
-                      {String(i + 1).padStart(2, "0")}
-                    </span>
+
                   </div>
-                </button>
+                </TreasuryLink>
                 <div className="product-description">
                   <div>
                     <small>
@@ -420,7 +413,7 @@ export function EloriaHome({
                     fa ? `نگاه سریع به ${p.name}` : `Quick view: ${p.name}`
                   }
                 >
-                  {fa ? "نگاه سریع" : "Quick view"}
+                  {fa ? "خرید سریع" : "Quick purchase"}
 
                 </button>
               </article>
@@ -456,27 +449,6 @@ export function EloriaHome({
           </TreasuryLink>
         </section>
       </main>
-      <div
-        className="mobile-nav"
-        aria-label={fa ? "دسترسی سریع" : "Quick navigation"}
-      >
-        <a href="#hero">
-          <EloriaPortalIcon size={22} />
-          {fa ? "آغاز" : "Home"}
-        </a>
-        <a href="#treasuries">
-          <EloriaJewelIcon size={22} />
-          {fa ? "گنجینه‌ها" : "Treasuries"}
-        </a>
-        <a href="#featured">
-          <EloriaKnotIcon size={22} />
-          {fa ? "منتخب‌ها" : "The edit"}
-        </a>
-        <TreasuryLink href={`/${locale}/cart`}>
-          <ShoppingBag aria-hidden="true" size={22} />
-          {fa ? "سبد خرید" : "Bag"}
-        </TreasuryLink>
-      </div>
       <dialog
         ref={dialog}
         className="home-quick-dialog"

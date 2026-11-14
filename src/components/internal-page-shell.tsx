@@ -221,7 +221,7 @@ export function InternalPageShell({
         profile.tone
       }
       className={[
-        "relative isolate min-h-screen overflow-x-hidden bg-[#080d28] text-[#f8f0df]",
+        "eloria-internal-shell relative isolate min-h-screen overflow-x-hidden bg-[#080d28] text-[#f8f0df]",
         /^\/(products|collections)(?:\/|$)/.test(removeLocaleFromPath(pathname)) ? "eloria-glass-storefront" : "",
         className,
       ].join(" ")}
@@ -245,7 +245,7 @@ export function InternalPageShell({
       <div
         aria-hidden="true"
         className={[
-          "pointer-events-none fixed inset-0 z-[1]",
+          "eloria-reading-scrim pointer-events-none fixed inset-0 z-[1]",
           profile.overlayClassName,
         ].join(" ")}
       />

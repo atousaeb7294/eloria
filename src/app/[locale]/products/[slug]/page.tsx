@@ -636,7 +636,7 @@ export default async function ProductPage({
           </Link>
         </div>
 
-        <div className="mt-7 grid items-start gap-8 lg:grid-cols-[minmax(0,1.05fr)_minmax(380px,0.95fr)]">
+        <div className="eloria-product-layout mt-7 grid items-start gap-8 lg:grid-cols-[minmax(0,1.05fr)_minmax(380px,0.95fr)]">
           <div
             className={[
               "eloria-glass-panel relative overflow-visible rounded-[2.5rem] border bg-[linear-gradient(145deg,rgba(18,24,59,0.96),rgba(8,13,40,0.99))] p-3 shadow-[0_35px_100px_rgba(0,0,0,0.48)] transition-[border-color,box-shadow] duration-500",
@@ -732,6 +732,7 @@ export default async function ProductPage({
                 {secondaryName}
               </p>
 
+              <div id="product-purchase" tabIndex={-1}>
               <ProductVariantSelector
                 locale={locale}
                 productSlug={productRecord.slug}
@@ -748,6 +749,7 @@ export default async function ProductPage({
               />
 
               <LivePurchaseBox key={`${productRecord.slug}:${selectedVariantId ?? "base"}`} locale={locale} slug={productRecord.slug} variantId={selectedVariantId} initial={result} />
+              </div>
               <div className="mt-5">
                 <ProductWatchButton locale={locale} slug={productRecord.slug} />
                 <ProductShareActions

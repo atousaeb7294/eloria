@@ -1,3 +1,4 @@
+import { MobileStoreNavigation } from "@/components/mobile-store-navigation";
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
 
@@ -155,6 +156,7 @@ export default async function LocaleLayout({
               enabled={isSiteMeasurementEnabled()}
             />
             {children}
+            <MobileStoreNavigation locale={locale} />
             <DeferredSiteTools locale={locale} />
           </PageBackgroundProvider>
         </NextIntlClientProvider>

@@ -272,7 +272,7 @@ export function ProductCatalogFilters({
   return (
     <form
       onSubmit={(event) => { event.preventDefault(); submitFilters(); }}
-      className="eloria-glass-panel relative mx-auto max-w-6xl overflow-hidden rounded-[1.8rem] border border-[#d9b85f]/20 bg-[linear-gradient(145deg,rgba(17,23,61,0.92),rgba(8,13,42,0.96))] p-4 shadow-[0_20px_55px_rgba(0,0,0,0.3)] backdrop-blur-2xl sm:p-5"
+      className="eloria-catalog-filters eloria-glass-panel relative mx-auto max-w-6xl overflow-hidden rounded-[1.8rem] border border-[#d9b85f]/20 bg-[linear-gradient(145deg,rgba(17,23,61,0.92),rgba(8,13,42,0.96))] p-4 shadow-[0_20px_55px_rgba(0,0,0,0.3)] backdrop-blur-2xl sm:p-5"
     >
       <div
         aria-hidden="true"
@@ -308,7 +308,7 @@ export function ProductCatalogFilters({
             aria-live="polite"
             className="flex min-h-9 shrink-0 items-center gap-2 rounded-full border border-[#d9b85f]/20 bg-[#d9b85f]/[0.045] px-3 text-[10px] text-[#d9c791]/75"
           >
-            <span>{isPersian ? "همیشه در دسترس" : "Always available"}</span>
+            <span>{isPersian ? "فیلترهای فعال" : "Active filters"}</span>
             {activeFilterCount > 0 && (
               <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-[#d9b85f]/20 px-1 text-[10px] text-[#f3df9f]">
                 {activeFilterCount.toLocaleString(
@@ -323,7 +323,7 @@ export function ProductCatalogFilters({
           <span className="mb-1.5 block text-xs text-[#d8c79a]/80">
             {isPersian ? "نوع اثر" : "Creation type"}
           </span>
-          <div className="grid grid-cols-2 gap-2 sm:grid-cols-5">
+          <div className="eloria-type-choices grid grid-cols-2 gap-2 sm:grid-cols-5">
             {typeChoices.map(({ value, label, Icon }) => {
               const active = collection === value;
               return (

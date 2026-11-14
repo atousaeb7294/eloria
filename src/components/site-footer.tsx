@@ -181,7 +181,7 @@ export function SiteFooter({ locale }: SiteFooterProps) {
   return (
     <footer
       id="contact"
-      className="relative z-10 scroll-mt-32 overflow-hidden border-t border-[#d8bb69]/16 bg-[#06091e] px-4 pb-7 pt-12 sm:px-6 lg:px-10"
+      className="eloria-site-footer relative z-10 scroll-mt-32 overflow-hidden border-t border-[#d8bb69]/16 bg-[#06091e] px-4 pb-7 pt-12 sm:px-6 lg:px-10"
     >
       <div
         aria-hidden="true"
