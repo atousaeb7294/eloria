@@ -3208,3 +3208,32 @@ html[lang="fa"] .home-quick-loading [lang="en"],html[lang="en"] .home-quick-load
 .eloria-home .section-heading > p,
 .eloria-home .story p {font-size:clamp(15px,1.2vw,17px);line-height:1.95;color:#f1e9df;opacity:1;text-shadow:0 1px 3px #000c;}
 .eloria-home .portal-content p {font-size:14px;line-height:1.9;}
+
+/* Consistent featured-card rhythm; no fixed height on text or image links. */
+.eloria-home .selected-grid {grid-template-columns:repeat(4,minmax(0,1fr));gap:24px;align-items:stretch;}
+.eloria-home .selected-grid .medallion {display:flex;flex-direction:column;min-width:0;height:auto;gap:0;}
+.eloria-home .selected-grid .medallion .product-open {height:auto;flex:0 0 auto;}
+.eloria-home .selected-grid .medallion .product-description {
+ display:flex;flex-direction:column;align-items:stretch;justify-content:space-between;
+ width:100%;min-width:0;height:auto;min-height:0;flex:1;margin:12px 0 0;
+ padding:16px;gap:12px;border-radius:14px;border:1px solid #bda78033;
+ background:linear-gradient(135deg,#293348,#2e3044 58%,#3b3048)!important;
+ box-sizing:border-box;backdrop-filter:none;
+}
+.eloria-home .selected-grid .product-description > div {min-width:0;width:100%;}
+.eloria-home .selected-grid .product-description small {display:block;font-size:12px;line-height:1.7;}
+.eloria-home .selected-grid .product-description h3 {margin:6px 0 10px;font-size:20px;line-height:1.8;overflow-wrap:anywhere;}
+.eloria-home .selected-grid .home-price {min-height:48px;margin:0;font-size:15px;line-height:1.8;font-variant-numeric:tabular-nums;}
+.eloria-home .selected-grid .home-details-link {display:flex;align-items:center;justify-content:center;width:100%;min-height:44px;padding:8px 10px;margin:0;border-top:1px solid #ffffff18;font-size:13px;}
+.eloria-home .selected-grid .quick-view-label {position:static;width:100%;min-height:44px;margin:8px 0 0;padding:8px;font-size:13px;box-sizing:border-box;}
+@media(max-width:1100px) and (min-width:761px) {.eloria-home .selected-grid {grid-template-columns:repeat(3,minmax(0,1fr));gap:20px;}}
+@media(max-width:760px) {
+ .eloria-home .selected-grid {grid-template-columns:repeat(2,minmax(0,1fr));gap:20px 12px;}
+ .eloria-home .selected-grid .medallion .product-description {padding:12px 10px;margin-top:10px;gap:8px;border-radius:12px;}
+ .eloria-home .selected-grid .product-description h3 {font-size:17px;margin:4px 0 8px;}
+ .eloria-home .selected-grid .product-description small {font-size:11px;}
+ .eloria-home .selected-grid .home-price {font-size:13px;}
+}
+@media(max-width:359px) {.eloria-home .selected-grid {grid-template-columns:minmax(0,1fr);max-width:280px;margin-inline:auto;}}
+.eloria-home .selected-grid .home-price :is(p,strong,span) {font-size:15px;line-height:1.8;}
+@media(max-width:760px) {.eloria-home .selected-grid .home-price :is(p,strong,span) {font-size:13px;}}

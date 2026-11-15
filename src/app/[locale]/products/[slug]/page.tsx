@@ -669,7 +669,7 @@ export default async function ProductPage({
           <div className="grid gap-5">
             <article
               className={[
-                "eloria-glass-panel relative overflow-hidden rounded-[2.2rem] border bg-[linear-gradient(145deg,rgba(17,22,56,0.96),rgba(8,13,40,0.99))] p-5 shadow-[0_28px_80px_rgba(0,0,0,0.38)] sm:p-7",
+                "eloria-product-purchase-panel eloria-glass-panel relative overflow-hidden rounded-[2.2rem] border bg-[linear-gradient(145deg,rgba(17,22,56,0.96),rgba(8,13,40,0.99))] p-5 shadow-[0_28px_80px_rgba(0,0,0,0.38)] sm:p-7",
 
                 isGold ? "border-[#d8b860]/23" : "border-[#d6e1e4]/18",
               ].join(" ")}

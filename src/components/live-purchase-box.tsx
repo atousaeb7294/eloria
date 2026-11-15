@@ -164,37 +164,20 @@ export function LivePurchaseBox({
               : "Checking"}
         </span>
       </div>
-      {!compact && quote?.liveRate && (
-        <div className="eloria-raw-gold">
-          <span>{quote.liveRate.material === "GOLD"
-            ? fa ? "نرخ خام هر گرم طلا" : "Live raw gold rate / g"
-            : fa ? "نرخ خام هر گرم نقره" : "Live raw silver rate / g"}</span>
-          <strong>{Number(quote.liveRate.originalPricePerGramToman).toLocaleString(fa ? "fa-IR" : "en-US", { maximumFractionDigits: 0 })} {fa ? "تومان" : "toman"}</strong>
-          <small>{fa ? "زمان نرخ بازار: " : "Market rate timestamp: "}
-            {quote.liveRate.marketTimestamp && Number.isFinite(Date.parse(quote.liveRate.marketTimestamp))
-              ? new Date(quote.liveRate.marketTimestamp).toLocaleString(fa ? "fa-IR" : "en-GB", { timeZone: "Asia/Tehran" })
-              : fa ? "نامشخص" : "Unavailable"}
-            {fa ? " (تهران)" : " (Tehran)"}
-          </small>
-          {quote.liveRate.saleMode === "CLOSED_MARKET" && <small role="status">
-            {fa ? "بازار بسته؛ محاسبه با آخرین نرخ مجاز ثبت‌شده" : "Market closed; using the last permitted recorded rate"}
-          </small>}
-        </div>
-      )}
       {quote ? (
         <>
           <p className="mt-4 text-xs opacity-75">
             {fa ? "قیمت محصول" : "Product price"}
           </p>
           <p className="eloria-purchase-price mb-4 mt-2 text-2xl text-[#f1d99c]" aria-live="polite">
-            {format(quote.pricing.finalPriceToman)}{" "}
+            <bdi className="eloria-price-amount">{format(quote.pricing.finalPriceToman)}</bdi>{" "}
             <small className="text-xs">{fa ? "تومان" : "toman"}</small>
           </p>
           {!compact && <div className="eloria-purchase-breakdown mb-4 text-sm">
             <dl className="space-y-3">
               <div className="flex justify-between gap-4">
                 <dt>{productWeightLabel(productMaterialKind(quote.product), locale)}</dt>
-                <dd>
+                <dd dir="auto">
                   {weight !== null && weight !== undefined
                     ? formatWeightSoot(String(weight), locale)
                     : fa
@@ -218,37 +201,12 @@ export function LivePurchaseBox({
                           ? "وزن قطعه نقره"
                           : "Silver weight"}
                     </dt>
-                    <dd>
+                    <dd dir="auto">
                       {formatWeightSoot(String(part.weightGrams), locale)}
                     </dd>
                   </div>
                 ))}
             </dl>
-            <p className="mt-4 leading-7 text-[#ead9b3]">
-              {quote.pricing.mode === "MANUAL"
-                ? fa
-                  ? "قیمت نمایش‌داده‌شده، قیمت نهایی ثبت‌شده برای این اثر است."
-                  : "The displayed price is the final listed price for this creation."
-                : hasGold
-                  ? fa
-                    ? `قیمت نهایی این اثر شامل ارزش طلای به‌کاررفته${hasSilver ? " و نقره" : ""}، اجرت ساخت و سود طلا، و ارزش هنر دست است.`
-                    : `The final price includes the value of gold${hasSilver ? " and silver" : ""}, gold making charges, the seller’s profit and the value of handcraft.`
-                  : hasSilver
-                    ? fa
-                      ? "قیمت نهایی این اثر شامل ارزش نقره، ارزش هنر دست و بسته‌بندی است."
-                      : "The final price includes the silver value, handcraft fee and packaging."
-                    : fa
-                      ? "قیمت نهایی این اثر بر پایهٔ مواد به‌کاررفته و ارزش هنر دست تعیین می‌شود."
-                      : "The final price reflects the materials and the value of handcraft."}
-            </p>
-            {b && (
-              <p className="mt-2 leading-7 opacity-75">
-                {fa ? "مالیات: " : "Tax: "}
-                {format(b.taxToman)} {fa ? "تومان" : "toman"}
-                {BigInt(b.taxToman) > 0n &&
-                  (fa ? "؛ در قیمت نهایی لحاظ شده است." : "; included in the final price.")}
-              </p>
-            )}
           </div>}
           {quote.variant && (
             <p className="mb-3 text-xs">
@@ -311,6 +269,51 @@ export function LivePurchaseBox({
           ? "قیمت پیش از رفتن به درگاه دوباره بررسی می‌شود."
           : "Your price is checked again before opening payment."}
       </p>
+      {!compact && quote && <details className="eloria-price-details">
+        <summary>{fa ? "جزئیات محاسبهٔ قیمت" : "Price calculation details"}</summary>
+      {!compact && quote?.liveRate && (
+        <div className="eloria-raw-gold">
+          <span>{quote.liveRate.material === "GOLD"
+            ? fa ? "نرخ خام هر گرم طلا" : "Live raw gold rate / g"
+            : fa ? "نرخ خام هر گرم نقره" : "Live raw silver rate / g"}</span>
+          <strong>{Number(quote.liveRate.originalPricePerGramToman).toLocaleString(fa ? "fa-IR" : "en-US", { maximumFractionDigits: 0 })} {fa ? "تومان" : "toman"}</strong>
+          <small>{fa ? "زمان نرخ بازار: " : "Market rate timestamp: "}
+            {quote.liveRate.marketTimestamp && Number.isFinite(Date.parse(quote.liveRate.marketTimestamp))
+              ? new Date(quote.liveRate.marketTimestamp).toLocaleString(fa ? "fa-IR" : "en-GB", { timeZone: "Asia/Tehran" })
+              : fa ? "نامشخص" : "Unavailable"}
+            {fa ? " (تهران)" : " (Tehran)"}
+          </small>
+          {quote.liveRate.saleMode === "CLOSED_MARKET" && <small role="status">
+            {fa ? "بازار بسته؛ محاسبه با آخرین نرخ مجاز ثبت‌شده" : "Market closed; using the last permitted recorded rate"}
+          </small>}
+        </div>
+      )}
+            <p className="mt-4 leading-7 text-[#ead9b3]">
+              {quote.pricing.mode === "MANUAL"
+                ? fa
+                  ? "قیمت نمایش‌داده‌شده، قیمت نهایی ثبت‌شده برای این اثر است."
+                  : "The displayed price is the final listed price for this creation."
+                : hasGold
+                  ? fa
+                    ? `قیمت نهایی این اثر شامل ارزش طلای به‌کاررفته${hasSilver ? " و نقره" : ""}، اجرت ساخت و سود طلا، و ارزش هنر دست است.`
+                    : `The final price includes the value of gold${hasSilver ? " and silver" : ""}, gold making charges, the seller’s profit and the value of handcraft.`
+                  : hasSilver
+                    ? fa
+                      ? "قیمت نهایی این اثر شامل ارزش نقره، ارزش هنر دست و بسته‌بندی است."
+                      : "The final price includes the silver value, handcraft fee and packaging."
+                    : fa
+                      ? "قیمت نهایی این اثر بر پایهٔ مواد به‌کاررفته و ارزش هنر دست تعیین می‌شود."
+                      : "The final price reflects the materials and the value of handcraft."}
+            </p>
+            {b && (
+              <p className="mt-2 leading-7 opacity-75">
+                {fa ? "مالیات: " : "Tax: "}
+                {format(b.taxToman)} {fa ? "تومان" : "toman"}
+                {BigInt(b.taxToman) > 0n &&
+                  (fa ? "؛ در قیمت نهایی لحاظ شده است." : "; included in the final price.")}
+              </p>
+            )}
+      </details>}
     </section>
   );
 }

@@ -1481,3 +1481,36 @@ body:has(.eloria-filter-dialog[open]) :is(.eloria-store-dock,[data-support-widge
   .eloria-catalog-page > header h1 {font-size:26px;}
   .eloria-filter-dialog .eloria-type-choices {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));overflow:visible;}
 }
+
+/* Product purchase: one calm surface and a clear price → weight → action order. */
+.eloria-glass-storefront .eloria-product-purchase-panel.eloria-glass-panel {
+  background:linear-gradient(135deg,#293348 0%,#2e3044 58%,#3b3048 100%)!important;
+  border:1px solid #bda78055!important;padding:24px;border-radius:18px;
+}
+.eloria-product-purchase-panel > h1 {margin-block:18px 2px;}
+.eloria-product-purchase-panel > p {margin:0;color:#c9c5d2;letter-spacing:.08em;}
+.eloria-product-purchase-panel .eloria-live-purchase {margin-top:24px;background:transparent!important;}
+.eloria-product-purchase-panel .eloria-purchase-heading {display:flex;flex-wrap:wrap;justify-content:space-between;align-items:baseline;gap:6px 16px;}
+.eloria-product-purchase-panel .eloria-purchase-heading h3 {font-size:15px;font-weight:500;}
+.eloria-product-purchase-panel .eloria-purchase-heading > span {font-size:11px;line-height:1.8;color:#c9c5d2;}
+.eloria-product-purchase-panel .eloria-purchase-price {display:flex;flex-wrap:wrap;align-items:baseline;gap:8px;margin:6px 0 20px;line-height:1.5;}
+.eloria-price-amount {font-variant-numeric:tabular-nums;letter-spacing:0;white-space:nowrap;font-weight:600;font-size:clamp(26px,3vw,34px);}
+.eloria-product-purchase-panel .eloria-purchase-price small {font-size:13px;color:#ddd8e2;}
+.eloria-product-purchase-panel .eloria-purchase-breakdown {padding:12px 0;margin-bottom:18px;border-color:#ffffff18;}
+.eloria-product-purchase-panel .eloria-purchase-breakdown dl > div {display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px 16px;align-items:baseline;}
+.eloria-product-purchase-panel .eloria-purchase-breakdown dt {color:#d0ccda;font-size:13px;}
+.eloria-product-purchase-panel .eloria-purchase-breakdown dd {font-variant-numeric:tabular-nums;text-align:end;font-size:14px;color:#f5eee5;}
+.eloria-price-details {margin-top:16px;border-top:1px solid #ffffff1c;padding-top:8px;}
+.eloria-price-details > summary {min-height:44px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;font-size:13px;color:#e0d5be;list-style:none;gap:12px;}
+.eloria-price-details > summary::-webkit-details-marker {display:none;}
+.eloria-price-details > summary::after {content:'+';font-size:20px;}
+.eloria-price-details[open] > summary::after {content:'−';}
+.eloria-price-details .eloria-raw-gold {display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px 12px;justify-content:normal;margin:10px 0 16px;text-align:start;}
+.eloria-price-details .eloria-raw-gold small {grid-column:1/-1;font-size:12px;}
+.eloria-price-details p {font-size:13px;line-height:1.9;color:#ddd8e2;}
+.eloria-product-purchase-panel .eloria-product-specs {margin-top:20px;border-top:1px solid #ffffff1c;padding-top:20px;}
+@media(max-width:760px) {
+ .eloria-glass-storefront .eloria-product-purchase-panel.eloria-glass-panel {padding:18px 16px;border-radius:16px;}
+ .eloria-product-purchase-panel .eloria-live-purchase {margin-top:20px;}
+ .eloria-price-details .eloria-raw-gold {grid-template-columns:1fr;}
+}
