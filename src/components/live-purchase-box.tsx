@@ -164,6 +164,23 @@ export function LivePurchaseBox({
               : "Checking"}
         </span>
       </div>
+      {!compact && quote?.liveRate && (
+        <div className="eloria-raw-gold">
+          <span>{quote.liveRate.material === "GOLD"
+            ? fa ? "نرخ لحظه‌ای هر گرم طلا" : "Live raw gold rate / g"
+            : fa ? "نرخ لحظه‌ای هر گرم نقره" : "Live raw silver rate / g"}</span>
+          <strong><bdi>{Number(quote.liveRate.originalPricePerGramToman).toLocaleString(fa ? "fa-IR" : "en-US", { maximumFractionDigits: 0 })}</bdi> <span>{fa ? "تومان" : "toman"}</span></strong>
+          <small>{fa ? "زمان نرخ بازار: " : "Market rate timestamp: "}
+            {quote.liveRate.marketTimestamp && Number.isFinite(Date.parse(quote.liveRate.marketTimestamp))
+              ? new Date(quote.liveRate.marketTimestamp).toLocaleString(fa ? "fa-IR" : "en-GB", { timeZone: "Asia/Tehran" })
+              : fa ? "نامشخص" : "Unavailable"}
+            {fa ? " (تهران)" : " (Tehran)"}
+          </small>
+          {quote.liveRate.saleMode === "CLOSED_MARKET" && <small role="status">
+            {fa ? "بازار بسته؛ محاسبه با آخرین نرخ مجاز ثبت‌شده" : "Market closed; using the last permitted recorded rate"}
+          </small>}
+        </div>
+      )}
       {quote ? (
         <>
           <p className="mt-4 text-xs opacity-75">
@@ -269,25 +286,8 @@ export function LivePurchaseBox({
           ? "قیمت پیش از رفتن به درگاه دوباره بررسی می‌شود."
           : "Your price is checked again before opening payment."}
       </p>
-      {!compact && quote && <details className="eloria-price-details">
-        <summary>{fa ? "جزئیات محاسبهٔ قیمت" : "Price calculation details"}</summary>
-      {!compact && quote?.liveRate && (
-        <div className="eloria-raw-gold">
-          <span>{quote.liveRate.material === "GOLD"
-            ? fa ? "نرخ خام هر گرم طلا" : "Live raw gold rate / g"
-            : fa ? "نرخ خام هر گرم نقره" : "Live raw silver rate / g"}</span>
-          <strong>{Number(quote.liveRate.originalPricePerGramToman).toLocaleString(fa ? "fa-IR" : "en-US", { maximumFractionDigits: 0 })} {fa ? "تومان" : "toman"}</strong>
-          <small>{fa ? "زمان نرخ بازار: " : "Market rate timestamp: "}
-            {quote.liveRate.marketTimestamp && Number.isFinite(Date.parse(quote.liveRate.marketTimestamp))
-              ? new Date(quote.liveRate.marketTimestamp).toLocaleString(fa ? "fa-IR" : "en-GB", { timeZone: "Asia/Tehran" })
-              : fa ? "نامشخص" : "Unavailable"}
-            {fa ? " (تهران)" : " (Tehran)"}
-          </small>
-          {quote.liveRate.saleMode === "CLOSED_MARKET" && <small role="status">
-            {fa ? "بازار بسته؛ محاسبه با آخرین نرخ مجاز ثبت‌شده" : "Market closed; using the last permitted recorded rate"}
-          </small>}
-        </div>
-      )}
+      {!compact && quote && <div className="eloria-price-details eloria-price-details-visible">
+        <h4>{fa ? "جزئیات قیمت و هزینه‌ها" : "Price and cost details"}</h4>
             <p className="mt-4 leading-7 text-[#ead9b3]">
               {quote.pricing.mode === "MANUAL"
                 ? fa
@@ -313,7 +313,7 @@ export function LivePurchaseBox({
                   (fa ? "؛ در قیمت نهایی لحاظ شده است." : "; included in the final price.")}
               </p>
             )}
-      </details>}
+      </div>}
     </section>
   );
 }

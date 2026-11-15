@@ -1514,3 +1514,43 @@ body:has(.eloria-filter-dialog[open]) :is(.eloria-store-dock,[data-support-widge
  .eloria-product-purchase-panel .eloria-live-purchase {margin-top:20px;}
  .eloria-price-details .eloria-raw-gold {grid-template-columns:1fr;}
 }
+
+/* Product information shares one surface; rates and all cost details stay visible. */
+.eloria-glass-storefront .eloria-product-purchase-panel.eloria-glass-panel {
+ background:linear-gradient(135deg,#293348 0%,#2d3246 65%,#363047 100%)!important;
+ --eloria-glass:transparent;--eloria-surface:transparent;
+}
+.eloria-glass-storefront .eloria-product-purchase-panel :is(section,.eloria-live-purchase,.eloria-product-specs,.eloria-price-details-visible) {
+ background:transparent!important;box-shadow:none!important;backdrop-filter:none;
+}
+.eloria-product-purchase-panel .eloria-live-purchase > .eloria-raw-gold {
+ display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:baseline;
+ gap:6px 16px;margin:16px 0 20px;padding:14px 0;
+ border-block:1px solid #d4c39a33;color:#e4deea;text-align:start;
+}
+.eloria-product-purchase-panel .eloria-raw-gold > span {font-size:13px;line-height:1.8;}
+.eloria-product-purchase-panel .eloria-raw-gold > strong {display:flex;flex-wrap:wrap;gap:4px 6px;align-items:baseline;justify-content:flex-end;color:#f3dfb1;font-size:17px;font-variant-numeric:tabular-nums;}
+.eloria-product-purchase-panel .eloria-raw-gold > strong bdi {white-space:nowrap;}
+.eloria-product-purchase-panel .eloria-raw-gold > strong span {font-size:12px;}
+.eloria-product-purchase-panel .eloria-raw-gold > small {grid-column:1/-1;font-size:11px;line-height:1.8;color:#c9c5d2;opacity:1;}
+.eloria-product-purchase-panel .eloria-purchase-price {justify-content:flex-start;direction:inherit;font-variant-numeric:tabular-nums;}
+.eloria-product-purchase-panel .eloria-price-details-visible {border-top:1px solid #ffffff20;margin-top:18px;padding-top:14px;}
+.eloria-product-purchase-panel .eloria-price-details-visible h4 {font-size:14px;font-weight:600;color:#f3e8d2;line-height:1.8;margin:0 0 8px;}
+.eloria-product-purchase-panel .eloria-price-details-visible p {margin:6px 0;font-size:13px;line-height:1.9;color:#dedbe5;}
+.eloria-product-purchase-panel .eloria-product-specs :is([class*="bg-[#"],[class*="bg-white/"],[class*="bg-black/"]) {background:transparent!important;box-shadow:none!important;}
+.eloria-product-purchase-panel .eloria-product-specs > div:last-child {gap:0 16px;}
+.eloria-product-purchase-panel .eloria-product-specs > div:last-child > div {border:0;border-bottom:1px solid #ffffff16;border-radius:0;padding:12px 0;}
+@media(max-width:480px) {
+ .eloria-product-purchase-panel .eloria-live-purchase > .eloria-raw-gold {grid-template-columns:1fr;gap:4px;margin-block:12px 16px;}
+ .eloria-product-purchase-panel .eloria-raw-gold > strong {justify-content:flex-start;font-size:18px;}
+}
+.eloria-product-purchase-panel .eloria-purchase-assurances {display:grid;grid-template-columns:1fr;gap:0;border-top:1px solid #ffffff1c;}
+.eloria-glass-storefront .eloria-product-purchase-panel .eloria-purchase-assurances > div {background:transparent!important;border:0;border-bottom:1px solid #ffffff16;border-radius:0;padding:12px 0;}
+.eloria-product-purchase-panel .eloria-purchase-assurances > div > span:first-child {background:transparent!important;border:0;border-radius:0;width:24px;height:24px;}
+.eloria-product-purchase-panel .eloria-purchase-assurances strong {font-size:13px;line-height:1.8;}
+.eloria-product-purchase-panel .eloria-purchase-assurances strong + span {font-size:12px;line-height:1.9;color:#d1ccda;}
+.eloria-product-purchase-panel .eloria-product-specs > div:last-child > div {min-height:60px;}
+.eloria-product-purchase-panel .eloria-product-specs > div:last-child > div > span:first-child {width:28px;height:28px;border:0;}
+.eloria-product-purchase-panel .eloria-product-specs > div:last-child > div > span:last-child {flex:1;display:flex;justify-content:space-between;align-items:baseline;gap:8px;}
+.eloria-product-purchase-panel .eloria-product-specs > div:last-child > div > span:last-child > span {font-size:12px;color:#d1ccda;}
+.eloria-product-purchase-panel .eloria-product-specs strong {font-variant-numeric:tabular-nums;margin:0;text-align:end;}

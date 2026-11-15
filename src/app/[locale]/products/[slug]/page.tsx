@@ -817,7 +817,7 @@ export default async function ProductPage({
                 </div>
               </section>
 
-              <div className="mt-4 grid gap-2 sm:grid-cols-3">
+              <div className="eloria-purchase-assurances mt-4 grid gap-2 sm:grid-cols-3">
                 <PurchaseAssuranceItem
                   icon={<Truck className="h-4 w-4" />}
                   title={
