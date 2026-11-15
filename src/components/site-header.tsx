@@ -439,6 +439,9 @@ export function SiteHeader({ locale }: SiteHeaderProps) {
                 </AnimatePresence>
               </div>
 
+              <Link href={`/${resolvedLocale}/products`} className="eloria-browse-link" aria-current={pathname === `/${resolvedLocale}/products` ? "page" : undefined}>
+                {isPersian ? "همهٔ آثار" : "All creations"}
+              </Link>
               <Link
                 href={`/${resolvedLocale}/contact`}
                 title={labels.contact}

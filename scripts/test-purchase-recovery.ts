@@ -57,6 +57,20 @@ async function main() {
   assert.equal(tree.root.findAllByProps({"data-add":true}).length,0,'Expired quote cannot enable purchase');
   assert.ok(retry());
   await act(async()=>tree.unmount()); assert.equal(timers.size,0,'Timers cleaned on unmount');
+  // Two bounded retries for transient HTTP failures, no infinite retry loop.
+  await act(async()=>{tree=create(React.createElement(mod.exports.LivePurchaseBox,props));});
+  for (let attempt=0; attempt<3; attempt++) {
+    await act(async()=>deliver({ok:false,status:503,json:async()=>({successful:false})}));
+    assert.equal(tree.root.findAllByProps({"data-add":true}).length,0);
+    if (attempt<2) {
+      assert.equal(timers.size,1,'Exactly one pending recovery');
+      const [id,fn]=[...timers.entries()][0]; timers.delete(id);
+      const before: number=requests;
+      await act(async()=>fn());
+      assert.equal(requests,before+1);
+    } else assert.equal(timers.size,0,'Recovery stops after two attempts');
+  }
+  await act(async()=>tree.unmount());
   console.log('PASS: actual React purchase effect fails safely, manual retry recovers, stock-out differs from error, expired quotes stay blocked, cleanup');
 }
 main().catch(error=>{console.error(error);process.exitCode=1;});

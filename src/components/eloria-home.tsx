@@ -94,6 +94,7 @@ export function EloriaHome({
   // prefetches immediately through the shared NavigationAccelerator.
   const warmRoutes = introComplete && (!hero?.cutoutUrl || heroReady);
   const links = [
+    { href: `/${locale}/products`, label: fa ? "همهٔ آثار" : "All creations" },
     { href: "#treasuries", label: fa ? "گنجینه‌ها" : "Treasuries" },
     { href: "#featured", label: fa ? "منتخب‌ها" : "The edit" },
     { href: "#story", label: fa ? "داستان الوریا" : "Our story" },

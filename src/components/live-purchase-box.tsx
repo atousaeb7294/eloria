@@ -39,9 +39,12 @@ export function LivePurchaseBox({
     let busy = false;
     let disposed = false;
     let expiryTimer = 0;
+    let recoveryTimer = 0;
+    let recoveryAttempts = 0;
     validUntil.current = 0;
     async function refresh() {
       if (busy || document.visibilityState === "hidden") return;
+      window.clearTimeout(recoveryTimer);
       busy = true;
       setRefreshing(true);
       if (performance.now() >= validUntil.current) setChecked(false);
@@ -49,6 +52,7 @@ export function LivePurchaseBox({
       controller = activeController;
       const timeout = window.setTimeout(() => activeController.abort(), 12000);
       const requestedAt = performance.now();
+      let transientFailure = true;
       let rejectedMaterial: "GOLD" | "SILVER" | null = null;
       try {
         const query = variantId
@@ -58,6 +62,7 @@ export function LivePurchaseBox({
           `/api/products/${encodeURIComponent(slug)}/price${query}`,
           { cache: "no-store", signal: controller.signal },
         );
+        transientFailure = response.status >= 500 || response.status === 408;
         const result = (await response.json()) as ProductPriceResult & {
           successful?: boolean;
           unavailableRateMaterial?: "GOLD" | "SILVER";
@@ -69,6 +74,7 @@ export function LivePurchaseBox({
           - (performance.now() - requestedAt);
         if (!Number.isFinite(expiresIn) || expiresIn <= 0) throw new Error("quote expired");
         if (!disposed) {
+          recoveryAttempts = 0;
           setQuote(result);
           setFailedRate(null);
           setError(false);
@@ -86,6 +92,11 @@ export function LivePurchaseBox({
           setError(true);
           setChecked(false);
           setFailure(!navigator.onLine ? "offline" : activeController.signal.aborted ? "timeout" : "unavailable");
+          // Retry transient transport/server failures only. Never relax rate validation.
+          if (navigator.onLine && transientFailure && !rejectedMaterial && recoveryAttempts < 2) {
+            const delay = recoveryAttempts++ === 0 ? 3000 : 6000;
+            recoveryTimer = window.setTimeout(() => void refresh(), delay);
+          }
         }
       } finally {
         clearTimeout(timeout);
@@ -105,6 +116,7 @@ export function LivePurchaseBox({
       controller?.abort();
       clearInterval(interval);
       window.clearTimeout(expiryTimer);
+      window.clearTimeout(recoveryTimer);
       retryRef.current = () => {};
       window.removeEventListener("focus", resume);
       window.removeEventListener("online", resume);
@@ -143,7 +155,7 @@ export function LivePurchaseBox({
       aria-label={fa ? "مشخصات محصول و خرید" : "Product details and purchase"}
     >
       <div className="eloria-purchase-heading">
-        <h3>{quick ? (fa ? "خرید سریع" : "Quick purchase") : (fa ? "مشخصات محصول" : "Product details")}</h3>
+        <h3>{quick ? (fa ? "خرید سریع" : "Quick purchase") : (fa ? "قیمت و خرید" : "Price and purchase")}</h3>
         <span className="text-[10px] opacity-70">
           {updated
             ? `${fa ? "بررسی قیمت در" : "Quote checked at"} ${updated}`
@@ -178,7 +190,7 @@ export function LivePurchaseBox({
             {format(quote.pricing.finalPriceToman)}{" "}
             <small className="text-xs">{fa ? "تومان" : "toman"}</small>
           </p>
-          {!compact && <div className="mb-4 rounded-2xl border border-[#ddc48b]/20 bg-[#ddc48b]/5 p-4 text-xs">
+          {!compact && <div className="eloria-purchase-breakdown mb-4 text-sm">
             <dl className="space-y-3">
               <div className="flex justify-between gap-4">
                 <dt>{productWeightLabel(productMaterialKind(quote.product), locale)}</dt>
@@ -266,7 +278,7 @@ export function LivePurchaseBox({
         </button>
       </div>}
       {!checked || error || !quote ? (
-        <div role="status" aria-live="polite" aria-busy={!error}>
+        <div role="status" aria-live="polite" aria-busy={refreshing || (!checked && !error)}>
           <button
             type="button"
             disabled

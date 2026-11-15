@@ -219,7 +219,7 @@ export default async function ProductsPage({
 
   return (
     <InternalPageShell locale={locale}>
-      <section className="relative z-10 mx-auto w-full max-w-[1500px] px-4 pb-28 pt-36 sm:px-6 lg:px-10 lg:pt-40">
+      <section className="eloria-catalog-page relative z-10 mx-auto w-full max-w-[1500px] px-4 pb-28 pt-36 sm:px-6 lg:px-10 lg:pt-40">
         <header className="mx-auto max-w-4xl text-center">
           <div className="mb-4 flex items-center justify-center gap-4">
             <span className="h-px w-14 bg-gradient-to-r from-transparent to-[#d3b35b]/70 sm:w-24" />
@@ -289,8 +289,8 @@ export default async function ProductsPage({
         {catalog.priceFilterActive && (
           <div className="eloria-glass-panel mt-5 rounded-2xl border border-[#d9b85f]/18 bg-[#0f1435]/55 px-4 py-3 text-xs leading-6 text-[#cdbd91]/75 backdrop-blur-xl">
             {isPersian
-              ? "فیلتر قیمت با محاسبه دسته‌ای قیمت نهایی زنده انجام شده است."
-              : "The price range uses batched live final-price calculation."}
+              ? "بازهٔ انتخابی براساس قیمت نهایی محصولات است."
+              : "The selected range uses final product prices."}
           </div>
         )}
 

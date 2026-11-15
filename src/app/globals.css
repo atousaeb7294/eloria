@@ -1388,3 +1388,96 @@ html[lang="fa"] body :is(.font-persian-title,.font-persian-calligraphy,.eloria-h
  border-color: #c7ad7899 !important;
 }
 .eloria-product-gallery-frame { background: #2c3048; }
+
+/* Storefront usability pass: the reference palette, compact controls and legible copy. */
+.eloria-internal-shell .eloria-empty-cart {
+  background: var(--eloria-surface, linear-gradient(135deg,#392f47,#302f46 48%,#272b44)) !important;
+  border: 1px solid #c7ad7866;
+  border-radius: 20px;
+  padding-block: clamp(28px,5vw,48px);
+  box-shadow: none;
+}
+.eloria-internal-shell .eloria-empty-cart > p {color:#e2dce6;opacity:1;}
+.eloria-catalog-page > header {margin-bottom:20px;}
+.eloria-catalog-page > header > div:first-child {display:none;}
+.eloria-catalog-page > header h1 {font-size:clamp(26px,3vw,36px);}
+.eloria-catalog-page > header p {color:#eee8e0;font-size:14px;}
+.eloria-catalog-page .eloria-catalog-filters {margin-top:20px;padding:16px;}
+.eloria-filter-disclosure > summary {
+  display:flex;align-items:center;gap:10px;min-height:44px;cursor:pointer;
+  color:#f3e8d2;font-size:14px;list-style:none;
+}
+.eloria-filter-disclosure > summary::-webkit-details-marker {display:none;}
+.eloria-filter-disclosure > summary::after {content:'+';margin-inline-start:auto;font-size:22px;}
+.eloria-filter-disclosure[open] > summary::after {content:'−';}
+.eloria-catalog-filters :is(label,button,summary) {font-size:14px;}
+.eloria-catalog-filters input {min-height:44px;font-size:16px;}
+.eloria-catalog-filters button[aria-pressed='false'] {color:#ded9e3;}
+.eloria-catalog-filters button[aria-pressed='true'] {color:#fff0c9;border-color:#d9bd84;background:#d9bd841c;}
+.eloria-catalog-filters [role='status'] {font-size:13px;color:#e0dbe4;}
+.eloria-catalog-filters [aria-invalid='true'] {border-color:#f4b4b4;}
+.eloria-glass-storefront .eloria-live-purchase {border:0!important;box-shadow:none!important;padding:0;}
+.eloria-live-purchase :is(p,dt,dd) {font-size:14px;line-height:1.9;}
+.eloria-live-purchase .eloria-purchase-price {font-size:clamp(24px,3vw,32px);line-height:1.6;}
+.eloria-live-purchase .eloria-purchase-breakdown {padding-block:14px;border-block:1px solid #c7ad7833;}
+.eloria-live-purchase .eloria-purchase-heading > span,
+.eloria-live-purchase > p:last-child {font-size:12px;opacity:1;color:#ded8e4;}
+.eloria-glass-storefront .eloria-product-specs {background:transparent!important;border:0;box-shadow:none;padding:16px 0;backdrop-filter:none;}
+.eloria-product-layout :is(article > p, .eloria-product-specs) {color:#eee8e0;}
+.eloria-browse-link {display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:8px 12px;font-size:14px;color:#f3e8d2;white-space:nowrap;}
+.eloria-browse-link[aria-current='page'] {text-decoration:underline;text-underline-offset:6px;}
+:is(.eloria-home,.eloria-internal-shell) :is(a,button,input,select,textarea,summary):focus-visible {outline:2px solid #f3dda5;outline-offset:4px;}
+.eloria-internal-shell .eloria-reading-scrim {background:rgba(0,0,0,.32)!important;}
+.eloria-internal-shell :is(input,textarea,select) {font-size:16px;}
+@media(max-width:760px) {
+  .eloria-catalog-page {padding-top:112px;}
+  .eloria-catalog-page > header h1 {margin-top:0;padding-bottom:0;}
+  .eloria-catalog-page > header {margin-bottom:12px;}
+  .eloria-catalog-page .eloria-catalog-filters {margin-top:12px;padding:12px;}
+  .eloria-filter-disclosure > div {min-width:0;}
+  .eloria-empty-cart {padding-inline:20px;}
+  .eloria-product-layout {gap:16px;}
+  .eloria-store-dock {background:linear-gradient(135deg,#392f47,#302f46 48%,#272b44);}
+}
+@media(prefers-reduced-motion:reduce) {
+  :is(.eloria-home,.eloria-internal-shell) {scroll-behavior:auto;}
+  :is(.eloria-home,.eloria-internal-shell) *,
+  :is(.eloria-home,.eloria-internal-shell) *::before,
+  :is(.eloria-home,.eloria-internal-shell) *::after {animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;}
+}
+.eloria-customer-login > div {
+  background:linear-gradient(135deg,#392f47,#302f46 48%,#272b44)!important;
+  border-color:#c7ad7866;border-radius:20px;box-shadow:none;
+}
+.eloria-customer-login :is(p,label) {color:#e6dfeb!important;font-size:14px;}
+.eloria-customer-login button:not(:disabled) {color:#f3e8d2;min-height:44px;}
+.eloria-customer-login input {background:#232738!important;color:#f5eee5!important;border-color:#a899b388;font-size:16px;}
+.eloria-customer-login input::placeholder {color:#c9c1d1!important;}
+.eloria-customer-login .eloria-action-primary:not(:disabled) {background:linear-gradient(120deg,#f3e4c3,#d9bb85)!important;color:#282436!important;}
+.eloria-internal-shell .eloria-site-footer {
+  background:linear-gradient(135deg,#272b3e,#302c40)!important;
+  border-top-color:#c7ad7833;
+}
+.eloria-internal-shell .eloria-site-footer > [aria-hidden='true'] {display:none;}
+.eloria-internal-shell .eloria-site-footer :is(p,a) {color:#e2dce6;}
+/* A single filter instance: native focus trapping and Escape, drawer on mobile. */
+.eloria-catalog-toolbar {grid-template-columns:minmax(0,1fr) auto;align-items:end;gap:10px 16px;}
+.eloria-catalog-toolbar > [role='status'] {grid-column:1/-1;margin:0;text-align:start;}
+.eloria-filter-toggle {display:flex;align-items:center;justify-content:center;gap:8px;min-height:48px;padding:10px 18px;border:1px solid #c7ad7877;border-radius:12px;color:#f3e8d2;background:#ffffff08;}
+.eloria-filter-dialog {position:fixed;inset:0;margin:auto;width:min(740px,calc(100vw - 32px));max-width:none;max-height:calc(100dvh - 48px);padding:0;border:1px solid #c7ad7866;border-radius:18px;background:linear-gradient(135deg,#392f47,#302f46 48%,#272b44);color:#f3e8d2;overflow:auto;overscroll-behavior:contain;}
+.eloria-filter-dialog::backdrop {background:#080a13aa;}
+.eloria-filter-panel {padding:20px;}
+.eloria-filter-titlebar {display:flex;align-items:center;justify-content:space-between;gap:12px;border-bottom:1px solid #ffffff1c;padding-bottom:12px;}
+.eloria-filter-titlebar h2 {font-size:18px;font-weight:600;}
+.eloria-filter-titlebar button {width:44px;min-height:44px;border:1px solid #c7ad7855;border-radius:10px;font-size:26px;}
+.eloria-filter-done {display:block;width:100%;min-height:48px;margin-top:20px;padding:10px 16px;border-radius:12px;background:linear-gradient(120deg,#f3e4c3,#d9bb85);color:#282436!important;font-weight:600;}
+body:has(.eloria-filter-dialog[open]) :is(.eloria-store-dock,[data-support-widget]) {visibility:hidden;}
+@media(max-width:760px) {
+  .eloria-filter-dialog {inset-block:0;inset-inline:0 auto;margin:0;width:min(90vw,380px);height:100dvh;max-height:100dvh;border-radius:0;border-block:0;}
+  .eloria-filter-panel {padding:16px 16px max(20px,env(safe-area-inset-bottom));}
+  .eloria-filter-toggle {padding-inline:12px;}
+  .eloria-catalog-search > label {display:none;}
+  .eloria-catalog-page > header > p {display:none;}
+  .eloria-catalog-page > header h1 {font-size:26px;}
+  .eloria-filter-dialog .eloria-type-choices {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));overflow:visible;}
+}

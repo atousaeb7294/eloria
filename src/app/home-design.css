@@ -3175,3 +3175,36 @@ html[lang="fa"] .home-quick-loading [lang="en"],html[lang="en"] .home-quick-load
 @media (prefers-reduced-motion: reduce) {
  .eloria-home .hero-actions .home-action { transition: none; }
 }
+
+/* The three mobile treasury captions share the supplied reference card palette. */
+@media (max-width: 760px) {
+ .eloria-home .portal-grid .portal .portal-content {
+  background: linear-gradient(135deg, #392f47 0%, #302f46 48%, #272b44 100%) !important;
+  border: 1px solid #c7ad7899;
+  border-radius: 14px;
+  padding: 10px 12px;
+  height: auto;
+  min-height: 0;
+  align-self: center;
+  gap: 6px;
+  box-shadow: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+ }
+ .eloria-home .portal-grid .portal .portal-content :is(h3, p, small) {
+  color: #f3e8d2;
+  text-shadow: none;
+ }
+ .eloria-home .portal-grid .portal .portal-content p { margin-bottom: 0; }
+ .eloria-home .portal-grid .portal .portal-entry {
+  background: linear-gradient(120deg, #3d3b54, #2c374b) !important;
+  border-color: #c7ad78 !important;
+  color: #f3e8d2 !important;
+  min-height: 44px;
+ }
+}
+/* Reading copy stays unboxed; improve the text itself, not the backdrop colour. */
+.eloria-home .hero-copy > p,
+.eloria-home .section-heading > p,
+.eloria-home .story p {font-size:clamp(15px,1.2vw,17px);line-height:1.95;color:#f1e9df;opacity:1;text-shadow:0 1px 3px #000c;}
+.eloria-home .portal-content p {font-size:14px;line-height:1.9;}

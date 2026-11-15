@@ -119,7 +119,7 @@ export function TreasuryPortal({ treasury, piece, locale, prefetch, mobileActive
         aria-label={toggleLabel}
         onClick={toggle}>
         <span className="portal-toggle-label" aria-hidden="true">
-          {fa ? (open ? "بستن دریچه" : "باز کردن دریچه") : (open ? "Close window" : "Open window")}
+          {fa ? (open ? "بستن پیش‌نمایش" : "پیش‌نمایش گنجینه") : (open ? "Close preview" : "Preview treasury")}
         </span>
       </button>
     </div>

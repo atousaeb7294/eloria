@@ -58,6 +58,20 @@ export function ProductCatalogFilters({
   initialFilters,
   lockedTreasury,
 }: ProductCatalogFiltersProps) {
+  const filterDialog = useRef<HTMLDialogElement>(null);
+  const [filtersOpen, setFiltersOpen] = useState(false);
+  useEffect(() => {
+    const dialog = filterDialog.current;
+    if (!dialog || !filtersOpen) return;
+    dialog.showModal();
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      dialog.close();
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [filtersOpen]);
+
   const router = useRouter();
 
   const pathname = usePathname();
@@ -160,6 +174,16 @@ export function ProductCatalogFilters({
     });
   };
 
+  const cancelFilters = () => {
+    setSearch(initialFilters.search);
+    setMaterial(lockedTreasury ?? initialFilters.material);
+    setCollection(initialFilters.collection);
+    setMinPrice(normalizeNumericInput(initialFilters.minPrice));
+    setMaxPrice(normalizeNumericInput(initialFilters.maxPrice));
+    setAvailability(initialFilters.availability);
+    setFiltersOpen(false);
+  };
+
   const resetFilters = () => {
     setSearch("");
     setMaterial(lockedTreasury ?? "all");
@@ -185,7 +209,7 @@ export function ProductCatalogFilters({
   );
 
   useEffect(() => {
-    if (filterKey === lastSubmitted.current || invalidPriceRange) return;
+    if (filtersOpen || filterKey === lastSubmitted.current || invalidPriceRange) return;
     const timer = window.setTimeout(() => {
       // An explicit form submission may already have applied this state.
       if (filterKey !== lastSubmitted.current) submitFilters();
@@ -193,7 +217,7 @@ export function ProductCatalogFilters({
     return () => window.clearTimeout(timer);
     // The submitted state is the dependency; navigation happens after the debounce.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filterKey, invalidPriceRange]);
+  }, [filterKey, invalidPriceRange, filtersOpen]);
 
   const materialChoices = [
     {
@@ -284,71 +308,8 @@ export function ProductCatalogFilters({
         className="pointer-events-none absolute -start-24 -top-24 h-44 w-44 rounded-full bg-[#d9b85f]/[0.035] blur-3xl"
       />
 
-      <div className="relative grid gap-4">
-        <div className="flex items-center justify-between gap-3 border-b border-white/[0.07] pb-4">
-          <div className="flex min-w-0 items-center gap-3">
-            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-[#d9b85f]/25 bg-[#d9b85f]/[0.055] text-[#dec16d]">
-              <FilterRuneIcon className="h-[18px] w-[18px]" />
-            </span>
-
-            <div className="min-w-0">
-              <h2 className="text-sm font-medium text-[#eee1ca]">
-                {isPersian ? "جست‌وجو و فیلتر" : "Search and filters"}
-              </h2>
-
-              <p className="mt-1 hidden text-[11px] text-white/45 sm:block">
-                {isPersian
-                  ? "آثار را براساس جنس، دسته‌بندی، موجودی و قیمت محدود کنید."
-                  : "Refine creations by material, category, availability and price."}
-              </p>
-            </div>
-          </div>
-
-          <div
-            aria-live="polite"
-            className="flex min-h-9 shrink-0 items-center gap-2 rounded-full border border-[#d9b85f]/20 bg-[#d9b85f]/[0.045] px-3 text-[10px] text-[#d9c791]/75"
-          >
-            <span>{isPersian ? "فیلترهای فعال" : "Active filters"}</span>
-            {activeFilterCount > 0 && (
-              <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-[#d9b85f]/20 px-1 text-[10px] text-[#f3df9f]">
-                {activeFilterCount.toLocaleString(
-                  isPersian ? "fa-IR" : "en-US",
-                )}
-              </span>
-            )}
-          </div>
-        </div>
-
-        <div>
-          <span className="mb-1.5 block text-xs text-[#d8c79a]/80">
-            {isPersian ? "نوع اثر" : "Creation type"}
-          </span>
-          <div className="eloria-type-choices grid grid-cols-2 gap-2 sm:grid-cols-5">
-            {typeChoices.map(({ value, label, Icon }) => {
-              const active = collection === value;
-              return (
-                <button
-                  key={value}
-                  type="button"
-                  onClick={() => setCollection(value)}
-                  className={[
-                    "flex min-h-11 items-center justify-center gap-2 rounded-xl border px-3 text-xs transition duration-300 motion-safe:hover:-translate-y-0.5 active:scale-[0.98]",
-                    active
-                      ? "border-[#e4c873]/48 bg-[#d7b65c]/10 text-[#f4df9e]"
-                      : "border-white/[0.07] bg-white/[0.025] text-white/50 hover:border-[#d9b85f]/28 hover:text-[#e5d5ad]",
-                  ].join(" ")}
-                >
-                  <Icon className="size-[17px]" />
-                  {label}
-                </button>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* جست‌وجو */}
-        <div className="grid gap-3 lg:grid-cols-[1.2fr_0.7fr_0.7fr]">
-          <div>
+      <div className="eloria-catalog-toolbar relative grid gap-4">
+          <div className="eloria-catalog-search">
             <label
               htmlFor="product-search"
               className="mb-1.5 block text-xs text-[#d8c79a]/80"
@@ -385,6 +346,52 @@ export function ProductCatalogFilters({
             </div>
           </div>
 
+        <button type="button" className="eloria-filter-toggle" aria-haspopup="dialog" aria-controls="catalog-filter-dialog" onClick={() => setFiltersOpen(true)}>
+          <FilterRuneIcon className="size-5" />
+          {isPersian ? "فیلترها" : "Filters"}
+          {activeFilterCount > 0 && <span>{activeFilterCount.toLocaleString(isPersian ? "fa-IR" : "en-US")}</span>}
+        </button>
+        <dialog id="catalog-filter-dialog" ref={filterDialog} className="eloria-filter-dialog" aria-labelledby="catalog-filter-title" onClose={() => { if (filtersOpen) cancelFilters(); }} onClick={(event) => {
+          if (event.target !== event.currentTarget) return;
+          const bounds = event.currentTarget.getBoundingClientRect();
+          if (event.clientX < bounds.left || event.clientX > bounds.right || event.clientY < bounds.top || event.clientY > bounds.bottom) cancelFilters();
+        }}>
+          <div className="eloria-filter-panel">
+            <div className="eloria-filter-titlebar">
+              <h2 id="catalog-filter-title">{isPersian ? "فیلتر آثار" : "Filter creations"}</h2>
+              <button type="button" autoFocus aria-label={isPersian ? "بستن فیلترها" : "Close filters"} onClick={cancelFilters}>×</button>
+            </div>
+          <div className="grid gap-4 pt-4">
+        <div>
+          <span className="mb-1.5 block text-xs text-[#d8c79a]/80">
+            {isPersian ? "نوع اثر" : "Creation type"}
+          </span>
+          <div className="eloria-type-choices grid grid-cols-2 gap-2 sm:grid-cols-5">
+            {typeChoices.map(({ value, label, Icon }) => {
+              const active = collection === value;
+              return (
+                <button
+                  key={value}
+                  type="button"
+                  aria-pressed={active}
+                  onClick={() => setCollection(value)}
+                  className={[
+                    "flex min-h-11 items-center justify-center gap-2 rounded-xl border px-3 text-xs transition duration-300 motion-safe:hover:-translate-y-0.5 active:scale-[0.98]",
+                    active
+                      ? "border-[#e4c873]/48 bg-[#d7b65c]/10 text-[#f4df9e]"
+                      : "border-white/[0.07] bg-white/[0.025] text-white/50 hover:border-[#d9b85f]/28 hover:text-[#e5d5ad]",
+                  ].join(" ")}
+                >
+                  <Icon className="size-[17px]" />
+                  {label}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* جست‌وجو */}
+        <div className="grid gap-3 sm:grid-cols-2">
           {/* جنس اثر */}
           {!lockedTreasury ? (
             <div id="catalog-material-filters">
@@ -400,6 +407,7 @@ export function ProductCatalogFilters({
                     <button
                       key={value}
                       type="button"
+                      aria-pressed={active}
                       onClick={() => setMaterial(value)}
                       className={[
                         "group flex min-h-11 items-center justify-center gap-1.5 rounded-xl border px-2 text-xs transition duration-300 motion-safe:hover:-translate-y-0.5 active:scale-[0.98]",
@@ -453,6 +461,7 @@ export function ProductCatalogFilters({
                   <button
                     key={value}
                     type="button"
+                    aria-pressed={active}
                     onClick={() => setAvailability(value)}
                     className={[
                       "flex min-h-11 items-center justify-center gap-1.5 rounded-xl border px-2 text-[11px] transition duration-300 motion-safe:hover:-translate-y-0.5 active:scale-[0.98]",
@@ -483,6 +492,8 @@ export function ProductCatalogFilters({
             <input
               type="text"
               inputMode="numeric"
+              aria-invalid={invalidPriceRange}
+              aria-describedby="catalog-filter-status"
               value={minPrice}
               onChange={(event) =>
                 setMinPrice(normalizeNumericInput(event.target.value))
@@ -504,6 +515,8 @@ export function ProductCatalogFilters({
             <input
               type="text"
               inputMode="numeric"
+              aria-invalid={invalidPriceRange}
+              aria-describedby="catalog-filter-status"
               value={maxPrice}
               onChange={(event) =>
                 setMaxPrice(normalizeNumericInput(event.target.value))
@@ -532,7 +545,14 @@ export function ProductCatalogFilters({
           </div>
         </div>
 
-        <p
+          </div>
+            {invalidPriceRange && <p role="alert" className="mt-3 text-sm text-rose-100">{isPersian ? "حداقل قیمت نمی‌تواند بیشتر از حداکثر قیمت باشد." : "Minimum price cannot exceed maximum price."}</p>}
+            <button type="button" className="eloria-filter-done" disabled={invalidPriceRange || isPending} onClick={() => { submitFilters(); setFiltersOpen(false); }}>
+              {isPending ? (isPersian ? "در حال به‌روزرسانی…" : "Updating…") : (isPersian ? "مشاهدهٔ آثار" : "View creations")}
+            </button>
+          </div>
+        </dialog>
+        <p id="catalog-filter-status" role="status" aria-live="polite"
           className={[
             "-mt-1 text-center text-[10px] leading-5",
             invalidPriceRange ? "text-rose-200/75" : "text-white/42",
@@ -544,7 +564,7 @@ export function ProductCatalogFilters({
               : "Minimum price cannot be greater than maximum price."
             : isPending
               ? isPersian ? "در حال نمایش نتیجه…" : "Updating results…"
-              : isPersian ? "نتایج با تغییر فیلترها به‌روز می‌شوند." : "Results update as you refine the filters."}
+              : isPersian ? "برای اعمال فیلترها، «مشاهدهٔ آثار» را بزنید." : "Choose View creations to apply filters."}
         </p>
       </div>
     </form>

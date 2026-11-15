@@ -762,7 +762,7 @@ export default async function ProductPage({
                 </div>
               </div>
 
-              <section className="rounded-[2rem] border border-[#d9b85f]/18 bg-[#0f1431]/78 p-4 shadow-[0_24px_70px_rgba(0,0,0,0.3)] backdrop-blur-xl sm:p-5">
+              <section className="eloria-product-specs rounded-[2rem] border border-[#d9b85f]/18 bg-[#0f1431]/78 p-4 shadow-[0_24px_70px_rgba(0,0,0,0.3)] backdrop-blur-xl sm:p-5">
                 <div className="mb-4 flex items-center gap-3">
                   <ShieldCheck className="h-5 w-5 text-[#d9bd70]" />
 
@@ -835,12 +835,12 @@ export default async function ProductPage({
                 <PurchaseAssuranceItem
                   icon={<ShieldCheck className="h-4 w-4" />}
                   title={
-                    isPersian ? "اتصال تا پرداخت" : "Connected through payment"
+                    isPersian ? "تأیید پیش از پرداخت" : "Confirmed before payment"
                   }
                   description={
                     isPersian
-                      ? "سبد و ثبت سفارش، مبلغ را از همان منبع مالیِ سرور دوباره تأیید می‌کنند."
-                      : "Cart and order creation reconfirm the amount from the same server financial source."
+                      ? "قیمت و موجودی پیش از پرداخت دوباره تأیید می‌شود."
+                      : "Price and availability are confirmed again before payment."
                   }
                 />
 

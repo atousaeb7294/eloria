@@ -213,11 +213,11 @@ export function CustomerLoginClient({
   const passwordFieldClass = fieldClass + " text-left";
 
   return (
-    <section dir={fa ? "rtl" : "ltr"} className="mx-auto max-w-xl px-4 pb-24 pt-32 sm:px-6 sm:pt-40">
+    <section dir={fa ? "rtl" : "ltr"} className="eloria-customer-login mx-auto max-w-xl px-4 pb-24 pt-32 sm:px-6 sm:pt-40">
       <div className="overflow-hidden rounded-[32px] border border-[#d8b967]/18 bg-[linear-gradient(155deg,rgba(17,23,63,.90),rgba(8,12,38,.94))] p-6 shadow-[0_30px_100px_rgba(0,0,0,.35)] sm:p-9">
         <div className="flex items-center gap-3 text-[#e5ca7c]"><ShieldCheck className="h-5 w-5" /><span className="text-xs">{fa ? "دسترسی امن مشتری" : "Secure customer access"}</span></div>
         <h1 className={fa ? "font-persian-title mt-5 text-3xl text-[#f3e6c5]" : "mt-5 text-3xl font-semibold text-[#f3e6c5]"}>{fa ? "حساب الوریا" : "Your Eloria account"}</h1>
-        <p className="mt-4 text-sm leading-8 text-[#cdbf9d]/65">{mode === "PASSWORD" ? passwordModeMessage() : fa ? "همهٔ مسیرهای عضویت و بازیابی با شمارهٔ موبایل و کد پیامکی SMS.ir انجام می‌شود." : "Sign-up and recovery use your mobile number and an SMS.ir verification code."}</p>
+        <p className="mt-4 text-sm leading-8 text-[#cdbf9d]/65">{mode === "PASSWORD" ? passwordModeMessage() : fa ? "برای عضویت یا بازیابی حساب، کد تأیید به شمارهٔ موبایل شما ارسال می‌شود." : "We will send a verification code to your mobile number."}</p>
 
         {!challengeId ? (
           <>
@@ -231,7 +231,7 @@ export function CustomerLoginClient({
             {mode === "PASSWORD" ? (
               <form onSubmit={loginWithPassword} className="mt-6 space-y-4">
                 <label htmlFor="customer-mobile" className="block text-xs text-[#d9c79e]/65">{fa ? "شماره موبایل" : "Mobile number"}</label>
-                <div className="relative"><Phone className="absolute start-4 top-1/2 h-4 w-4 -translate-y-1/2 text-[#d7bd72]/50" /><input id="customer-mobile" value={mobile} onChange={event => setMobile(event.target.value)} inputMode="tel" autoComplete="tel" placeholder="09121234567" required className={fieldClass + " ps-11"} /></div>
+                <div className="relative"><Phone className="absolute start-4 top-1/2 h-4 w-4 -translate-y-1/2 text-[#d7bd72]/50" /><input id="customer-mobile" type="tel" dir="ltr" value={mobile} onChange={event => setMobile(event.target.value)} inputMode="tel" autoComplete="tel" placeholder="09121234567" required className={fieldClass + " ps-11"} /></div>
                 <label htmlFor="customer-password" className="block text-xs text-[#d9c79e]/65">{fa ? "رمز عبور" : "Password"}</label>
                 <input id="customer-password" value={password} onChange={event => setPassword(event.target.value)} type="password" dir="ltr" autoComplete="current-password" minLength={8} maxLength={128} required className={passwordFieldClass} placeholder={fa ? "حداقل ۸ نویسه" : "At least 8 characters"} />
                 <TurnstileWidget initialConfig={turnstileConfig} key={turnstileAction + "-" + turnstileGeneration} locale={locale} action={turnstileAction} onTokenChange={onTokenChange} onStateChange={setTurnstileState} />
@@ -242,7 +242,7 @@ export function CustomerLoginClient({
               <form onSubmit={requestCode} className="mt-6 space-y-4">
                 {mode === "SIGNUP" ? <><label htmlFor="customer-name" className="block text-xs text-[#d9c79e]/65">{fa ? "نام و نام خانوادگی" : "Full name"}</label><div className="relative"><UserRound className="absolute start-4 top-1/2 h-4 w-4 -translate-y-1/2 text-[#d7bd72]/50" /><input id="customer-name" value={fullName} onChange={event => setFullName(event.target.value)} autoComplete="name" required className={fieldClass + " ps-11"} placeholder={fa ? "نام شما" : "Your name"} /></div></> : null}
                 <label htmlFor="customer-mobile" className="block text-xs text-[#d9c79e]/65">{fa ? "شماره موبایل" : "Mobile number"}</label>
-                <div className="relative"><Phone className="absolute start-4 top-1/2 h-4 w-4 -translate-y-1/2 text-[#d7bd72]/50" /><input id="customer-mobile" value={mobile} onChange={event => setMobile(event.target.value)} inputMode="tel" autoComplete="tel" placeholder="09121234567" required className={fieldClass + " ps-11"} /></div>
+                <div className="relative"><Phone className="absolute start-4 top-1/2 h-4 w-4 -translate-y-1/2 text-[#d7bd72]/50" /><input id="customer-mobile" type="tel" dir="ltr" value={mobile} onChange={event => setMobile(event.target.value)} inputMode="tel" autoComplete="tel" placeholder="09121234567" required className={fieldClass + " ps-11"} /></div>
                 {mode === "SIGNUP" || mode === "RESET" ? <><label htmlFor="customer-password" className="block text-xs text-[#d9c79e]/65">{fa ? "رمز عبور جدید" : "New password"}</label><input id="customer-password" value={password} onChange={event => setPassword(event.target.value)} type="password" dir="ltr" autoComplete="new-password" minLength={8} maxLength={128} required className={passwordFieldClass} placeholder={fa ? "حداقل ۸ نویسه" : "At least 8 characters"} /><label htmlFor="customer-confirm" className="block text-xs text-[#d9c79e]/65">{fa ? "تکرار رمز عبور" : "Confirm password"}</label><input id="customer-confirm" value={confirmPassword} onChange={event => setConfirmPassword(event.target.value)} type="password" dir="ltr" autoComplete="new-password" minLength={8} maxLength={128} required className={passwordFieldClass} /></> : null}
                 <TurnstileWidget initialConfig={turnstileConfig} key={turnstileAction + "-" + turnstileGeneration} locale={locale} action={turnstileAction} onTokenChange={onTokenChange} onStateChange={setTurnstileState} />
                 {!securityCheckComplete ? <p className="text-center text-[11px] leading-6 text-[#bcae8d]/45">{fa ? "پس از تکمیل بررسی امنیتی، ارسال کد فعال می‌شود." : "Complete the security check to send the code."}</p> : null}
