@@ -20,7 +20,7 @@ test("public circular pieces, original treasury routes and quick view", async ({
       `/fa/collections/${key}`,
     );
   await page.locator("#featured").scrollIntoViewIfNeeded();
-  await expect(page.locator(".hero-actions .eloria-cta-secondary")).toHaveAttribute("href", "/fa/products");
+  await expect(page.locator(".hero-actions .home-action-secondary")).toHaveAttribute("href", "/fa/products");
   await expect
     .poll(() =>
       page

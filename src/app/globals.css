@@ -1208,10 +1208,10 @@ html[lang="fa"] body :is(.font-persian-title,.font-persian-calligraphy,.eloria-h
 :root {
   --eloria-slate: #121a2b;
   --eloria-plum: #59236f;
-  --eloria-surface: linear-gradient(125deg, #162c60 0%, #242951 48%, #492152 100%);
+  --eloria-surface: linear-gradient(135deg, #392f47 0%, #302f46 48%, #272b44 100%);
   --eloria-paper: #f2eee6;
   --eloria-copy: #c9cbd2;
-  --eloria-gold: #e4c38a;
+  --eloria-gold: #d9bb85;
   --background: #101a3b;
   --foreground: #fff3de;
   --card: #18213f;
@@ -1366,7 +1366,7 @@ html[lang="fa"] body :is(.font-persian-title,.font-persian-calligraphy,.eloria-h
 }
 /* One quiet card surface and clear navigation feedback. */
 .eloria-glass-storefront .eloria-catalog-card {
-  background: linear-gradient(125deg, #162c60 0%, #242951 48%, #492152 100%) !important;
+  background: linear-gradient(135deg, #392f47 0%, #302f46 48%, #272b44 100%) !important;
   border: 1px solid rgba(230, 225, 213, 0.14) !important;
   border-radius: 14px;
   box-shadow: none !important;
@@ -1377,3 +1377,14 @@ html[lang="fa"] body :is(.font-persian-title,.font-persian-calligraphy,.eloria-h
 }
 .eloria-site-header nav a:hover { text-decoration: underline; text-underline-offset: 6px; }
 .eloria-internal-shell main > section > header :is(h1, p) { text-shadow: 0 1px 2px rgba(0, 0, 0, 0.55); }
+/* Card palette sampled from the supplied mobile reference, shared at all widths. */
+.eloria-glass-storefront :is(.eloria-glass-panel, .eloria-salon-purchase-card, .eloria-quick-dialog) {
+ background: linear-gradient(135deg, #392f47 0%, #302f46 48%, #272b44 100%) !important;
+ border-color: #c7ad7899 !important;
+ color: #f3e8d2;
+}
+.eloria-glass-storefront .eloria-catalog-card {
+ background: linear-gradient(135deg, #392f47 0%, #302f46 48%, #272b44 100%) !important;
+ border-color: #c7ad7899 !important;
+}
+.eloria-product-gallery-frame { background: #2c3048; }

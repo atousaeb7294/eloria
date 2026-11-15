@@ -217,10 +217,10 @@ export function EloriaHome({
               )}
             </p>
             <div className="hero-actions">
-              <a className="eloria-cta eloria-cta-primary" href="#treasuries">
+              <a className="home-action home-action-primary" href="#treasuries">
                 <span>{fa ? "ورود به گنجینه‌ها" : "Enter the treasuries"}</span>
               </a>
-              <TreasuryLink prefetch={warmRoutes} direction="up" className="eloria-cta eloria-cta-secondary" href={`/${locale}/products`}>
+              <TreasuryLink prefetch={warmRoutes} direction="up" className="home-action home-action-secondary" href={`/${locale}/products`}>
                 <span>{fa ? "دیدن همهٔ آثار" : "View all creations"}</span>
               </TreasuryLink>
             </div>
