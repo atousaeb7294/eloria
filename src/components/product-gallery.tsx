@@ -304,14 +304,14 @@ export function ProductGallery({
   return (
     <>
       <div className="grid gap-3 rounded-[2rem]">
-        <div className="eloria-product-gallery-frame relative aspect-[4/5] overflow-hidden rounded-[2rem] border border-white/[0.07] bg-[#0a0f2d] shadow-[0_22px_65px_rgba(0,0,0,0.38)]"
+        <div className="eloria-product-gallery-frame relative overflow-hidden rounded-[2rem] border border-white/[0.07] bg-[#0a0f2d] shadow-[0_22px_65px_rgba(0,0,0,0.38)]"
           style={{ "--gallery-photo-ratio": ratios[activeImage.imageUrl] ?? 1 } as CSSProperties}>
           <PreparedGalleryImage
             images={safeImages}
             index={normalizedActiveIndex}
             locale={locale}
             sizes="(max-width: 760px) calc(100vw - 64px), (max-width: 1024px) 100vw, 55vw"
-            className="object-contain p-10"
+            className="object-contain p-2"
             onAspectRatio={rememberRatio}
           />
 
@@ -403,7 +403,8 @@ export function ProductGallery({
             </>
           )}
 
-          <div className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-4 p-5 sm:p-6">
+        </div>
+          <div className="flex items-end justify-between gap-4 px-2 py-2">
             <div>
               <p className="text-[10px] uppercase tracking-[0.3em] text-[#d2bd83]/70">
                 Eloria Jewelry
@@ -435,7 +436,6 @@ export function ProductGallery({
               </span>
             )}
           </div>
-        </div>
 
         {hasMultipleImages && (
           <div

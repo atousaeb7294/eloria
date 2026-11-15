@@ -1208,7 +1208,7 @@ html[lang="fa"] body :is(.font-persian-title,.font-persian-calligraphy,.eloria-h
 :root {
   --eloria-slate: #121a2b;
   --eloria-plum: #59236f;
-  --eloria-surface: rgba(17, 23, 36, 0.86);
+  --eloria-surface: linear-gradient(125deg, #162c60 0%, #242951 48%, #492152 100%);
   --eloria-paper: #f2eee6;
   --eloria-copy: #c9cbd2;
   --eloria-gold: #e4c38a;
@@ -1366,7 +1366,7 @@ html[lang="fa"] body :is(.font-persian-title,.font-persian-calligraphy,.eloria-h
 }
 /* One quiet card surface and clear navigation feedback. */
 .eloria-glass-storefront .eloria-catalog-card {
-  background: rgba(17, 23, 36, 0.86) !important;
+  background: linear-gradient(125deg, #162c60 0%, #242951 48%, #492152 100%) !important;
   border: 1px solid rgba(230, 225, 213, 0.14) !important;
   border-radius: 14px;
   box-shadow: none !important;

@@ -2963,7 +2963,7 @@ html[lang="fa"] .home-quick-loading [lang="en"],html[lang="en"] .home-quick-load
   --gold: #e4c38a;
   --plum: #fff3de;
   --muted-plum: #c9cbd2;
-  --glass: rgba(17, 23, 36, 0.82);
+  --glass: linear-gradient(125deg, #162c60 0%, #242951 48%, #492152 100%);
   background-color: #121a2b;
 }
 .eloria-home .atmosphere {
@@ -2980,7 +2980,7 @@ html[lang="fa"] .home-quick-loading [lang="en"],html[lang="en"] .home-quick-load
 .eloria-home :is(.hero-copy h1, .section-heading h2, .story h2) { color: #fff3de; }
 .eloria-home .hero-copy h1 em { color: #ffe0a1; }
 .eloria-home .medallion .product-description {
-  background: rgba(17, 23, 36, 0.82);
+  background: linear-gradient(125deg, #162c60 0%, #242951 48%, #492152 100%);
   border-color: #e4c38a26;
   color: #fff3de;
   box-shadow: none;
@@ -3012,16 +3012,16 @@ html[lang="fa"] .home-quick-loading [lang="en"],html[lang="en"] .home-quick-load
 .eloria-home dialog.home-quick-dialog { background: #141c2b; color: #fff3de; }
 .eloria-home :is(a, button):focus-visible { outline: 2px solid #ffe1a6; outline-offset: 4px; }
 @media (max-width: 760px) {
-  .eloria-home { padding-bottom: 12px; --ink: #f2eee6; --muted-plum: #c9cbd2; --glass: rgba(17, 23, 36, 0.82); background-color: #121a2b; }
+  .eloria-home { padding-bottom: 12px; --ink: #f2eee6; --muted-plum: #c9cbd2; --glass: linear-gradient(125deg, #162c60 0%, #242951 48%, #492152 100%); background-color: #121a2b; }
   .eloria-home .hero-copy p { font-size: 15px; }
   .eloria-home .section-heading p, .eloria-home .story p { font-size: 14px; }
   .eloria-home .portal-grid .portal-content {
     padding: 8px 10px;
-    background: rgba(17, 23, 36, 0.72);
+    background: transparent;
     border: 0;
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    border-radius: 10px;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    border-radius: 0;
   }
   .eloria-home .portal-grid .portal-content p { font-size: 12px; color: #e1d9e4; }
   .eloria-home .portal-grid .portal-mobile-toggle { display: none; }
@@ -3053,7 +3053,7 @@ html[lang="fa"] .home-quick-loading [lang="en"],html[lang="en"] .home-quick-load
 }
 .eloria-home :is(.hero-copy, .section-heading, .story) > :last-child { margin-bottom: 0; }
 .eloria-home .medallion .product-description :is(p, h3):last-child { margin-bottom: 0; }
-.eloria-home .portal-grid .portal-content { height: auto; min-height: 0; background: rgba(17, 23, 36, 0.72); border-radius: 10px; }
+.eloria-home .portal-grid .portal-content { height: auto; min-height: 0; background: transparent; border-radius: 0; }
 .eloria-home .section { padding-block: 44px 24px; }
 .eloria-home .section-heading { margin-bottom: 20px; gap: 12px; }
 .eloria-home .story { margin-block: 36px; }
@@ -3066,7 +3066,7 @@ html[lang="fa"] .home-quick-loading [lang="en"],html[lang="en"] .home-quick-load
 }
 @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
   .eloria-home .medallion .product-description {
-    background: #151e2e; }
+    background: linear-gradient(125deg, #162c60 0%, #242951 48%, #492152 100%); }
 }
 /* Editorial text: no glow, outline, decorative badge or colored scrim. */
 .eloria-home :is(.hero-copy, .section-heading, .story) :is(h1, h2, p) {
@@ -3109,3 +3109,26 @@ html[lang="fa"] .home-quick-loading [lang="en"],html[lang="en"] .home-quick-load
 .eloria-home .hero-actions .eloria-cta::before { content: none; }
 .eloria-home .hero-actions .eloria-cta-secondary { border-color: rgba(230, 225, 213, 0.22); color: #e0e1e5; }
 .eloria-home .hero-actions .eloria-cta:hover { background: #202a3b; transform: none; }
+/* Treasury labels stay directly on the existing artwork, without a text box. */
+.eloria-home .portal-grid .portal-content {
+ background: transparent !important; border: 0; box-shadow: none;
+ backdrop-filter: none; -webkit-backdrop-filter: none;
+}
+.eloria-home .portal-grid .portal-content::before,
+.eloria-home .portal-grid .portal-content::after { content: none; }
+.eloria-home .portal-grid .portal-content :is(h3,p,small) {
+ color: #f3ecdf; text-shadow: 0 1px 3px #000b;
+}
+/* A single button treatment shared by the hero and treasury entrances. */
+.eloria-home .hero-actions .eloria-cta,
+.eloria-home .portal-grid .portal-entry {
+ background: linear-gradient(125deg, #162c60 0%, #242951 48%, #492152 100%) !important;
+ border: 1px solid #c7a66b88 !important;
+ border-radius: 12px !important; color: #f5e7cc !important;
+ box-shadow: none; min-height: 44px;
+}
+.eloria-home .hero-actions .eloria-cta:hover,
+.eloria-home .portal-grid .portal-entry:hover { border-color: #e4c995 !important; filter: brightness(1.08); }
+.eloria-home :is(.hero-copy,.section-heading,.story) :is(h1,h2,p) {
+ color: #f3ecdf; text-shadow: 0 1px 3px #000b;
+}
