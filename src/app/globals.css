@@ -1554,3 +1554,6 @@ body:has(.eloria-filter-dialog[open]) :is(.eloria-store-dock,[data-support-widge
 .eloria-product-purchase-panel .eloria-product-specs > div:last-child > div > span:last-child {flex:1;display:flex;justify-content:space-between;align-items:baseline;gap:8px;}
 .eloria-product-purchase-panel .eloria-product-specs > div:last-child > div > span:last-child > span {font-size:12px;color:#d1ccda;}
 .eloria-product-purchase-panel .eloria-product-specs strong {font-variant-numeric:tabular-nums;margin:0;text-align:end;}
+/* Align remaining shop secondary controls with the established smoky palette. */
+.eloria-glass-storefront :is(.eloria-piece-details,.eloria-dialog-close) {background:#2d3246;color:#f3e8d2;border-color:#c7ad7866;}
+.eloria-glass-storefront .eloria-quick-dialog::backdrop {background:#080c16b3;}

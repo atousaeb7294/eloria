@@ -3260,3 +3260,20 @@ html[lang="fa"] .home-quick-loading [lang="en"],html[lang="en"] .home-quick-load
  .eloria-home .selected-grid .home-price :is(p,strong) {font-size:13px;}
  .eloria-home .selected-grid .home-price span {font-size:10px;}
 }
+
+/* Independent quick-purchase control: legacy CTA rules must not resize it. */
+.eloria-home .selected-grid .home-quick-trigger {
+ display:flex;align-items:center;justify-content:center;align-self:center;flex:none;
+ width:auto;max-width:100%;min-height:44px;margin:2px 0 0;padding:6px 14px;
+ font-family:"Vazirmatn Variable",Tahoma,sans-serif;font-size:12px;font-weight:500;line-height:1.5;
+ background:transparent;color:#e5d1a7;border:0;border-radius:8px;
+ box-shadow:none;cursor:pointer;white-space:normal;touch-action:manipulation;
+}
+.eloria-home .selected-grid .home-quick-trigger:hover {color:#fff0c9;text-decoration:underline;text-underline-offset:4px;}
+.eloria-home .selected-grid .home-quick-trigger:focus-visible {outline:2px solid #efd69f;outline-offset:2px;}
+.eloria-home dialog.home-quick-dialog {background:linear-gradient(135deg,#293348,#2d3246 65%,#363047)!important;box-shadow:0 16px 48px #0005;}
+.eloria-home .home-quick-dialog .eloria-live-purchase {background:transparent!important;border-color:#c7ad7833;box-shadow:none;}
+.eloria-home .home-quick-dialog .dialog-photo {background:#293348;}
+@media(max-width:760px) {
+ .eloria-home .selected-grid .home-quick-trigger {min-height:44px;padding:4px 12px;font-size:12px;margin-top:0;}
+}

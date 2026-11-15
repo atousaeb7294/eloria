@@ -81,7 +81,7 @@ test("public circular pieces, original treasury routes and quick view", async ({
   } else {
     await expect(dock).toBeHidden();
   }
-  const trigger = page.locator(".quick-view-label").first();
+  const trigger = page.locator(".home-quick-trigger").first();
   await trigger.click();
   await expect(page.locator(".home-quick-dialog")).toBeVisible();
   await expect(
