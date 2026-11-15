@@ -2,7 +2,7 @@
 
 import { usePathname } from "next/navigation";
 import { useSyncExternalStore } from "react";
-import { House, Search, ShoppingBag, Sparkles } from "lucide-react";
+import { House, Search, ShoppingBag, Gem } from "lucide-react";
 import { TreasuryLink } from "@/components/treasury-transition";
 import { getCartQuantity, subscribeToCart } from "@/lib/cart-storage";
 
@@ -32,7 +32,7 @@ export function MobileStoreNavigation({ locale }: { locale: string }) {
         <span>{fa ? "خانه" : "Home"}</span>
       </TreasuryLink>
       <TreasuryLink href={`${base}/products`} aria-current={route === "/products" ? "page" : undefined}>
-        <Sparkles aria-hidden="true" size={21} />
+        <Gem aria-hidden="true" size={21} />
         <span>{fa ? "آثار" : "Creations"}</span>
       </TreasuryLink>
       {product ? (

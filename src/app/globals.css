@@ -1204,13 +1204,13 @@ html[lang="fa"] body :is(.font-persian-title,.font-persian-calligraphy,.eloria-h
   .eloria-cart-summary { text-align:center; }
 }
 
-/* Shared reference palette: dark lapis with seamless royal-purple halos. */
+/* Shared reading surfaces: quiet navy, neutral overlays, restrained gold. */
 :root {
-  --eloria-slate: #111b46;
+  --eloria-slate: #121a2b;
   --eloria-plum: #59236f;
-  --eloria-surface: linear-gradient(135deg, #101a39bf, #1c1739b3);
-  --eloria-paper: #fff3de;
-  --eloria-copy: #e1d9e4;
+  --eloria-surface: rgba(17, 23, 36, 0.86);
+  --eloria-paper: #f2eee6;
+  --eloria-copy: #c9cbd2;
   --eloria-gold: #e4c38a;
   --background: #101a3b;
   --foreground: #fff3de;
@@ -1225,9 +1225,7 @@ html[lang="fa"] body :is(.font-persian-title,.font-persian-calligraphy,.eloria-h
 }
 .eloria-internal-shell .eloria-reading-scrim {
   background:
-    radial-gradient(ellipse at 88% 18%, #6b268b45 0%, #6b268b00 67%),
-    radial-gradient(ellipse at 8% 76%, #54277233 0%, #54277200 70%),
-    linear-gradient(180deg, #13265c59, #101a3b73);
+    rgba(0, 0, 0, 0.24);
 }
 .eloria-glass-storefront {
   --eloria-glass: var(--eloria-surface);
@@ -1236,10 +1234,11 @@ html[lang="fa"] body :is(.font-persian-title,.font-persian-calligraphy,.eloria-h
 }
 .eloria-glass-storefront :is(.eloria-glass-panel, .eloria-salon-purchase-card, .eloria-quick-dialog, .eloria-live-purchase) {
   background: var(--eloria-glass) !important;
-  border-color: #e4c38a26 !important;
-  box-shadow: 0 6px 18px #180c2924;
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  border-color: rgba(230, 225, 213, 0.14) !important !important;
+  box-shadow: none;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  border-radius: 14px;
 }
 .eloria-glass-storefront :is(.eloria-glass-panel, .eloria-live-purchase, .eloria-quick-dialog) :is(p, label, dt, dd, small) {
   opacity: 1;
@@ -1253,27 +1252,28 @@ html[lang="fa"] body :is(.font-persian-title,.font-persian-calligraphy,.eloria-h
 .eloria-glass-storefront .eloria-purchase-price { color: #ffe4ae !important; }
 .eloria-glass-storefront .eloria-raw-gold { color: var(--eloria-copy); font-size: 12px; line-height: 1.9; }
 .eloria-internal-shell main > section > header {
-  padding: 10px 12px;
-  border-radius: 14px;
-  background: radial-gradient(ellipse at center, #0d142bb3, #0d142b00 75%);
+  padding: 0;
+  border-radius: 0;
+  background: transparent;
   border: 0;
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
 }
 .eloria-internal-shell main > section > header p { color: var(--eloria-copy); opacity: 1; line-height: 2; }
 .eloria-internal-shell main > section > header h1 { color: var(--eloria-paper); }
 .eloria-site-header > div > div > div {
-  background: linear-gradient(110deg, #231d47bf, #142454c7);
-  border-color: #e4c38a55;
+  background: rgba(17, 23, 36, 0.92);
+  border-color: rgba(230, 225, 213, 0.15);
+  box-shadow: none;
 }
 .eloria-site-footer { background: #111a38; }
 .eloria-site-footer > div[aria-hidden="true"]:first-child {
-  background: radial-gradient(ellipse at 90% 70%, #64277c38, #64277c00 70%);
+  background: rgba(0, 0, 0, 0.18);
 }
 .eloria-site-footer nav a { min-height: 44px; color: #f0e5d7; }
 .eloria-site-footer nav a:focus-visible { outline: 2px solid var(--eloria-gold); outline-offset: 3px; }
 .eloria-site-footer p { color: var(--eloria-copy); }
-.eloria-admin-shell { background: radial-gradient(ellipse at 90% 12%, #65278040, #65278000 65%), #111c41; color: var(--eloria-paper); }
+.eloria-admin-shell { background: #121a2b; color: var(--eloria-paper); }
 .eloria-admin-shell > div > aside, .eloria-admin-shell > div > section > header { background: #151d39d9; }
 #product-purchase, #product-search { scroll-margin-top: 110px; }
 #product-purchase:focus { outline: 2px solid var(--eloria-gold); outline-offset: 8px; }
@@ -1288,11 +1288,11 @@ html[lang="fa"] body :is(.font-persian-title,.font-persian-calligraphy,.eloria-h
     display: grid;
     grid-template-columns: repeat(4, minmax(0, 1fr));
     padding: 6px;
-    border: 1px solid #e4c38a80;
-    border-radius: 22px;
-    background: linear-gradient(110deg, #272049d9, #152753d9);
+    border: 1px solid rgba(230, 225, 213, 0.16);
+    border-radius: 14px;
+    background: rgba(16, 23, 36, 0.96);
     color: var(--eloria-paper);
-    box-shadow: 0 8px 30px #10162566;
+    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.16);
     backdrop-filter: blur(8px);
   }
   .eloria-store-dock > a {
@@ -1304,7 +1304,7 @@ html[lang="fa"] body :is(.font-persian-title,.font-persian-calligraphy,.eloria-h
     gap: 5px;
     min-height: 54px;
     padding: 5px 2px;
-    border-radius: 16px;
+    border-radius: 8px;
     color: inherit;
     font-size: 11px;
     line-height: 1.7;
@@ -1313,7 +1313,7 @@ html[lang="fa"] body :is(.font-persian-title,.font-persian-calligraphy,.eloria-h
     touch-action: manipulation;
   }
   .eloria-store-dock > a[aria-current="page"],
-  .eloria-store-dock > .eloria-dock-purchase { background: #e4c38a26; color: #ffe1a6; }
+  .eloria-store-dock > .eloria-dock-purchase { background: rgba(255, 255, 255, 0.06); color: #e1c58b; }
   .eloria-store-dock > a:focus-visible { outline: 2px solid #ffe1a6; outline-offset: 1px; }
   .eloria-dock-bag { position: relative; }
   .eloria-dock-count {
@@ -1338,7 +1338,7 @@ html[lang="fa"] body :is(.font-persian-title,.font-persian-calligraphy,.eloria-h
     scrollbar-width: thin;
   }
   .eloria-type-choices > button { flex: 0 0 auto; min-width: 80px; min-height: 44px; }
-  .eloria-glass-storefront .eloria-catalog-card { padding: 12px; border-radius: 20px; }
+  .eloria-glass-storefront .eloria-catalog-card { padding: 12px; border-radius: 14px; }
   .eloria-glass-storefront .eloria-catalog-card h2 { font-size: 17px; line-height: 1.9; }
   .eloria-glass-storefront .eloria-live-purchase { font-size: 14px; line-height: 1.9; }
   .eloria-glass-storefront .eloria-purchase-price { font-size: 24px; }
@@ -1355,9 +1355,25 @@ html[lang="fa"] body :is(.font-persian-title,.font-persian-calligraphy,.eloria-h
 .eloria-internal-shell main > section > header {
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
+  background: transparent;
+  padding: 0;
+  border-radius: 0;
 }
 .eloria-internal-shell main > section > header > :last-child { margin-bottom: 0; }
 .eloria-admin-shell :is(input, select, textarea) { background-color: #101931; color: #fff3de; }
 @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
   .eloria-glass-storefront :is(.eloria-glass-panel, .eloria-quick-dialog) { background: #141e3b !important; }
 }
+/* One quiet card surface and clear navigation feedback. */
+.eloria-glass-storefront .eloria-catalog-card {
+  background: rgba(17, 23, 36, 0.86) !important;
+  border: 1px solid rgba(230, 225, 213, 0.14) !important;
+  border-radius: 14px;
+  box-shadow: none !important;
+}
+.eloria-glass-storefront .eloria-catalog-card:hover {
+  border-color: rgba(225, 197, 139, 0.45) !important;
+  transform: none;
+}
+.eloria-site-header nav a:hover { text-decoration: underline; text-underline-offset: 6px; }
+.eloria-internal-shell main > section > header :is(h1, p) { text-shadow: 0 1px 2px rgba(0, 0, 0, 0.55); }
