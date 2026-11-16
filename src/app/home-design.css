@@ -3277,3 +3277,71 @@ html[lang="fa"] .home-quick-loading [lang="en"],html[lang="en"] .home-quick-load
 @media(max-width:760px) {
  .eloria-home .selected-grid .home-quick-trigger {min-height:44px;padding:4px 12px;font-size:12px;margin-top:0;}
 }
+
+/* Final storefront palette: one deep lapis/plum surface with a restrained
+   champagne accent. Kept at the end so legacy visual experiments cannot
+   introduce a second theme or resize the featured purchase control. */
+.eloria-home {
+  --home-bg: #292840;
+  --home-panel: #302b45;
+  --home-panel-strong: #252d48;
+  --home-line: #d8bb7e;
+  --home-ink: #f5ecd9;
+  --home-muted: #d7cdbd;
+  --home-accent: #e3c77d;
+  color: var(--home-ink);
+  background: var(--home-bg);
+}
+.eloria-home .atmosphere {
+  background: linear-gradient(90deg, #0e1730e8, #162348d9 48%, #151b35e8),
+    linear-gradient(0deg, #0c142be8, transparent 80%);
+}
+.eloria-home .product-description,
+.eloria-home .portal-content,
+.eloria-home .photo-caption {
+  background: linear-gradient(135deg, var(--home-panel), var(--home-panel-strong)) !important;
+  border-color: color-mix(in srgb, var(--home-line) 34%, transparent) !important;
+}
+.eloria-home :is(.hero-copy h1, .section-heading h2, .story h2, .product-description h3,
+  .photo-caption h2, .portal-content h3) {
+  color: var(--home-ink);
+  text-shadow: 0 2px 10px rgb(0 0 0 / 0.58);
+  font-weight: 700;
+}
+.eloria-home :is(.hero-copy > p, .section-heading > p, .story p, .portal-content p,
+  .product-description small, .product-description .home-price, .photo-caption > span) {
+  color: var(--home-muted);
+  text-shadow: 0 1px 5px rgb(0 0 0 / 0.72);
+  font-weight: 600;
+}
+.eloria-home .selected-grid .home-quick-trigger {
+  width: fit-content;
+  min-width: 96px;
+  min-height: 38px;
+  margin: 8px auto 0;
+  padding: 6px 12px;
+  border: 1px solid color-mix(in srgb, var(--home-accent) 58%, transparent);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--home-accent) 12%, transparent);
+  color: var(--home-accent);
+  font-size: clamp(11px, 1.1vw, 13px);
+  font-weight: 700;
+  line-height: 1.4;
+  text-shadow: 0 1px 4px rgb(0 0 0 / 0.5);
+  box-shadow: 0 5px 14px rgb(0 0 0 / 0.18);
+}
+.eloria-home .selected-grid .home-quick-trigger:hover {
+  background: color-mix(in srgb, var(--home-accent) 22%, transparent);
+  color: #fff4d0;
+  text-decoration: none;
+  transform: translateY(-1px);
+}
+@media (max-width: 760px) {
+  .eloria-home .selected-grid .home-quick-trigger {
+    min-width: 82px;
+    min-height: 36px;
+    margin-top: 6px;
+    padding: 5px 9px;
+    font-size: 11px;
+  }
+}

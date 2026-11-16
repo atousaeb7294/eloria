@@ -1557,3 +1557,30 @@ body:has(.eloria-filter-dialog[open]) :is(.eloria-store-dock,[data-support-widge
 /* Align remaining shop secondary controls with the established smoky palette. */
 .eloria-glass-storefront :is(.eloria-piece-details,.eloria-dialog-close) {background:#2d3246;color:#f3e8d2;border-color:#c7ad7866;}
 .eloria-glass-storefront .eloria-quick-dialog::backdrop {background:#080c16b3;}
+
+/* Shared Eloria tokens keep catalog, product and checkout surfaces in the
+   same lapis/champagne family as the home page. */
+:root {
+  --eloria-site-bg: #292840;
+  --eloria-site-panel: #302b45;
+  --eloria-site-panel-strong: #252d48;
+  --eloria-site-ink: #f5ecd9;
+  --eloria-site-muted: #d7cdbd;
+  --eloria-site-accent: #e3c77d;
+}
+body {
+  background: var(--eloria-site-bg);
+  color: var(--eloria-site-ink);
+}
+.eloria-glass-storefront :is(h1, h2, h3, h4, .eloria-price-amount) {
+  color: var(--eloria-site-ink);
+  text-shadow: 0 2px 10px rgb(0 0 0 / 0.54);
+  font-weight: 700;
+}
+.eloria-glass-storefront :is(p, label, dt, dd, small) {
+  text-shadow: 0 1px 5px rgb(0 0 0 / 0.58);
+}
+.eloria-glass-storefront :is(.eloria-glass-panel, .eloria-salon-purchase-card,
+  .eloria-quick-dialog, .eloria-live-purchase) {
+  background: linear-gradient(135deg, var(--eloria-site-panel), var(--eloria-site-panel-strong)) !important;
+}

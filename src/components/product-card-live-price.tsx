@@ -18,6 +18,13 @@ type PriceResponse = {
   };
 };
 
+// Keep the first paint instant from the server-rendered price, then share a
+// short-lived client cache between cards and routes. This prevents a featured
+// grid from opening one identical request per mounted price component.
+const PRICE_CACHE_TTL = 60_000;
+const priceCache = new Map<string, { value: string; expiresAt: number }>();
+const priceRequests = new Map<string, Promise<string>>();
+
 function formatPrice(value: string, locale: string) {
   try {
     return BigInt(value).toLocaleString(locale === "fa" ? "fa-IR" : "en-US");
@@ -55,36 +62,45 @@ export function ProductCardLivePrice({
 
   useEffect(() => {
     if (previewOnly || !enabled || !visible) return;
-    let controller: AbortController | null = null;
     let disposed = false;
-    let busy = false;
 
-    async function loadPrice() {
-      if (disposed || busy || document.visibilityState === "hidden") return;
-      busy = true;
-      const request = new AbortController();
-      controller = request;
-      const timeout = window.setTimeout(() => request.abort(), 12000);
+    const loadPrice = async () => {
+      if (disposed || document.visibilityState === "hidden") return;
+      const cached = priceCache.get(slug);
+      if (cached && cached.expiresAt > Date.now()) {
+        setPrice(cached.value);
+        setFailed(false);
+        return;
+      }
+
+      let request = priceRequests.get(slug);
+      if (!request) {
+        request = (async () => {
+          const controller = new AbortController();
+          const timeout = window.setTimeout(() => controller.abort(), 12_000);
+          try {
+            const response = await fetch(`/api/products/${encodeURIComponent(slug)}/price?display=1`, {
+              signal: controller.signal,
+              cache: "no-store",
+            });
+            if (!response.ok) throw new Error("Price request failed");
+            const payload = (await response.json()) as PriceResponse;
+            const finalPrice = payload.pricing?.finalPriceToman;
+            if (!payload.successful || !finalPrice || !/^\d+$/.test(finalPrice)) {
+              throw new Error("Price unavailable");
+            }
+            priceCache.set(slug, { value: finalPrice, expiresAt: Date.now() + PRICE_CACHE_TTL });
+            return finalPrice;
+          } finally {
+            window.clearTimeout(timeout);
+            priceRequests.delete(slug);
+          }
+        })();
+        priceRequests.set(slug, request);
+      }
+
       try {
-        const response = await fetch(
-          `/api/products/${encodeURIComponent(slug)}/price?display=1`,
-          {
-            signal: request.signal,
-            cache: "no-store",
-          },
-        );
-
-        if (!response.ok) {
-          throw new Error("Price request failed");
-        }
-
-        const payload = (await response.json()) as PriceResponse;
-        const finalPrice = payload.pricing?.finalPriceToman;
-
-        if (!payload.successful || !finalPrice || !/^\d+$/.test(finalPrice)) {
-          throw new Error("Price unavailable");
-        }
-
+        const finalPrice = await request;
         if (!disposed) {
           setPrice(finalPrice);
           setFailed(false);
@@ -92,11 +108,8 @@ export function ProductCardLivePrice({
       } catch {
         // Timeouts should leave a useful fallback, not an endless loading label.
         if (!disposed) setFailed(true);
-      } finally {
-        window.clearTimeout(timeout);
-        busy = false;
       }
-    }
+    };
 
     void loadPrice();
 
@@ -112,7 +125,6 @@ export function ProductCardLivePrice({
     return () => {
       disposed = true;
       window.clearInterval(intervalId);
-      controller?.abort();
       window.removeEventListener("online", resume);
       document.removeEventListener("visibilitychange", resume);
     };
