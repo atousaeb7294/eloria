@@ -395,11 +395,23 @@ export function EloriaHome({
                       />
                     </div>
                   </div>
+                <button
+                  type="button"
+                  className="home-quick-trigger home-quick-desktop"
+                  onClick={(e) => open(p, e.currentTarget)}
+                  onPointerEnter={(e) => { if (e.pointerType === "mouse") warmQuickView(p.imageUrl); }}
+                  onFocus={() => warmQuickView(p.imageUrl)}
+                  aria-label={
+                    fa ? `نگاه سریع به ${p.name}` : `Quick view: ${p.name}`
+                  }
+                >
+                  {fa ? "خرید سریع" : "Quick purchase"}
 
+                </button>
                 </div>
                 <button
                   type="button"
-                  className="home-quick-trigger"
+                  className="home-quick-trigger home-quick-mobile"
                   onClick={(e) => open(p, e.currentTarget)}
                   onPointerEnter={(e) => { if (e.pointerType === "mouse") warmQuickView(p.imageUrl); }}
                   onFocus={() => warmQuickView(p.imageUrl)}
