@@ -1584,3 +1584,95 @@ body {
   .eloria-quick-dialog, .eloria-live-purchase) {
   background: linear-gradient(135deg, var(--eloria-site-panel), var(--eloria-site-panel-strong)) !important;
 }
+
+/* Shared reference: smoky plum to navy cards, champagne controls. */
+:root {
+  --eloria-site-panel: #403249;
+  --eloria-site-panel-strong: #263249;
+  --eloria-site-ink: #f5e9cf;
+  --eloria-site-muted: #c7c1cd;
+  --eloria-site-accent: #dfc58f;
+  --eloria-card-surface: linear-gradient(135deg, var(--eloria-site-panel), var(--eloria-site-panel-strong));
+  --eloria-inset-surface: #343448;
+  --eloria-card-border: #bca47799;
+  --eloria-gold-surface: linear-gradient(110deg, #f4e7c5, #d9ba7c);
+}
+body :is(.eloria-internal-shell, .eloria-home) :is(.eloria-glass-panel, .eloria-panel,
+.eloria-catalog-card, .eloria-collection-card, .eloria-filter-panel,
+.eloria-product-purchase-panel, .eloria-salon-purchase-card, .eloria-quick-dialog,
+.eloria-empty-cart) {
+  background: var(--eloria-card-surface) !important;
+  border-color: var(--eloria-card-border) !important;
+  color: var(--eloria-site-ink);
+  backdrop-filter: none; -webkit-backdrop-filter: none;
+  box-shadow: 0 12px 32px #090e2026;
+}
+body :is(.eloria-internal-shell, .eloria-home) .eloria-live-purchase {
+  background: var(--eloria-inset-surface) !important;
+  border-color: var(--eloria-card-border) !important; color: var(--eloria-site-ink);
+}
+body :is(.eloria-internal-shell, .eloria-home) :is(.eloria-quick-button, .eloria-cart-checkout) {
+  background: var(--eloria-gold-surface) !important;
+  color: #30283b !important; border-color: #d6ba82 !important;
+  --eloria-action-text: #30283b;
+}
+body .eloria-internal-shell :is(.eloria-piece-details, .eloria-dialog-close) {
+  background: var(--eloria-card-surface) !important;
+  color: var(--eloria-site-ink) !important; border-color: var(--eloria-card-border) !important;
+}
+/* ELORIA READING GLASS START */
+:root {
+  --eloria-reading-fill: rgba(51, 46, 53, .44);
+  --eloria-reading-line: rgba(226, 209, 171, .30);
+}
+/* Apply to text groups, never to each line or to text already inside cards. */
+body .eloria-home :is(.hero-copy, .section-heading, .story, .photo-caption, .hero-unavailable),
+body .eloria-home .hero-bottom > *,
+body .eloria-home .stage-label > span,
+body .eloria-internal-shell main > section > header,
+body .eloria-internal-shell main > section > section[aria-labelledby] > div:first-child,
+body .eloria-internal-shell .eloria-raw-gold:not(:is(.eloria-glass-panel, .eloria-live-purchase, .eloria-catalog-card) *) {
+  box-sizing: border-box;
+  background: var(--eloria-reading-fill) !important;
+  border: 1px solid var(--eloria-reading-line) !important;
+  border-radius: 18px !important;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, .08) !important;
+  backdrop-filter: blur(10px) !important;
+  -webkit-backdrop-filter: blur(10px) !important;
+  padding: clamp(14px, 2vw, 24px) !important;
+  height: auto;
+  min-height: 0;
+  color: #f4eee2;
+}
+body .eloria-home :is(.hero-copy, .section-heading, .story, .photo-caption)::before,
+body .eloria-home :is(.hero-copy, .section-heading, .story, .photo-caption)::after {
+  content: none !important;
+}
+body .eloria-home .photo-caption {
+  width: fit-content; max-width: min(85%, 320px);
+  padding: 12px 18px !important;
+}
+body .eloria-home .section-heading { width: 100%; }
+body .eloria-home .story { width: min(90%, 900px); margin-inline: auto; }
+body .eloria-home .hero-bottom > *,
+body .eloria-home .stage-label > span {
+  padding: 6px 12px !important; border-radius: 12px !important;
+  width: fit-content; max-width: 100%;
+}
+body .eloria-home .stage-label > span:empty { display: none; }
+body .eloria-internal-shell .eloria-raw-gold:not(:is(.eloria-glass-panel, .eloria-live-purchase, .eloria-catalog-card) *) {
+  width: fit-content; max-width: 100%; margin-inline: auto;
+  padding: 8px 14px !important;
+}
+body .eloria-home :is(.hero-copy, .section-heading, .story, .photo-caption) > :first-child { margin-top: 0; }
+body .eloria-home :is(.hero-copy, .section-heading, .story, .photo-caption) > :last-child { margin-bottom: 0; }
+@media (max-width: 760px) {
+  body .eloria-home :is(.hero-copy, .section-heading, .story, .photo-caption),
+  body .eloria-internal-shell main > section > header {
+    padding: 12px 14px !important; border-radius: 14px !important;
+  }
+}
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  :root { --eloria-reading-fill: rgba(51, 46, 53, .88); }
+}
+/* ELORIA READING GLASS END */

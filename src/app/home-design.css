@@ -3297,8 +3297,7 @@ html[lang="fa"] .home-quick-loading [lang="en"],html[lang="en"] .home-quick-load
     linear-gradient(0deg, #0c142be8, transparent 80%);
 }
 .eloria-home .product-description,
-.eloria-home .portal-content,
-.eloria-home .photo-caption {
+.eloria-home .portal-content {
   background: linear-gradient(135deg, var(--home-panel), var(--home-panel-strong)) !important;
   border-color: color-mix(in srgb, var(--home-line) 34%, transparent) !important;
 }
@@ -3377,3 +3376,88 @@ html[lang="fa"] .home-quick-loading [lang="en"],html[lang="en"] .home-quick-load
     color: #f3e8d2;
   }
 }
+
+/* Eloria reference palette, 2026-11-24. No veil over the home photograph. */
+.eloria-home { background: transparent; --home-panel: var(--eloria-site-panel); --home-panel-strong: var(--eloria-site-panel-strong); --home-ink: var(--eloria-site-ink); --home-muted: var(--eloria-site-muted); --home-accent: var(--eloria-site-accent); }
+.eloria-home .atmosphere { display: none; background: none; }
+.eloria-home .palace { filter: none; opacity: 1; }
+.eloria-home .photo-caption {
+  background: transparent !important; border: 0 !important;
+  box-shadow: none !important; backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+.eloria-home .photo-caption::before,
+.eloria-home .photo-caption::after { content: none !important; }
+.eloria-home :is(.product-description, .portal-content),
+.eloria-home dialog.home-quick-dialog {
+  background: var(--eloria-card-surface) !important;
+  color: var(--eloria-site-ink); border-color: var(--eloria-card-border) !important;
+  backdrop-filter: none; -webkit-backdrop-filter: none;
+}
+.eloria-home .home-quick-dialog .eloria-live-purchase {
+  background: var(--eloria-inset-surface) !important;
+  border-color: var(--eloria-card-border) !important;
+}
+.eloria-home .hero-actions .eloria-cta-primary {
+  background: var(--eloria-gold-surface) !important; color: #30283b !important;
+}
+.eloria-home .hero-actions .eloria-cta-secondary,
+.eloria-home .home-quick-dialog .dialog-link {
+  background: var(--eloria-card-surface) !important; color: var(--eloria-site-ink) !important;
+}
+/* ELORIA READING GLASS START */
+:root {
+  --eloria-reading-fill: rgba(51, 46, 53, .44);
+  --eloria-reading-line: rgba(226, 209, 171, .30);
+}
+/* Apply to text groups, never to each line or to text already inside cards. */
+body .eloria-home :is(.hero-copy, .section-heading, .story, .photo-caption, .hero-unavailable),
+body .eloria-home .hero-bottom > *,
+body .eloria-home .stage-label > span,
+body .eloria-internal-shell main > section > header,
+body .eloria-internal-shell main > section > section[aria-labelledby] > div:first-child,
+body .eloria-internal-shell .eloria-raw-gold:not(:is(.eloria-glass-panel, .eloria-live-purchase, .eloria-catalog-card) *) {
+  box-sizing: border-box;
+  background: var(--eloria-reading-fill) !important;
+  border: 1px solid var(--eloria-reading-line) !important;
+  border-radius: 18px !important;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, .08) !important;
+  backdrop-filter: blur(10px) !important;
+  -webkit-backdrop-filter: blur(10px) !important;
+  padding: clamp(14px, 2vw, 24px) !important;
+  height: auto;
+  min-height: 0;
+  color: #f4eee2;
+}
+body .eloria-home :is(.hero-copy, .section-heading, .story, .photo-caption)::before,
+body .eloria-home :is(.hero-copy, .section-heading, .story, .photo-caption)::after {
+  content: none !important;
+}
+body .eloria-home .photo-caption {
+  width: fit-content; max-width: min(85%, 320px);
+  padding: 12px 18px !important;
+}
+body .eloria-home .section-heading { width: 100%; }
+body .eloria-home .story { width: min(90%, 900px); margin-inline: auto; }
+body .eloria-home .hero-bottom > *,
+body .eloria-home .stage-label > span {
+  padding: 6px 12px !important; border-radius: 12px !important;
+  width: fit-content; max-width: 100%;
+}
+body .eloria-home .stage-label > span:empty { display: none; }
+body .eloria-internal-shell .eloria-raw-gold:not(:is(.eloria-glass-panel, .eloria-live-purchase, .eloria-catalog-card) *) {
+  width: fit-content; max-width: 100%; margin-inline: auto;
+  padding: 8px 14px !important;
+}
+body .eloria-home :is(.hero-copy, .section-heading, .story, .photo-caption) > :first-child { margin-top: 0; }
+body .eloria-home :is(.hero-copy, .section-heading, .story, .photo-caption) > :last-child { margin-bottom: 0; }
+@media (max-width: 760px) {
+  body .eloria-home :is(.hero-copy, .section-heading, .story, .photo-caption),
+  body .eloria-internal-shell main > section > header {
+    padding: 12px 14px !important; border-radius: 14px !important;
+  }
+}
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  :root { --eloria-reading-fill: rgba(51, 46, 53, .88); }
+}
+/* ELORIA READING GLASS END */
