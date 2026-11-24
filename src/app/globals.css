@@ -1676,3 +1676,40 @@ body .eloria-home :is(.hero-copy, .section-heading, .story, .photo-caption) > :l
   :root { --eloria-reading-fill: rgba(51, 46, 53, .88); }
 }
 /* ELORIA READING GLASS END */
+/* ELORIA MOBILE CAPTION START */
+@media (max-width: 760px) {
+  body .eloria-home .showcase {
+    display: flex; flex-direction: column; align-items: center;
+    height: auto; min-height: 0; padding-top: 36px; padding-bottom: 0;
+  }
+  body .eloria-home .showcase .hero-photo-wrap {
+    position: relative; inset: auto; flex: none;
+    width: 100%; height: clamp(230px, 65vw, 310px);
+    margin: 0; overflow: hidden;
+  }
+  body .eloria-home .showcase .photo-caption {
+    position: relative; inset: auto; transform: none;
+    flex: none; width: fit-content; max-width: min(220px, 85%);
+    min-width: 0; margin: 12px auto 0;
+    padding: 8px 12px !important; border-radius: 12px !important;
+    text-align: center;
+  }
+  html[lang] body .eloria-home .showcase .photo-caption h2 {
+    font-family: 'Vazirmatn Variable', Tahoma, sans-serif !important;
+    font-size: 18px !important; line-height: 1.6 !important;
+    font-weight: 600 !important; margin: 4px 0 0;
+    padding: 0 !important; overflow-wrap: anywhere;
+  }
+  body .eloria-home .showcase .photo-caption > span {
+    display: block; font-size: 10px; line-height: 1.7;
+  }
+  body .eloria-home .showcase .photo-caption .text-link {
+    display: inline-flex; justify-content: center;
+    font-size: 12px; min-height: 44px; padding: 4px 8px;
+  }
+  body .eloria-home .showcase .motion {
+    position: relative; inset: auto; align-self: flex-end;
+    margin: 8px 12px 0; flex: none;
+  }
+}
+/* ELORIA MOBILE CAPTION END */
