@@ -3498,3 +3498,34 @@ body .eloria-home :is(.hero-copy, .section-heading, .story, .photo-caption) > :l
   }
 }
 /* ELORIA MOBILE CAPTION END */
+/* ELORIA MOBILE PURCHASE START */
+@media (max-width: 760px) {
+  body .eloria-home .selected-grid .home-quick-trigger.home-quick-mobile,
+  body .eloria-internal-shell .eloria-quick-button {
+    box-sizing: border-box;
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+    min-height: 46px; height: auto; padding: 10px 14px !important;
+    border: 1px solid #c6a565 !important; border-radius: 12px !important;
+    background: linear-gradient(110deg, #f1dfb7, #d9b978) !important;
+    color: #30263d !important; --eloria-action-text: #30263d;
+    font-family: 'Vazirmatn Variable', Tahoma, sans-serif !important;
+    font-size: 13px !important; font-weight: 700 !important;
+    line-height: 1.65 !important; letter-spacing: normal;
+    text-shadow: none !important; text-decoration: none !important;
+    backdrop-filter: none !important; -webkit-backdrop-filter: none !important;
+    box-shadow: 0 3px 9px #0c102326 !important;
+    white-space: normal; touch-action: manipulation;
+  }
+  body .eloria-home .selected-grid .home-quick-trigger.home-quick-mobile {
+    width: min(100%, 148px); min-width: 0; max-width: 100%; margin: 10px auto 0;
+  }
+  body .eloria-home .selected-grid .home-quick-trigger.home-quick-mobile:not(:disabled),
+  body .eloria-internal-shell .eloria-quick-button:not(:disabled) { opacity: 1; }
+  body .eloria-home .selected-grid .home-quick-trigger.home-quick-mobile:focus-visible,
+  body .eloria-internal-shell .eloria-quick-button:focus-visible {
+    outline: 2px solid #fff1ca; outline-offset: 3px;
+  }
+  body .eloria-home .selected-grid .home-quick-trigger.home-quick-mobile:disabled,
+  body .eloria-internal-shell .eloria-quick-button:disabled { opacity: .55; cursor: not-allowed; }
+}
+/* ELORIA MOBILE PURCHASE END */
